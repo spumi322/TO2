@@ -1,0 +1,17 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Contracts
+{
+    internal interface ITournamentService
+    {
+        Task CreateTournamentAsync();
+        Task UpdateTournamentAsync();
+        Task DeleteTournamentAsync();
+        Task GetTournamentAsync();
+        Task GetAllTournamentsAsync();
+    }
+}

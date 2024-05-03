@@ -19,6 +19,15 @@ namespace Domain.AggregateRoots
         {
         }
 
+        public Tournament(string name, string description, int maxTeams, DateTime startDate, DateTime endDate, Format format)
+        {
+            Name = name;
+            Description = description;
+            MaxTeams = maxTeams;
+            StartDate = startDate;
+            EndDate = endDate;
+            Format = format;
+        }
 
         public string Name { get; set; }
 
