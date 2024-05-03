@@ -10,6 +10,10 @@ namespace Domain.Entities
 {
     public class Game : EntityBase
     {
+        private Game()
+        {
+        }
+
         public long MatchId { get; private set; }
 
         public Team? Winner { get; private set; }

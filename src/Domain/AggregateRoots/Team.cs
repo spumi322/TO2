@@ -12,6 +12,10 @@ namespace Domain.AggregateRoots
     {
         private readonly List<Player> _players = new ();
 
+        private Team()
+        {
+        }
+
         public string Name { get; private set; }
 
         public string LogoUrl { get; private set; }

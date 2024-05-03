@@ -13,6 +13,9 @@ namespace Domain.Entities
     {
         private readonly List<Match> _matches = new();
 
+        private Standing()
+        {
+        }
 
         public long TournamentId { get; set; }
 

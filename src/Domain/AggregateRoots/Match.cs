@@ -13,6 +13,10 @@ namespace Domain.AggregateRoots
     {
         private readonly List<Game> _games = new();
 
+        private Match()
+        {
+        }
+
         public long StandingId { get; set; }
 
         public Team TeamA { get; set; }

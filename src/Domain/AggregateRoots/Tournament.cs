@@ -15,6 +15,10 @@ namespace Domain.AggregateRoots
         private readonly List<Standing> _standings = new();
         private readonly List<Team> _teams = new();
 
+        private Tournament()
+        {
+        }
+
 
         public string Name { get; set; }
 
