@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Application.Contracts;
+using Application.DTOs.Tournament;
+using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace TO2.Controllers
 {
@@ -8,30 +11,35 @@ namespace TO2.Controllers
     {
         private readonly ITournamentService _tournamentService;
 
+        public TournamentsController(ITournamentService tournamentService)
+        {
+            _tournamentService = tournamentService;
+        }
+
         // GET: api/Tournaments
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return Ok();
+            return Ok(await _tournamentService.GetAllTournamentsAsync());
         }
 
         // GET: api/Tournament/5
         [HttpGet("{id}")]
-        public IActionResult Get(int id)
+        public async Task<IActionResult> Get([FromQuery][Required][Range(1, long.MaxValue)] long id)
         {
-            return Ok();
+            return Ok(await _tournamentService.GetTournamentAsync(id));
         }
 
         // POST: api/Tournament
         [HttpPost]
-        public IActionResult Post([FromBody] string value)
+        public async Task<IActionResult> Post([FromBody] CreateTournamentRequestDTO request)
         {
-            return Ok();
+            return Ok(await _tournamentService.CreateTournamentAsync(request));
         }
 
         // PUT: api/Tournament/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] string value)
+        public IActionResult Put(long id, [FromBody] string value)
         {
             return Ok();
         }
