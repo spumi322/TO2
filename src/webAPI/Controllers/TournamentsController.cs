@@ -39,9 +39,9 @@ namespace TO2.Controllers
 
         // PUT: api/Tournament/5
         [HttpPut("id")]
-        public IActionResult Put(long id, [FromBody] string value)
+        public async Task<IActionResult> Put([FromQuery][Required][Range(1, long.MaxValue)] long id, [FromBody] UpdateTournamentRequestDTO request)
         {
-            return Ok();
+            return Ok(await _tournamentService.UpdateTournamentAsync(id, request));
         }
 
         // DELETE: api/Tournament/5
