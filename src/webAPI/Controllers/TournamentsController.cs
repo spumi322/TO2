@@ -46,9 +46,11 @@ namespace TO2.Controllers
 
         // DELETE: api/Tournament/5
         [HttpDelete("id")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(long id)
         {
-            return Ok();
+            await _tournamentService.SoftDeleteTournamentAsync(id);
+
+            return NoContent();
         }
     }
 }
