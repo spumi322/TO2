@@ -4,6 +4,8 @@ using Domain.Enums;
 using Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +21,7 @@ namespace Domain.AggregateRoots
         {
         }
 
-        public Tournament(string name, string description, int maxTeams, DateTime startDate, DateTime endDate, Format format)
+        public Tournament(string name, string description, int maxTeams, DateTime startDate, DateTime endDate, Format format, TournamentStatus status)
         {
             Name = name;
             Description = description;
@@ -27,20 +29,33 @@ namespace Domain.AggregateRoots
             StartDate = startDate;
             EndDate = endDate;
             Format = format;
+            Status = status;
         }
 
+        [Required]
+        [MaxLength(100)]
         public string Name { get; set; }
 
-        public string Description { get; set; }
+        [MaxLength(250)]
+        public string? Description { get; set; }
 
+        [Range(2, 32)]
         public int MaxTeams { get; set; }
 
-        public DateTime StartDate { get; set; }
+        public DateTime? StartDate { get; set; }
 
-        public DateTime EndDate { get; set; }
+        public DateTime? EndDate { get; set; }
 
+        [Required]
+        [EnumDataType(typeof(Format))]
+        [Range(0, 2)]
+        [DefaultValue(Format.BracketOnly)]
         public Format Format { get; set; }
 
+        [Required]
+        [EnumDataType(typeof(TournamentStatus))]
+        [Range(0, 2)]
+        [DefaultValue(TournamentStatus.Upcoming)]
         public TournamentStatus Status { get; set; }
 
         public List<Prize> PrizePool { get; set; }

@@ -1,55 +1,105 @@
 ﻿using Application.Contracts;
+using Application.DTOs.Tournament;
+using AutoMapper;
 using Domain.AggregateRoots;
+using Domain.Enums;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Application.Services
 {
     public class TournamentService : ITournamentService
     {
         private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly IMapper _mapper;
+        private readonly ILogger<TournamentService> _logger;
 
-        public TournamentService(IGenericRepository<Tournament> tournamentRepository)
+        public TournamentService(IGenericRepository<Tournament> tournamentRepository, IMapper mapper, ILogger<TournamentService> logger)
         {
             _tournamentRepository = tournamentRepository;
+            _mapper = mapper;
+            _logger = logger;
         }
 
-        public async Task<Tournament> CreateTournamentAsync(CreateTournamentDTO request)
+        public async Task<CreateTournamentResponseDTO> CreateTournamentAsync(CreateTournamentRequestDTO request)
         {
-            var tournament = new Tournament(request.Name, request.Description, request.MaxTeams, request.StartDate, request.EndDate, request.Format);
 
             try
             {
+                var tournament = _mapper.Map<Tournament>(request);
+                tournament.Status = Domain.Enums.TournamentStatus.Upcoming;
+
                 await _tournamentRepository.Add(tournament);
                 await _tournamentRepository.Save();
+
+                return new CreateTournamentResponseDTO(tournament.Id);
             }
             catch (Exception ex)
             {
+                // Log the full exception details, including inner exceptions
+                _logger.LogError("Error saving tournament: {0}, Inner Exception: {1}", ex, ex.InnerException);
+
                 throw new Exception(ex.Message);
             }
         }
 
-        public Task GetTournamentAsync()
+        public async Task<GetTournamentResponseDTO> GetTournamentAsync(long id)
         {
-            throw new NotImplementedException();
+            var existingTournament = await _tournamentRepository.Get(id);
+
+            return _mapper.Map<GetTournamentResponseDTO>(existingTournament) ?? throw new Exception("Tournament not found");
         }
 
-        public Task GetAllTournamentsAsync()
+        public async Task<List<GetAllTournamentsResponseDTO>> GetAllTournamentsAsync()
         {
-            throw new NotImplementedException();
+            var tournaments = await _tournamentRepository.GetAll();
+
+            return _mapper.Map<List<GetAllTournamentsResponseDTO>>(tournaments);
         }
 
-        public Task UpdateTournamentAsync()
+        public async Task<UpdateTournamentResponseDTO> UpdateTournamentAsync(long id, UpdateTournamentRequestDTO request)
         {
-            throw new NotImplementedException();
+            var existingTournament = await _tournamentRepository.Get(id) ?? throw new Exception("Tournament not found");
+
+            try
+            {
+                _mapper.Map(request, existingTournament);
+
+                await _tournamentRepository.Update(existingTournament);
+                await _tournamentRepository.Save();
+
+                return _mapper.Map<UpdateTournamentResponseDTO>(existingTournament);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error updating tournament: {0}, Inner Exception: {1}", ex, ex.InnerException);
+
+                throw new Exception(ex.Message);
+            }
         }
 
-        public Task DeleteTournamentAsync()
+        public async Task SoftDeleteTournamentAsync(long id)
         {
-            throw new NotImplementedException();
+            var existingTournament = await _tournamentRepository.Get(id) ?? throw new Exception("Tournament not found");
+
+            try
+            {
+                existingTournament.Status = TournamentStatus.Cancelled;
+
+                await _tournamentRepository.Update(existingTournament);
+                await _tournamentRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error deleting tournament: {0}, Inner Exception: {1}", ex, ex.InnerException);
+
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

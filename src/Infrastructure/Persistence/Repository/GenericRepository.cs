@@ -20,6 +20,8 @@ namespace Infrastructure.Persistence.Repository
 
         public async Task<TEntity> Add(TEntity entity)
         {
+            _dbContext.Entry(entity).State = EntityState.Added;
+
             await _dbContext.AddAsync(entity);
             return entity;
         }

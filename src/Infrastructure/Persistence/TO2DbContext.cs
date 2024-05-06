@@ -28,12 +28,12 @@ namespace Infrastructure.Persistence
         public DbSet<Standing> Standings { get; set; }
         public DbSet<Game> Games { get; set; }
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            base.OnConfiguring(optionsBuilder);
+        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        //{
+        //    base.OnConfiguring(optionsBuilder);
 
-            optionsBuilder.UseSqlite("Data Source=app.db");
-        }
+        //    optionsBuilder.UseSqlite("Data Source=E:\\Code\\repos\\src\\Infrastructure\\app.db");
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -46,6 +46,38 @@ namespace Infrastructure.Persistence
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(Tournament).Assembly);
+
+            modelBuilder.Entity<Tournament>()
+                .HasIndex(e => e.Name)
+                .IsUnique();
+        }
+
+        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            AddTimestamps();
+            return base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void AddTimestamps()
+        {
+            var userName = "PlaceHolder";
+
+            var entries = ChangeTracker.Entries()
+                .Where(x => x.Entity is EntityBase && (x.State == EntityState.Added || x.State == EntityState.Modified));
+
+            foreach (var entityEntry in entries)
+            {
+                var entity = (EntityBase)entityEntry.Entity;
+
+                if (entityEntry.State == EntityState.Added)
+                {
+                    entity.CreatedDate = DateTime.Now;
+                    entity.CreatedBy = userName;
+                }
+
+                entity.LastModifiedDate = DateTime.Now;
+                entity.LastModifiedBy = userName;
+            }
         }
     }
 }
