@@ -17,14 +17,14 @@ namespace TO2.Controllers
         }
 
         // GET: api/Tournaments
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _tournamentService.GetAllTournamentsAsync());
         }
 
         // GET: api/Tournament/5
-        [HttpGet("{id}")]
+        [HttpGet("id")]
         public async Task<IActionResult> Get([FromQuery][Required][Range(1, long.MaxValue)] long id)
         {
             return Ok(await _tournamentService.GetTournamentAsync(id));
@@ -38,14 +38,14 @@ namespace TO2.Controllers
         }
 
         // PUT: api/Tournament/5
-        [HttpPut("{id}")]
+        [HttpPut("id")]
         public IActionResult Put(long id, [FromBody] string value)
         {
             return Ok();
         }
 
         // DELETE: api/Tournament/5
-        [HttpDelete("{id}")]
+        [HttpDelete("id")]
         public IActionResult Delete(int id)
         {
             return Ok();

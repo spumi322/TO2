@@ -1,6 +1,9 @@
+using Application.Common;
 using Application.Contracts;
 using Application.Services;
 using Domain.AggregateRoots;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repository;
 using Infrastructure.Profiles;
@@ -23,9 +26,11 @@ namespace TO2
             });
 
             builder.Services.AddAutoMapper(typeof(MappingProfile));
+            builder.Services.AddFluentValidation().AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
 
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                ;
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
