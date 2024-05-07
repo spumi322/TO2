@@ -24,8 +24,8 @@ namespace TO2.Controllers
         }
 
         // GET: api/Tournament/5
-        [HttpGet("id")]
-        public async Task<IActionResult> Get([FromQuery][Required][Range(1, long.MaxValue)] long id)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(long id)
         {
             return Ok(await _tournamentService.GetTournamentAsync(id));
         }
@@ -38,14 +38,14 @@ namespace TO2.Controllers
         }
 
         // PUT: api/Tournament/5
-        [HttpPut("id")]
-        public async Task<IActionResult> Put([FromQuery][Required][Range(1, long.MaxValue)] long id, [FromBody] UpdateTournamentRequestDTO request)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(long id, [FromBody] UpdateTournamentRequestDTO request)
         {
             return Ok(await _tournamentService.UpdateTournamentAsync(id, request));
         }
 
         // DELETE: api/Tournament/5
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
         {
             await _tournamentService.SoftDeleteTournamentAsync(id);

@@ -1,0 +1,19 @@
+<!-- tournament-list.component.html -->
+<div *ngIf="(tournaments$ | async) as tournaments; else loading">
+  <div *ngIf="tournaments.length > 0; else noTournaments">
+    <div *ngFor="let tournament of tournaments" class="tournament-card">
+      <h2>{{ tournament.name }}</h2>
+      <p>{{ tournament.description }}</p>
+      <p>{{ tournament.startDate }}</p>
+      <p>{{ tournament.endDate }}</p>
+      <p>{{ tournament.status }}</p>
+    </div>
+  </div>
+  <ng-template #noTournaments>
+    <p>No tournaments available.</p>
+  </ng-template>
+</div>
+
+<ng-template #loading>
+  <p>Loading tournaments...</p>
+</ng-template>
