@@ -13,4 +13,8 @@ export class TournamentService {
   getAllTournaments() {
     return this.http.get<Tournament[]>(`${this.apiUrl}/all`);
   }
+
+  getTournament(id: number) {
+    return this.http.get<Tournament>(`${this.apiUrl}/${id}`);
+  }
 }

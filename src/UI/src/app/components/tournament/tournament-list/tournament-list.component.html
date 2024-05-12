@@ -5,7 +5,7 @@
     <h2>Upcoming</h2>
     <div class="tournament-container">
       <ng-container *ngFor="let tournament of ((tournaments$ | async) ?? [] | filterByStatus: 1)">
-        <div class="tournament-card">
+        <div class="tournament-card"  (click)="goToDetails(tournament.id)">
           ph_<img src="../../../../assets/ph_logo.png" alt="Tournament Logo" class="tournament-logo">_ph
           <h3>{{ tournament.name }}</h3>
           <p>{{ tournament.description }}</p>
@@ -26,7 +26,7 @@
     <h2>Ongoing</h2>
     <div class="tournament-container">
       <ng-container *ngFor="let tournament of ((tournaments$ | async) ?? [] | filterByStatus: 2)">
-        <div class="tournament-card">
+        <div class="tournament-card" (click)="goToDetails(tournament.id)">
           ph_<img src="../../../../assets/ph_logo.png" alt="Tournament Logo" class="tournament-logo">_ph
           <h3>{{ tournament.name }}</h3>
           <p>{{ tournament.description }}</p>
@@ -47,7 +47,7 @@
     <h2>Finished</h2>
     <div class="tournament-container">
       <ng-container *ngFor="let tournament of ((tournaments$ | async) ?? [] | filterByStatus: 3)">
-        <div class="tournament-card">
+        <div class="tournament-card" (click)="goToDetails(tournament.id)">
           ph_<img src="../../../../assets/ph_logo.png" alt="Tournament Logo" class="tournament-logo">_ph
           <h3>{{ tournament.name }}</h3>
           <p>{{ tournament.description }}</p>

@@ -6,12 +6,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TournamentListComponent } from './components/tournament/tournament-list/tournament-list.component';
 import { FilterByStatusPipe } from './pipes/filter-by-status.pipe';
+import { TournamentDetailsComponent } from './components/tournament/tournament-details/tournament-details.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TournamentListComponent,
-    FilterByStatusPipe
+    FilterByStatusPipe,
+    TournamentDetailsComponent
   ],
   imports: [
     BrowserModule, HttpClientModule,
