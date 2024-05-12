@@ -101,5 +101,24 @@ namespace Application.Services
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task SetTournamentStatusAsync(long id, TournamentStatus status)
+        {
+            var existingTournament = await _tournamentRepository.Get(id) ?? throw new Exception("Tournament not found");
+
+            try
+            {
+                existingTournament.Status = status;
+
+                await _tournamentRepository.Update(existingTournament);
+                await _tournamentRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error setting tournament status: {0}, Inner Exception: {1}", ex, ex.InnerException);
+
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

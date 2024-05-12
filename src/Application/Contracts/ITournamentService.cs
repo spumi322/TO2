@@ -1,5 +1,6 @@
 ﻿using Application.DTOs.Tournament;
 using Domain.AggregateRoots;
+using Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,5 +16,6 @@ namespace Application.Contracts
         Task<List<GetAllTournamentsResponseDTO>> GetAllTournamentsAsync();
         Task<UpdateTournamentResponseDTO> UpdateTournamentAsync(long id, UpdateTournamentRequestDTO request);
         Task SoftDeleteTournamentAsync(long id);
+        Task SetTournamentStatusAsync(long id, TournamentStatus status);
     }
 }

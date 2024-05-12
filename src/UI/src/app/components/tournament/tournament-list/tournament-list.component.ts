@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Tournament } from '../../../models/tournament';
+import { Tournament, TournamentStatus } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
+import { TournamentStatusLabel } from '../tournament-status-label/tournament-status-label';
 
 @Component({
   selector: 'app-tournament-list',
@@ -9,9 +10,14 @@ import { TournamentService } from '../../../services/tournament/tournament.servi
   styleUrls: ['./tournament-list.component.css']
 })
 export class TournamentListComponent {
-  tournaments$: Observable<Tournament[]>; 
+  tournaments$: Observable<Tournament[]>;
+  tournamentStatuses = Object.values(TournamentStatus).filter(v => typeof v === 'number') as TournamentStatus[];
 
   constructor(private tournamentService: TournamentService) {
     this.tournaments$ = this.tournamentService.getAllTournaments();
+  }
+
+  getStatusLabel(status: TournamentStatus): string {
+    return TournamentStatusLabel.getLabel(status);
   }
 }

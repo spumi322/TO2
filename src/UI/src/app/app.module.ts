@@ -5,11 +5,13 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TournamentListComponent } from './components/tournament/tournament-list/tournament-list.component';
+import { FilterByStatusPipe } from './pipes/filter-by-status.pipe';
 
 @NgModule({
   declarations: [
     AppComponent,
-    TournamentListComponent
+    TournamentListComponent,
+    FilterByStatusPipe
   ],
   imports: [
     BrowserModule, HttpClientModule,

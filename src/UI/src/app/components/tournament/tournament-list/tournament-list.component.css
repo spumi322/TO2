@@ -1,17 +1,31 @@
-.tournament-card {
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 10px;
-  margin-bottom: 10px;
+/* tournament-list.component.css */
+.tournament-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
-  .tournament-card h2 {
-    font-size: 18px;
-    margin-bottom: 5px;
-  }
+.tournament-category {
+  width: 100%;
+  margin: 20px 0;
+}
 
-  .tournament-card p {
-    font-size: 14px;
-    color: #666;
-  }
+.tournament-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.tournament-card {
+  flex-basis: calc(33% - 10px); /* Three cards per row with gap */
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.tournament-logo {
+  width: 50px; /* or any appropriate size */
+  height: 50px;
+}

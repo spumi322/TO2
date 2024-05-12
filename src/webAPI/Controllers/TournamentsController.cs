@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Tournament;
+using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -42,6 +43,15 @@ namespace TO2.Controllers
         public async Task<IActionResult> Put(long id, [FromBody] UpdateTournamentRequestDTO request)
         {
             return Ok(await _tournamentService.UpdateTournamentAsync(id, request));
+        }
+
+        // PUT: api/Tournament/5/status
+        [HttpPut("{id}/{status}")]
+        public async Task<IActionResult> Put(long id, [FromRoute][Required] TournamentStatus status)
+        {
+            await _tournamentService.SetTournamentStatusAsync(id, status);
+
+            return Ok();
         }
 
         // DELETE: api/Tournament/5
