@@ -8,6 +8,7 @@
     <BuildOutputFolder>$(MSBuildProjectDirectory)\dist\UI\</BuildOutputFolder>
   </PropertyGroup>
   <ItemGroup>
+    <Folder Include="src\app\components\standing\" />
     <Folder Include="src\app\components\tournament\tournament-status-label\" />
     <Folder Include="src\app\models\" />
     <Folder Include="src\app\services\tournament\" />

@@ -7,13 +7,17 @@ import { AppComponent } from './app.component';
 import { TournamentListComponent } from './components/tournament/tournament-list/tournament-list.component';
 import { FilterByStatusPipe } from './pipes/filter-by-status.pipe';
 import { TournamentDetailsComponent } from './components/tournament/tournament-details/tournament-details.component';
+import { GroupComponent } from './components/standing/group/group.component';
+import { BracketComponent } from './components/standing/bracket/bracket.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TournamentListComponent,
     FilterByStatusPipe,
-    TournamentDetailsComponent
+    TournamentDetailsComponent,
+    GroupComponent,
+    BracketComponent
   ],
   imports: [
     BrowserModule, HttpClientModule,
