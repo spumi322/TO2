@@ -1,0 +1,28 @@
+/* navbar.component.css */
+.p-menubar {
+  width: 100%; /* Ensures the menubar fills the full width of the viewport */
+  position: fixed; /* Keeps the navbar fixed at the top of the page */
+  top: 0;
+  left: 0;
+  z-index: 1000; /* Makes sure the navbar stays on top of other content */
+}
+
+body {
+  padding-top: 50px; /* Adjust this value based on the actual height of your navbar */
+}
+
+.p-menubar .p-menubar-root-list {
+  display: flex;
+  align-items: center; /* Centers items vertically within the navbar */
+  justify-content: center; /* Center items horizontally - modify if you prefer left alignment */
+}
+
+@media (max-width: 768px) {
+  .p-menubar .p-menubar-root-list {
+    flex-direction: column;
+  }
+
+  body {
+    padding-top: 100px; /* Increase padding for smaller screens if the navbar becomes taller */
+  }
+}

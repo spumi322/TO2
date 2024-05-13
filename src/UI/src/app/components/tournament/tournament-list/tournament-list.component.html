@@ -5,60 +5,70 @@
     <h2>Upcoming</h2>
     <div class="tournament-container">
       <ng-container *ngFor="let tournament of ((tournaments$ | async) ?? [] | filterByStatus: 1)">
-        <div class="tournament-card"  (click)="goToDetails(tournament.id)">
-          ph_<img src="../../../../assets/ph_logo.png" alt="Tournament Logo" class="tournament-logo">_ph
-          <h3>{{ tournament.name }}</h3>
+        <p-card [header]="tournament.name" [subheader]="'500$'" [style]="{ width: '360px' }">
+          <ng-template pTemplate="header">
+            <img alt="Card" src="../../../../assets/ph_logo.png">
+          </ng-template>
           <p>{{ tournament.description }}</p>
-          <p>ph_500$_ph</p>
-          <p>Teams: 0/{{tournament.maxTeams}}</p>
+          <p>Teams: 0 / {{tournament.maxTeams}}</p>
           <p>
-            Date:
-            {{ tournament.startDate | date:'MMMM dd' }}
+            Date: {{ tournament.startDate | date:'MMMM dd' }}
             <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>
           </p>
-        </div>
+          <ng-template pTemplate="footer">
+            <div class="flex gap-3 mt-1">
+              <p-button label="Details" (onClick)="goToDetails(tournament.id)" styleClass="w-full" />
+            </div>
+          </ng-template>
+        </p-card>
       </ng-container>
     </div>
   </div>
 
-  <!-- Ongoing Tournaments -->
   <div class="tournament-category">
     <h2>Ongoing</h2>
     <div class="tournament-container">
       <ng-container *ngFor="let tournament of ((tournaments$ | async) ?? [] | filterByStatus: 2)">
-        <div class="tournament-card" (click)="goToDetails(tournament.id)">
-          ph_<img src="../../../../assets/ph_logo.png" alt="Tournament Logo" class="tournament-logo">_ph
-          <h3>{{ tournament.name }}</h3>
+        <p-card [header]="tournament.name" [subheader]="'500$'" [style]="{ width: '360px' }">
+          <ng-template pTemplate="header">
+            <img alt="Card" src="../../../../assets/ph_logo.png">
+          </ng-template>
           <p>{{ tournament.description }}</p>
-          <p>ph_500$_ph</p>
-          <p>Teams: 0/{{tournament.maxTeams}}</p>
+          <p>Teams: 0 /{{tournament.maxTeams}}</p>
           <p>
-            Date:
-            {{ tournament.startDate | date:'MMMM dd' }}
+            Date: {{ tournament.startDate | date:'MMMM dd' }}
             <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>
           </p>
-        </div>
+          <ng-template pTemplate="footer">
+            <div class="flex gap-3 mt-1">
+              <p-button label="Details" (onClick)="goToDetails(tournament.id)" styleClass="w-full" />
+            </div>
+          </ng-template>
+        </p-card>
       </ng-container>
     </div>
   </div>
 
-  <!-- Finished Tournaments -->
   <div class="tournament-category">
     <h2>Finished</h2>
     <div class="tournament-container">
       <ng-container *ngFor="let tournament of ((tournaments$ | async) ?? [] | filterByStatus: 3)">
-        <div class="tournament-card" (click)="goToDetails(tournament.id)">
-          ph_<img src="../../../../assets/ph_logo.png" alt="Tournament Logo" class="tournament-logo">_ph
-          <h3>{{ tournament.name }}</h3>
+        <p-card [header]="tournament.name" [subheader]="'500$'" [style]="{ width: '360px' }">
+          <ng-template pTemplate="header">
+            <img alt="Card" src="../../../../assets/ph_logo.png">
+          </ng-template>
           <p>{{ tournament.description }}</p>
-          <p>ph_500$_ph</p>
-          <p>Teams: 0/{{tournament.maxTeams}}</p>
+          <p>Teams: 0 /{{tournament.maxTeams}}</p>
           <p>
-            Date:
-            {{ tournament.startDate | date:'MMMM dd' }}
+            Date: {{ tournament.startDate | date:'MMMM dd' }}
             <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>
           </p>
-        </div>
+          <ng-template pTemplate="footer">
+            <div class="flex gap-3 mt-1">
+              <p-button label="Details" (onClick)="goToDetails(tournament.id)" styleClass="w-full" />
+            </div>
+          </ng-template>
+        </p-card>
       </ng-container>
     </div>
   </div>

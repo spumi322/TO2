@@ -41,7 +41,6 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                // Log the full exception details, including inner exceptions
                 _logger.LogError("Error saving tournament: {0}, Inner Exception: {1}", ex, ex.InnerException);
 
                 throw new Exception(ex.Message);

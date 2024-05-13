@@ -1,0 +1,26 @@
+.p-card .p-card-header {
+  display: flex;
+  justify-content: center;
+  width: 100%; /* Ensures the header container uses the full width */
+  padding: 0; /* Adjust or remove padding as necessary */
+}
+
+.tournament-header {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* This will center the content */
+  gap: 20px;
+  width: 100%; /* Make sure the header div uses the full width available */
+  margin: 0 auto; /* This centers the div if it doesn't naturally fill the width */
+  margin-top: 50px;
+}
+
+.tournament-logo {
+  width: 100px;
+  height: 100px;
+}
+
+
+.header-content h1, .header-content h2 {
+  margin: 25px;
+}
