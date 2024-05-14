@@ -7,11 +7,13 @@ export interface Tournament {
   endDate: Date;
   format: Format;
   status: TournamentStatus;
+  teamsPerGroup?: number;
+  teamsPerBracket?: number;
 }
 
 export enum Format {
   BracketOnly = 1,
-  BracketAndGroup = 2,
+  BracketAndGroups = 2,
 }
 
 export enum TournamentStatus {

@@ -10,7 +10,10 @@ import { TournamentService } from '../../../services/tournament/tournament.servi
 })
 export class CreateTournamentComponent {
   tournamentForm!: FormGroup;
-  formatOptions = Object.values(Format).filter(value => typeof value === 'number');
+  formatOptions = [
+    { label: 'Bracket Only', value: Format.BracketOnly },
+    { label: 'Bracket and Groups', value: Format.BracketAndGroups }
+  ]
 
   constructor(private tournamentService: TournamentService,
               private fb: FormBuilder) {
@@ -21,6 +24,8 @@ export class CreateTournamentComponent {
       startDate: [''],
       endDate: [''],
       format: [''],
+      teamsPerGroup: [''],
+      teamsPerBracket: ['']
     });
   }
 

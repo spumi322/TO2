@@ -17,6 +17,15 @@ namespace Domain.Entities
         {
         }
 
+        public Standing(string name, StandingType type, DateTime startDate, DateTime endDate, int? maxTeams)
+        {
+            Name = name;
+            Type = type;
+            StartDate = startDate;
+            EndDate = endDate;
+            MaxTeams = (int)maxTeams;
+        }
+
         public long TournamentId { get; set; }
 
         public string Name { get; set; }

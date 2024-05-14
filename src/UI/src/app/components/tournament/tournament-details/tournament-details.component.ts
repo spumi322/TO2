@@ -40,7 +40,7 @@ export class TournamentDetailsComponent implements OnInit {
     switch (format) {
       case Format.BracketOnly:
         return 'Bracket Only';
-      case Format.BracketAndGroup:
+      case Format.BracketAndGroups:
         return 'Bracket and Group Stage';
       default:
         return 'Unknown Format';

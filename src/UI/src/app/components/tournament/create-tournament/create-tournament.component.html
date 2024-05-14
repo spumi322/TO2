@@ -22,6 +22,21 @@
         <p-dropdown id="format" [options]="formatOptions" formControlName="format"></p-dropdown>
       </div>
 
+      <div class="p-field" *ngIf="tournamentForm.get('format')?.value === formatOptions[1].value">
+        <label for="teamsPerGroup">Teams Per Group</label>
+        <input id="teamsPerGroup" type="number" pInputText formControlName="teamsPerGroup" />
+      </div>
+
+      <div class="p-field" *ngIf="tournamentForm.get('format')?.value === formatOptions[1].value">
+        <label for="teamsPerBracket">Teams Per Bracket</label>
+        <input id="teamsPerBracket" type="number" pInputText formControlName="teamsPerBracket" />
+      </div>
+
+      <div class="p-field" *ngIf="tournamentForm.get('format')?.value === formatOptions[0].value">
+        <label for="teamsPerBracket">Teams Per Bracket</label>
+        <input id="teamsPerBracket" type="number" pInputText formControlName="teamsPerBracket" />
+      </div>
+
       <div class="p-field">
         <label for="startDate">Start Date</label>
         <input id="startDate" type="date" pInputText formControlName="startDate" />

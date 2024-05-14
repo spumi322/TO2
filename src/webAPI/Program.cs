@@ -18,6 +18,7 @@ namespace TO2
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddScoped<ITournamentService, TournamentService>();
+            builder.Services.AddScoped<IStandingService, StandingService>();
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 
             builder.Services.AddDbContext<TO2DbContext>(options =>

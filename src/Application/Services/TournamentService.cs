@@ -16,26 +16,36 @@ namespace Application.Services
     public class TournamentService : ITournamentService
     {
         private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly IStandingService _standingService;
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
 
-        public TournamentService(IGenericRepository<Tournament> tournamentRepository, IMapper mapper, ILogger<TournamentService> logger)
+        public TournamentService(IGenericRepository<Tournament> tournamentRepository,IStandingService standingService, IMapper mapper, ILogger<TournamentService> logger)
         {
             _tournamentRepository = tournamentRepository;
+            _standingService = standingService;
             _mapper = mapper;
             _logger = logger;
         }
 
         public async Task<CreateTournamentResponseDTO> CreateTournamentAsync(CreateTournamentRequestDTO request)
         {
-
             try
             {
                 var tournament = _mapper.Map<Tournament>(request);
-                tournament.Status = Domain.Enums.TournamentStatus.Upcoming;
+                tournament.Status = TournamentStatus.Upcoming;
 
                 await _tournamentRepository.Add(tournament);
                 await _tournamentRepository.Save();
+                await _standingService.GenerateStanding(tournament.Id, "Main Bracket", StandingType.Bracket, request.TeamsPerBracket);
+
+                if(request.Format is Format.BracketAndGroup)
+                {
+                    for (int i = 0; i < (tournament.MaxTeams / request.TeamsPerGroup); i++)
+                    {
+                        await _standingService.GenerateStanding(tournament.Id, $"Group {i + 1}", StandingType.Group, request.TeamsPerGroup);
+                    }
+                }
 
                 return new CreateTournamentResponseDTO(tournament.Id);
             }
