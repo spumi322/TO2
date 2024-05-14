@@ -1,0 +1,38 @@
+<div class="create-tournament-form">
+  <h2>Create New Tournament</h2>
+  <form [formGroup]="tournamentForm" (ngSubmit)="onSubmit()">
+    <div class="p-fluid">
+      <div class="p-field">
+        <label for="name">Tournament Name</label>
+        <input id="name" type="text" pInputText formControlName="name" />
+      </div>
+
+      <div class="p-field">
+        <label for="description">Description</label>
+        <textarea id="description" pInputTextarea formControlName="description"></textarea>
+      </div>
+
+      <div class="p-field">
+        <label for="maxTeams">Max Teams</label>
+        <input id="maxTeams" type="number" pInputText formControlName="maxTeams" />
+      </div>
+
+      <div class="p-field">
+        <label for="format">Format</label>
+        <p-dropdown id="format" [options]="formatOptions" formControlName="format"></p-dropdown>
+      </div>
+
+      <div class="p-field">
+        <label for="startDate">Start Date</label>
+        <input id="startDate" type="date" pInputText formControlName="startDate" />
+      </div>
+
+      <div class="p-field">
+        <label for="endDate">End Date</label>
+        <input id="endDate" type="date" pInputText formControlName="endDate" />
+      </div>
+
+      <button pButton type="submit" label="Create Tournament"></button>
+    </div>
+  </form>
+</div>

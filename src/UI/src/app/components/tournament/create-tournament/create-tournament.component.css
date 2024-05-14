@@ -1,0 +1,43 @@
+.create-tournament-form {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+  .create-tournament-form h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+.p-fluid {
+  display: flex;
+  flex-direction: column;
+}
+
+.p-field {
+  margin-bottom: 20px;
+}
+
+  .p-field label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+
+  .p-field input,
+  .p-field textarea,
+  .p-field .p-dropdown {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+button {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  text-align: center;
+}

@@ -13,6 +13,12 @@ import { MenubarModule } from 'primeng/menubar';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TabViewModule } from 'primeng/tabview'; 
+import { CreateTournamentComponent } from './components/tournament/create-tournament/create-tournament.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
+import { DropdownModule } from 'primeng/dropdown';
 
 @NgModule({
   declarations: [
@@ -22,11 +28,22 @@ import { TabViewModule } from 'primeng/tabview';
     TournamentDetailsComponent,
     GroupComponent,
     BracketComponent,
-    NavbarComponent
+    NavbarComponent,
+    CreateTournamentComponent,
   ],
   imports: [
-    BrowserModule, HttpClientModule, CardModule, TabViewModule,
-    AppRoutingModule, MenubarModule, ButtonModule,
+    BrowserModule,
+    HttpClientModule,
+    CardModule,
+    TabViewModule,
+    AppRoutingModule,
+    MenubarModule,
+    ButtonModule,
+    ReactiveFormsModule,
+    BrowserAnimationsModule,
+    InputTextModule,
+    InputTextareaModule,
+    DropdownModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

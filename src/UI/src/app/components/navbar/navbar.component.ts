@@ -13,7 +13,7 @@ export class NavbarComponent {
       label: 'Tournaments',
       icon: 'pi pi-list',
       items: [
-        { label: 'Create', icon: 'pi pi-cog' },
+        { label: 'Create', icon: 'pi pi-cog', routerLink: '/create-tournament' },
       ]
     },
   ];
