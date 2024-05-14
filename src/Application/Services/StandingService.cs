@@ -38,5 +38,21 @@ namespace Application.Services
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task<List<Standing>> GetStandingsAsync(long tournamentId)
+        {
+            try
+            {
+                var standings = await _standingRepository.GetAllByFK("TournamentId", tournamentId);
+
+                return standings.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error getting standings: {0}, Inner Exception: {1}", ex, ex.InnerException);
+
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

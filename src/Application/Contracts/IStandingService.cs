@@ -11,5 +11,6 @@ namespace Application.Contracts
     public interface IStandingService
     {
         Task GenerateStanding(long tournamentId, string name, StandingType type, int? teamsPerStanding);
+        Task<List<Standing>> GetStandingsAsync(long tournamentId);
     }
 }

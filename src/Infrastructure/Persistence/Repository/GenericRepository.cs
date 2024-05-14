@@ -36,6 +36,13 @@ namespace Infrastructure.Persistence.Repository
             return await _dbContext.Set<TEntity>().ToListAsync();
         }
 
+        public async Task<IReadOnlyList<TEntity>> GetAllByFK(string foreignKeyName, long foreignKeyId)
+        {
+            return await _dbContext.Set<TEntity>()
+                .Where(e => EF.Property<long>(e, foreignKeyName) == foreignKeyId)
+                .ToListAsync();
+        }
+
         public async Task Update(TEntity entity)
         {
             _dbContext.Entry(entity).State = EntityState.Modified;
