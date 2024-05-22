@@ -1,0 +1,51 @@
+.group-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.group-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.group-standings {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+  .group-standings th, .group-standings td {
+    padding: 8px;
+    text-align: center;
+  }
+
+  .group-standings th {
+    background-color: var(--primary-color); /* Use the primary color from your PrimeNG theme */
+    color: var(--primary-color-text); /* Ensure text color is readable */
+  }
+
+.team-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-rank {
+  margin-right: 8px;
+  font-weight: bold;
+}
+
+.team-name {
+  font-weight: normal;
+}
+
+.p-card {
+  margin-bottom: 16px; /* Add spacing between cards */
+}
+
+.p-card-header h3 {
+  margin: 0; /* Remove default margin from h3 */
+}

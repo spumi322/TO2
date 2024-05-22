@@ -19,6 +19,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
+import { TableModule } from 'primeng/table';
+import { OrganizationChartModule } from 'primeng/organizationchart';
+
 
 @NgModule({
   declarations: [
@@ -44,6 +47,8 @@ import { DropdownModule } from 'primeng/dropdown';
     InputTextModule,
     InputTextareaModule,
     DropdownModule,
+    TableModule,
+    OrganizationChartModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

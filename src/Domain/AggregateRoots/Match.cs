@@ -19,6 +19,10 @@ namespace Domain.AggregateRoots
 
         public long StandingId { get; set; }
 
+        public int? Round { get; set; }
+
+        public int? Seed { get; set; }
+
         public Team TeamA { get; set; }
 
         public Team TeamB { get; set; }

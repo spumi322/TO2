@@ -4,6 +4,8 @@ import { Team } from "./team";
 export interface Match {
   id: number;
   standingId: number;
+  round: number;
+  seed: number;
   teamA: Team;
   teamB: Team;
   bestOf: BestOf;

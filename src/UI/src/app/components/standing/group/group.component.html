@@ -1,1 +1,36 @@
-<p>group works!</p>
+<div class="group-container">
+  <div *ngFor="let group of groups" class="group-card">
+    <p-card>
+      <ng-template pTemplate="header">
+        <h2>{{ group.name }}</h2>
+        <h3>Standings</h3>
+      </ng-template>
+      <div>
+        <table class="group-standings">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Team</th>
+              <th>W-L-D</th>
+              <th>Points</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let i of [].constructor(group.maxTeams); let rank = index">
+              <td>
+                <span class="team-rank">{{ rank + 1 }}</span>
+              </td>
+              <td>
+                <div class="team-info">
+                  <span class="team-name">TBD</span>
+                </div>
+              </td>
+              <td>0-0-0</td>
+              <td>0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </p-card>
+  </div>
+</div>

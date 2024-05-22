@@ -28,12 +28,12 @@ namespace Infrastructure.Persistence
         public DbSet<Standing> Standings { get; set; }
         public DbSet<Game> Games { get; set; }
 
-        //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        //{
-        //    base.OnConfiguring(optionsBuilder);
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            base.OnConfiguring(optionsBuilder);
 
-        //    optionsBuilder.UseSqlite("Data Source=E:\\Code\\repos\\src\\Infrastructure\\app.db");
-        //}
+            optionsBuilder.UseSqlite("Data Source=E:\\Code\\repos\\src\\Infrastructure\\app.db");
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

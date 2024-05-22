@@ -32,12 +32,12 @@
       </p-card>
     </p-tabPanel>
 
-    <p-tabPanel header="Group Stage">
-      <app-standing-group></app-standing-group>
+    <p-tabPanel header="Group Stage" *ngIf="tournament.format === 2">
+      <app-standing-group [groups]="groups"></app-standing-group>
     </p-tabPanel>
 
-    <p-tabPanel header="Bracket">
-      <app-standing-bracket></app-standing-bracket>
+    <p-tabPanel header="Bracket" *ngIf="tournament.format === 1 || tournament.format === 2">
+      <app-standing-bracket [brackets]="brackets"></app-standing-bracket>
     </p-tabPanel>
   </p-tabView>
 </p-card>

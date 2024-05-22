@@ -8,7 +8,6 @@ export interface Standing {
   startDate: Date;
   endDate: Date;
   maxTeams: number;
-  numberOfTeams: number;
   matches: Match[];
 }
 
