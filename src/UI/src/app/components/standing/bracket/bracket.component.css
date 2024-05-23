@@ -1,13 +1,48 @@
-.card {
+.bracket-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   padding: 20px;
 }
 
-.p-organizationChart .p-organizationchart-node-content {
-  background-color: #444;
+.round {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  margin: 0 10px;
+}
+
+.match {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  background: #444;
   color: #fff;
+  border-radius: 5px;
+  margin: 10px 0;
+  padding: 10px;
+  text-align: center;
+}
+
+.team {
+  padding: 5px 0;
+  width: 100px;
   border-radius: 5px;
 }
 
-  .p-organizationChart .p-organizationchart-node-content .p-2 {
-    margin: 5px 0;
-  }
+.team-a {
+  border-top: 2px solid #888;
+  border-bottom: 1px solid #888;
+}
+
+.team-b {
+  border-top: 1px solid #888;
+  border-bottom: 2px solid #888;
+}
+
+h3 {
+  color: #fff;
+  margin-bottom: 10px;
+}

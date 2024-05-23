@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Tournament;
+using Application.Services;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -11,10 +12,12 @@ namespace TO2.Controllers
     public class TournamentsController : ControllerBase
     {
         private readonly ITournamentService _tournamentService;
+        private readonly ITeamService _teamService;
 
-        public TournamentsController(ITournamentService tournamentService)
+        public TournamentsController(ITournamentService tournamentService, ITeamService teamService)
         {
             _tournamentService = tournamentService;
+            _teamService = teamService;
         }
 
         // GET: api/Tournaments
@@ -30,6 +33,14 @@ namespace TO2.Controllers
         {
             return Ok(await _tournamentService.GetTournamentAsync(id));
         }
+
+        // GET: api/Teams/tournament/5
+        [HttpGet("{id}/teams")]
+        public async Task<IActionResult> GetByTournament(long id)
+        {
+            return Ok(await _tournamentService.GetTeamsByTournamentAsync(id));
+        }
+        
 
         // POST: api/Tournament
         [HttpPost]
@@ -59,6 +70,22 @@ namespace TO2.Controllers
         public async Task<IActionResult> Delete(long id)
         {
             await _tournamentService.SoftDeleteTournamentAsync(id);
+
+            return NoContent();
+        }
+
+        // POST: api/Tournament/5/5
+        [HttpPost("{teamId}/{tournamentId}")]
+        public async Task<IActionResult> AddTeam(long teamId, long tournamentId)
+        {
+            return Ok(await _tournamentService.AddTeamToTournamentAsync(teamId, tournamentId));
+        }
+
+        // DELETE: api/Tournament/5/5
+        [HttpDelete("{tournamentId}/{teamId}")]
+        public async Task<IActionResult> RemoveTeam(long tournamentId, long teamId)
+        {
+            await _tournamentService.RemoveTeamFromTournamentAsync(tournamentId, teamId);
 
             return NoContent();
         }

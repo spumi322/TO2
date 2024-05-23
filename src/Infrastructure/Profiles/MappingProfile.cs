@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Tournament;
+﻿using Application.DTOs.Team;
+using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
 using System;
@@ -19,6 +20,13 @@ namespace Infrastructure.Profiles
             CreateMap<Tournament, GetAllTournamentsResponseDTO>();
             CreateMap<Tournament, UpdateTournamentResponseDTO>();
             CreateMap<UpdateTournamentRequestDTO, Tournament>();
+            CreateMap<CreateTeamRequestDTO, Team>();
+            CreateMap<Team, CreateTeamResponseDTO>();
+            CreateMap<Team, GetTeamResponseDTO>();
+            CreateMap<Team, UpdateTeamResponseDTO>();
+            CreateMap<UpdateTeamRequestDTO, Team>();    
+            CreateMap<Team, GetAllTeamsResponseDTO>();
+
         }
     }
 }

@@ -1,8 +1,11 @@
 ﻿using Application.Contracts;
+using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Enums;
+using Domain.ValueObjects;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,13 +19,17 @@ namespace Application.Services
     public class TournamentService : ITournamentService
     {
         private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly ITeamService _teamService;
+        private readonly ITO2DbContext _dbContext;
         private readonly IStandingService _standingService;
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
 
-        public TournamentService(IGenericRepository<Tournament> tournamentRepository,IStandingService standingService, IMapper mapper, ILogger<TournamentService> logger)
+        public TournamentService(IGenericRepository<Tournament> tournamentRepository,ITeamService teamService, ITO2DbContext tO2DbContext, IStandingService standingService, IMapper mapper, ILogger<TournamentService> logger)
         {
             _tournamentRepository = tournamentRepository;
+            _teamService = teamService;
+            _dbContext = tO2DbContext;
             _standingService = standingService;
             _mapper = mapper;
             _logger = logger;
@@ -128,6 +135,49 @@ namespace Application.Services
 
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task<List<GetTeamResponseDTO>> GetTeamsByTournamentAsync(long tournamentId)
+        {
+            var teams = await _dbContext.TeamsTournaments
+                .Where(tt => tt.TournamentId == tournamentId)
+                .Select(tt => tt.Team)
+                .ToListAsync();
+
+            return _mapper.Map<List<GetTeamResponseDTO>>(teams);
+        }
+
+        public async Task<AddTeamToTournamentResponseDTO> AddTeamToTournamentAsync(long teamId, long tournamentId)
+        {
+            var existingTeam = await _teamService.GetTeamAsync(teamId) ?? throw new Exception("Team not found");
+            var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
+            var teamsInTournament = await GetTeamsByTournamentAsync(tournamentId);
+
+            if (teamsInTournament.Count >= existingTournament.MaxTeams)
+            {
+                throw new Exception("Tournament is full");
+            }
+
+            var teamTournamentEntry = new TeamsTournaments { TeamId = existingTeam.Id, TournamentId = existingTournament.Id };
+
+            try
+            {
+               await _dbContext.TeamsTournaments.AddAsync(teamTournamentEntry);
+               await _dbContext.SaveChangesAsync();
+
+               return new AddTeamToTournamentResponseDTO(teamTournamentEntry.TeamId, teamTournamentEntry.TournamentId);
+            }
+            catch (Exception)
+            {
+                _logger.LogError("Error adding team to tournament, teams can only added to a tournament once.");
+
+                throw new Exception("Error adding team to tournament, teams can only added to a tournament once.");
+            }
+        }
+
+        public Task RemoveTeamFromTournamentAsync(long tournamentId, long teamId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

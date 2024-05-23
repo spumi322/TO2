@@ -1,4 +1,5 @@
-﻿using Domain.AggregateRoots;
+﻿using Application.Contracts;
+using Domain.AggregateRoots;
 using Domain.Common;
 using Domain.Entities;
 using Domain.ValueObjects;
@@ -11,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Infrastructure.Persistence
 {
-    public class TO2DbContext : DbContext
+    public class TO2DbContext : DbContext, ITO2DbContext
     {
         public TO2DbContext()
         {
@@ -23,10 +24,11 @@ namespace Infrastructure.Persistence
 
         public DbSet<Tournament> Tournaments { get; set; }
         public DbSet<Team> Teams { get; set; }
-        public DbSet<Match> Match { get; set; }
+        public DbSet<Match> Matches { get; set; }
         public DbSet<Player> Players { get; set; }
         public DbSet<Standing> Standings { get; set; }
         public DbSet<Game> Games { get; set; }
+        public DbSet<TeamsTournaments> TeamsTournaments { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -50,6 +52,19 @@ namespace Infrastructure.Persistence
             modelBuilder.Entity<Tournament>()
                 .HasIndex(e => e.Name)
                 .IsUnique();
+
+            modelBuilder.Entity<TeamsTournaments>()
+                .HasKey(tt => new { tt.TeamId, tt.TournamentId });
+
+            modelBuilder.Entity<TeamsTournaments>()
+                .HasOne(tt => tt.Team)
+                .WithMany(t => t.TeamsTournaments)
+                .HasForeignKey(tt => tt.TeamId);
+
+            modelBuilder.Entity<TeamsTournaments>()
+                .HasOne(tt => tt.Tournament)
+                .WithMany(t => t.TeamsTournaments)
+                .HasForeignKey(tt => tt.TournamentId);
         }
 
         public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

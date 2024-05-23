@@ -9,46 +9,29 @@ import { TreeNode } from 'primeng/api';
 })
 export class BracketComponent implements OnInit {
   @Input() brackets: Standing[] = [];
-  maxTeams: number = 16;
-  data: TreeNode[] = [];
+  rounds: any[] = [];
 
-  ngOnInit(): void {
-    this.maxTeams = this.brackets[0]?.maxTeams;
-    this.data = this.createBracketTree(this.maxTeams);
+  ngOnInit() {
+    if (this.brackets.length > 0) {
+      const maxTeams = this.brackets[0].maxTeams;
+      this.rounds = this.createBracketStructure(maxTeams);
+    }
   }
 
-  createBracketTree(maxTeams: number): TreeNode[] {
+  createBracketStructure(maxTeams: number): any[] {
     const rounds = Math.ceil(Math.log2(maxTeams));
-    const createNode = (roundIndex: number, matchIndex: number): TreeNode => {
-      const label = `Match ${roundIndex}-${matchIndex}`;
-      if (roundIndex === rounds - 1) {
-        return {
-          label: label,
-          data: `TBA vs TBA`,
-        };
+    const structure = [];
+
+    for (let i = 0; i < rounds; i++) {
+      const matches = Math.pow(2, rounds - i - 1);
+      const round = [];
+      for (let j = 0; j < matches; j++) {
+        round.push({ team1: 'TBA', team2: 'TBA' });
       }
-
-      return {
-        label: label,
-        expanded: true,
-        data: `TBA vs TBA`,
-        children: [
-          createNode(roundIndex + 1, matchIndex * 2),
-          createNode(roundIndex + 1, matchIndex * 2 + 1),
-        ],
-      };
-    };
-
-    const root: TreeNode = {
-      label: 'Bracket',
-      expanded: true,
-      children: [],
-    };
-
-    for (let i = 0; i < maxTeams / 2; i++) {
-      root.children!.push(createNode(0, i));
+      structure.push(round);
     }
 
-    return [root];
+    return structure;
   }
 }
+

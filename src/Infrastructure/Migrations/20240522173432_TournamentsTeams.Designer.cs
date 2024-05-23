@@ -3,6 +3,7 @@ using System;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(TO2DbContext))]
-    partial class TO2DbContextModelSnapshot : ModelSnapshot
+    [Migration("20240522173432_TournamentsTeams")]
+    partial class TournamentsTeams
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.4");
@@ -63,7 +66,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("TeamBId");
 
-                    b.ToTable("Matches");
+                    b.ToTable("Match");
                 });
 
             modelBuilder.Entity("Domain.AggregateRoots.Team", b =>
@@ -90,7 +93,12 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<long?>("TournamentId")
+                        .HasColumnType("INTEGER");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TournamentId");
 
                     b.ToTable("Teams");
                 });
@@ -271,19 +279,25 @@ namespace Infrastructure.Migrations
                     b.ToTable("Standings");
                 });
 
-            modelBuilder.Entity("Domain.ValueObjects.TeamsTournaments", b =>
+            modelBuilder.Entity("Domain.ValueObjects.TournamentsTeams", b =>
                 {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
                     b.Property<long>("TeamId")
                         .HasColumnType("INTEGER");
 
                     b.Property<long>("TournamentId")
                         .HasColumnType("INTEGER");
 
-                    b.HasKey("TeamId", "TournamentId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeamId");
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("TeamsTournaments");
+                    b.ToTable("TournamentsTeams");
                 });
 
             modelBuilder.Entity("Domain.AggregateRoots.Match", b =>
@@ -309,6 +323,13 @@ namespace Infrastructure.Migrations
                     b.Navigation("TeamA");
 
                     b.Navigation("TeamB");
+                });
+
+            modelBuilder.Entity("Domain.AggregateRoots.Team", b =>
+                {
+                    b.HasOne("Domain.AggregateRoots.Tournament", null)
+                        .WithMany("Teams")
+                        .HasForeignKey("TournamentId");
                 });
 
             modelBuilder.Entity("Domain.Entities.Game", b =>
@@ -344,16 +365,16 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.ValueObjects.TeamsTournaments", b =>
+            modelBuilder.Entity("Domain.ValueObjects.TournamentsTeams", b =>
                 {
                     b.HasOne("Domain.AggregateRoots.Team", "Team")
-                        .WithMany("TeamsTournaments")
+                        .WithMany("TournamentsTeams")
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("Domain.AggregateRoots.Tournament", "Tournament")
-                        .WithMany("TeamsTournaments")
+                        .WithMany("TournamentsTeams")
                         .HasForeignKey("TournamentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -372,14 +393,16 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("Players");
 
-                    b.Navigation("TeamsTournaments");
+                    b.Navigation("TournamentsTeams");
                 });
 
             modelBuilder.Entity("Domain.AggregateRoots.Tournament", b =>
                 {
                     b.Navigation("Standings");
 
-                    b.Navigation("TeamsTournaments");
+                    b.Navigation("Teams");
+
+                    b.Navigation("TournamentsTeams");
                 });
 
             modelBuilder.Entity("Domain.Entities.Standing", b =>
