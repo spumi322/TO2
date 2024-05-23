@@ -175,9 +175,24 @@ namespace Application.Services
             }
         }
 
-        public Task RemoveTeamFromTournamentAsync(long tournamentId, long teamId)
+        public async Task RemoveTeamFromTournamentAsync(long teamId, long tournamentId)
         {
-            throw new NotImplementedException();
+            var existingTeam = await _teamService.GetTeamAsync(teamId) ?? throw new Exception("Team not found");
+            var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
+
+            try
+            {
+                await _dbContext.TeamsTournaments
+                    .Where(tt => tt.TeamId == existingTeam.Id && tt.TournamentId == existingTournament.Id)
+                    .ForEachAsync(tt => _dbContext.TeamsTournaments.Remove(tt));
+                await _dbContext.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                _logger.LogError("Error removing team from tournament");
+
+                throw new Exception("Error removing team from tournament");
+            }
         }
     }
 }

@@ -20,6 +20,6 @@ namespace Application.Contracts
         Task SetTournamentStatusAsync(long id, TournamentStatus status);
         Task<List<GetTeamResponseDTO>> GetTeamsByTournamentAsync(long tournamentId);
         Task<AddTeamToTournamentResponseDTO> AddTeamToTournamentAsync(long teamId, long tournamentId);
-        Task RemoveTeamFromTournamentAsync(long tournamentId, long teamId);
+        Task RemoveTeamFromTournamentAsync(long teamId, long tournamentId);
     }
 }

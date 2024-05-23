@@ -82,10 +82,10 @@ namespace TO2.Controllers
         }
 
         // DELETE: api/Tournament/5/5
-        [HttpDelete("{tournamentId}/{teamId}")]
-        public async Task<IActionResult> RemoveTeam(long tournamentId, long teamId)
+        [HttpDelete("{teamId}/{tournamentId}")]
+        public async Task<IActionResult> RemoveTeam(long teamId, long tournamentId)
         {
-            await _tournamentService.RemoveTeamFromTournamentAsync(tournamentId, teamId);
+            await _tournamentService.RemoveTeamFromTournamentAsync(teamId, tournamentId);
 
             return NoContent();
         }
