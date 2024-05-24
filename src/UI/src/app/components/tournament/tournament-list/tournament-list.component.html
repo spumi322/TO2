@@ -10,7 +10,7 @@
             <img alt="Card" class="tournament-logo" src="../../../../assets/ph_logo.png">
           </ng-template>
           <p>{{ tournament.description }}</p>
-          <p>Teams: 0 / {{tournament.maxTeams}}</p>
+          <p>Teams: {{ tournament.teams.length }} /{{tournament.maxTeams}}</p>
           <p>
             Date: {{ tournament.startDate | date:'MMMM dd' }}
             <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>
@@ -34,7 +34,7 @@
             <img alt="Card" class="tournament-logo" src="../../../../assets/ph_logo.png">
           </ng-template>
           <p>{{ tournament.description }}</p>
-          <p>Teams: 0 /{{tournament.maxTeams}}</p>
+          <p>Teams: {{ tournament.teams.length }} /{{tournament.maxTeams}}</p>
           <p>
             Date: {{ tournament.startDate | date:'MMMM dd' }}
             <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>
@@ -58,7 +58,7 @@
             <img alt="Card" class="tournament-logo" src="../../../../assets/ph_logo.png">
           </ng-template>
           <p>{{ tournament.description }}</p>
-          <p>Teams: 0 /{{tournament.maxTeams}}</p>
+          <p>Teams: {{ tournament.teams.length }} /{{tournament.maxTeams}}</p>
           <p>
             Date: {{ tournament.startDate | date:'MMMM dd' }}
             <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>

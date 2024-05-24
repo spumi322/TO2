@@ -24,3 +24,38 @@
 .header-content h1, .header-content h2 {
   margin: 25px;
 }
+
+/* tournament-details.component.css */
+
+.participants-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  list-style-type: none;
+  padding: 0;
+}
+
+  .participants-list li {
+    display: flex;
+    align-items: center;
+    background-color: var(--surface-a);
+    color: var(--text-color);
+    padding: 10px;
+    border-radius: 4px;
+    text-align: left;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+.team-logo {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+  border-radius: 50%; /* Optional: to make the logo circular */
+}
+
+
+.button-group {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}

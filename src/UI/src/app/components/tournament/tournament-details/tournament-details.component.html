@@ -26,7 +26,34 @@
         <h2>Prize Pool:</h2>
         <p>TBA</p>
         <h2>Participants:</h2>
-        <p> 'List of Teams'</p>
+        <ul class="participants-list">
+          <li *ngFor="let team of tournament.teams">
+            <img src="../../../../assets/ph_team_logo.png" alt="{{ team.name }} logo" class="team-logo">
+            <span>{{ team.name }}</span>
+          </li>
+        </ul>
+        <div class="button-group">
+          <button pButton type="button" label="Add Team" icon="pi pi-plus" class="p-button-success" (click)="showAddTeamDialog()"></button>
+          <button pButton type="button" label="Remove Team" icon="pi pi-minus" class="p-button-danger" (click)="showRemoveTeamDialog()"></button>
+        </div>
+
+        <p-dialog header="Select a Team to Add" [(visible)]="displayDialog" [modal]="true" [responsive]="true">
+          <ng-container *ngIf="dialogType === 'add'">
+            <p-dropdown [options]="availableTeams" [(ngModel)]="selectedTeam" optionLabel="name"></p-dropdown>
+            <p-footer>
+              <button pButton type="button" label="Add" icon="pi pi-check" (click)="addTeam()"></button>
+              <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="hideDialog()"></button>
+            </p-footer>
+          </ng-container>
+          <ng-container *ngIf="dialogType === 'remove'">
+            <h3>Select a team to remove</h3>
+            <p-dropdown [options]="tournament.teams" [(ngModel)]="selectedTeam" optionLabel="name"></p-dropdown>
+            <p-footer>
+              <button pButton type="button" label="Remove" icon="pi pi-check" (click)="removeTeam()"></button>
+              <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="hideDialog()"></button>
+            </p-footer>
+          </ng-container>
+        </p-dialog>
         <h2>Results: </h2>
         <p> Table of Results</p>
       </p-card>

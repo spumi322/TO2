@@ -1,3 +1,5 @@
+import { Team } from "./team";
+
 export interface Tournament {
   id: number;
   name: string;
@@ -9,6 +11,7 @@ export interface Tournament {
   status: TournamentStatus;
   teamsPerGroup?: number;
   teamsPerBracket?: number;
+  teams: Team[];
 }
 
 export enum Format {

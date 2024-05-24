@@ -11,11 +11,13 @@ import { Router } from '@angular/router';
   styleUrls: ['./tournament-list.component.css']
 })
 export class TournamentListComponent {
-  tournaments$: Observable<Tournament[]>;
+  tournaments$!: Observable<Tournament[]>;
   tournamentStatuses = Object.values(TournamentStatus).filter(v => typeof v === 'number') as TournamentStatus[];
+  
+  constructor(private tournamentService: TournamentService,private router: Router) { }
 
-  constructor(private tournamentService: TournamentService,private router: Router) {
-    this.tournaments$ = this.tournamentService.getAllTournaments();
+  ngOnInit(): void {
+    this.tournaments$ = this.tournamentService.getAllTournamentsWithTeams();
   }
 
   getStatusLabel(status: TournamentStatus): string {
@@ -25,4 +27,6 @@ export class TournamentListComponent {
   goToDetails(tournamentId: number): void {
     this.router.navigate(['/tournament', tournamentId]);
   }
+
+
 }
