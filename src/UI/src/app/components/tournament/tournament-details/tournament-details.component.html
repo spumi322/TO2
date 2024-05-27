@@ -37,9 +37,9 @@
           <button pButton type="button" label="Remove Team" icon="pi pi-minus" class="p-button-danger" (click)="showRemoveTeamDialog()"></button>
         </div>
 
-        <p-dialog header="Select a Team to Add" [(visible)]="displayDialog" [modal]="true" [responsive]="true">
+        <p-dialog header="Select a Team to {{ dialogType === 'add' ? 'Add' : 'Remove' }}" [(visible)]="displayDialog" [modal]="true" [responsive]="true">
           <ng-container *ngIf="dialogType === 'add'">
-            <p-dropdown [options]="availableTeams" [(ngModel)]="selectedTeam" optionLabel="name"></p-dropdown>
+            <p-listbox [options]="availableTeams" [(ngModel)]="selectedTeam" [filter]="true" optionLabel="name" [style]="{'width':'100%'}"></p-listbox>
             <p-footer>
               <button pButton type="button" label="Add" icon="pi pi-check" (click)="addTeam()"></button>
               <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="hideDialog()"></button>
@@ -47,7 +47,7 @@
           </ng-container>
           <ng-container *ngIf="dialogType === 'remove'">
             <h3>Select a team to remove</h3>
-            <p-dropdown [options]="tournament.teams" [(ngModel)]="selectedTeam" optionLabel="name"></p-dropdown>
+            <p-listbox [options]="tournament.teams" [(ngModel)]="selectedTeam" optionLabel="name" [style]="{'width':'100%'}"></p-listbox>
             <p-footer>
               <button pButton type="button" label="Remove" icon="pi pi-check" (click)="removeTeam()"></button>
               <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="hideDialog()"></button>

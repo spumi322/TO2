@@ -20,6 +20,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { DialogModule } from 'primeng/dialog';
+import { ListboxModule } from 'primeng/listbox';
 
 
 
@@ -50,6 +51,7 @@ import { DialogModule } from 'primeng/dialog';
     DialogModule,
     FormsModule,
     ReactiveFormsModule,
+    ListboxModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

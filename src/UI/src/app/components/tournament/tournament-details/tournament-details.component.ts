@@ -16,12 +16,14 @@ import { TeamService } from '../../../services/team/team.service';
 })
 export class TournamentDetailsComponent implements OnInit {
   tournament$: Observable<Tournament | null> = of(null);
+  tournament: Tournament | null = null;
   standings: Standing[] = [];
   tournamentId: number | null = null;
   groups: Standing[] = [];
   brackets: Standing[] = [];
   displayDialog: boolean = false;
   dialogType!: 'add' | 'remove';
+  allTeams: Team[] = [];
   availableTeams: Team[] = [];
   selectedTeam: Team | null = null;
 
@@ -40,6 +42,7 @@ export class TournamentDetailsComponent implements OnInit {
           return this.tournamentService.getTournamentWithTeams(this.tournamentId).pipe(
             tap(tournament => {
               if (tournament) {
+                this.tournament = tournament;
                 this.loadStandings(this.tournamentId!);
               }
             }),
@@ -55,7 +58,7 @@ export class TournamentDetailsComponent implements OnInit {
     );
 
     this.teamService.getAllTeams().subscribe(teams => {
-      this.availableTeams = teams;
+      this.allTeams = teams;
     });
   }
 
@@ -95,6 +98,7 @@ export class TournamentDetailsComponent implements OnInit {
   showAddTeamDialog(): void {
     this.dialogType = 'add';
     this.displayDialog = true;
+    this.availableTeams = this.allTeams.filter(team => !this.tournament?.teams.some(t => t.id === team.id));
   }
 
   showRemoveTeamDialog(): void {
@@ -108,10 +112,10 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   addTeam(): void {
-    if (this.selectedTeam) {
+    if (this.selectedTeam && this.tournament) {
       this.tournamentService.addTeam(this.selectedTeam.id, this.tournamentId!).pipe(
         tap(() => {
-          this.loadStandings(this.tournamentId!);
+          this.tournament!.teams.push(this.selectedTeam!);
           this.hideDialog();
         }),
         catchError(error => {
@@ -123,10 +127,11 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   removeTeam(): void {
-    if (this.selectedTeam) {
+    if (this.selectedTeam && this.tournament) {
       this.tournamentService.removeTeam(this.selectedTeam.id, this.tournamentId!).pipe(
         tap(() => {
-          this.loadStandings(this.tournamentId!);
+          this.tournament!.teams = this.tournament!.teams.filter(team => team.id !== this.selectedTeam!.id);
+          this.allTeams.push(this.selectedTeam!);
           this.hideDialog();
         }),
         catchError(error => {
