@@ -17,6 +17,13 @@ namespace Domain.AggregateRoots
         {
         }
 
+        public Match(Team teamA, Team teamB, BestOf bestOf)
+        {
+            TeamA = teamA;
+            TeamB = teamB;
+            BestOf = bestOf;
+        }
+
         public long StandingId { get; set; }
 
         public int? Round { get; set; }

@@ -26,7 +26,7 @@ namespace Infrastructure.Profiles
             CreateMap<Team, UpdateTeamResponseDTO>();
             CreateMap<UpdateTeamRequestDTO, Team>();    
             CreateMap<Team, GetAllTeamsResponseDTO>();
-
+            CreateMap<GetTeamResponseDTO, Team>();
         }
     }
 }
