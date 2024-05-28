@@ -19,8 +19,8 @@ namespace Domain.AggregateRoots
 
         public Match(Team teamA, Team teamB, BestOf bestOf)
         {
-            TeamA = teamA;
-            TeamB = teamB;
+            TeamAId = teamA.Id;
+            TeamAId = teamB.Id;
             BestOf = bestOf;
         }
 
@@ -30,9 +30,9 @@ namespace Domain.AggregateRoots
 
         public int? Seed { get; set; }
 
-        public Team TeamA { get; set; }
+        public long TeamAId { get; set; }
 
-        public Team TeamB { get; set; }
+        public long TeamBId { get; set; }
 
         public BestOf BestOf { get; set; }
 

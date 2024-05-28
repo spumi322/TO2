@@ -59,10 +59,6 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("StandingId");
 
-                    b.HasIndex("TeamAId");
-
-                    b.HasIndex("TeamBId");
-
                     b.ToTable("Matches");
                 });
 
@@ -173,7 +169,13 @@ namespace Infrastructure.Migrations
                     b.Property<long>("MatchId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<long>("TeamAId")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int?>("TeamAScore")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("TeamBId")
                         .HasColumnType("INTEGER");
 
                     b.Property<int?>("TeamBScore")
@@ -185,8 +187,6 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MatchId");
-
-                    b.HasIndex("WinnerId");
 
                     b.ToTable("Games");
                 });
@@ -293,22 +293,6 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("StandingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Domain.AggregateRoots.Team", "TeamA")
-                        .WithMany()
-                        .HasForeignKey("TeamAId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.AggregateRoots.Team", "TeamB")
-                        .WithMany()
-                        .HasForeignKey("TeamBId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TeamA");
-
-                    b.Navigation("TeamB");
                 });
 
             modelBuilder.Entity("Domain.Entities.Game", b =>
@@ -318,12 +302,6 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("MatchId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Domain.AggregateRoots.Team", "Winner")
-                        .WithMany()
-                        .HasForeignKey("WinnerId");
-
-                    b.Navigation("Winner");
                 });
 
             modelBuilder.Entity("Domain.Entities.Player", b =>

@@ -15,7 +15,8 @@ namespace Application.Services
         private readonly IGenericRepository<Standing> _standingRepository;
         private readonly ILogger<StandingService> _logger;
 
-        public StandingService(IGenericRepository<Standing> standingRepository, ILogger<StandingService> logger)
+        public StandingService(IGenericRepository<Standing> standingRepository,
+                               ILogger<StandingService> logger)
         {
             _standingRepository = standingRepository;
             _logger = logger;   

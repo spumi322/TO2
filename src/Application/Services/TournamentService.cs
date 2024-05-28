@@ -25,7 +25,12 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
 
-        public TournamentService(IGenericRepository<Tournament> tournamentRepository,ITeamService teamService, ITO2DbContext tO2DbContext, IStandingService standingService, IMapper mapper, ILogger<TournamentService> logger)
+        public TournamentService(IGenericRepository<Tournament> tournamentRepository,
+                                 ITeamService teamService,
+                                 ITO2DbContext tO2DbContext,
+                                 IStandingService standingService,
+                                 IMapper mapper,
+                                 ILogger<TournamentService> logger)
         {
             _tournamentRepository = tournamentRepository;
             _teamService = teamService;

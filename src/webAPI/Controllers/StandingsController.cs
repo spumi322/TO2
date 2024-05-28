@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Domain.AggregateRoots;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,11 +11,13 @@ namespace TO2.Controllers
     {
         private readonly IStandingService _standingService;
         private readonly IMatchService _matchService;
+        private readonly IGameService _gameService;
 
-        public StandingsController(IStandingService standingService, IMatchService matchService)
+        public StandingsController(IStandingService standingService, IMatchService matchService, IGameService gameService)
         {
             _standingService = standingService;
             _matchService = matchService;
+            _gameService = gameService;
         }
 
         [HttpGet("{tournamentId}")]
@@ -23,10 +26,33 @@ namespace TO2.Controllers
             return Ok(await _standingService.GetStandingsAsync(tournamentId));
         }
 
-        [HttpGet("generate/{tournamentId}")]
-        public async Task<IActionResult> Generate(long tournamentId)
+        [HttpPost("{tournamentId}/generate-groupmatches")]
+        public async Task<IActionResult> GenerateGroupMatches(long tournamentId)
         {
             await _matchService.SeedGroups(tournamentId);
+
+            return Ok();
+        }
+
+        [HttpPost("{tournamentId}/generate-bracketmatches")]
+        public async Task<IActionResult> GenerateBracketMatches(long tournamentId)
+        {
+            List<Team> playOffTeams = [/* get teams from groups result */];
+
+            await _matchService.SeedBracket(tournamentId, playOffTeams);
+
+            return Ok();
+        }
+
+        [HttpPost("{standingId}/generate-games")]
+        public async Task<IActionResult> GenerateGames(long standingId)
+        {
+            var matches = await _matchService.GetMatchesAsync(standingId);
+
+            foreach (var match in matches)
+            {
+                await _gameService.GenerateGames(match.Id);
+            }
 
             return Ok();
         }

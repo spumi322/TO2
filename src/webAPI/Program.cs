@@ -21,6 +21,7 @@ namespace TO2
             builder.Services.AddScoped<IStandingService, StandingService>();
             builder.Services.AddScoped<ITeamService, TeamService>();
             builder.Services.AddScoped<IMatchService, MatchService>();
+            builder.Services.AddScoped<IGameService, GameService>();
             builder.Services.AddScoped<ITO2DbContext, TO2DbContext>();
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 

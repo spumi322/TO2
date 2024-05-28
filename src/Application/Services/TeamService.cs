@@ -17,7 +17,9 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<TeamService> _logger;
 
-        public TeamService(IGenericRepository<Team> teamRepository, IMapper mapper, ILogger<TeamService> logger)
+        public TeamService(IGenericRepository<Team> teamRepository,
+                           IMapper mapper,
+                           ILogger<TeamService> logger)
         {
             _teamRepository = teamRepository;
             _mapper = mapper;

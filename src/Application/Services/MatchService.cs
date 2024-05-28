@@ -2,6 +2,7 @@
 using Application.DTOs.Team;
 using AutoMapper;
 using Domain.AggregateRoots;
+using Domain.Entities;
 using Domain.Enums;
 using Microsoft.Extensions.Logging;
 using System;
@@ -20,17 +21,41 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<MatchService> _logger;
 
-        public MatchService(IStandingService standingService, ITournamentService tournamentService,IGenericRepository<Match> matchRepository, IMapper mapper, ILogger<MatchService> logger)
+        public MatchService(IStandingService standingService,
+                            ITournamentService tournamentService,
+                            IGenericRepository<Match> matchRepository,
+                            IMapper mapper,
+                            ILogger<MatchService> logger)
         {
             _standingService = standingService;
             _tournamentService = tournamentService;
             _matchRepository = matchRepository;
             _mapper = mapper;
             _logger = logger;
-
         }
 
-        public async Task GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId)
+        public async Task<Match> GetMatchAsync(long id)
+        {
+            return await _matchRepository.Get(id);
+        }
+
+        public async Task<List<Match>> GetMatchesAsync(long standingId)
+        {
+            try
+            {
+                var matches = await _matchRepository.GetAllByFK("StandingId", standingId);
+
+                return matches.ToList();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error getting matches: {0}, Inner Exception: {1}", ex, ex.InnerException);
+
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<long> GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId)
         {
             try
             {
@@ -41,6 +66,8 @@ namespace Application.Services
 
                 await _matchRepository.Add(match);
                 await _matchRepository.Save();
+
+                return match.Id;
             }
             catch (Exception ex)
             {
@@ -81,8 +108,24 @@ namespace Application.Services
                 {
                     for (int k = j + 1; k < groups[i].Count; k++)
                     {
-                        await GenerateMatch(groups[i][j], groups[i][k], i, j, standing.Id);
+                        await GenerateMatch(groups[i][j], groups[i][k], j+1, k, standing.Id);
                     }
+                }
+            }
+        }
+
+        public async Task SeedBracket(long tournamentId, List<Team> playOffTeams)
+        {
+            // Get standings and teams
+            var standings = await _standingService.GetStandingsAsync(tournamentId);
+            var bracket = standings.FirstOrDefault(s => s.Type is StandingType.Bracket);
+          
+            // Generate matches
+            for (int i = 0; i < playOffTeams.Count; i++)
+            {
+                for (int j = i + 1; j < playOffTeams.Count; j++)
+                {
+                    await GenerateMatch(playOffTeams[i], playOffTeams[j], i+1, j, bracket.Id);
                 }
             }
         }
