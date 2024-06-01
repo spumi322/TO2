@@ -17,18 +17,21 @@ namespace Application.Services
     {
         private readonly IStandingService _standingService;
         private readonly ITournamentService _tournamentService;
+        private readonly ITeamService _teamService;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<MatchService> _logger;
 
         public MatchService(IStandingService standingService,
                             ITournamentService tournamentService,
+                            ITeamService teamService,
                             IGenericRepository<Match> matchRepository,
                             IMapper mapper,
                             ILogger<MatchService> logger)
         {
             _standingService = standingService;
             _tournamentService = tournamentService;
+            _teamService = teamService;
             _matchRepository = matchRepository;
             _mapper = mapper;
             _logger = logger;
@@ -50,6 +53,32 @@ namespace Application.Services
             catch (Exception ex)
             {
                 _logger.LogError("Error getting matches: {0}, Inner Exception: {1}", ex, ex.InnerException);
+
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<Team>> GetTeamsAsync(long standingId)
+        {
+            try
+            {
+                var standing = await _matchRepository.GetAllByFK("StandingId", standingId);
+                var teamsA = standing.Select(m => m.TeamAId).ToList();
+                var teamsB = standing.Select(m => m.TeamBId).ToList();
+                var teamsById = teamsA.Concat(teamsB).Distinct().Order().ToList();
+                var teams = new List<Team>();
+
+                foreach (var teamId in teamsById)
+                {
+                    var response = await _teamService.GetTeamAsync(teamId);
+                    teams.Add(_mapper.Map<Team>(response));
+                }
+
+                return teams;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error getting teams: {0}, Inner Exception: {1}", ex, ex.InnerException);  
 
                 throw new Exception(ex.Message);
             }

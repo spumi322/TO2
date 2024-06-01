@@ -16,13 +16,13 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let i of [].constructor(group.maxTeams); let rank = index">
+            <tr *ngFor="let team of group.teams; let rank = index">
               <td>
                 <span class="team-rank">{{ rank + 1 }}</span>
               </td>
               <td>
                 <div class="team-info">
-                  <span class="team-name">TBD</span>
+                  <span class="team-name">{{ team.name }}</span>
                 </div>
               </td>
               <td>0-0-0</td>

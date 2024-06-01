@@ -60,7 +60,7 @@
     </p-tabPanel>
 
     <p-tabPanel header="Group Stage" *ngIf="tournament.format === 2">
-      <app-standing-group [groups]="groups"></app-standing-group>
+      <app-standing-group [tournamentId]="tournament.id"></app-standing-group>
     </p-tabPanel>
 
     <p-tabPanel header="Bracket" *ngIf="tournament.format === 1 || tournament.format === 2">

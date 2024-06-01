@@ -1,4 +1,5 @@
 import { Match } from "./match";
+import { Team } from "./team";
 
 export interface Standing {
   id: number;
@@ -9,6 +10,7 @@ export interface Standing {
   endDate: Date;
   maxTeams: number;
   matches: Match[];
+  teams: Team[];
 }
 
 export enum StandingType {
