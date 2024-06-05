@@ -27,7 +27,7 @@ export class GroupComponent implements OnInit {
           const groupDetails$ = groups.map(group =>
             this.matchService.getMatchesByStandingId(group.id).pipe(
               switchMap(matches =>
-                this.matchService.getTeamsByStandingId(group.id).pipe(
+                this.standingService.getTeamsByStandingId(group.id).pipe(
                   map(teams => ({ ...group, matches, teams }))
                 )
               )

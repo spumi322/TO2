@@ -6,8 +6,8 @@ export interface Match {
   standingId: number;
   round: number;
   seed: number;
-  teamA: Team;
-  teamB: Team;
+  teamAId: number;
+  teamBId: number;
   bestOf: BestOf;
   games: Game[];
 }

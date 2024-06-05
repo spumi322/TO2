@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Standing } from '../../models/standing';
 import { Observable, map } from 'rxjs';
+import { Team } from '../../models/team';
 
 @Injectable({
   providedIn: 'root'
@@ -27,5 +28,7 @@ export class StandingService {
     );
   }
 
-
+  getTeamsByStandingId(standingId: number): Observable<Team[]> {
+    return this.http.get<Team[]>(`${this.apiUrl}/${standingId}/teams`);
+  }
 }

@@ -21,6 +21,8 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { DropdownModule } from 'primeng/dropdown';
 import { DialogModule } from 'primeng/dialog';
 import { ListboxModule } from 'primeng/listbox';
+import { MatchesComponent } from './components/matches/matches.component';
+import { TableModule } from 'primeng/table';
 
 
 
@@ -34,6 +36,7 @@ import { ListboxModule } from 'primeng/listbox';
     BracketComponent,
     NavbarComponent,
     CreateTournamentComponent,
+    MatchesComponent,
   ],
   imports: [
     BrowserModule,
@@ -52,6 +55,7 @@ import { ListboxModule } from 'primeng/listbox';
     FormsModule,
     ReactiveFormsModule,
     ListboxModule,
+    TableModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

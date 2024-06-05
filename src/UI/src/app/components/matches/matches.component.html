@@ -1,0 +1,14 @@
+<table class="group-matches">
+  <thead>
+    <tr>
+      <th>Team A vs Team B</th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let match of matches">
+      <td>{{ getTeamName(match.teamAId) }} vs {{ getTeamName(match.teamBId) }}</td>
+      <td>0 : 0</td>
+    </tr>
+  </tbody>
+</table>

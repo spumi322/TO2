@@ -17,7 +17,7 @@ namespace TO2.Controllers
         }
 
         // GET match by id
-        [HttpGet("{id}")]
+        [HttpGet("match/{id}")]
         public async Task<IActionResult> GetMatch(long id)
         {
             return Ok(await _matchService.GetMatchAsync(id));
@@ -38,7 +38,7 @@ namespace TO2.Controllers
         }
 
         // GET games by matchId
-        [HttpGet("{matchId}/games")]
+        [HttpGet("games/{matchId}")]
         public async Task<IActionResult> GetGames(long matchId)
         {
             return Ok(await _gameService.GetAllGamesByMatch(matchId));

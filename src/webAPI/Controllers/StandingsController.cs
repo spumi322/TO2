@@ -26,12 +26,6 @@ namespace TO2.Controllers
             return Ok(await _standingService.GetStandingsAsync(tournamentId));
         }
 
-        [HttpGet("{standingId}/matches")]
-        public async Task<IActionResult> GetMatches(long standingId)
-        {
-            return Ok(await _matchService.GetMatchesAsync(standingId));
-        }
-
         [HttpGet("{standingId}/teams")]
         public async Task<IActionResult> GetTeams(long standingId)
         {
