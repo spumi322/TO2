@@ -78,7 +78,7 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting teams: {0}, Inner Exception: {1}", ex, ex.InnerException);  
+                _logger.LogError("Error getting teams: {0}, Inner Exception: {1}", ex, ex.InnerException);
 
                 throw new Exception(ex.Message);
             }

@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -15,11 +16,16 @@ namespace Application.Services
     {
         private readonly IGenericRepository<Game> _gameRepository;
         private readonly IMatchService _matchService;
+        private readonly IMapper _mapper;
+        private readonly ILogger<GameService> _logger;
 
-        public GameService(IGenericRepository<Game> gameRepository, IMatchService matchService)
+
+        public GameService(IGenericRepository<Game> gameRepository, IMatchService matchService, IMapper mapper, ILogger<GameService> logger)
         {
             _gameRepository = gameRepository;
             _matchService = matchService;
+            _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task GenerateGames(long matchId)
@@ -42,10 +48,53 @@ namespace Application.Services
             }
         }
 
-        public async Task SetGameScore(long gameId, long? teamAId, long? teamBId, BestOf bestOf, TimeSpan? duration)
+        public async Task<Game> GetGameAsync(long gameId)
+        {
+            var game = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
+
+            return game;
+        }
+
+        public async Task<List<Game>> GetAllGamesByMatch(long matchId)
+        {
+            var games = await _gameRepository.GetAllByFK("MatchId", matchId) ?? throw new Exception($"Games for {matchId} was not found");
+
+            return games.ToList();
+        }
+
+        public async Task SetGameResult(long gameId, int? TeamAScore, int? TeamBScore, TimeSpan? duration, long winnerId)
         {
             var existingGame = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
-            var matchesToWin = bestOf switch
+            var teamAId = existingGame.TeamAId;
+            var teamBId = existingGame.TeamBId;
+
+            try
+            {
+                if(TeamAScore.HasValue || TeamBScore.HasValue || duration is not null)
+                {
+                    existingGame.TeamAScore = TeamAScore;
+                    existingGame.TeamBScore = TeamBScore;
+                    existingGame.Duration = duration;
+                }
+
+                existingGame.WinnerId = winnerId == teamAId ? teamAId : teamBId;
+
+                await _gameRepository.Update(existingGame);
+                await _gameRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error setting game result: {0}, Inner Exception: {1}", ex, ex.InnerException);
+
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<long?> DetermineMatchWinner(long matchId)
+        {
+            var match = await _matchService.GetMatchAsync(matchId) ?? throw new Exception("Match not found");
+
+            var gamesToWin = match.BestOf switch
             {
                 BestOf.Bo1 => 1,
                 BestOf.Bo3 => 2,
@@ -53,38 +102,19 @@ namespace Application.Services
                 _ => 1
             };
 
-            if (teamAId.HasValue)
+            try
             {
-                existingGame.TeamAScore++;
+                var games = await _gameRepository.GetAllByFK("matchId", matchId);
 
-               if(duration.HasValue)
-               {
-                    existingGame.Duration = duration;
-               }
+                return games.GroupBy(g => g.WinnerId).Where(g => g.Count() >= gamesToWin).FirstOrDefault().Key ?? null;
 
-                if (existingGame.TeamAScore == matchesToWin)
-                {
-                    existingGame.WinnerId = teamAId;
-                }
             }
-            else
-            if (teamBId.HasValue)
+            catch (Exception ex)
             {
-                existingGame.TeamBScore++;
+                _logger.LogError("Error determining match winner: {0}, Inner Exception: {1}", ex, ex.InnerException);
 
-                if (duration.HasValue)
-                {
-                    existingGame.Duration = duration;
-                }
-
-                if (existingGame.TeamBScore == matchesToWin)
-                {
-                    existingGame.WinnerId = teamBId;
-                }
+                throw new Exception(ex.Message);
             }
-
-            await _gameRepository.Update(existingGame);
-            await _gameRepository.Save();
         }
     }
 }

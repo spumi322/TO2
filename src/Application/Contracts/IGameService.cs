@@ -1,4 +1,5 @@
 ﻿using Domain.AggregateRoots;
+using Domain.Entities;
 using Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,9 @@ namespace Application.Contracts
     public interface IGameService
     {
         Task GenerateGames(long matchId);
-        Task SetGameScore(long gameId, long? teamAId, long? teamBId, BestOf bestOf, TimeSpan? duration);
+        Task<Game> GetGameAsync(long gameId);
+        Task<List<Game>> GetAllGamesByMatch(long matchId);
+        Task SetGameResult(long gameId, int? TeamAScore, int? TeamBScore, TimeSpan? duration, long teamId);
+        Task<long?> DetermineMatchWinner(long matchId);
     }
 }
