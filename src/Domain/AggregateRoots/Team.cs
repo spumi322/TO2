@@ -18,6 +18,11 @@ namespace Domain.AggregateRoots
         {
         }
 
+        public Team(string name)
+        {
+            Name = name;
+        }
+
         public string Name { get; private set; }
 
         public IReadOnlyList<Player> Players => _players;
