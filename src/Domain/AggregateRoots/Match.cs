@@ -34,6 +34,10 @@ namespace Domain.AggregateRoots
 
         public long TeamBId { get; set; }
 
+        public long? WinnerId { get; set; }
+
+        public long? LoserId { get; set; }
+
         public BestOf BestOf { get; set; }
 
         public IReadOnlyList<Game> Games => _games;

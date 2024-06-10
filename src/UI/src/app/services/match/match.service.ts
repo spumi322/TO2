@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Match } from '../../models/match';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { Team } from '../../models/team';
 import { Game } from '../../models/game';
+import { Time } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -19,5 +20,12 @@ export class MatchService {
 
   getAllGamesByMatch(matchId: number): Observable<Game[]> {
     return this.http.get<Game[]>(`${this.apiUrl}/games/${matchId}`);
+  }
+
+  setGameResult(gameId: number, teamAScore: number, teamBScore: number, duration: Time, winnerId: number): Observable<number | null> {
+    return this.http.put<{ winnerId: number | null }>(`${this.apiUrl}/${gameId}/result`, { teamAScore, teamBScore, duration, winnerId })
+      .pipe(
+        map(response => response.winnerId)
+      );
   }
 }

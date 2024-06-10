@@ -4,6 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class GameService {
+  private apiUrl = 'http://localhost:5161/api/games';
 
   constructor() { }
 }

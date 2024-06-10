@@ -15,14 +15,20 @@ namespace Application.Services
     public class GameService : IGameService
     {
         private readonly IGenericRepository<Game> _gameRepository;
+        private readonly IGenericRepository<Match> _matchRepository;
         private readonly IMatchService _matchService;
         private readonly IMapper _mapper;
         private readonly ILogger<GameService> _logger;
 
 
-        public GameService(IGenericRepository<Game> gameRepository, IMatchService matchService, IMapper mapper, ILogger<GameService> logger)
+        public GameService(IGenericRepository<Game> gameRepository,
+                           IGenericRepository<Match> matchRepository,
+                           IMatchService matchService,
+                           IMapper mapper,
+                           ILogger<GameService> logger)
         {
             _gameRepository = gameRepository;
+            _matchRepository = matchRepository;
             _matchService = matchService;
             _mapper = mapper;
             _logger = logger;
@@ -62,9 +68,14 @@ namespace Application.Services
             return games.ToList();
         }
 
-        public async Task SetGameResult(long gameId, int? TeamAScore, int? TeamBScore, TimeSpan? duration, long winnerId)
+        public async Task<long?> SetGameResult(long gameId, int? TeamAScore, int? TeamBScore, TimeSpan? duration, long winnerId)
         {
             var existingGame = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
+            var match = await _matchService.GetMatchAsync(existingGame.MatchId) ?? throw new Exception("Match not found");
+
+            if (match.WinnerId.HasValue)
+                throw new Exception("Match already has a winner");
+
             var teamAId = existingGame.TeamAId;
             var teamBId = existingGame.TeamBId;
 
@@ -77,10 +88,14 @@ namespace Application.Services
                     existingGame.Duration = duration;
                 }
 
-                existingGame.WinnerId = winnerId == teamAId ? teamAId : teamBId;
+                existingGame.WinnerId = winnerId == teamAId ? teamAId 
+                                      : winnerId == teamBId ? teamBId
+                                      : throw new Exception("Invalid winner id");
 
                 await _gameRepository.Update(existingGame);
                 await _gameRepository.Save();
+
+                return await DetermineMatchWinner(match.Id);
             }
             catch (Exception ex)
             {
@@ -104,10 +119,27 @@ namespace Application.Services
 
             try
             {
-                var games = await _gameRepository.GetAllByFK("matchId", matchId);
+                var games = await _gameRepository.GetAllByFK("MatchId", matchId);
 
-                return games.GroupBy(g => g.WinnerId).Where(g => g.Count() >= gamesToWin).FirstOrDefault().Key ?? null;
+                var winner = games.GroupBy(g => g.WinnerId)
+                                  .Where(g => g.Count() == gamesToWin)
+                                  .Select(g => g.Key)
+                                  .FirstOrDefault();
 
+                if (winner.HasValue)
+                {
+                    var loser = winner.Value == match.TeamAId ? match.TeamBId : match.TeamAId;
+
+                    match.WinnerId = winner.Value;
+                    match.LoserId = loser;
+                    
+                    await _matchRepository.Update(match);
+                    await _matchRepository.Save();
+
+                    return winner.Value;
+                }
+
+                return null;
             }
             catch (Exception ex)
             {
@@ -116,5 +148,6 @@ namespace Application.Services
                 throw new Exception(ex.Message);
             }
         }
+
     }
 }
