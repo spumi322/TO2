@@ -1,5 +1,5 @@
 import { Game } from "./game";
-import { Team } from "./team";
+import { MatchResult } from "./matchresult";
 
 export interface Match {
   id: number;
@@ -8,8 +8,11 @@ export interface Match {
   seed: number;
   teamAId: number;
   teamBId: number;
+  winnerId: number;
+  loserId: number;
   bestOf: BestOf;
   games: Game[];
+  result: MatchResult;
 }
 
 export enum BestOf {

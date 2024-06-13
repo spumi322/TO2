@@ -14,7 +14,7 @@ namespace Application.Contracts
         Task GenerateGames(long matchId);
         Task<Game> GetGameAsync(long gameId);
         Task<List<Game>> GetAllGamesByMatch(long matchId);
-        Task<long?> SetGameResult(long gameId, int? TeamAScore, int? TeamBScore, TimeSpan? duration, long teamId);
+        Task<long?> SetGameResult(long gameId, long winnerId, int? TeamAScore, int? TeamBScore);
         Task<long?> DetermineMatchWinner(long matchId);
     }
 }

@@ -68,7 +68,7 @@ namespace Application.Services
             return games.ToList();
         }
 
-        public async Task<long?> SetGameResult(long gameId, int? TeamAScore, int? TeamBScore, TimeSpan? duration, long winnerId)
+        public async Task<long?> SetGameResult(long gameId, long winnerId, int? TeamAScore, int? TeamBScore)
         {
             var existingGame = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
             var match = await _matchService.GetMatchAsync(existingGame.MatchId) ?? throw new Exception("Match not found");
@@ -81,11 +81,10 @@ namespace Application.Services
 
             try
             {
-                if(TeamAScore.HasValue || TeamBScore.HasValue || duration is not null)
+                if(TeamAScore.HasValue || TeamBScore.HasValue)
                 {
                     existingGame.TeamAScore = TeamAScore;
                     existingGame.TeamBScore = TeamBScore;
-                    existingGame.Duration = duration;
                 }
 
                 existingGame.WinnerId = winnerId == teamAId ? teamAId 

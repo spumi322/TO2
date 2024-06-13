@@ -46,11 +46,11 @@ namespace TO2.Controllers
 
         // PUT game result
         [HttpPut("{gameId}/result")]
-        public async Task<IActionResult> SetGameResult(long gameId, int? TeamAScore, int? TeamBScore, TimeSpan? duration, long winnerId)
+        public async Task<IActionResult> SetGameResult(long gameId, long winnerId, [FromQuery] int? TeamAScore, [FromQuery] int? TeamBScore)
         {
-            await _gameService.SetGameResult(gameId, TeamAScore, TeamBScore, duration, winnerId);
+            var result = await _gameService.SetGameResult(gameId, winnerId, TeamAScore, TeamBScore);
 
-            return Ok();
+            return Ok(result);
         }
     }
 }

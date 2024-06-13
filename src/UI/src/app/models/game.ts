@@ -1,10 +1,9 @@
-import { Team } from "./team";
-
 export interface Game {
   id: number;
   matchId: number;
-  winner: Team;
+  teamAId: number;
   teamAScore: number;
+  teamBId: number;
   teamBScore: number;
-  duration: number;
+  winnerId: number;
 }
