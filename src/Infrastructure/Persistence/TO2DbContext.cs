@@ -34,7 +34,7 @@ namespace Infrastructure.Persistence
         {
             base.OnConfiguring(optionsBuilder);
 
-            optionsBuilder.UseSqlite("Data Source=E:\\Code\\repos\\src\\Infrastructure\\app.db");
+            optionsBuilder.UseSqlite("Data Source=E:\\Code\\TO2\\src\\Infrastructure\\app.db");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

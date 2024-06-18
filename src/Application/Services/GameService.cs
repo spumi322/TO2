@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.DTOs.Game;
 using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -17,20 +18,17 @@ namespace Application.Services
         private readonly IGenericRepository<Game> _gameRepository;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IMatchService _matchService;
-        private readonly IMapper _mapper;
         private readonly ILogger<GameService> _logger;
 
 
         public GameService(IGenericRepository<Game> gameRepository,
                            IGenericRepository<Match> matchRepository,
                            IMatchService matchService,
-                           IMapper mapper,
                            ILogger<GameService> logger)
         {
             _gameRepository = gameRepository;
             _matchRepository = matchRepository;
             _matchService = matchService;
-            _mapper = mapper;
             _logger = logger;
         }
 
@@ -68,7 +66,7 @@ namespace Application.Services
             return games.ToList();
         }
 
-        public async Task<long?> SetGameResult(long gameId, long winnerId, int? TeamAScore, int? TeamBScore)
+        public async Task SetGameResult(long gameId, SetGameResultDTO request)
         {
             var existingGame = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
             var match = await _matchService.GetMatchAsync(existingGame.MatchId) ?? throw new Exception("Match not found");
@@ -81,20 +79,20 @@ namespace Application.Services
 
             try
             {
-                if(TeamAScore.HasValue || TeamBScore.HasValue)
+                if(request.TeamAScore.HasValue || request.TeamBScore.HasValue)
                 {
-                    existingGame.TeamAScore = TeamAScore;
-                    existingGame.TeamBScore = TeamBScore;
+                    existingGame.TeamAScore = request.TeamAScore;
+                    existingGame.TeamBScore = request.TeamBScore;
                 }
 
-                existingGame.WinnerId = winnerId == teamAId ? teamAId 
-                                      : winnerId == teamBId ? teamBId
+                existingGame.WinnerId = request.WinnerId == teamAId ? teamAId 
+                                      : request.WinnerId == teamBId ? teamBId
                                       : throw new Exception("Invalid winner id");
 
                 await _gameRepository.Update(existingGame);
                 await _gameRepository.Save();
 
-                return await DetermineMatchWinner(match.Id);
+                await DetermineMatchWinner(match.Id);
             }
             catch (Exception ex)
             {
@@ -104,7 +102,7 @@ namespace Application.Services
             }
         }
 
-        public async Task<long?> DetermineMatchWinner(long matchId)
+        public async Task DetermineMatchWinner(long matchId)
         {
             var match = await _matchService.GetMatchAsync(matchId) ?? throw new Exception("Match not found");
 
@@ -134,11 +132,7 @@ namespace Application.Services
                     
                     await _matchRepository.Update(match);
                     await _matchRepository.Save();
-
-                    return winner.Value;
                 }
-
-                return null;
             }
             catch (Exception ex)
             {

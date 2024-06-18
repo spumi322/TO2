@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.DTOs.Game;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TO2.Controllers
@@ -46,11 +47,11 @@ namespace TO2.Controllers
 
         // PUT game result
         [HttpPut("{gameId}/result")]
-        public async Task<IActionResult> SetGameResult(long gameId, long winnerId, [FromQuery] int? TeamAScore, [FromQuery] int? TeamBScore)
+        public async Task<IActionResult> SetGameResult(long gameId, SetGameResultDTO request)
         {
-            var result = await _gameService.SetGameResult(gameId, winnerId, TeamAScore, TeamBScore);
+            await _gameService.SetGameResult(gameId, request);
 
-            return Ok(result);
+            return Ok();
         }
     }
 }
