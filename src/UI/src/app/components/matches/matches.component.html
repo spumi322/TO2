@@ -9,10 +9,10 @@
     <tr *ngFor="let match of matches">
       <td>{{ getTeamName(match.teamAId) }} vs {{ getTeamName(match.teamBId) }}</td>
       <td>
-        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.result.teamAId)">+</button>
+        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.teamAId)">+</button>
         {{ match.result.teamAWins }} -
         {{ match.result.teamBWins }}
-        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.result.teamBId)">+</button>
+        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.teamBId)">+</button>
       </td>
     </tr>
   </tbody>

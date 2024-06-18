@@ -5,6 +5,8 @@ import { BehaviorSubject, Observable, map, tap } from 'rxjs';
 import { Team } from '../../models/team';
 import { Game } from '../../models/game';
 import { Time } from '@angular/common';
+import { MatchResult } from '../../models/matchresult';
+import { Gameresult } from '../../models/gameresult';
 
 @Injectable({
   providedIn: 'root'
@@ -25,18 +27,7 @@ export class MatchService {
     return this.http.get<Game[]>(`${this.apiUrl}/games/${matchId}`);
   }
 
-  setGameResult(gameId: number, teamAScore: number, teamBScore: number, winnerId: number): Observable<number | null> {
-    return this.http.put<{ winnerId: number | null }>(`${this.apiUrl}/${gameId}/result`, { teamAScore, teamBScore, winnerId })
-      .pipe(
-        map(response => response.winnerId)
-      );
-  }
-
-  setGameResultOnlyWinner(gameid: number, winnerId: number): Observable<number | null> {
-    return this.http.put<{ winnerId: number | null }>(`${this.apiUrl}/${gameid}/result?winnerId=${winnerId}`, {})
-      .pipe(
-        map(response => response.winnerId),
-        tap(() => this.matchUpdated.next(null))
-      );
+  setGameResult(gameId: number, request: Gameresult): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${gameId}/result`, request);
   }
 }

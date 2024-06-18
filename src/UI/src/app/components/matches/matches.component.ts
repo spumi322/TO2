@@ -14,23 +14,11 @@ import { Subscription } from 'rxjs';
 export class MatchesComponent implements OnInit {
   @Input() matches: Match[] = [];
   @Input() teams: Team[] = [];
-  private matchUpdateSub!: Subscription;
-
 
   constructor(private matchService: MatchService) { }
 
   ngOnInit() {
     this.loadAllMatchScores();
-
-    this.matchUpdateSub = this.matchService.matchUpdated$.subscribe(() => {
-      this.loadAllMatchScores();
-    });
-  }
-
-  ngOnDestroy() {
-    if (this.matchUpdateSub) {
-      this.matchUpdateSub.unsubscribe();
-    }
   }
 
   getTeamName(teamId: number): string {
@@ -64,16 +52,19 @@ export class MatchesComponent implements OnInit {
     return { teamAId, teamAWins, teamBId, teamBWins };
   }
 
-  updateMatchScore(matchId: number, gameWinnerId: number): void {
+  updateMatchScore(matchId: number, gameWinnerId: number, teamAScore?: number, teamBScore?: number): void {
     const match = this.matches.find(m => m.id === matchId);
     if (match?.winnerId !== null || match?.loserId !== null) {
       return;
     }
 
+    const gameResult = { winnerId: gameWinnerId, teamAScore, teamBScore };
+
     this.matchService.getAllGamesByMatch(matchId).subscribe(games => {
       const gameToUpdate = games.find(game => !game.winnerId || game.winnerId === undefined);
       if (gameToUpdate) {
-        this.matchService.setGameResultOnlyWinner(gameToUpdate.id, gameWinnerId).subscribe(() => {
+        this.matchService.setGameResult(gameToUpdate.id, gameResult).subscribe(() => {
+          this.loadAllMatchScores();
         });
       }
     });
