@@ -20,7 +20,7 @@ namespace Domain.AggregateRoots
         public Match(Team teamA, Team teamB, BestOf bestOf)
         {
             TeamAId = teamA.Id;
-            TeamAId = teamB.Id;
+            TeamBId = teamB.Id;
             BestOf = bestOf;
         }
 

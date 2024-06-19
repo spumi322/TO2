@@ -49,3 +49,13 @@
 .p-card-header h3 {
   margin: 0; /* Remove default margin from h3 */
 }
+
+.team-advance {
+  background-color: green;
+  color: white;
+}
+
+.team-eliminate {
+  background-color: red;
+  color: white;
+}

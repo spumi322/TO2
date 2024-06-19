@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Match } from '../../models/match';
 import { Team } from '../../models/team';
 import { MatchService } from '../../services/match/match.service';
@@ -13,6 +13,7 @@ import { Game } from '../../models/game';
 export class MatchesComponent implements OnInit {
   @Input() matches: Match[] = [];
   @Input() teams: Team[] = [];
+  @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
 
   constructor(private matchService: MatchService) { }
 
@@ -66,6 +67,7 @@ export class MatchesComponent implements OnInit {
           if (result) {
             match.winnerId = result.winnerId;
             match.loserId = result.loserId;
+            this.matchFinished.emit(result);
           }
           this.matchService.getAllGamesByMatch(matchId).subscribe(updatedGames => {
             match.result = this.getMatchResults(updatedGames);

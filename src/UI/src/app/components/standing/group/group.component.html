@@ -11,27 +11,21 @@
             <tr>
               <th>Rank</th>
               <th>Team</th>
-              <th>W-L-D</th>
+              <th>W-L</th>
               <th>Points</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let team of group.teams; let rank = index">
-              <td>
-                <span class="team-rank">{{ rank + 1 }}</span>
-              </td>
-              <td>
-                <div class="team-info">
-                  <span class="team-name">{{ team.name }}</span>
-                </div>
-              </td>
-              <td>0-0-0</td>
-              <td>0</td>
+            <tr *ngFor="let team of group.teams; let rank = index" [ngClass]="getTeamRowClass(rank)">
+              <td><span class="team-rank">{{ rank + 1 }}</span></td>
+              <td><div class="team-info"><span class="team-name">{{ team.name }}</span></div></td>
+              <td>{{ team.wins }}-{{ team.losses }}</td>
+              <td>{{ team.points }}</td>
             </tr>
           </tbody>
         </table>
         <h3>Matches</h3>
-        <app-matches [teams]="group.teams" [matches]="group.matches"></app-matches>
+        <app-matches [teams]="group.teams" [matches]="group.matches" (matchFinished)="onGameResultUpdated($event)"></app-matches>
       </div>
     </p-card>
   </div>
