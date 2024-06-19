@@ -101,13 +101,6 @@ export class GroupComponent implements OnInit {
       a.losses - b.losses
     );
   }
-
-  getTeamRowClass(rank: number): string {
-    if (this.tournament && this.tournament.teamsPerBracket) {
-      return rank < this.tournament.teamsPerBracket ? 'team-advance' : 'team-eliminate';
-    }
-    return '';
-  }
 }
 
 

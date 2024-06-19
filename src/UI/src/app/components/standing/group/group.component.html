@@ -16,9 +16,15 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let team of group.teams; let rank = index" [ngClass]="getTeamRowClass(rank)">
-              <td><span class="team-rank">{{ rank + 1 }}</span></td>
-              <td><div class="team-info"><span class="team-name">{{ team.name }}</span></div></td>
+            <tr *ngFor="let team of group.teams; let rank = index">
+              <td>
+                <span class="team-rank">{{ rank + 1 }}</span>
+              </td>
+              <td>
+                <div class="team-info">
+                  <span class="team-name">{{ team.name }}</span>
+                </div>
+              </td>
               <td>{{ team.wins }}-{{ team.losses }}</td>
               <td>{{ team.points }}</td>
             </tr>

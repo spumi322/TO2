@@ -23,8 +23,8 @@
   }
 
   .group-standings th {
-    background-color: var(--primary-color); /* Use the primary color from your PrimeNG theme */
-    color: var(--primary-color-text); /* Ensure text color is readable */
+    background-color: var(--primary-color);
+    color: var(--primary-color-text);
   }
 
 .team-info {
@@ -43,19 +43,9 @@
 }
 
 .p-card {
-  margin-bottom: 16px; /* Add spacing between cards */
+  margin-bottom: 16px;
 }
 
 .p-card-header h3 {
-  margin: 0; /* Remove default margin from h3 */
-}
-
-.team-advance {
-  background-color: green;
-  color: white;
-}
-
-.team-eliminate {
-  background-color: red;
-  color: white;
+  margin: 0;
 }
