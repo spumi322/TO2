@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Game;
+using Application.DTOs.Match;
 using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -66,7 +68,7 @@ namespace Application.Services
             return games.ToList();
         }
 
-        public async Task SetGameResult(long gameId, SetGameResultDTO request)
+        public async Task<MatchResultDTO?> SetGameResult(long gameId, SetGameResultDTO request)
         {
             var existingGame = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
             var match = await _matchService.GetMatchAsync(existingGame.MatchId) ?? throw new Exception("Match not found");
@@ -92,7 +94,9 @@ namespace Application.Services
                 await _gameRepository.Update(existingGame);
                 await _gameRepository.Save();
 
-                await DetermineMatchWinner(match.Id);
+                var result = await DetermineMatchWinner(match.Id);
+
+                return result is not null ? new MatchResultDTO(result.WinnerId, result.LoserId) : null;
             }
             catch (Exception ex)
             {
@@ -102,7 +106,7 @@ namespace Application.Services
             }
         }
 
-        public async Task DetermineMatchWinner(long matchId)
+        public async Task<MatchResult?> DetermineMatchWinner(long matchId)
         {
             var match = await _matchService.GetMatchAsync(matchId) ?? throw new Exception("Match not found");
 
@@ -132,7 +136,11 @@ namespace Application.Services
                     
                     await _matchRepository.Update(match);
                     await _matchRepository.Save();
+
+                    return new MatchResult(winner.Value, loser);
                 }
+
+                return null;
             }
             catch (Exception ex)
             {

@@ -1,10 +1,9 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit } from '@angular/core';
 import { Match } from '../../models/match';
 import { Team } from '../../models/team';
 import { MatchService } from '../../services/match/match.service';
-import { MatchResult } from '../../models/matchresult';
+import { MatchFinishedIds, MatchResult } from '../../models/matchresult';
 import { Game } from '../../models/game';
-import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-matches',
@@ -54,17 +53,23 @@ export class MatchesComponent implements OnInit {
 
   updateMatchScore(matchId: number, gameWinnerId: number, teamAScore?: number, teamBScore?: number): void {
     const match = this.matches.find(m => m.id === matchId);
-    if (match?.winnerId !== null || match?.loserId !== null) {
+    if (!match) {
       return;
     }
 
     const gameResult = { winnerId: gameWinnerId, teamAScore, teamBScore };
 
     this.matchService.getAllGamesByMatch(matchId).subscribe(games => {
-      const gameToUpdate = games.find(game => !game.winnerId || game.winnerId === undefined);
+      const gameToUpdate = games.find(game => !game.winnerId);
       if (gameToUpdate) {
-        this.matchService.setGameResult(gameToUpdate.id, gameResult).subscribe(() => {
-          this.loadAllMatchScores();
+        this.matchService.setGameResult(gameToUpdate.id, gameResult).subscribe((result: MatchFinishedIds | null) => {
+          if (result) {
+            match.winnerId = result.winnerId;
+            match.loserId = result.loserId;
+          }
+          this.matchService.getAllGamesByMatch(matchId).subscribe(updatedGames => {
+            match.result = this.getMatchResults(updatedGames);
+          });
         });
       }
     });

@@ -1,18 +1,24 @@
 <table class="group-matches">
   <thead>
     <tr>
-      <th>Team A vs Team B</th>
+      <th>Team A</th>
       <th>Score</th>
+      <th>Team B</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let match of matches">
-      <td>{{ getTeamName(match.teamAId) }} vs {{ getTeamName(match.teamBId) }}</td>
+      <td [ngClass]="{'winner': match.winnerId === match.teamAId, 'loser': match.loserId === match.teamAId}">
+        {{ getTeamName(match.teamAId) }}
+      </td>
       <td>
-        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.teamAId)">+</button>
+        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.teamAId, match.result.teamAWins + 1, match.result.teamBWins)">+</button>
         {{ match.result.teamAWins }} -
         {{ match.result.teamBWins }}
-        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.teamBId)">+</button>
+        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.teamBId, match.result.teamAWins, match.result.teamBWins + 1)">+</button>
+      </td>
+      <td [ngClass]="{'winner': match.winnerId === match.teamBId, 'loser': match.loserId === match.teamBId}">
+        {{ getTeamName(match.teamBId) }}
       </td>
     </tr>
   </tbody>

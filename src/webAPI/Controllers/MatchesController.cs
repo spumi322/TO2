@@ -49,9 +49,9 @@ namespace TO2.Controllers
         [HttpPut("{gameId}/result")]
         public async Task<IActionResult> SetGameResult(long gameId, SetGameResultDTO request)
         {
-            await _gameService.SetGameResult(gameId, request);
+            var response = await _gameService.SetGameResult(gameId, request);
 
-            return Ok();
+            return response is not null ? Ok(response) : NoContent();
         }
     }
 }

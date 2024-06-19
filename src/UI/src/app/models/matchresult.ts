@@ -4,3 +4,8 @@ export interface MatchResult {
   teamBId: number;
   teamBWins: number;
 }
+
+export interface MatchFinishedIds {
+  winnerId: number;
+  loserId: number;
+}

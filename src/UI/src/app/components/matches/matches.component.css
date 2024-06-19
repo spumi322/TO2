@@ -18,3 +18,13 @@
   text-align: center;
   margin-top: 20px;
 }
+
+.winner {
+  background-color: green;
+  color: white;
+}
+
+.loser {
+  background-color: red;
+  color: white;
+}

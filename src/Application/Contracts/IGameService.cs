@@ -1,4 +1,5 @@
 ﻿using Application.DTOs.Game;
+using Application.DTOs.Match;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -15,7 +16,7 @@ namespace Application.Contracts
         Task GenerateGames(long matchId);
         Task<Game> GetGameAsync(long gameId);
         Task<List<Game>> GetAllGamesByMatch(long matchId);
-        Task SetGameResult(long gameId, SetGameResultDTO request);
-        Task DetermineMatchWinner(long matchId);
+        Task<MatchResultDTO?> SetGameResult(long gameId, SetGameResultDTO request);
+        Task<MatchResult?> DetermineMatchWinner(long matchId);
     }
 }
