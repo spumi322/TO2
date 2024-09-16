@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Tournament } from '../../models/tournament';
-import { Observable, forkJoin, map, switchMap } from 'rxjs';
+import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { Team } from '../../models/team';
 
 @Injectable({
@@ -48,10 +48,18 @@ export class TournamentService {
       switchMap(tournaments => {
         const tournamentRequests = tournaments.map(tournament =>
           this.getAllTeamsByTournamentId(tournament.id).pipe(
-            map(teams => ({ ...tournament, teams }))
+            map(teams => ({ ...tournament, teams })),
+            catchError(error => {
+              console.error(`Error fetching teams for tournament ${tournament.id}:`, error);
+              return of({ ...tournament, teams: [] });
+            })
           )
         );
         return forkJoin(tournamentRequests);
+      }),
+      catchError(error => {
+        console.error('Error fetching tournaments:', error);
+        return of([]);
       })
     );
   }

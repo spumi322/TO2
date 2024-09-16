@@ -42,10 +42,13 @@ export class GroupComponent implements OnInit {
             )
           );
           return forkJoin(groupDetails$);
+        }),
+        map(groups => {
+          groups.forEach(group => this.calculateStandings(group));
+          return groups;
         })
       );
     }
-
     this.groups$.subscribe(groups => {
       this.groups = groups;
     });
@@ -72,6 +75,8 @@ export class GroupComponent implements OnInit {
   }
 
   calculateStandings(group: Standing) {
+    if (!group.teams || !group.matches) return;
+
     group.teams.forEach(team => {
       team.wins = 0;
       team.losses = 0;
@@ -79,17 +84,18 @@ export class GroupComponent implements OnInit {
     });
 
     group.matches.forEach(match => {
+      if (!match.winnerId) return;
+
       const teamA = group.teams.find(t => t.id === match.teamAId);
       const teamB = group.teams.find(t => t.id === match.teamBId);
-
       if (teamA && teamB) {
         if (match.winnerId === teamA.id) {
           teamA.wins += 1;
-          teamA.points += 3; 
+          teamA.points += 3;
           teamB.losses += 1;
         } else if (match.winnerId === teamB.id) {
           teamB.wins += 1;
-          teamB.points += 3; 
+          teamB.points += 3;
           teamA.losses += 1;
         }
       }

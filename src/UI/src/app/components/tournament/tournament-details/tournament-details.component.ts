@@ -3,7 +3,7 @@ import { Format, Tournament } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { catchError, switchMap, tap } from 'rxjs/operators';
+import { catchError, finalize, switchMap, tap } from 'rxjs/operators';
 import { Standing, StandingType } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
 import { Team } from '../../../models/team';
@@ -26,6 +26,7 @@ export class TournamentDetailsComponent implements OnInit {
   allTeams: Team[] = [];
   availableTeams: Team[] = [];
   selectedTeam: Team | null = null;
+  isReloading: boolean = false;
 
   constructor(
     private tournamentService: TournamentService,
@@ -139,6 +140,44 @@ export class TournamentDetailsComponent implements OnInit {
           return of(null);
         })
       ).subscribe();
+    }
+  }
+
+  generateGroupMatches(): void {
+    if (this.tournamentId) {
+      this.isReloading = true;
+      this.standingService.generateGroupMatches(this.tournamentId).pipe(
+        tap(() => {
+          console.log('Group matches generated successfully');
+          this.reloadTournamentData();
+        }),
+        catchError(error => {
+          console.error('Error generating group matches', error);
+          this.isReloading = false;
+          return of(null);
+        })
+      ).subscribe();
+    }
+  }
+
+  reloadTournamentData(): void {
+    if (this.tournamentId) {
+      this.isReloading = true;
+      this.tournament$ = this.tournamentService.getTournamentWithTeams(this.tournamentId).pipe(
+        tap(tournament => {
+          if (tournament) {
+            this.tournament = tournament;
+            this.loadStandings(this.tournamentId!);
+          }
+        }),
+        catchError(error => {
+          console.error('Error reloading tournament data', error);
+          return of(null);
+        }),
+        finalize(() => {
+          this.isReloading = false;
+        })
+      );
     }
   }
 }

@@ -31,4 +31,8 @@ export class StandingService {
   getTeamsByStandingId(standingId: number): Observable<Team[]> {
     return this.http.get<Team[]>(`${this.apiUrl}/${standingId}/teams`);
   }
+
+  generateGroupMatches(tournamentId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${tournamentId}/generate-groupmatches`, {});
+  }
 }

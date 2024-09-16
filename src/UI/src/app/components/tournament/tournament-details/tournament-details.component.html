@@ -35,6 +35,10 @@
         <div class="button-group">
           <button pButton type="button" label="Add Team" icon="pi pi-plus" class="p-button-success" (click)="showAddTeamDialog()"></button>
           <button pButton type="button" label="Remove Team" icon="pi pi-minus" class="p-button-danger" (click)="showRemoveTeamDialog()"></button>
+          <button pButton type="button" label="Generate Group Matches"
+                  (click)="generateGroupMatches()"
+                  [disabled]="!tournament || tournament.teams.length === 0">
+          </button>
         </div>
 
         <p-dialog header="Select a Team to {{ dialogType === 'add' ? 'Add' : 'Remove' }}" [(visible)]="displayDialog" [modal]="true" [responsive]="true">

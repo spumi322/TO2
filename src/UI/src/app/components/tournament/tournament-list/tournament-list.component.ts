@@ -18,6 +18,10 @@ export class TournamentListComponent {
 
   ngOnInit(): void {
     this.tournaments$ = this.tournamentService.getAllTournamentsWithTeams();
+    this.tournaments$.subscribe(
+      tournaments => console.log('Received tournaments:', tournaments),
+      error => console.error('Error fetching tournaments:', error)
+    );
   }
 
   getStatusLabel(status: TournamentStatus): string {
