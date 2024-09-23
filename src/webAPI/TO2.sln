@@ -13,6 +13,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "..\Infras
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "UI", "..\UI\UI.esproj", "{93F8BB7E-FE9F-44CE-91A0-A7B97894F961}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7A830D06-4A04-4467-83C1-C28B36AF2CCE}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\docs\domainv1.dgml = ..\..\docs\domainv1.dgml
+		..\..\docs\TournamentLifeCycle.md = ..\..\docs\TournamentLifeCycle.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
