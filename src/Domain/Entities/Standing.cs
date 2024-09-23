@@ -24,6 +24,8 @@ namespace Domain.Entities
             StartDate = startDate;
             EndDate = endDate;
             MaxTeams = (int)maxTeams;
+            CanSetMatchScore = false;
+            IsFinished = false;
         }
 
         public long TournamentId { get; set; }
@@ -37,6 +39,10 @@ namespace Domain.Entities
         public DateTime EndDate { get; set; }
 
         public int MaxTeams { get; set; }
+
+        public bool CanSetMatchScore { get; set; }
+
+        public bool IsFinished { get; set; }
 
         public IReadOnlyList<Match> Matches => _matches;
     }

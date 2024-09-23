@@ -25,10 +25,20 @@ Seeding the groups will be done automatically by the system (random without seed
 
 ## 3. Playing Matches
 
-Match scores are set by manually clicking the `+` button on the match card. After finishing all matches in the group, the group status will be set to **GroupsFinished** true
+Match scores are set by manually clicking the `+` button on the match card. After finishing all matches in the group, the group status will be set to **IsFinished** true
 and the top teams will be moved to the bracket. SeedBracket() will be called to seed the bracket by pairing the top teams from each group.
 
 ## 4. End Tournament
 
-After the winner is determined, the flags are **CanSetMatchScore** false, **BracketFinished** true, TournamentStatus Finished and the end result will be displayed on the tournament page.
+After the winner is determined, the flags are **CanSetMatchScore** false, **IsFinished** true, TournamentStatus Finished and the end result will be displayed on the tournament page.
 Prize pool will be distributed to the winners (later feature).
+
+
+
+
+ tournament status
+
+ registration open
+ can set match score
+ is finished
+	

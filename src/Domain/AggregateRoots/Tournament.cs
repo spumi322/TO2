@@ -30,6 +30,7 @@ namespace Domain.AggregateRoots
             EndDate = endDate;
             Format = format;
             Status = status;
+            IsRegistrationOpen = false;
         }
 
         [Required]
@@ -57,6 +58,8 @@ namespace Domain.AggregateRoots
         [Range(0, 2)]
         [DefaultValue(TournamentStatus.Upcoming)]
         public TournamentStatus Status { get; set; }
+
+        public bool IsRegistrationOpen { get; set; }
 
         public List<Prize> PrizePool { get; set; }
 
