@@ -13,8 +13,11 @@ Format / Bracket Only, Bracket and Groups
 Start Date / will be added later with scheduling
 End Date / will be added later with scheduling
 
-This sets the tournament status to **Upcoming**, and **RegistrationOpen** true,**CanSetMatchScore** false, **GroupsFinished** false, **BracketFinished** false.
+This sets the tournament status to **Upcoming**, and **RegistrationOpen** true,**CanSetMatchScore** false, **isFinished** false for the generated standings.
 Teams can be added manually, or by sharing the tournament link with the team captains (later feature). 
+
+- Adding Teams:
+Teams can be added manually by clicking on the `Add Team` button. 
 
 ## 2. Start Tournament
 
@@ -34,11 +37,4 @@ After the winner is determined, the flags are **CanSetMatchScore** false, **IsFi
 Prize pool will be distributed to the winners (later feature).
 
 
-
-
- tournament status
-
- registration open
- can set match score
- is finished
 	

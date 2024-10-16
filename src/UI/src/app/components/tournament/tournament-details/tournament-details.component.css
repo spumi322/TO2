@@ -1,61 +1,136 @@
-.p-card .p-card-header {
-  display: flex;
-  justify-content: center;
-  width: 100%; /* Ensures the header container uses the full width */
-  padding: 0; /* Adjust or remove padding as necessary */
+/* General styles */
+.tournament-details {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
+/* Header styles */
 .tournament-header {
   display: flex;
   align-items: center;
-  justify-content: center; /* This will center the content */
-  gap: 20px;
-  width: 100%; /* Make sure the header div uses the full width available */
-  margin: 0 auto; /* This centers the div if it doesn't naturally fill the width */
-  margin-top: 50px;
+  justify-content: center;
+  gap: 30px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 30px 0;
+  background-color: var(--surface-b);
+  border-radius: 8px 8px 0 0;
 }
 
 .tournament-logo {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-
-.header-content h1, .header-content h2 {
-  margin: 25px;
+.header-content h1 {
+  font-size: 2.5em;
+  color: var(--primary-color);
+  margin-bottom: 10px;
 }
 
-/* tournament-details.component.css */
+.header-content h2 {
+  font-size: 1.2em;
+  color: var(--text-color-secondary);
+}
 
+/* Participants list styles */
 .participants-list {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
   list-style-type: none;
-  padding: 0;
+  padding: 20px 0;
 }
 
   .participants-list li {
     display: flex;
     align-items: center;
-    background-color: var(--surface-a);
+    background-color: var(--surface-c);
     color: var(--text-color);
-    padding: 10px;
-    border-radius: 4px;
-    text-align: left;
+    padding: 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
+    .participants-list li:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
 .team-logo {
-  width: 30px;
-  height: 30px;
-  margin-right: 10px;
-  border-radius: 50%; /* Optional: to make the logo circular */
+  width: 40px;
+  height: 40px;
+  margin-right: 12px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
-
+/* Button group styles */
 .button-group {
-  margin-top: 20px;
   display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-top: 30px;
+  padding: 20px;
+  background-color: var(--surface-b);
+  border-radius: 8px;
+}
+
+  .button-group button {
+    flex: 1;
+    min-width: 150px;
+    transition: all 0.3s ease;
+  }
+
+    .button-group button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+/* Dialog styles */
+:host ::ng-deep .p-dialog {
+  max-width: 90%;
+  width: 500px;
+}
+
+  :host ::ng-deep .p-dialog .p-dialog-content {
+    padding: 20px;
+  }
+
+:host ::ng-deep .p-listbox {
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+:host ::ng-deep .p-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
   gap: 10px;
+  padding-top: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .tournament-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .participants-list {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+    .button-group button {
+      width: 100%;
+    }
 }

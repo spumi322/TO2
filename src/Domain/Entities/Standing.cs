@@ -26,6 +26,7 @@ namespace Domain.Entities
             MaxTeams = (int)maxTeams;
             CanSetMatchScore = false;
             IsFinished = false;
+            IsSeeded = false;
         }
 
         public long TournamentId { get; set; }
@@ -43,6 +44,8 @@ namespace Domain.Entities
         public bool CanSetMatchScore { get; set; }
 
         public bool IsFinished { get; set; }
+
+        public bool IsSeeded { get; set; }
 
         public IReadOnlyList<Match> Matches => _matches;
     }

@@ -35,9 +35,9 @@ namespace TO2.Controllers
         [HttpPost("{tournamentId}/generate-groupmatches")]
         public async Task<IActionResult> GenerateGroupMatches(long tournamentId)
         {
-            await _matchService.SeedGroups(tournamentId);
+            var result = await _matchService.SeedGroups(tournamentId);
 
-            return Ok();
+            return result.Success ? Ok(result.Response) : BadRequest(result.Response);
         }
 
         [HttpPost("{tournamentId}/generate-bracketmatches")]

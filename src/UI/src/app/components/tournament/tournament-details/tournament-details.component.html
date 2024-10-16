@@ -35,7 +35,7 @@
         <div class="button-group">
           <button pButton type="button" label="Add Team" icon="pi pi-plus" class="p-button-success" (click)="showAddTeamDialog()"></button>
           <button pButton type="button" label="Remove Team" icon="pi pi-minus" class="p-button-danger" (click)="showRemoveTeamDialog()"></button>
-          <button pButton type="button" label="Generate Group Matches"
+          <button pButton type="button" label="Start Tournament"
                   (click)="generateGroupMatches()"
                   [disabled]="!tournament || tournament.teams.length === 0">
           </button>

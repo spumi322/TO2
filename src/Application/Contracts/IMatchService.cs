@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Team;
+﻿using Application.DTOs.Standing;
+using Application.DTOs.Team;
 using Domain.AggregateRoots;
 using Domain.Enums;
 using System;
@@ -11,11 +12,11 @@ namespace Application.Contracts
 {
     public interface IMatchService
     {
-        Task<Match> GetMatchAsync(long id);
+        Task<Match?> GetMatchAsync(long id);
         Task<List<Match>> GetMatchesAsync(long standingId);
         Task<List<Team>> GetTeamsAsync(long standingId);
         Task<long> GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId);
-        Task SeedGroups(long tournamentId);
+        Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId);
         Task SeedBracket(long tournamentId, List<Team> teams);
     }
 }

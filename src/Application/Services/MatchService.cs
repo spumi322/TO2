@@ -1,7 +1,9 @@
 ﻿using Application.Contracts;
+using Application.DTOs.Standing;
 using Application.DTOs.Team;
 using AutoMapper;
 using Domain.AggregateRoots;
+using Domain.Common;
 using Domain.Entities;
 using Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -19,6 +21,7 @@ namespace Application.Services
         private readonly ITournamentService _tournamentService;
         private readonly ITeamService _teamService;
         private readonly IGenericRepository<Match> _matchRepository;
+        private readonly IGenericRepository<Standing> _standingRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<MatchService> _logger;
 
@@ -26,6 +29,7 @@ namespace Application.Services
                             ITournamentService tournamentService,
                             ITeamService teamService,
                             IGenericRepository<Match> matchRepository,
+                            IGenericRepository<Standing> standingRepository,
                             IMapper mapper,
                             ILogger<MatchService> logger)
         {
@@ -33,6 +37,8 @@ namespace Application.Services
             _tournamentService = tournamentService;
             _teamService = teamService;
             _matchRepository = matchRepository;
+            _standingRepository = standingRepository;
+
             _mapper = mapper;
             _logger = logger;
         }
@@ -62,9 +68,9 @@ namespace Application.Services
         {
             try
             {
-                var standing = await _matchRepository.GetAllByFK("StandingId", standingId);
-                var teamsA = standing.Select(m => m.TeamAId).ToList();
-                var teamsB = standing.Select(m => m.TeamBId).ToList();
+                var matchesByStanding = await _matchRepository.GetAllByFK("StandingId", standingId);
+                var teamsA = matchesByStanding.Select(m => m.TeamAId).ToList();
+                var teamsB = matchesByStanding.Select(m => m.TeamBId).ToList();
                 var teamsById = teamsA.Concat(teamsB).Distinct().Order().ToList();
                 var teams = new List<Team>();
 
@@ -106,41 +112,72 @@ namespace Application.Services
             }
         }
 
-        public async Task SeedGroups(long tournamentId)
+        public async Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId)
         {
-            // Get standings and teams
+            // Get standings and teams and check if seeded already
             var standings = await _standingService.GetStandingsAsync(tournamentId);
+
+            if (standings.Any(standing => standing.IsSeeded))
+            {
+                return new SeedGroupsResponseDTO("Groups are already seeded!", false);
+            }
+
             var groupsCount = standings.Count(s => s.Type is StandingType.Group);
             List<GetTeamResponseDTO> teamsDTO = await _tournamentService.GetTeamsByTournamentAsync(tournamentId);
             List<Team> teams = _mapper.Map<List<Team>>(teamsDTO);
 
+            if (teams.Count < groupsCount)
+            {
+                return new SeedGroupsResponseDTO("There are not enough teams to seed the groups!", false);
+            }
+
             // Randomize teams
             teams = teams.OrderBy(t => Guid.NewGuid()).ToList();
 
-            // Split teams equally into groupsCount number of groups
+            // Split teams evenly into groups
+            int teamsPerGroup = teams.Count / groupsCount;
+            int remainingTeams = teams.Count % groupsCount;
             List<List<Team>> groups = new List<List<Team>>();
+
+            int teamIndex = 0;
             for (int i = 0; i < groupsCount; i++)
             {
-                groups.Add(new List<Team>());
-            }
-
-            for (int i = 0; i < teams.Count; i++)
-            {
-                groups[i % groupsCount].Add(teams[i]);
+                int groupSize = teamsPerGroup + (i < remainingTeams ? 1 : 0);
+                groups.Add(teams.GetRange(teamIndex, groupSize));
+                teamIndex += groupSize;
             }
 
             // Seed groups with teams and generate matches
             for (int i = 0; i < groupsCount; i++)
             {
                 var standing = standings.FirstOrDefault(s => s.Name == $"Group {i + 1}");
+                bool allMatchesGenerated = true;
+
                 for (int j = 0; j < groups[i].Count; j++)
                 {
                     for (int k = j + 1; k < groups[i].Count; k++)
                     {
-                        await GenerateMatch(groups[i][j], groups[i][k], j+1, k, standing.Id);
+                        try
+                        {
+                            await GenerateMatch(groups[i][j], groups[i][k], j + 1, k, standing.Id);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error generating match for teams {0} and {1}", groups[i][j].Id, groups[i][k].Id);
+                            allMatchesGenerated = false;
+                        }
                     }
                 }
+
+                if (allMatchesGenerated)
+                {
+                    standing.IsSeeded = true; 
+                    await _standingRepository.Update(standing);
+                    await _standingRepository.Save();
+                }
             }
+
+            return new SeedGroupsResponseDTO("Groups seeded successfully!", true);
         }
 
         public async Task SeedBracket(long tournamentId, List<Team> playOffTeams)
