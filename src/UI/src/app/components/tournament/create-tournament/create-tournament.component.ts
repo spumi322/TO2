@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Format, Tournament } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-create-tournament',
@@ -16,7 +17,8 @@ export class CreateTournamentComponent {
   ]
 
   constructor(private tournamentService: TournamentService,
-              private fb: FormBuilder) {
+    private fb: FormBuilder,
+    private router: Router) {
     this.tournamentForm = this.fb.group({
       name: [''],
       description: [''],
@@ -42,7 +44,8 @@ export class CreateTournamentComponent {
       this.tournamentService.createTournament(newTournament).subscribe(
         response => {
           console.log('Tournament created:', response);
-          
+
+          this.router.navigate([`/tournament/${response.id}`])
         },
         error => {
           console.error('Error creating tournament:', error);

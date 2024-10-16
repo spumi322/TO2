@@ -9,6 +9,7 @@ export interface Tournament {
   endDate: Date;
   format: Format;
   status: TournamentStatus;
+  isRegistrationOpen: boolean;
   teamsPerGroup?: number;
   teamsPerBracket?: number;
   teams: Team[];

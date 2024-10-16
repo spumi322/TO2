@@ -1,75 +1,87 @@
-<!-- Using PrimeNG card for header and tabView for content organization -->
 <div class="tournament-details" *ngIf="tournament$ | async as tournament">
-<p-card>
-  <ng-template pTemplate="header">
-    <div class="tournament-header">
-      <img src="../../../../assets/ph_logo.png" alt="Tournament Logo" class="tournament-logo" />
-      <div class="header-content">
-        <h1>{{ tournament.name }}</h1>
-        <h2>
-          {{ tournament.startDate | date:'MMMM dd, yyyy' }}
-          <span *ngIf="tournament.startDate !== tournament.endDate">- {{ tournament.endDate | date:'MMMM dd, yyyy' }}</span>
-        </h2>
-      </div>
-    </div>
-  </ng-template>
-
-  <p-tabView>
-    <p-tabPanel header="Overview" align="left">
-      <p-card>
-        <h2>Description:</h2>
-        <p> {{ tournament.description }}</p>
-        <h2>Format:</h2>
-        <p> {{ getFormatLabel(tournament.format) }}</p>
-        <h2>Maximum Teams:</h2>
-        <p> {{ tournament.maxTeams }} </p>
-        <h2>Prize Pool:</h2>
-        <p>TBA</p>
-        <h2>Participants:</h2>
-        <ul class="participants-list">
-          <li *ngFor="let team of tournament.teams">
-            <img src="../../../../assets/ph_team_logo.png" alt="{{ team.name }} logo" class="team-logo">
-            <span>{{ team.name }}</span>
-          </li>
-        </ul>
-        <div class="button-group">
-          <button pButton type="button" label="Add Team" icon="pi pi-plus" class="p-button-success" (click)="showAddTeamDialog()"></button>
-          <button pButton type="button" label="Remove Team" icon="pi pi-minus" class="p-button-danger" (click)="showRemoveTeamDialog()"></button>
-          <button pButton type="button" label="Start Tournament"
-                  (click)="generateGroupMatches()"
-                  [disabled]="!tournament || tournament.teams.length === 0">
-          </button>
+  <p-card>
+    <ng-template pTemplate="header">
+      <div class="tournament-header">
+        <img src="../../../../assets/ph_logo.png" alt="Tournament Logo" class="tournament-logo" />
+        <div class="header-content">
+          <h1>{{ tournament.name }}</h1>
+          <h2>
+            {{ tournament.startDate | date:'MMMM dd, yyyy' }}
+            <span *ngIf="tournament.startDate !== tournament.endDate">- {{ tournament.endDate | date:'MMMM dd, yyyy' }}</span>
+          </h2>
         </div>
+      </div>
+    </ng-template>
 
-        <p-dialog header="Select a Team to {{ dialogType === 'add' ? 'Add' : 'Remove' }}" [(visible)]="displayDialog" [modal]="true" [responsive]="true">
-          <ng-container *ngIf="dialogType === 'add'">
-            <p-listbox [options]="availableTeams" [(ngModel)]="selectedTeam" [filter]="true" optionLabel="name" [style]="{'width':'100%'}"></p-listbox>
-            <p-footer>
-              <button pButton type="button" label="Add" icon="pi pi-check" (click)="addTeam()"></button>
-              <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="hideDialog()"></button>
-            </p-footer>
-          </ng-container>
-          <ng-container *ngIf="dialogType === 'remove'">
-            <h3>Select a team to remove</h3>
-            <p-listbox [options]="tournament.teams" [(ngModel)]="selectedTeam" optionLabel="name" [style]="{'width':'100%'}"></p-listbox>
-            <p-footer>
-              <button pButton type="button" label="Remove" icon="pi pi-check" (click)="removeTeam()"></button>
-              <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="hideDialog()"></button>
-            </p-footer>
-          </ng-container>
-        </p-dialog>
-        <h2>Results: </h2>
-        <p> Table of Results</p>
-      </p-card>
-    </p-tabPanel>
+    <p-tabView>
+      <p-tabPanel header="Overview" align="left">
+        <p-card>
+          <h2>Description:</h2>
+          <p>{{ tournament.description }}</p>
+          <h2>Format:</h2>
+          <p>{{ getFormatLabel(tournament.format) }}</p>
+          <h2>Maximum Teams:</h2>
+          <p>{{ tournament.maxTeams }}</p>
+          <h2>Prize Pool:</h2>
+          <p>TBA</p>
+          <h2>Participants:</h2>
+          <ul class="participants-list">
+            <li *ngFor="let team of tournament.teams">
+              <img src="../../../../assets/ph_team_logo.png" alt="{{ team.name }} logo" class="team-logo">
+              <span>{{ team.name }}</span>
+            </li>
+          </ul>
 
-    <p-tabPanel header="Group Stage" *ngIf="tournament.format === 2">
-      <app-standing-group [tournament]="tournament"></app-standing-group>
-    </p-tabPanel>
+          <div class="button-group">
+            <button *ngIf="tournament.isRegistrationOpen"
+                    pButton type="button" label="Add Team" icon="pi pi-plus" class="p-button-success"
+                    (click)="showAddTeamDialog()">
+            </button>
+            <button *ngIf="tournament.isRegistrationOpen"
+                    pButton type="button" label="Remove Team" icon="pi pi-minus" class="p-button-danger"
+                    (click)="showRemoveTeamDialog()">
+            </button>
+          </div>
 
-    <p-tabPanel header="Bracket" *ngIf="tournament.format === 1 || tournament.format === 2">
-      <app-standing-bracket [brackets]="brackets"></app-standing-bracket>
-    </p-tabPanel>
-  </p-tabView>
-</p-card>
+          <p-dialog header="Select a Team to {{ dialogType === 'add' ? 'Add' : 'Remove' }}" [(visible)]="displayDialog" [modal]="true" [responsive]="true">
+            <ng-container *ngIf="dialogType === 'add'">
+              <p-listbox [options]="availableTeams" [(ngModel)]="selectedTeam" [filter]="true" optionLabel="name" [style]="{'width':'100%'}"></p-listbox>
+              <p-footer>
+                <button pButton type="button" label="Add" icon="pi pi-check" (click)="addTeam()"></button>
+                <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="hideDialog()"></button>
+              </p-footer>
+            </ng-container>
+            <ng-container *ngIf="dialogType === 'remove'">
+              <h3>Select a team to remove</h3>
+              <p-listbox [options]="tournament.teams" [(ngModel)]="selectedTeam" optionLabel="name" [style]="{'width':'100%'}"></p-listbox>
+              <p-footer>
+                <button pButton type="button" label="Remove" icon="pi pi-check" (click)="removeTeam()"></button>
+                <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="hideDialog()"></button>
+              </p-footer>
+            </ng-container>
+          </p-dialog>
+
+          <h2>Results: </h2>
+          <p> Table of Results</p>
+        </p-card>
+      </p-tabPanel>
+
+      <p-tabPanel header="Group Stage" *ngIf="!tournament.isRegistrationOpen && tournament.format === 2">
+        <app-standing-group [tournament]="tournament"></app-standing-group>
+      </p-tabPanel>
+
+      <p-tabPanel header="Bracket" *ngIf="!tournament.isRegistrationOpen && (tournament.format === 1 || tournament.format === 2)">
+        <app-standing-bracket [brackets]="brackets"></app-standing-bracket>
+      </p-tabPanel>
+    </p-tabView>
+
+    <div class="start-tournament-button-container">
+      <button *ngIf="tournament.isRegistrationOpen"
+              pButton type="button" label="Start Tournament"
+              (click)="startTournament()"
+              [disabled]="!tournament || tournament.teams.length === 0"
+              class="p-button-lg">
+      </button>
+    </div>
+  </p-card>
 </div>

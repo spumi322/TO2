@@ -200,5 +200,34 @@ namespace Application.Services
                 throw new Exception("Error removing team from tournament");
             }
         }
+
+        public async Task<StartTournamentDTO> StartTournament(long tournamentId)
+        {
+            var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
+
+            if (existingTournament.IsRegistrationOpen)
+            {
+                try
+                {
+                    existingTournament.IsRegistrationOpen = false;
+                    await _tournamentRepository.Update(existingTournament);
+                    await _tournamentRepository.Save();
+
+                    return new StartTournamentDTO("Tournament succesfully started", true);
+                }
+                catch (Exception)
+                {
+                    _logger.LogError("Error starting the tournament");
+
+                    throw new Exception("Error starting the tournament");
+                }
+            }
+            else
+            {
+                _logger.LogInformation("Tournament already started");
+
+                return new StartTournamentDTO("Tournament already started", false);
+            }
+        }
     }
 }

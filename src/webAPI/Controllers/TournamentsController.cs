@@ -89,5 +89,14 @@ namespace TO2.Controllers
 
             return NoContent();
         }
+
+        // PUT: api/tournaments/5/start
+        [HttpPut("{id}/start")]
+        public async Task<IActionResult> StartTournament(long id)
+        {
+            var result = await _tournamentService.StartTournament(id);
+
+            return result.Success ? Ok() : BadRequest();
+        }
     }
 }

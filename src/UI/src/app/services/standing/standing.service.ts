@@ -32,7 +32,7 @@ export class StandingService {
     return this.http.get<Team[]>(`${this.apiUrl}/${standingId}/teams`);
   }
 
-  generateGroupMatches(tournamentId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${tournamentId}/generate-groupmatches`, {});
+  generateGroupMatches(tournamentId: number): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${tournamentId}/generate-groupmatches`, {});
   }
 }

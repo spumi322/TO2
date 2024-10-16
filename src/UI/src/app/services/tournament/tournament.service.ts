@@ -73,4 +73,9 @@ export class TournamentService {
   removeTeam(teamId: number, tournamentId: number) {
     return this.http.delete(`${this.apiUrl}/${teamId}/${tournamentId}`);
   }
+
+  // PUT /api/tournaments/{tournamentId}/start
+  startTournament(tournamentId: number) {
+    return this.http.put(`${this.apiUrl}/${tournamentId}/start`, {});
+  }
 }

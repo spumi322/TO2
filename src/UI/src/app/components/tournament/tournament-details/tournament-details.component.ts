@@ -3,7 +3,7 @@ import { Format, Tournament } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
 import { ActivatedRoute } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { catchError, finalize, switchMap, tap } from 'rxjs/operators';
+import { catchError, concatMap, finalize, switchMap, tap } from 'rxjs/operators';
 import { Standing, StandingType } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
 import { Team } from '../../../models/team';
@@ -143,20 +143,37 @@ export class TournamentDetailsComponent implements OnInit {
     }
   }
 
-  generateGroupMatches(): void {
+  startTournament(): void {
+    if (this.tournamentId) {
+      this.tournamentService.startTournament(this.tournamentId).pipe(
+        concatMap(() => this.generateGroupMatches()),  // Chain to generate group matches
+        catchError(error => {
+          console.error('Error in the tournament process:', error);
+          return of(null);  // Return a fallback in case of error
+        })
+      ).subscribe(() => {
+        this.reloadTournamentData();  // Reload tournament data after both steps
+      });
+    } else {
+      console.log('Tournament ID is null');
+    }
+  }
+
+  generateGroupMatches(): Observable<void> {
     if (this.tournamentId) {
       this.isReloading = true;
-      this.standingService.generateGroupMatches(this.tournamentId).pipe(
+      return this.standingService.generateGroupMatches(this.tournamentId).pipe(
         tap(() => {
           console.log('Group matches generated successfully');
-          this.reloadTournamentData();
         }),
         catchError(error => {
-          console.error('Error generating group matches', error);
+          console.error('Error generating group matches:', error);
           this.isReloading = false;
-          return of(null);
+          return of();  
         })
-      ).subscribe();
+      );
+    } else {
+      return of();
     }
   }
 

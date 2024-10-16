@@ -114,7 +114,6 @@ namespace Application.Services
 
         public async Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId)
         {
-            // Get standings and teams and check if seeded already
             var standings = await _standingService.GetStandingsAsync(tournamentId);
 
             if (standings.Any(standing => standing.IsSeeded))
@@ -131,10 +130,8 @@ namespace Application.Services
                 return new SeedGroupsResponseDTO("There are not enough teams to seed the groups!", false);
             }
 
-            // Randomize teams
             teams = teams.OrderBy(t => Guid.NewGuid()).ToList();
 
-            // Split teams evenly into groups
             int teamsPerGroup = teams.Count / groupsCount;
             int remainingTeams = teams.Count % groupsCount;
             List<List<Team>> groups = new List<List<Team>>();
@@ -147,7 +144,6 @@ namespace Application.Services
                 teamIndex += groupSize;
             }
 
-            // Seed groups with teams and generate matches
             for (int i = 0; i < groupsCount; i++)
             {
                 var standing = standings.FirstOrDefault(s => s.Name == $"Group {i + 1}");
