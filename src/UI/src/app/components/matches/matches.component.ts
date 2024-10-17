@@ -13,6 +13,7 @@ import { Game } from '../../models/game';
 export class MatchesComponent implements OnInit {
   @Input() matches: Match[] = [];
   @Input() teams: Team[] = [];
+  @Input() standingId!: number;
   @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
 
   constructor(private matchService: MatchService) { }
@@ -63,7 +64,7 @@ export class MatchesComponent implements OnInit {
     this.matchService.getAllGamesByMatch(matchId).subscribe(games => {
       const gameToUpdate = games.find(game => !game.winnerId);
       if (gameToUpdate) {
-        this.matchService.setGameResult(gameToUpdate.id, gameResult).subscribe((result: MatchFinishedIds | null) => {
+        this.matchService.setGameResult(this.standingId, gameToUpdate.id, gameResult).subscribe((result: MatchFinishedIds | null) => {
           if (result) {
             match.winnerId = result.winnerId;
             match.loserId = result.loserId;

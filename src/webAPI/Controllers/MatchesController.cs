@@ -46,10 +46,12 @@ namespace TO2.Controllers
         }
 
         // PUT game result
-        [HttpPut("{gameId}/result")]
-        public async Task<IActionResult> SetGameResult(long gameId, SetGameResultDTO request)
+        [HttpPut("{standingId}/{gameId}/result")]
+        public async Task<IActionResult> SetGameResult(long standingId, long gameId, SetGameResultDTO request)
         {
             var response = await _gameService.SetGameResult(gameId, request);
+
+            await _matchService.IsStandingFinished(standingId);
 
             return response is not null ? Ok(response) : NoContent();
         }

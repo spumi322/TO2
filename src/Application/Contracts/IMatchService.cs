@@ -18,5 +18,6 @@ namespace Application.Contracts
         Task<long> GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId);
         Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId);
         Task SeedBracket(long tournamentId, List<Team> teams);
+        Task IsStandingFinished(long standingId);
     }
 }

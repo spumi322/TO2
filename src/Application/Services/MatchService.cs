@@ -191,5 +191,19 @@ namespace Application.Services
                 }
             }
         }
+
+        public async Task IsStandingFinished(long standingId)
+        {
+            var matches = await _matchRepository.GetAllByFK("StandingId", standingId);
+            bool allMatchesFinished = matches.All(m => m.WinnerId.HasValue && m.LoserId.HasValue);
+
+            if (allMatchesFinished)
+            {
+                var standing = await _standingRepository.Get(standingId);
+                standing.IsFinished = true;
+                await _standingRepository.Update(standing);
+                await _standingRepository.Save();
+            }
+        }
     }
 }

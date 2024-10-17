@@ -1,23 +1,17 @@
 <table class="group-matches">
-  <thead>
-    <tr>
-      <th>Team A</th>
-      <th>Score</th>
-      <th>Team B</th>
-    </tr>
-  </thead>
   <tbody>
     <tr *ngFor="let match of matches">
-      <td [ngClass]="{'winner': match.winnerId === match.teamAId, 'loser': match.loserId === match.teamAId}">
+      <td [ngClass]="{'winner': match.winnerId === match.teamAId, 'loser': match.loserId === match.teamAId, 'disabled': match.winnerId || match.loserId}"
+          (click)="!match.winnerId && !match.loserId ? updateMatchScore(match.id, match.teamAId, match.result.teamAWins + 1, match.result.teamBWins) : null"
+          style="cursor: pointer;">
         {{ getTeamName(match.teamAId) }}
       </td>
       <td>
-        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.teamAId, match.result.teamAWins + 1, match.result.teamBWins)">+</button>
-        {{ match.result.teamAWins }} -
-        {{ match.result.teamBWins }}
-        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.teamBId, match.result.teamAWins, match.result.teamBWins + 1)">+</button>
+        {{ match.result.teamAWins }} - {{ match.result.teamBWins }}
       </td>
-      <td [ngClass]="{'winner': match.winnerId === match.teamBId, 'loser': match.loserId === match.teamBId}">
+      <td [ngClass]="{'winner': match.winnerId === match.teamBId, 'loser': match.loserId === match.teamBId, 'disabled': match.winnerId || match.loserId}"
+          (click)="!match.winnerId && !match.loserId ? updateMatchScore(match.id, match.teamBId, match.result.teamAWins, match.result.teamBWins + 1) : null"
+          style="cursor: pointer;">
         {{ getTeamName(match.teamBId) }}
       </td>
     </tr>

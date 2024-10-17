@@ -3,7 +3,6 @@
     <p-card>
       <ng-template pTemplate="header">
         <h2>{{ group.name }}</h2>
-        <h3>Standings</h3>
       </ng-template>
       <div>
         <table class="group-standings">
@@ -31,7 +30,7 @@
           </tbody>
         </table>
         <h3>Matches</h3>
-        <app-matches [teams]="group.teams" [matches]="group.matches" (matchFinished)="onGameResultUpdated($event)"></app-matches>
+        <app-matches [teams]="group.teams" [matches]="group.matches" [standingId]="group.id" (matchFinished)="onGameResultUpdated($event)"></app-matches>
       </div>
     </p-card>
   </div>

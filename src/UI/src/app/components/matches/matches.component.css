@@ -4,9 +4,11 @@
   margin-bottom: 16px;
 }
 
-  .group-matches th, .group-matches td {
+  .group-matches th,
+  .group-matches td {
     padding: 8px;
     text-align: center;
+    border: 1px solid #ddd; /* Adding borders for better definition */
   }
 
   .group-matches th {
@@ -27,4 +29,15 @@
 .loser {
   background-color: red;
   color: white;
+}
+
+/* Add hover effect for better UX */
+.group-matches td:hover {
+  background-color: rgba(0, 0, 0, 0.1); /* Light grey background on hover */
+  cursor: pointer; /* Indicate clickable rows */
+}
+
+.disabled {
+  cursor: not-allowed; /* Change the cursor to indicate it's not clickable */
+  pointer-events: none; /* Prevents click events on this element */
 }
