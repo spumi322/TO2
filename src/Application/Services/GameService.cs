@@ -37,7 +37,7 @@ namespace Application.Services
         public async Task GenerateGames(long matchId)
         {
             var existingMatch = await _matchService.GetMatchAsync(matchId) ?? throw new Exception("Match not found");
-
+            var games = new List<Game>();
             var matchesToPlay = existingMatch.BestOf switch
             {
                 BestOf.Bo1 => 1,
@@ -49,9 +49,11 @@ namespace Application.Services
             for (int i = 0; i < matchesToPlay; i++)
             {
                 var game = new Game(existingMatch, existingMatch.TeamAId, existingMatch.TeamBId);
-                await _gameRepository.Add(game);
-                await _gameRepository.Save();
+                games.Add(game);
             }
+
+            await _gameRepository.AddRange(games);
+            await _gameRepository.Save();
         }
 
         public async Task<Game> GetGameAsync(long gameId)

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Format, Tournament } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
 import { ActivatedRoute } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable, from, of } from 'rxjs';
 import { catchError, concatMap, finalize, switchMap, tap } from 'rxjs/operators';
 import { Standing, StandingType } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
@@ -143,38 +143,58 @@ export class TournamentDetailsComponent implements OnInit {
     }
   }
 
-  startTournament(): void {
-    if (this.tournamentId) {
-      this.tournamentService.startTournament(this.tournamentId).pipe(
-        concatMap(() => this.generateGroupMatches()),  // Chain to generate group matches
-        catchError(error => {
-          console.error('Error in the tournament process:', error);
-          return of(null);  // Return a fallback in case of error
-        })
-      ).subscribe(() => {
-        this.reloadTournamentData();  // Reload tournament data after both steps
-      });
-    } else {
-      console.log('Tournament ID is null');
-    }
+startTournament(): void {
+  if (this.tournamentId) {
+    this.tournamentService.startTournament(this.tournamentId).pipe(
+      switchMap(() => this.generateGroupMatches()),
+      switchMap((standingIds: number[]) => {
+        return from(standingIds).pipe(
+          concatMap((standingId) => this.generateGames(standingId))
+        );
+      }),
+      catchError(error => {
+        console.error('Error in the tournament starting process:', error);
+        return of(null);  
+      })
+    ).subscribe(() => {
+      this.reloadTournamentData();
+    });
+  } else {
+    console.log('Tournament ID is null');
   }
+}
 
-  generateGroupMatches(): Observable<void> {
+
+  generateGroupMatches(): Observable<number[]> {
     if (this.tournamentId) {
       this.isReloading = true;
       return this.standingService.generateGroupMatches(this.tournamentId).pipe(
-        tap(() => {
-          console.log('Group matches generated successfully');
+        tap((standingIds: number[]) => {
+          console.log('Group matches generated successfully. Standing IDs:', standingIds);
         }),
         catchError(error => {
           console.error('Error generating group matches:', error);
           this.isReloading = false;
-          return of();  
+          return of([]);  
         })
       );
     } else {
-      return of();
+      return of([]);
     }
+  }
+
+
+  generateGames(standingId: number): Observable<void> {
+    return this.standingService.generateGames(standingId).pipe(
+      tap(() => {
+        console.log(`Games generated for standingId: ${standingId}`);
+      }),
+      catchError(error => {
+        console.error(`Error generating games for standingId: ${standingId}`, error);
+        this.isReloading = false;
+        return of();
+      })
+    )
   }
 
   reloadTournamentData(): void {

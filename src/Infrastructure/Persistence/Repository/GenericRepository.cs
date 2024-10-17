@@ -26,6 +26,11 @@ namespace Infrastructure.Persistence.Repository
             return entity;
         }
 
+        public async Task AddRange(IEnumerable<TEntity> entities)
+        {
+            await _dbContext.AddRangeAsync(entities);
+        }
+
         public async Task<TEntity> Get(object id)
         {
             return await _dbContext.Set<TEntity>().FindAsync(id);

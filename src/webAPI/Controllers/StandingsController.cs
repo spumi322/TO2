@@ -37,7 +37,7 @@ namespace TO2.Controllers
         {
             var result = await _matchService.SeedGroups(tournamentId);
 
-            return result.Success ? Ok() : BadRequest();
+            return result.Success ? Ok(result.StandingId.ToList()) : BadRequest();
         }
 
         [HttpPost("{tournamentId}/generate-bracketmatches")]

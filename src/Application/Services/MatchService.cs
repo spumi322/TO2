@@ -115,10 +115,11 @@ namespace Application.Services
         public async Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId)
         {
             var standings = await _standingService.GetStandingsAsync(tournamentId);
+            List<long> seededStandingIds = new List<long>();
 
             if (standings.Any(standing => standing.IsSeeded))
             {
-                return new SeedGroupsResponseDTO("Groups are already seeded!", false);
+                return new SeedGroupsResponseDTO("Groups are already seeded!", false, seededStandingIds);
             }
 
             var groupsCount = standings.Count(s => s.Type is StandingType.Group);
@@ -127,7 +128,7 @@ namespace Application.Services
 
             if (teams.Count < groupsCount)
             {
-                return new SeedGroupsResponseDTO("There are not enough teams to seed the groups!", false);
+                return new SeedGroupsResponseDTO("There are not enough teams to seed the groups!", false, seededStandingIds);
             }
 
             teams = teams.OrderBy(t => Guid.NewGuid()).ToList();
@@ -155,7 +156,7 @@ namespace Application.Services
                     {
                         try
                         {
-                            await GenerateMatch(groups[i][j], groups[i][k], j + 1, k, standing.Id);
+                            await GenerateMatch(groups[i][j], groups[i][k], j + 1, k, standing.Id); 
                         }
                         catch (Exception ex)
                         {
@@ -167,22 +168,21 @@ namespace Application.Services
 
                 if (allMatchesGenerated)
                 {
-                    standing.IsSeeded = true; 
+                    standing.IsSeeded = true;
+                    seededStandingIds.Add(standing.Id);
                     await _standingRepository.Update(standing);
                     await _standingRepository.Save();
                 }
             }
 
-            return new SeedGroupsResponseDTO("Groups seeded successfully!", true);
+            return new SeedGroupsResponseDTO("Groups seeded successfully!", true, seededStandingIds);
         }
 
         public async Task SeedBracket(long tournamentId, List<Team> playOffTeams)
         {
-            // Get standings and teams
             var standings = await _standingService.GetStandingsAsync(tournamentId);
             var bracket = standings.FirstOrDefault(s => s.Type is StandingType.Bracket);
           
-            // Generate matches
             for (int i = 0; i < playOffTeams.Count; i++)
             {
                 for (int j = i + 1; j < playOffTeams.Count; j++)
