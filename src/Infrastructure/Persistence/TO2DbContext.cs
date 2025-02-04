@@ -4,6 +4,7 @@ using Domain.Common;
 using Domain.Entities;
 using Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,12 +15,15 @@ namespace Infrastructure.Persistence
 {
     public class TO2DbContext : DbContext, ITO2DbContext
     {
+        private readonly IConfiguration _configuration;
+
         public TO2DbContext()
         {
         }
 
-        public TO2DbContext(DbContextOptions<TO2DbContext> options) : base(options)
+        public TO2DbContext(DbContextOptions<TO2DbContext> options, IConfiguration configuration) : base(options)
         {
+            _configuration = configuration;
         }
 
         public DbSet<Tournament> Tournaments { get; set; }
@@ -34,7 +38,9 @@ namespace Infrastructure.Persistence
         {
             base.OnConfiguring(optionsBuilder);
 
-            optionsBuilder.UseSqlite("Data Source=E:\\Code\\TO2\\src\\Infrastructure\\app.db");
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+
+            optionsBuilder.UseSqlite(connectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
