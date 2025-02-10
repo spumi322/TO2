@@ -1,5 +1,6 @@
 ﻿using Domain.AggregateRoots;
 using Domain.Common;
+using Domain.DomainEvents;
 using Domain.Enums;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace Domain.Entities
     public class Standing : EntityBase
     {
         private readonly List<Match> _matches = new();
+        private readonly List<DomainEvent> _domainEvents = new();
 
         private Standing()
         {
@@ -48,5 +50,16 @@ namespace Domain.Entities
         public bool IsSeeded { get; set; }
 
         public IReadOnlyList<Match> Matches => _matches;
+
+        public void MarkAsFinished()
+        {
+            if (!IsFinished)
+            {
+                IsFinished = true;
+                _domainEvents.Add(new StandingFinishedEvent(Id));
+            }
+        }
+
+        public void ClearEvents() => _domainEvents.Clear();
     }
 }
