@@ -44,19 +44,10 @@ namespace Domain.Entities
 
         public bool CanSetMatchScore { get; set; }
 
-        public bool IsFinished { get; private set; }
+        public bool IsFinished { get; set; }
 
         public bool IsSeeded { get; set; }
 
         public IReadOnlyList<Match> Matches => _matches;
-
-        public void MarkAsFinished()
-        {
-            if (!IsFinished)
-            {
-                IsFinished = true;
-                AddDomainEvent(new StandingFinishedEvent(Id));
-            }
-        }
     }
 }

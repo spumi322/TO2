@@ -13,5 +13,6 @@ namespace Application.Contracts
     {
         Task GenerateStanding(long tournamentId, string name, StandingType type, int? teamsPerStanding);
         Task<List<Standing>> GetStandingsAsync(long tournamentId);
+        Task CheckAndMarkStandingAsFinishedAsync(long tournamentId);
     }
 }
