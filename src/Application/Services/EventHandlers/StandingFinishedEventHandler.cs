@@ -6,19 +6,20 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Domain.DomainEvents;
+using Application.Contracts;
 
 namespace Application.Services.EventHandlers
 {
-    public class StandingCompletedEventHandler : DomainEventHandler<StandingFinishedEvent>
+    public class StandingFinishedEventHandler : IDomainEventHandler<StandingFinishedEvent>
     {
-        private readonly ILogger<StandingCompletedEventHandler> _logger;
+        private readonly ILogger<StandingFinishedEventHandler> _logger;
 
-        public StandingCompletedEventHandler(ILogger<StandingCompletedEventHandler> logger)
+        public StandingFinishedEventHandler(ILogger<StandingFinishedEventHandler> logger)
         {
             _logger = logger;
         }
 
-        public override async Task HandleAsync(StandingFinishedEvent domainEvent)
+        public async Task HandleAsync(StandingFinishedEvent domainEvent)
         {
             _logger.LogInformation($"Standing {domainEvent.StandingId} has been finished!");
             await Task.CompletedTask;

@@ -13,7 +13,6 @@ namespace Domain.Entities
     public class Standing : EntityBase
     {
         private readonly List<Match> _matches = new();
-        private readonly List<DomainEvent> _domainEvents = new();
 
         private Standing()
         {
@@ -45,7 +44,7 @@ namespace Domain.Entities
 
         public bool CanSetMatchScore { get; set; }
 
-        public bool IsFinished { get; set; }
+        public bool IsFinished { get; private set; }
 
         public bool IsSeeded { get; set; }
 
@@ -56,10 +55,8 @@ namespace Domain.Entities
             if (!IsFinished)
             {
                 IsFinished = true;
-                _domainEvents.Add(new StandingFinishedEvent(Id));
+                AddDomainEvent(new StandingFinishedEvent(Id));
             }
         }
-
-        public void ClearEvents() => _domainEvents.Clear();
     }
 }

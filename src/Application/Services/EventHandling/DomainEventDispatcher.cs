@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Application.Services.EventHandling
 {
-    public class DomainEventDispatcher
+    public class DomainEventDispatcher : IDomainEventDispatcher
     {
         private readonly IServiceProvider _serviceProvider;
 
@@ -21,7 +21,7 @@ namespace Application.Services.EventHandling
 
         public async Task DispatchAsync(DomainEvent domainEvent)
         {
-            var handlerType = typeof(DomainEventHandler<>).MakeGenericType(domainEvent.GetType());
+            var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(domainEvent.GetType());
             var handlers = _serviceProvider.GetServices(handlerType).Cast<object>().ToList();
 
             foreach (var handler in handlers)
