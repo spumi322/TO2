@@ -41,14 +41,17 @@ namespace Infrastructure.Persistence
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            //var connectionString = _configuration.GetConnectionString("DefaultConnection");
 
-            optionsBuilder.UseSqlite(connectionString);
+            optionsBuilder.UseSqlite("Data Source=G:\\Code\\TO2\\src\\Infrastructure\\app.db");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Not Implemented, should be ignored
+            modelBuilder.Ignore<DomainEvent>();
+            modelBuilder.Ignore<AggregateRootBase>();
+            modelBuilder.Ignore<EntityBase>();
+            modelBuilder.Ignore<ValueObjectBase>();
             modelBuilder.Ignore<Prize>();
 
             base.OnModelCreating(modelBuilder);
