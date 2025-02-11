@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.Services.EventHandling;
 using Domain.AggregateRoots;
 using Domain.Common;
 using Domain.Entities;
@@ -16,14 +17,17 @@ namespace Infrastructure.Persistence
     public class TO2DbContext : DbContext, ITO2DbContext
     {
         private readonly IConfiguration _configuration;
+        private readonly IDomainEventDispatcher _eventDispatcher;
 
         public TO2DbContext()
         {
         }
 
-        public TO2DbContext(DbContextOptions<TO2DbContext> options, IConfiguration configuration) : base(options)
+        public TO2DbContext(DbContextOptions<TO2DbContext> options, IConfiguration configuration, IDomainEventDispatcher eventDispatcher)
+            : base(options)
         {
             _configuration = configuration;
+            _eventDispatcher = eventDispatcher;
         }
 
         public DbSet<Tournament> Tournaments { get; set; }
@@ -37,10 +41,9 @@ namespace Infrastructure.Persistence
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
+            //var connectionString = _configuration.GetConnectionString("DefaultConnection");
 
-            var connectionString = _configuration.GetConnectionString("DefaultConnection");
-
-            optionsBuilder.UseSqlite(connectionString);
+            optionsBuilder.UseSqlite("Data Source=G:\\Code\\TO2\\src\\Infrastructure\\app.db");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -73,10 +76,27 @@ namespace Infrastructure.Persistence
                 .HasForeignKey(tt => tt.TournamentId);
         }
 
-        public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             AddTimestamps();
-            return base.SaveChangesAsync(cancellationToken);
+
+            var domainEntities = ChangeTracker.Entries<EntityBase>()
+                .Where(x => x.Entity.DomainEvents.Any())
+                .Select(x => x.Entity)
+                .ToList();
+
+            int result = await base.SaveChangesAsync(cancellationToken);
+
+            foreach (var entity in domainEntities)
+            {
+                foreach (var domainEvent in entity.DomainEvents)
+                {
+                    await _eventDispatcher.DispatchAsync(domainEvent);
+                }
+                entity.ClearEvents();
+            }
+
+            return result;
         }
 
         private void AddTimestamps()
@@ -92,11 +112,11 @@ namespace Infrastructure.Persistence
 
                 if (entityEntry.State == EntityState.Added)
                 {
-                    entity.CreatedDate = DateTime.Now;
+                    entity.CreatedDate = DateTime.UtcNow;
                     entity.CreatedBy = userName;
                 }
 
-                entity.LastModifiedDate = DateTime.Now;
+                entity.LastModifiedDate = DateTime.UtcNow;
                 entity.LastModifiedBy = userName;
             }
         }

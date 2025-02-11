@@ -1,5 +1,6 @@
 ﻿using Domain.AggregateRoots;
 using Domain.Common;
+using Domain.DomainEvents;
 using Domain.Enums;
 using System;
 using System.Collections.Generic;

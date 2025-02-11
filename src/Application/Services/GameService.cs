@@ -19,17 +19,23 @@ namespace Application.Services
     {
         private readonly IGenericRepository<Game> _gameRepository;
         private readonly IGenericRepository<Match> _matchRepository;
+        private readonly IGenericRepository<Standing> _standingrepository;
+        private readonly IStandingService _standingService;
         private readonly IMatchService _matchService;
         private readonly ILogger<GameService> _logger;
 
 
         public GameService(IGenericRepository<Game> gameRepository,
                            IGenericRepository<Match> matchRepository,
+                           IGenericRepository<Standing> standingRepository,
+                           IStandingService standingService,
                            IMatchService matchService,
                            ILogger<GameService> logger)
         {
             _gameRepository = gameRepository;
             _matchRepository = matchRepository;
+            _standingrepository = standingRepository;
+            _standingService = standingService;
             _matchService = matchService;
             _logger = logger;
         }
@@ -98,7 +104,16 @@ namespace Application.Services
 
                 var result = await DetermineMatchWinner(match.Id);
 
-                return result is not null ? new MatchResultDTO(result.WinnerId, result.LoserId) : null;
+                if (result is not null)
+                {
+                    var standing = await _standingrepository.Get(match.StandingId);
+
+                    await _standingService.CheckAndMarkStandingAsFinishedAsync(standing.TournamentId);
+
+                    return new MatchResultDTO(result.WinnerId, result.LoserId);
+                }
+
+                return null;
             }
             catch (Exception ex)
             {

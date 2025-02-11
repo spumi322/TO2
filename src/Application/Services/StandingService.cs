@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Domain.AggregateRoots;
+using Domain.DomainEvents;
 using Domain.Entities;
 using Domain.Enums;
 using Microsoft.Extensions.Logging;
@@ -14,12 +15,15 @@ namespace Application.Services
     public class StandingService : IStandingService
     {
         private readonly IGenericRepository<Standing> _standingRepository;
+        private readonly IGenericRepository<Match> _matchRepository;
         private readonly ILogger<StandingService> _logger;
 
         public StandingService(IGenericRepository<Standing> standingRepository,
+                               IGenericRepository<Match> matchRepository,
                                ILogger<StandingService> logger)
         {
             _standingRepository = standingRepository;
+            _matchRepository = matchRepository;
             _logger = logger;   
         }
 
@@ -55,6 +59,29 @@ namespace Application.Services
 
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task CheckAndMarkStandingAsFinishedAsync(long tournamentId)
+        {
+            var taskStandings = GetStandingsAsync(tournamentId);
+            List<Standing> standings = await taskStandings;
+
+            foreach (var standing in standings)
+            {
+                var taskMatches = _matchRepository.GetAllByFK("StandingId", standing.Id);
+                IReadOnlyList<Match> matches = await taskMatches;
+
+                foreach (var match in matches)
+                {
+                    if (matches.All(m => m.WinnerId != null && m.LoserId != null))
+                    {
+                        standing.AddDomainEvent(new StandingFinishedEvent(standing.Id));
+                    }
+                }
+
+                await _standingRepository.Save();
+            }
+
         }
     }
 }
