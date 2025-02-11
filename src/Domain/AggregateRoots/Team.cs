@@ -1,6 +1,5 @@
 ﻿using Domain.Common;
 using Domain.Entities;
-using Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +11,7 @@ namespace Domain.AggregateRoots
     public class Team : AggregateRootBase
     {
         private readonly List<Player> _players = new ();
-        private readonly List<TeamsTournaments> _teamsTournaments = new();
+        private readonly List<TournamentParticipants> _tournamentParticipants = new();
 
         private Team()
         {
@@ -22,6 +21,6 @@ namespace Domain.AggregateRoots
 
         public IReadOnlyList<Player> Players => _players;
 
-        public IReadOnlyList<TeamsTournaments> TeamsTournaments => _teamsTournaments;
+        public IReadOnlyList<TournamentParticipants> TournamentParticipants => _tournamentParticipants;
     }
 }

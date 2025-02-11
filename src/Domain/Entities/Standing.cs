@@ -13,6 +13,7 @@ namespace Domain.Entities
     public class Standing : EntityBase
     {
         private readonly List<Match> _matches = new();
+        private readonly List<TournamentParticipants> _tournamentParticipants = new();
 
         private Standing()
         {
@@ -49,5 +50,8 @@ namespace Domain.Entities
         public bool IsSeeded { get; set; }
 
         public IReadOnlyList<Match> Matches => _matches;
+
+        public IReadOnlyList<TournamentParticipants> TournamentParticipants => _tournamentParticipants;
+
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Domain.AggregateRoots;
 using Domain.Entities;
-using Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -18,7 +17,7 @@ namespace Application.Contracts
         DbSet<Player> Players { get; }
         DbSet<Standing> Standings { get; }
         DbSet<Game> Games { get; }
-        DbSet<TeamsTournaments> TeamsTournaments { get; }
+        DbSet<TournamentParticipants> TeamsTournaments { get; }
 
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
