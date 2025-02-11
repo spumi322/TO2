@@ -17,7 +17,7 @@ namespace Application.Contracts
         DbSet<Player> Players { get; }
         DbSet<Standing> Standings { get; }
         DbSet<Game> Games { get; }
-        DbSet<TournamentParticipants> TeamsTournaments { get; }
+        DbSet<TournamentParticipants> TournamentParticipants { get; }
 
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

@@ -3,6 +3,7 @@ using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
+using Domain.Entities;
 using Domain.Enums;
 using Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -145,7 +146,7 @@ namespace Application.Services
 
         public async Task<List<GetTeamResponseDTO>> GetTeamsByTournamentAsync(long tournamentId)
         {
-            var teams = await _dbContext.TeamsTournaments
+            var teams = await _dbContext.TournamentParticipants
                 .Where(tt => tt.TournamentId == tournamentId)
                 .Select(tt => tt.Team)
                 .ToListAsync();
@@ -164,11 +165,17 @@ namespace Application.Services
                 throw new Exception("Tournament is full");
             }
 
-            var teamTournamentEntry = new TeamsTournaments { TeamId = existingTeam.Id, TournamentId = existingTournament.Id };
+            var teamTournamentEntry = new TournamentParticipants {
+                TeamId = existingTeam.Id,
+                TournamentId = existingTournament.Id,
+                StandingId = null,
+                Status = TeamStatus.SignedUp,
+                Eliminated = false
+            };
 
             try
             {
-               await _dbContext.TeamsTournaments.AddAsync(teamTournamentEntry);
+               await _dbContext.TournamentParticipants.AddAsync(teamTournamentEntry);
                await _dbContext.SaveChangesAsync();
 
                return new AddTeamToTournamentResponseDTO(teamTournamentEntry.TeamId, teamTournamentEntry.TournamentId);
@@ -188,9 +195,9 @@ namespace Application.Services
 
             try
             {
-                await _dbContext.TeamsTournaments
+                await _dbContext.TournamentParticipants
                     .Where(tt => tt.TeamId == existingTeam.Id && tt.TournamentId == existingTournament.Id)
-                    .ForEachAsync(tt => _dbContext.TeamsTournaments.Remove(tt));
+                    .ForEachAsync(tt => _dbContext.TournamentParticipants.Remove(tt));
                 await _dbContext.SaveChangesAsync();
             }
             catch (Exception)
