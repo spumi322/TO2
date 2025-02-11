@@ -1,23 +1,15 @@
-<div class="tournament-bracket">
-  <div class="round round-1">
-    <div class="match">
-      <div class="team">Team 1</div>
-      <div class="team">Team 2</div>
-    </div>
-    <div class="match">
-      <div class="team">Team 3</div>
-      <div class="team">Team 4</div>
-    </div>
-  </div>
-  <div class="round round-2">
-    <div class="match">
-      <div class="team">Winner 1</div>
-      <div class="team">Winner 2</div>
-    </div>
-  </div>
-  <div class="round round-3">
-    <div class="match">
-      <div class="team">Champion</div>
+<div class="bracket-container">
+  <div class="round" *ngFor="let round of rounds; let roundIndex = index">
+    <h3>Round {{ roundIndex + 1 }}</h3>
+    <div class="match" *ngFor="let match of round; let matchIndex = index">
+      <div class="team">
+        <span>{{ match.team1 }}</span>
+        <span class="score">{{ match.team1Score }}</span>
+      </div>
+      <div class="team">
+        <span>{{ match.team2 }}</span>
+        <span class="score">{{ match.team2Score }}</span>
+      </div>
     </div>
   </div>
 </div>

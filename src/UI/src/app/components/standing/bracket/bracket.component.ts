@@ -1,6 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Standing } from '../../../models/standing';
-import { TreeNode } from 'primeng/api';
 
 @Component({
   selector: 'app-standing-bracket',
@@ -12,6 +11,14 @@ export class BracketComponent implements OnInit {
   rounds: any[] = [];
 
   ngOnInit() {
+    this.generateBracket();
+  }
+
+  ngOnChanges() {
+    this.generateBracket();
+  }
+
+  generateBracket(): void {
     if (this.brackets.length > 0) {
       const maxTeams = this.brackets[0].maxTeams;
       this.rounds = this.createBracketStructure(maxTeams);
@@ -26,7 +33,12 @@ export class BracketComponent implements OnInit {
       const matches = Math.pow(2, rounds - i - 1);
       const round = [];
       for (let j = 0; j < matches; j++) {
-        round.push({ team1: 'TBA', team2: 'TBA' });
+        round.push({
+          team1: `Team ${j * 2 + 1}`,
+          team2: `Team ${j * 2 + 2}`,
+          team1Score: 0,
+          team2Score: 0  
+        });
       }
       structure.push(round);
     }
@@ -34,4 +46,3 @@ export class BracketComponent implements OnInit {
     return structure;
   }
 }
-
