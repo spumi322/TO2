@@ -1,12 +1,11 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Standing } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
-import { Observable, forkJoin, map, of, switchMap } from 'rxjs';
-import { MatchService } from '../../../services/match/match.service';
-import { Match } from '../../../models/match';
-import { Team } from '../../../models/team';
-import { MatchFinishedIds } from '../../../models/matchresult';
+import { Observable, catchError, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { Tournament } from '../../../models/tournament';
+import { TeamService } from '../../../services/team/team.service';
+import { MatchService } from '../../../services/match/match.service';
+import { MatchFinishedIds } from '../../../models/matchresult';
 
 @Component({
   selector: 'app-standing-group',
@@ -14,57 +13,54 @@ import { Tournament } from '../../../models/tournament';
   styleUrl: './group.component.css'
 })
 export class GroupComponent implements OnInit {
-  @Input() tournament: Tournament | null = null;
-  groups$: Observable<Standing[] | null> = of(null);
-  groups: Standing[] | null = [];
+  @Input() tournament!: Tournament;
 
-  constructor(private standingService: StandingService, private matchService: MatchService) { }
+  groups$: Observable<Standing[]> = of([]);
+  groups: Standing[] = [];
 
-  ngOnInit() {
-    if (this.tournament && this.tournament.id) {
-      this.groups$ = this.standingService.getGroupsByTournamentId(this.tournament.id).pipe(
-        switchMap(groups => {
-          const groupDetails$ = groups.map(group =>
-            this.matchService.getMatchesByStandingId(group.id).pipe(
-              switchMap(matches =>
-                this.standingService.getTeamsByStandingId(group.id).pipe(
-                  map(teams => {
-                    const teamStandings = teams.map(team => ({
-                      ...team,
-                      wins: 0,
-                      losses: 0,
-                      points: 0
-                    }));
-                    return { ...group, matches, teams: teamStandings };
-                  })
-                )
-              )
+  constructor(
+    private standingService: StandingService,
+    private matchService: MatchService) { }
+
+  ngOnInit(): void {
+    if (this.tournament.id) {
+      this.groups$ = this.standingService.getGroupsWithTeamsByTournamentId(this.tournament.id).pipe(
+        switchMap((groupsWithTeams) => {
+          const groupDetails$ = groupsWithTeams.map(({ standing, teams }) =>
+            forkJoin({
+              teams,
+              matches: this.matchService.getMatchesByStandingId(standing.id)
+            }).pipe(
+              map(({ teams, matches }) => ({
+                ...standing,
+                teams: teams ?? [],
+                matches: matches ?? []
+              }))
             )
           );
+
           return forkJoin(groupDetails$);
-        })
+        }),
+        catchError(() => of([]))
       );
-    }
-    this.groups$.subscribe(groups => {
-      this.groups = groups;
-    });
-  }
 
-  private loadGroupStandings(tournamentId: number): Observable<Standing[]> {
-    return this.standingService.getGroupsByTournamentId(tournamentId).pipe(
-      switchMap(groups =>
-        this.standingService.getStandingsByTournamentId(tournamentId)
-      )
-    );
-  }
-
-  onGameResultUpdated() {
-    if (this.tournament && this.tournament.id) {
-      this.groups$ = this.loadGroupStandings(this.tournament.id);
-      this.groups$.subscribe(groups => {
+      this.groups$.subscribe((groups) => {
         this.groups = groups;
       });
     }
+  }
+
+  onMatchFinished(matchUpdate: MatchFinishedIds): void {
+    console.log('Match Finished:', matchUpdate);
+
+    this.groups = this.groups.map(group => ({
+      ...group,
+      matches: group.matches.map(match =>
+        match.id === matchUpdate.id
+          ? { ...match, winnerId: matchUpdate.winnerId, loserId: matchUpdate.loserId }
+          : match
+      )
+    }));
   }
 }
 

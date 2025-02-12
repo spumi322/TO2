@@ -8,15 +8,34 @@
   </thead>
   <tbody>
     <tr *ngFor="let match of matches">
+      <!-- Team A -->
       <td [ngClass]="{'winner': match.winnerId === match.teamAId, 'loser': match.loserId === match.teamAId}">
         {{ getTeamName(match.teamAId) }}
       </td>
+
+      <!-- Score Controls -->
       <td>
-        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.teamAId, match.result.teamAWins + 1, match.result.teamBWins)">+</button>
-        {{ match.result.teamAWins }} -
-        {{ match.result.teamBWins }}
-        <button pButton type="button" icon="pi pi-plus" class="p-button-rounded p-button-primary" (click)="updateMatchScore(match.id, match.teamBId, match.result.teamAWins, match.result.teamBWins + 1)">+</button>
+        <button pButton
+                type="button"
+                icon="pi pi-plus"
+                class="p-button-rounded p-button-primary"
+                (click)="updateMatchScore(match.id, match.teamAId, match.result.teamAWins + 1, match.result.teamBWins)"
+                [disabled]="match.winnerId || isUpdating[match.id]">
+        </button>
+
+        <span *ngIf="!isUpdating[match.id]">{{ match.result.teamAWins }} - {{ match.result.teamBWins }}</span>
+        <span *ngIf="isUpdating[match.id]" class="loading-spinner">Updating...</span>
+
+        <button pButton
+                type="button"
+                icon="pi pi-plus"
+                class="p-button-rounded p-button-primary"
+                (click)="updateMatchScore(match.id, match.teamBId, match.result.teamAWins, match.result.teamBWins + 1)"
+                [disabled]="match.winnerId || isUpdating[match.id]">
+        </button>
       </td>
+
+      <!-- Team B -->
       <td [ngClass]="{'winner': match.winnerId === match.teamBId, 'loser': match.loserId === match.teamBId}">
         {{ getTeamName(match.teamBId) }}
       </td>

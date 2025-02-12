@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Team;
+using Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TO2.Controllers
@@ -50,6 +51,13 @@ namespace TO2.Controllers
             await _teamService.DeleteTeamAsync(id);
 
             return NoContent();
+        }
+
+        // GET: api/5/teams-with-stats
+        [HttpGet("{standingId}/teams-with-stats")]
+        public async Task<IActionResult> GetTeamsWithStats(long standingId)
+        {
+            return Ok(await _teamService.GetTeamsWithStatsAsync(standingId));
         }
     }
 }

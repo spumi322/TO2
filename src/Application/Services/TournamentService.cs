@@ -170,7 +170,11 @@ namespace Application.Services
                 TournamentId = existingTournament.Id,
                 StandingId = null,
                 Status = TeamStatus.SignedUp,
-                Eliminated = false
+                Eliminated = false,
+                Wins = 0,
+                Losses = 0,
+                Points = 0,
+                TeamName = existingTeam.Name,
             };
 
             try

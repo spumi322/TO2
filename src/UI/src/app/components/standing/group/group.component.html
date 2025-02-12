@@ -1,38 +1,33 @@
 <div class="group-container">
-  <div *ngFor="let group of groups" class="group-card">
-    <p-card>
-      <ng-template pTemplate="header">
-        <h2>{{ group.name }}</h2>
-        <h3>Standings</h3>
-      </ng-template>
-      <div>
-        <table class="group-standings">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Team</th>
-              <th>W-L</th>
-              <th>Points</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let team of group.teams; let rank = index">
-              <td>
-                <span class="team-rank">{{ rank + 1 }}</span>
-              </td>
-              <td>
-                <div class="team-info">
-                  <span class="team-name">{{ team.name }}</span>
-                </div>
-              </td>
-              <td>{{ team.wins }}-{{ team.losses }}</td>
-              <td>{{ team.points }}</td>
-            </tr>
-          </tbody>
-        </table>
-        <h3>Matches</h3>
-        <app-matches [teams]="group.teams" [matches]="group.matches" (matchFinished)="onGameResultUpdated($event)"></app-matches>
-      </div>
-    </p-card>
+  <div class="group-card" *ngFor="let group of groups">
+    <div class="group-header">{{ group.name }}</div>
+
+    <!-- Team Standings Table -->
+    <table class="group-standings">
+      <thead>
+        <tr>
+          <th>Team</th>
+          <th>W</th>
+          <th>L</th>
+          <th>PTS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let team of group.teams; let i = index">
+          <td class="team-rank">{{ i + 1 }}</td>
+          <td class="team-name">{{ team.name }}</td>
+          <td>{{ team.wins }}</td>
+          <td>{{ team.losses }}</td>
+          <td>{{ team.points }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Matches for Each Group -->
+    <h4>Matches</h4>
+    <app-matches [matches]="group.matches"
+                 [teams]="group.teams"
+                 (matchFinished)="onMatchFinished($event)">
+    </app-matches>
   </div>
 </div>

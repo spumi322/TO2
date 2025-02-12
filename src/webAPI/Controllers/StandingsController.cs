@@ -12,18 +12,15 @@ namespace TO2.Controllers
         private readonly IStandingService _standingService;
         private readonly IMatchService _matchService;
         private readonly IGameService _gameService;
-        private readonly ITeamService _teamService;
 
         public StandingsController(
             IStandingService standingService,
             IMatchService matchService,
-            IGameService gameService,
-            ITeamService teamService)
+            IGameService gameService)
         {
             _standingService = standingService;
             _matchService = matchService;
             _gameService = gameService;
-            _teamService = teamService;
         }
 
         [HttpGet("{tournamentId}")]
@@ -31,13 +28,6 @@ namespace TO2.Controllers
         {
             return Ok(await _standingService.GetStandingsAsync(tournamentId));
         }
-
-        [HttpGet("{standingId}/teams")]
-        public async Task<IActionResult> GetTeams(long standingId)
-        {
-            return Ok(await _matchService.GetTeamsAsync(standingId));
-        }
-
 
         [HttpPost("{tournamentId}/generate-groupmatches")]
         public async Task<IActionResult> GenerateGroupMatches(long tournamentId)

@@ -2,6 +2,7 @@
 using Application.DTOs.Team;
 using AutoMapper;
 using Domain.AggregateRoots;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -14,14 +15,17 @@ namespace Application.Services
     public class TeamService : ITeamService
     {
         private readonly IGenericRepository<Team> _teamRepository;
+        private readonly ITO2DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<TeamService> _logger;
 
         public TeamService(IGenericRepository<Team> teamRepository,
+                           ITO2DbContext dbContext,
                            IMapper mapper,
                            ILogger<TeamService> logger)
         {
             _teamRepository = teamRepository;
+            _dbContext = dbContext;
             _mapper = mapper;
             _logger = logger;
         }
@@ -50,6 +54,15 @@ namespace Application.Services
             var teams = await _teamRepository.GetAll();
 
             return _mapper.Map<List<GetAllTeamsResponseDTO>>(teams);
+        }
+
+        public async Task<List<GetTeamWithStatsResponseDTO>> GetTeamsWithStatsAsync(long standingId)
+        {
+            var participants = await _dbContext.TournamentParticipants
+                .Where(tp => tp.StandingId == standingId)
+                .ToListAsync();
+
+            return _mapper.Map<List<GetTeamWithStatsResponseDTO>>(participants) ?? throw new Exception("Participants not found");
         }
 
         public async Task<GetTeamResponseDTO> GetTeamAsync(long teamId)

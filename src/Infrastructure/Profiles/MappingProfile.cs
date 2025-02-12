@@ -2,6 +2,7 @@
 using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,9 +25,12 @@ namespace Infrastructure.Profiles
             CreateMap<Team, CreateTeamResponseDTO>();
             CreateMap<Team, GetTeamResponseDTO>();
             CreateMap<Team, UpdateTeamResponseDTO>();
-            CreateMap<UpdateTeamRequestDTO, Team>();    
+            CreateMap<UpdateTeamRequestDTO, Team>();
             CreateMap<Team, GetAllTeamsResponseDTO>();
             CreateMap<GetTeamResponseDTO, Team>();
+            CreateMap<TournamentParticipants, GetTeamWithStatsResponseDTO>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.TeamName))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TeamId));
         }
     }
 }

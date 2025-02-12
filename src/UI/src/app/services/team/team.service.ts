@@ -15,4 +15,8 @@ export class TeamService {
   getAllTeams(): Observable<Team[]> {
     return this.http.get<Team[]>(`${this.apiUrl}/all`);
   }
+
+  getTeamsWithStatsByStandingId(standingId: number): Observable<Team[]> {
+    return this.http.get<Team[]>(`${this.apiUrl}/${standingId}/teams-with-stats`);
+  }
 }

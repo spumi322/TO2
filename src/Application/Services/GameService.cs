@@ -175,42 +175,28 @@ namespace Application.Services
 
         public async Task UpdateStandingAfterMatch(Match match)
         {
-            var standing = await _standingrepository.Get(match.StandingId) ?? throw new Exception("Standing not found");
+            var standing = await _standingrepository.Get(match.StandingId)
+                ?? throw new Exception("Standing not found");
 
-            var participants = await _dbContext.TournamentParticipants
-                .Where(tp => tp.StandingId == standing.Id)
-                .Include(tp => tp.Team)
-                .ToListAsync();
+            var teamA = await _dbContext.TournamentParticipants
+                .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamAId && tp.StandingId == standing.Id);
 
-            foreach (var participant in participants)
+            var teamB = await _dbContext.TournamentParticipants
+                .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamBId && tp.StandingId == standing.Id);
+
+            if (teamA == null || teamB == null) throw new Exception("Teams not found");
+
+            if (match.WinnerId == teamA.TeamId)
             {
-                participant.Wins = 0;
-                participant.Losses = 0;
-                participant.Points = 0;
+                teamA.Wins += 1;
+                teamA.Points += 3;
+                teamB.Losses += 1;
             }
-
-            var matches = await _matchRepository.GetAllByFK("standingId", standing.Id);
-
-            foreach (var m in matches)
+            else if (match.WinnerId == teamB.TeamId)
             {
-                var teamA = participants.FirstOrDefault(t => t.TeamId == m.TeamAId);
-                var teamB = participants.FirstOrDefault(t => t.TeamId == m.TeamBId);
-
-                if (teamA != null && teamB != null)
-                {
-                    if (m.WinnerId == teamA.TeamId)
-                    {
-                        teamA.Wins += 1;
-                        teamA.Points += 3;
-                        teamB.Losses += 1;
-                    }
-                    else if (m.WinnerId == teamB.TeamId)
-                    {
-                        teamB.Wins += 1;
-                        teamB.Points += 3;
-                        teamA.Losses += 1;
-                    }
-                }
+                teamB.Wins += 1;
+                teamB.Points += 3;
+                teamA.Losses += 1;
             }
 
             await _dbContext.SaveChangesAsync();

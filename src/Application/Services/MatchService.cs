@@ -20,7 +20,6 @@ namespace Application.Services
     {
         private readonly IStandingService _standingService;
         private readonly ITournamentService _tournamentService;
-        private readonly ITeamService _teamService;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<Standing> _standingRepository;
         private readonly ITO2DbContext _dbContext;
@@ -29,7 +28,6 @@ namespace Application.Services
 
         public MatchService(IStandingService standingService,
                             ITournamentService tournamentService,
-                            ITeamService teamService,
                             IGenericRepository<Match> matchRepository,
                             IGenericRepository<Standing> standingRepository,
                             ITO2DbContext tO2DbContext,
@@ -38,7 +36,6 @@ namespace Application.Services
         {
             _standingService = standingService;
             _tournamentService = tournamentService;
-            _teamService = teamService;
             _matchRepository = matchRepository;
             _standingRepository = standingRepository;
             _dbContext = tO2DbContext;
@@ -62,32 +59,6 @@ namespace Application.Services
             catch (Exception ex)
             {
                 _logger.LogError("Error getting matches: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<List<Team>> GetTeamsAsync(long standingId)
-        {
-            try
-            {
-                var matchesByStanding = await _matchRepository.GetAllByFK("StandingId", standingId);
-                var teamsA = matchesByStanding.Select(m => m.TeamAId).ToList();
-                var teamsB = matchesByStanding.Select(m => m.TeamBId).ToList();
-                var teamsById = teamsA.Concat(teamsB).Distinct().Order().ToList();
-                var teams = new List<Team>();
-
-                foreach (var teamId in teamsById)
-                {
-                    var response = await _teamService.GetTeamAsync(teamId);
-                    teams.Add(_mapper.Map<Team>(response));
-                }
-
-                return teams;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error getting teams: {0}, Inner Exception: {1}", ex, ex.InnerException);
 
                 throw new Exception(ex.Message);
             }
