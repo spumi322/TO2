@@ -22,5 +22,11 @@ namespace Domain.Entities
 
         public TeamStatus Status { get; set; } = TeamStatus.SignedUp;
         public bool Eliminated { get; set; } = false;
+
+        public int Wins { get; set; } = 0;
+        public int Losses { get; set; } = 0;
+        public int Points { get; set; } = 0;
+
+        public string TeamName { get; set; }
     }
 }

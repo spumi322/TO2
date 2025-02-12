@@ -1,8 +1,10 @@
 ﻿using Application.Contracts;
+using Application.DTOs.Team;
 using Domain.AggregateRoots;
 using Domain.DomainEvents;
 using Domain.Entities;
 using Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,22 +18,25 @@ namespace Application.Services
     {
         private readonly IGenericRepository<Standing> _standingRepository;
         private readonly IGenericRepository<Match> _matchRepository;
+        private readonly ITO2DbContext _dbContext;
         private readonly ILogger<StandingService> _logger;
 
         public StandingService(IGenericRepository<Standing> standingRepository,
                                IGenericRepository<Match> matchRepository,
+                               ITO2DbContext tO2DbContext,
                                ILogger<StandingService> logger)
         {
             _standingRepository = standingRepository;
             _matchRepository = matchRepository;
-            _logger = logger;   
+            _dbContext = tO2DbContext;
+            _logger = logger;
         }
 
         public async Task GenerateStanding(long tournamentId, string name, StandingType type, int? teamsPerStanding)
         {
             try
             {
-                var standing  = new Standing(name, type, DateTime.UtcNow, DateTime.UtcNow, teamsPerStanding);
+                var standing = new Standing(name, type, DateTime.UtcNow, DateTime.UtcNow, teamsPerStanding);
                 standing.TournamentId = tournamentId;
 
                 await _standingRepository.Add(standing);
@@ -81,7 +86,19 @@ namespace Application.Services
 
                 await _standingRepository.Save();
             }
+        }
 
+        public async Task<int> AdvanceTeams(long tournamentId, long standingId)
+        {
+            var standings = await _standingRepository.GetAllByFK("tournamentId", tournamentId);
+            var groups = standings.Where(s => s.Type == StandingType.Group).ToList();
+            var bracket = standings.FirstOrDefault(s => s.Type == StandingType.Bracket);
+
+            if (bracket == null || groups.Count == 0) return 0;
+
+            int teamsToAdvancePerGroup = bracket.MaxTeams / groups.Count;
+
+            return teamsToAdvancePerGroup;
         }
     }
 }

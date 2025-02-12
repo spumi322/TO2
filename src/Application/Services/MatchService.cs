@@ -6,6 +6,7 @@ using Domain.AggregateRoots;
 using Domain.Common;
 using Domain.Entities;
 using Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ namespace Application.Services
         private readonly ITeamService _teamService;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<Standing> _standingRepository;
+        private readonly ITO2DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<MatchService> _logger;
 
@@ -30,6 +32,7 @@ namespace Application.Services
                             ITeamService teamService,
                             IGenericRepository<Match> matchRepository,
                             IGenericRepository<Standing> standingRepository,
+                            ITO2DbContext tO2DbContext,
                             IMapper mapper,
                             ILogger<MatchService> logger)
         {
@@ -38,7 +41,7 @@ namespace Application.Services
             _teamService = teamService;
             _matchRepository = matchRepository;
             _standingRepository = standingRepository;
-
+            _dbContext = tO2DbContext;
             _mapper = mapper;
             _logger = logger;
         }
@@ -150,6 +153,18 @@ namespace Application.Services
                 var standing = standings.FirstOrDefault(s => s.Name == $"Group {i + 1}");
                 bool allMatchesGenerated = true;
 
+                foreach (var team in groups[i])
+                {
+                    var participant = await _dbContext.TournamentParticipants
+                        .FirstOrDefaultAsync(tp => tp.TeamId == team.Id && tp.TournamentId == tournamentId);
+
+                    if (participant != null)
+                    {
+                        participant.StandingId = standing.Id;
+                        participant.Status = TeamStatus.Competing;
+                    }
+                }
+
                 for (int j = 0; j < groups[i].Count; j++)
                 {
                     for (int k = j + 1; k < groups[i].Count; k++)
@@ -174,6 +189,8 @@ namespace Application.Services
                     await _standingRepository.Save();
                 }
             }
+
+            await _dbContext.SaveChangesAsync();
 
             return new SeedGroupsResponseDTO("Groups seeded successfully!", true, seededStandingIds);
         }

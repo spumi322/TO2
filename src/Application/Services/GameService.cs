@@ -5,6 +5,7 @@ using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace Application.Services
         private readonly IGenericRepository<Game> _gameRepository;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<Standing> _standingrepository;
+        private readonly ITO2DbContext _dbContext;
         private readonly IStandingService _standingService;
         private readonly IMatchService _matchService;
         private readonly ILogger<GameService> _logger;
@@ -28,6 +30,7 @@ namespace Application.Services
         public GameService(IGenericRepository<Game> gameRepository,
                            IGenericRepository<Match> matchRepository,
                            IGenericRepository<Standing> standingRepository,
+                           ITO2DbContext dbContext,
                            IStandingService standingService,
                            IMatchService matchService,
                            ILogger<GameService> logger)
@@ -35,6 +38,7 @@ namespace Application.Services
             _gameRepository = gameRepository;
             _matchRepository = matchRepository;
             _standingrepository = standingRepository;
+            _dbContext = dbContext;
             _standingService = standingService;
             _matchService = matchService;
             _logger = logger;
@@ -154,6 +158,8 @@ namespace Application.Services
                     await _matchRepository.Update(match);
                     await _matchRepository.Save();
 
+                    await UpdateStandingAfterMatch(match);
+
                     return new MatchResult(winner.Value, loser);
                 }
 
@@ -165,6 +171,49 @@ namespace Application.Services
 
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task UpdateStandingAfterMatch(Match match)
+        {
+            var standing = await _standingrepository.Get(match.StandingId) ?? throw new Exception("Standing not found");
+
+            var participants = await _dbContext.TournamentParticipants
+                .Where(tp => tp.StandingId == standing.Id)
+                .Include(tp => tp.Team)
+                .ToListAsync();
+
+            foreach (var participant in participants)
+            {
+                participant.Wins = 0;
+                participant.Losses = 0;
+                participant.Points = 0;
+            }
+
+            var matches = await _matchRepository.GetAllByFK("standingId", standing.Id);
+
+            foreach (var m in matches)
+            {
+                var teamA = participants.FirstOrDefault(t => t.TeamId == m.TeamAId);
+                var teamB = participants.FirstOrDefault(t => t.TeamId == m.TeamBId);
+
+                if (teamA != null && teamB != null)
+                {
+                    if (m.WinnerId == teamA.TeamId)
+                    {
+                        teamA.Wins += 1;
+                        teamA.Points += 3;
+                        teamB.Losses += 1;
+                    }
+                    else if (m.WinnerId == teamB.TeamId)
+                    {
+                        teamB.Wins += 1;
+                        teamB.Points += 3;
+                        teamA.Losses += 1;
+                    }
+                }
+            }
+
+            await _dbContext.SaveChangesAsync();
         }
 
     }
