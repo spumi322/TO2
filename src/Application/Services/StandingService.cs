@@ -93,7 +93,7 @@ namespace Application.Services
             await _standingRepository.Save();
         }
 
-        public async Task<int> AdvanceTeams(long tournamentId, long standingId)
+        public async Task<int> TopX(long tournamentId)
         {
             var standings = await _standingRepository.GetAllByFK("tournamentId", tournamentId);
             var groups = standings.Where(s => s.Type == StandingType.Group).ToList();
