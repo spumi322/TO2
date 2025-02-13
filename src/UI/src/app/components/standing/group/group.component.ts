@@ -23,6 +23,10 @@ export class GroupComponent implements OnInit {
     private matchService: MatchService) { }
 
   ngOnInit(): void {
+    this.refreshGroups();
+  }
+
+  refreshGroups(): void {
     if (this.tournament.id) {
       this.groups$ = this.standingService.getGroupsWithTeamsByTournamentId(this.tournament.id).pipe(
         switchMap((groupsWithTeams) => {
@@ -33,12 +37,11 @@ export class GroupComponent implements OnInit {
             }).pipe(
               map(({ teams, matches }) => ({
                 ...standing,
-                teams: teams ?? [],
+                teams: teams?.sort((a, b) => b.points - a.points) || [], // Sort teams by points descending
                 matches: matches ?? []
               }))
             )
           );
-
           return forkJoin(groupDetails$);
         }),
         catchError(() => of([]))
@@ -51,16 +54,7 @@ export class GroupComponent implements OnInit {
   }
 
   onMatchFinished(matchUpdate: MatchFinishedIds): void {
-    console.log('Match Finished:', matchUpdate);
-
-    this.groups = this.groups.map(group => ({
-      ...group,
-      matches: group.matches.map(match =>
-        match.id === matchUpdate.id
-          ? { ...match, winnerId: matchUpdate.winnerId, loserId: matchUpdate.loserId }
-          : match
-      )
-    }));
+    this.refreshGroups();
   }
 }
 

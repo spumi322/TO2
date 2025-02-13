@@ -13,20 +13,32 @@ namespace Application.Services.EventHandling
     public class DomainEventDispatcher : IDomainEventDispatcher
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly List<DomainEvent> _events = new();
 
         public DomainEventDispatcher(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
         }
 
-        public async Task DispatchAsync(DomainEvent domainEvent)
+        public void QueueEvent(DomainEvent domainEvent)
         {
-            var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(domainEvent.GetType());
-            var handlers = _serviceProvider.GetServices(handlerType).Cast<object>().ToList();
+            _events.Add(domainEvent);
+        }
 
-            foreach (var handler in handlers)
+        public async Task DispatchQueuedEvents()
+        {
+            var events = _events.ToList();
+            _events.Clear();
+
+            foreach (var domainEvent in events)
             {
-                await (Task)((dynamic)handler).HandleAsync((dynamic)domainEvent);
+                var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(domainEvent.GetType());
+                var handlers = _serviceProvider.GetServices(handlerType).Cast<object>().ToList();
+
+                foreach (var handler in handlers)
+                {
+                    await (Task)((dynamic)handler).HandleAsync((dynamic)domainEvent);
+                }
             }
         }
     }

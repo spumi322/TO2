@@ -68,24 +68,29 @@ namespace Application.Services
 
         public async Task CheckAndMarkStandingAsFinishedAsync(long tournamentId)
         {
-            var taskStandings = GetStandingsAsync(tournamentId);
-            List<Standing> standings = await taskStandings;
+            var standings = (await GetStandingsAsync(tournamentId))
+                .Where(s => s.IsSeeded)
+                .ToList();
+            var standingsToUpdate = new List<Standing>();
 
             foreach (var standing in standings)
             {
-                var taskMatches = _matchRepository.GetAllByFK("StandingId", standing.Id);
-                IReadOnlyList<Match> matches = await taskMatches;
-
-                foreach (var match in matches)
+                var matches = await _matchRepository.GetAllByFK("StandingId", standing.Id);
+                if (matches.All(m => m.WinnerId != null && m.LoserId != null))
                 {
-                    if (matches.All(m => m.WinnerId != null && m.LoserId != null))
-                    {
-                        standing.AddDomainEvent(new StandingFinishedEvent(standing.Id));
-                    }
+                    standingsToUpdate.Add(standing);
                 }
-
-                await _standingRepository.Save();
             }
+
+            foreach (var standing in standingsToUpdate)
+            {
+                if (!standing.DomainEvents.Any(e => e is StandingFinishedEvent))
+                {
+                    standing.AddDomainEvent(new StandingFinishedEvent(standing.Id));
+                }
+            }
+
+            await _standingRepository.Save();
         }
 
         public async Task<int> AdvanceTeams(long tournamentId, long standingId)

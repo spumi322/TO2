@@ -67,7 +67,6 @@ export class MatchesComponent implements OnInit {
       if (gameToUpdate) {
         this.matchService.setGameResult(gameToUpdate.id, gameResult).subscribe((result: MatchFinishedIds | null) => {
           if (result) {
-            match.id = matchId;
             match.winnerId = result.winnerId;
             match.loserId = result.loserId;
             this.matchFinished.emit(result);

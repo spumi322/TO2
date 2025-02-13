@@ -99,14 +99,20 @@ namespace Infrastructure.Persistence
                 .Select(x => x.Entity)
                 .ToList();
 
-            int result = await base.SaveChangesAsync(cancellationToken);
-
             foreach (var entity in domainEntities)
             {
                 foreach (var domainEvent in entity.DomainEvents)
                 {
-                    await _eventDispatcher.DispatchAsync(domainEvent);
+                    _eventDispatcher.QueueEvent(domainEvent);
                 }
+            }
+
+            int result = await base.SaveChangesAsync(cancellationToken);
+
+            await _eventDispatcher.DispatchQueuedEvents();
+
+            foreach (var entity in domainEntities)
+            {
                 entity.ClearEvents();
             }
 

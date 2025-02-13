@@ -9,6 +9,7 @@ namespace Application.Contracts
 {
     public interface IDomainEventDispatcher
     {
-        Task DispatchAsync(DomainEvent domainEvent);
+        void QueueEvent(DomainEvent domainEvent);
+        Task DispatchQueuedEvents();
     }
 }

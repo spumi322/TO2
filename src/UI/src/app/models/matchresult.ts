@@ -6,7 +6,6 @@ export interface MatchResult {
 }
 
 export interface MatchFinishedIds {
-  id: number;
   winnerId: number;
   loserId: number;
 }
