@@ -11,6 +11,23 @@ namespace Domain.Entities
 {
     public class TournamentParticipants : EntityBase
     {
+        private TournamentParticipants()
+        {
+        }
+
+        public TournamentParticipants(long teamId, long tournamentId, long? standingId, TeamStatus status, bool eliminated, int wins, int losses, int points, string teamName)
+        {
+            TeamId = teamId;
+            TournamentId = tournamentId;
+            StandingId = standingId;
+            Status = TeamStatus.SignedUp;
+            Eliminated = false;
+            Wins = 0;
+            Losses = 0;
+            Points = 0;
+            TeamName = teamName;
+        }
+
         public long TeamId { get; set; }
         public Team Team { get; set; }
 
@@ -20,12 +37,12 @@ namespace Domain.Entities
         public long? StandingId { get; set; }
         public Standing? Standing { get; set; }
 
-        public TeamStatus Status { get; set; } = TeamStatus.SignedUp;
-        public bool Eliminated { get; set; } = false;
+        public TeamStatus Status { get; set; }
+        public bool Eliminated { get; set; }
 
-        public int Wins { get; set; } = 0;
-        public int Losses { get; set; } = 0;
-        public int Points { get; set; } = 0;
+        public int Wins { get; set; }
+        public int Losses { get; set; }
+        public int Points { get; set; }
 
         public string TeamName { get; set; }
     }

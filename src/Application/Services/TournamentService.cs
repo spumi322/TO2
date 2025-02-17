@@ -165,17 +165,16 @@ namespace Application.Services
                 throw new Exception("Tournament is full");
             }
 
-            var teamTournamentEntry = new TournamentParticipants {
-                TeamId = existingTeam.Id,
-                TournamentId = existingTournament.Id,
-                StandingId = null,
-                Status = TeamStatus.SignedUp,
-                Eliminated = false,
-                Wins = 0,
-                Losses = 0,
-                Points = 0,
-                TeamName = existingTeam.Name,
-            };
+            var teamTournamentEntry = new TournamentParticipants(
+                existingTeam.Id,
+                existingTournament.Id,
+                null,
+                TeamStatus.SignedUp,
+                false,
+                0,
+                0,
+                0,
+                existingTeam.Name);
 
             try
             {

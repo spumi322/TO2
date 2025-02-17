@@ -18,16 +18,19 @@ namespace Application.Services
     {
         private readonly IGenericRepository<Standing> _standingRepository;
         private readonly IGenericRepository<Match> _matchRepository;
+        private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly ITO2DbContext _dbContext;
         private readonly ILogger<StandingService> _logger;
 
         public StandingService(IGenericRepository<Standing> standingRepository,
                                IGenericRepository<Match> matchRepository,
+                               IGenericRepository<Tournament> tournamentRepository,
                                ITO2DbContext tO2DbContext,
                                ILogger<StandingService> logger)
         {
             _standingRepository = standingRepository;
             _matchRepository = matchRepository;
+            _tournamentRepository = tournamentRepository;
             _dbContext = tO2DbContext;
             _logger = logger;
         }
@@ -93,17 +96,33 @@ namespace Application.Services
             await _standingRepository.Save();
         }
 
-        public async Task<int> TopX(long tournamentId)
+        public async Task CheckAndMarkAllGroupsAreFinishedAsync(long tournamentId)
         {
-            var standings = await _standingRepository.GetAllByFK("tournamentId", tournamentId);
-            var groups = standings.Where(s => s.Type == StandingType.Group).ToList();
-            var bracket = standings.FirstOrDefault(s => s.Type == StandingType.Bracket);
+            var tournament = await _tournamentRepository.Get(tournamentId);
+            var allGroups = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
+                                .Where(s => s.Type == StandingType.Group)
+                                .ToList();
 
-            if (bracket == null || groups.Count == 0) return 0;
+            if (allGroups.All(ag => ag.IsFinished) &&
+                !tournament.DomainEvents.Any(e => e is AllGroupsFinishedEvent))
+            {
+                tournament.AddDomainEvent(new AllGroupsFinishedEvent(tournamentId));
+            }
 
-            int teamsToAdvancePerGroup = bracket.MaxTeams / groups.Count;
-
-            return teamsToAdvancePerGroup;
+            await _tournamentRepository.Save();
         }
+
+        //public async Task<int> TopX(long tournamentId)
+        //{
+        //    var standings = await _standingRepository.GetAllByFK("tournamentId", tournamentId);
+        //    var groups = standings.Where(s => s.Type == StandingType.Group).ToList();
+        //    var bracket = standings.FirstOrDefault(s => s.Type == StandingType.Bracket);
+
+        //    if (bracket == null || groups.Count == 0) return 0;
+
+        //    int teamsToAdvancePerGroup = bracket.MaxTeams / groups.Count;
+
+        //    return teamsToAdvancePerGroup;
+        //}
     }
 }

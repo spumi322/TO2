@@ -37,15 +37,15 @@ namespace TO2.Controllers
             return result.Success ? Ok(result.StandingId.ToList()) : BadRequest();
         }
 
-        [HttpPost("{tournamentId}/generate-bracketmatches")]
-        public async Task<IActionResult> GenerateBracketMatches(long tournamentId)
-        {
-            List<Team> playOffTeams = [/* get teams from groups result */];
+        //[HttpPost("{tournamentId}/generate-bracketmatches")]
+        //public async Task<IActionResult> GenerateBracketMatches(long tournamentId)
+        //{
+        //    List<Team> playOffTeams = [/* get teams from groups result */];
 
-            await _matchService.SeedBracket(tournamentId, playOffTeams);
+        //    await _matchService.SeedBracket(tournamentId, playOffTeams);
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
         [HttpPost("{standingId}/generate-games")]
         public async Task<IActionResult> GenerateGames(long standingId)
@@ -56,6 +56,14 @@ namespace TO2.Controllers
             {
                 await _gameService.GenerateGames(match.Id);
             }
+
+            return Ok();
+        }
+
+        [HttpPost("{tournamentId}/finish-groups")]
+        public async Task<IActionResult> FinishGroupsAsync(long tournamentId)
+        {
+            await _standingService.CheckAndMarkAllGroupsAreFinishedAsync(tournamentId);
 
             return Ok();
         }

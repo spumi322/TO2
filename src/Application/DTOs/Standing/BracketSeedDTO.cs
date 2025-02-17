@@ -11,6 +11,6 @@ namespace Application.DTOs.Standing
         public long TeamId { get; set; }
         public long GroupId { get; set; }
         public int Placement { get; set; }
-        public string? TeamName { get; set; }
+        public string TeamName { get; set; } = string.Empty;
     }
 }

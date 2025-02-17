@@ -18,45 +18,50 @@ namespace Application.Services.EventHandlers
         private readonly ILogger<AllGroupsFinishedEventHandler> _logger;
         private readonly ITO2DbContext _dbContext;
         private readonly IGenericRepository<Standing> _standingRepository;
-        private readonly IStandingService _standingService;
 
         public AllGroupsFinishedEventHandler(
             ILogger<AllGroupsFinishedEventHandler> logger,
             ITO2DbContext dbContext,
-            IGenericRepository<Standing> standingRepository,
-            IStandingService standingService)
+            IGenericRepository<Standing> standingRepository)
         {
             _logger = logger;
             _dbContext = dbContext;
             _standingRepository = standingRepository;
-            _standingService = standingService;
         }
 
         public async Task HandleAsync(AllGroupsFinishedEvent domainEvent)
         {
             var tournamentId = domainEvent.TournamentId;
             var groups = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
-                .Where(s => s.Type == StandingType.Group);
+                .Where(s => s.Type == StandingType.Group)
+                .ToList();
 
             var bracket = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
                 .Where(s => s.Type == StandingType.Bracket)
                 .FirstOrDefault();
 
-            var topX = await _standingService.TopX(domainEvent.TournamentId);
-            var teamsToAdvanceToBracket = new List<BracketSeedDTO>();
+            var participants = await _dbContext.TournamentParticipants
+                .Where(tp => tp.TournamentId == tournamentId)
+                .ToListAsync();
+
+            var topX = bracket.MaxTeams / groups.Count;
+            var teamsToAdvance = new List<BracketSeedDTO>();
+            var teamsToEliminate = new List<TournamentParticipants>();
 
             foreach (var group in groups)
             {
-                var topTeams = await _dbContext.TournamentParticipants
-                        .Where(tp => tp.TournamentId == tournamentId && tp.StandingId == group.Id)
-                        .OrderByDescending(tp => tp.Points)
-                        .ThenByDescending(tp => tp.Wins)
-                        .Take(topX)
-                        .ToListAsync();
+                var groupParticipants = participants
+                    .Where(tp => tp.StandingId == group.Id)
+                    .OrderByDescending(gp => gp.Points)
+                    .ThenByDescending(gp => gp.Wins)
+                    .ToList();
+
+                var topTeams = groupParticipants.Take(topX).ToList();
+                var bottomTeams = groupParticipants.Skip(topX).ToList();
 
                 for (var i = 0; i < topTeams.Count; i++)
                 {
-                    teamsToAdvanceToBracket.Add(new BracketSeedDTO
+                    teamsToAdvance.Add(new BracketSeedDTO
                     {
                         TeamId = topTeams[i].TeamId,
                         GroupId = group.Id,
@@ -65,34 +70,30 @@ namespace Application.Services.EventHandlers
                     });
                 }
 
-                var bottomTeams = await _dbContext.TournamentParticipants
-                        .Where(tp => tp.TournamentId == tournamentId && tp.StandingId == group.Id)
-                        .OrderByDescending(tp => tp.Points)
-                        .ThenByDescending(tp => tp.Wins)
-                        .Skip(topX)
-                        .ToListAsync();
-
-                foreach (var team in bottomTeams)
-                {
-                    team.Status = TeamStatus.Eliminated;
-                    team.Eliminated = true;
-                }
+                teamsToEliminate.AddRange(bottomTeams);
             }
 
-            foreach (var team in teamsToAdvanceToBracket)
+            foreach (var team in teamsToAdvance)
             {
-                _dbContext.TournamentParticipants.Add(new TournamentParticipants
-                {
-                    TeamId = team.TeamId,
-                    TournamentId = tournamentId,
-                    StandingId = bracket.Id,
-                    Status = TeamStatus.Advanced,
-                    Eliminated = false,
-                    Wins = 0,
-                    Losses = 0,
-                    Points = 0,
-                    TeamName = team.TeamName
-                });
+                var tournamentEntry = new TournamentParticipants(
+                    team.GroupId,
+                    tournamentId,
+                    bracket.Id,
+                    TeamStatus.Advanced,
+                    false,
+                    0,
+                    0,
+                    0,
+                    team.TeamName);
+
+                _dbContext.TournamentParticipants.Add(tournamentEntry);
+            }
+
+            foreach (var team in teamsToEliminate)
+            {
+                team.Status = TeamStatus.Eliminated;
+                team.Eliminated = true;
+                _dbContext.TournamentParticipants.Update(team);
             }
 
             await _dbContext.SaveChangesAsync();
