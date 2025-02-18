@@ -19,15 +19,18 @@ namespace Application.Services.EventHandlers
         private readonly ILogger<AllGroupsFinishedEventHandler> _logger;
         private readonly ITO2DbContext _dbContext;
         private readonly IGenericRepository<Standing> _standingRepository;
+        private readonly IGenericRepository<TournamentParticipants> _participantsRepository;
 
         public AllGroupsFinishedEventHandler(
             ILogger<AllGroupsFinishedEventHandler> logger,
             ITO2DbContext dbContext,
-            IGenericRepository<Standing> standingRepository)
+            IGenericRepository<Standing> standingRepository,
+            IGenericRepository<TournamentParticipants> participantsRepository)
         {
             _logger = logger;
             _dbContext = dbContext;
             _standingRepository = standingRepository;
+            _participantsRepository = participantsRepository;
         }
 
         public async Task HandleAsync(AllGroupsFinishedEvent domainEvent)
@@ -39,15 +42,43 @@ namespace Application.Services.EventHandlers
             var bracket = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
                 .Where(g => g.Type == StandingType.Bracket)
                 .ToList();
-            var topTeams = new List<Team>();
-            var bottomTeams = new List<Team>();
+            var topTeams = new List<TournamentParticipants>();
+            var bottomTeams = new List<TournamentParticipants>();
             var topX = bracket.First().MaxTeams / groups.Count;
 
-            // Get top/bottom teams each group
             foreach (var group in groups)
             {
-                
+                var teams = await _dbContext.TournamentParticipants
+                    .Where(t => t.StandingId == group.Id && t.TournamentId == tournamentId)
+                    .ToListAsync();
+
+                var ordered = teams.OrderByDescending(t => t.Points).ToList();
+
+                topTeams.AddRange(ordered.Take(topX));
+                bottomTeams.AddRange(ordered.Skip(topX));
             }
+
+            foreach (var team in topTeams)
+            {
+
+                team.StandingId = bracket.First().Id;
+                team.Status = TeamStatus.Advanced;
+                team.Wins = 0;
+                team.Losses = 0;
+                team.Points = 0;
+                
+                await _participantsRepository.Add(team);
+            }
+
+            foreach (var team in bottomTeams)
+            {
+                team.Eliminated = true;
+                team.Status = TeamStatus.Eliminated;
+
+                await _participantsRepository.Update(team);
+            }
+
+            await _dbContext.SaveChangesAsync();
         }
     }
 }
