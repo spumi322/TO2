@@ -65,7 +65,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("StandingId");
 
-                    b.ToTable("Matches");
+                    b.ToTable("Matches", (string)null);
                 });
 
             modelBuilder.Entity("Domain.AggregateRoots.Team", b =>
@@ -94,7 +94,7 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Teams");
+                    b.ToTable("Teams", (string)null);
                 });
 
             modelBuilder.Entity("Domain.AggregateRoots.Tournament", b =>
@@ -149,7 +149,7 @@ namespace Infrastructure.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Tournaments");
+                    b.ToTable("Tournaments", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Game", b =>
@@ -197,7 +197,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("MatchId");
 
-                    b.ToTable("Games");
+                    b.ToTable("Games", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Player", b =>
@@ -231,7 +231,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("Players");
+                    b.ToTable("Players", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.Standing", b =>
@@ -286,7 +286,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("Standings");
+                    b.ToTable("Standings", (string)null);
                 });
 
             modelBuilder.Entity("Domain.Entities.TournamentParticipants", b =>
@@ -345,7 +345,7 @@ namespace Infrastructure.Migrations
 
                     b.HasIndex("TournamentId");
 
-                    b.ToTable("TournamentParticipants");
+                    b.ToTable("TournamentParticipants", (string)null);
                 });
 
             modelBuilder.Entity("Domain.AggregateRoots.Match", b =>

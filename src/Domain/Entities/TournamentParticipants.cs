@@ -15,16 +15,19 @@ namespace Domain.Entities
         {
         }
 
-        public TournamentParticipants(long teamId, long tournamentId, long? standingId, TeamStatus status, bool eliminated, int wins, int losses, int points, string teamName)
+        public TournamentParticipants(long teamId, long tournamentId, long standingId,TeamStatus status, string teamName)
         {
             TeamId = teamId;
             TournamentId = tournamentId;
             StandingId = standingId;
-            Status = TeamStatus.SignedUp;
-            Eliminated = false;
-            Wins = 0;
-            Losses = 0;
-            Points = 0;
+            Status = status;
+            TeamName = teamName;
+        }
+
+        public TournamentParticipants(long teamId, long tournamentId, string teamName)
+        {
+            TeamId = teamId;
+            TournamentId = tournamentId;
             TeamName = teamName;
         }
 
@@ -37,12 +40,12 @@ namespace Domain.Entities
         public long? StandingId { get; set; }
         public Standing? Standing { get; set; }
 
-        public TeamStatus Status { get; set; }
-        public bool Eliminated { get; set; }
+        public TeamStatus Status { get; set; } = TeamStatus.SignedUp;
+        public bool Eliminated { get; set; } = false;
 
-        public int Wins { get; set; }
-        public int Losses { get; set; }
-        public int Points { get; set; }
+        public int Wins { get; set; } = 0;
+        public int Losses { get; set; } = 0;
+        public int Points { get; set; } = 0;
 
         public string TeamName { get; set; }
     }

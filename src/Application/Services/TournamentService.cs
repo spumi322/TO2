@@ -168,12 +168,6 @@ namespace Application.Services
             var teamTournamentEntry = new TournamentParticipants(
                 existingTeam.Id,
                 existingTournament.Id,
-                null,
-                TeamStatus.SignedUp,
-                false,
-                0,
-                0,
-                0,
                 existingTeam.Name);
 
             try
