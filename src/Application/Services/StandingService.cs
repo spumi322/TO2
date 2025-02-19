@@ -39,11 +39,11 @@ namespace Application.Services
         {
             try
             {
-                var standing = new Standing(name, type, DateTime.UtcNow, DateTime.UtcNow, teamsPerStanding);
-                standing.TournamentId = tournamentId;
+                //var standing = new Standing(name, teamsPerStanding);
+                //standing.TournamentId = tournamentId;
 
-                await _standingRepository.Add(standing);
-                await _standingRepository.Save();
+                //await _standingRepository.Add(standing);
+                //await _standingRepository.Save();
             }
             catch (Exception ex)
             {
@@ -100,7 +100,7 @@ namespace Application.Services
         {
             var tournament = await _tournamentRepository.Get(tournamentId);
             var allGroups = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
-                                .Where(s => s.Type == StandingType.Group)
+                                .Where(s => s.StandingType == StandingType.Group)
                                 .ToList();
 
             if (allGroups.All(ag => ag.IsFinished) &&

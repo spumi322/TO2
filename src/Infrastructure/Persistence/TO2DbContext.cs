@@ -36,7 +36,8 @@ namespace Infrastructure.Persistence
         public DbSet<Player> Players { get; set; }
         public DbSet<Standing> Standings { get; set; }
         public DbSet<Game> Games { get; set; }
-        public DbSet<TournamentParticipants> TournamentParticipants { get; set; }
+        public DbSet<Group> GroupEntries { get; set; }
+        public DbSet<Bracket> BracketEntries { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -61,33 +62,6 @@ namespace Infrastructure.Persistence
             modelBuilder.Entity<Tournament>()
                 .HasIndex(e => e.Name)
                 .IsUnique();
-
-            //modelBuilder.Entity<TournamentParticipants>()
-            //    .HasKey(tp => new { tp.TeamId, tp.TournamentId });
-
-            //modelBuilder.Entity<TournamentParticipants>()
-            //    .HasOne(tt => tt.Team)
-            //    .WithMany(t => t.TournamentParticipants)
-            //    .HasForeignKey(tt => tt.TeamId);
-
-            //modelBuilder.Entity<TournamentParticipants>()
-            //    .HasOne(tt => tt.Tournament)
-            //    .WithMany(t => t.TournamentParticipants)
-            //    .HasForeignKey(tt => tt.TournamentId);
-
-            //modelBuilder.Entity<TournamentParticipants>()
-            //    .HasOne(tp => tp.Standing)
-            //    .WithMany(s => s.TournamentParticipants)
-            //    .HasForeignKey(tp => tp.StandingId)
-            //    .OnDelete(DeleteBehavior.SetNull);
-
-            //modelBuilder.Entity<TournamentParticipants>()
-            //    .Property(tp => tp.Status)
-            //    .HasConversion<int>();
-
-            //modelBuilder.Entity<TournamentParticipants>()
-            //    .Property(tp => tp.Eliminated)
-            //    .HasDefaultValue(false);
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

@@ -19,13 +19,13 @@ namespace Application.Services.EventHandlers
         private readonly ILogger<AllGroupsFinishedEventHandler> _logger;
         private readonly ITO2DbContext _dbContext;
         private readonly IGenericRepository<Standing> _standingRepository;
-        private readonly IGenericRepository<TournamentParticipants> _participantsRepository;
+        private readonly IGenericRepository<Group> _participantsRepository;
 
         public AllGroupsFinishedEventHandler(
             ILogger<AllGroupsFinishedEventHandler> logger,
             ITO2DbContext dbContext,
             IGenericRepository<Standing> standingRepository,
-            IGenericRepository<TournamentParticipants> participantsRepository)
+            IGenericRepository<Group> participantsRepository)
         {
             _logger = logger;
             _dbContext = dbContext;
@@ -35,40 +35,27 @@ namespace Application.Services.EventHandlers
 
         public async Task HandleAsync(AllGroupsFinishedEvent domainEvent)
         {
-            var tournamentId = domainEvent.TournamentId;
-            var groups = domainEvent.Groups;
-            var bracket = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
-                .Where(g => g.Type == StandingType.Bracket)
-                .FirstOrDefault();
-            var topTeams = new List<TournamentParticipants>();
+            //var tournamentId = domainEvent.TournamentId;
+            //var groups = domainEvent.Groups;
+            //var bracket = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
+            //    .Where(g => g.StandingType == StandingType.Bracket)
+            //    .FirstOrDefault();
+            //var topTeams = new List<Group>();
             //var bottomTeams = new List<TournamentParticipants>();
-            var topX = bracket.MaxTeams / groups.Count;
+            //var topX = bracket.MaxTeams / groups.Count;
 
-            foreach (var group in groups)
-            {
-                var teams = await _dbContext.TournamentParticipants
-                    .Where(t => t.StandingId == group.Id && t.TournamentId == tournamentId)
-                    .ToListAsync();
+            //foreach (var group in groups)
+            //{
+            //    var teams = await _dbContext.TournamentParticipants
+            //        .Where(t => t.StandingId == group.Id && t.TournamentId == tournamentId)
+            //        .ToListAsync();
 
-                var ordered = teams.OrderByDescending(t => t.Points).ToList();
+            //    var ordered = teams.OrderByDescending(t => t.Points).ToList();
 
-                topTeams.AddRange(ordered.Take(topX));
-                //bottomTeams.AddRange(ordered.Skip(topX));
-            }
+            //    topTeams.AddRange(ordered.Take(topX));
+            //    bottomTeams.AddRange(ordered.Skip(topX));
+            //}
 
-            foreach (var team in topTeams)
-            {
-
-                var teamToAdvance = new TournamentParticipants(
-                    team.Id,
-                    tournamentId,
-                    bracket.Id,
-                    TeamStatus.Advanced,
-                    team.TeamName);
-                
-                await _participantsRepository.Add(teamToAdvance);
-                await _participantsRepository.Save();
-            }
 
             //foreach (var team in bottomTeams)
             //{

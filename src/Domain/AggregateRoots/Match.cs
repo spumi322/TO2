@@ -13,9 +13,7 @@ namespace Domain.AggregateRoots
     {
         private readonly List<Game> _games = new();
 
-        private Match()
-        {
-        }
+        private Match() { }
 
         public Match(Team teamA, Team teamB, BestOf bestOf)
         {

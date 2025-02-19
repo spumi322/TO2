@@ -15,19 +15,15 @@ namespace Domain.AggregateRoots
     public class Tournament : AggregateRootBase
     {
         private readonly List<Standing> _standings = new();
-        private readonly List<TournamentParticipants> _tournamentParticipants = new();
+        private readonly List<Group> _tournamentParticipants = new();
 
-        private Tournament()
-        {
-        }
+        private Tournament() { }
 
-        public Tournament(string name, string description, int maxTeams, DateTime startDate, DateTime endDate, Format format, TournamentStatus status)
+        public Tournament(string name, string description, int maxTeams, Format format, TournamentStatus status)
         {
             Name = name;
             Description = description;
             MaxTeams = maxTeams;
-            StartDate = startDate;
-            EndDate = endDate;
             Format = format;
             Status = status;
             IsRegistrationOpen = false;
@@ -42,10 +38,6 @@ namespace Domain.AggregateRoots
 
         [Range(2, 32)]
         public int MaxTeams { get; set; }
-
-        public DateTime? StartDate { get; set; }
-
-        public DateTime? EndDate { get; set; }
 
         [Required]
         [EnumDataType(typeof(Format))]
@@ -65,6 +57,6 @@ namespace Domain.AggregateRoots
 
         public IReadOnlyList<Standing> Standings => _standings;
 
-        public IReadOnlyList<TournamentParticipants> TournamentParticipants => _tournamentParticipants;
+        public IReadOnlyList<Group> TournamentParticipants => _tournamentParticipants;
     }
 }

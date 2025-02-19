@@ -1,0 +1,41 @@
+﻿using Domain.AggregateRoots;
+using Domain.Common;
+using Domain.Enums;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities
+{
+    public class Group : EntityBase
+    {
+        private Group() { }
+
+        public Group(long tournamentId, long standingId, Team team)
+        {
+            TournamentId = tournamentId;
+            StandingId = standingId;
+            TeamId = team.Id;
+            TeamName = team.Name;
+            Team = team;
+        }
+
+        public long TournamentId { get; set; }
+        public Tournament Tournament { get; set; }
+
+        public long StandingId { get; set; }
+        public Standing Standing { get; set; }
+
+        public long TeamId { get; set; }
+        public string TeamName { get; set; }
+        public TeamStatus Status { get; set; } = TeamStatus.Competing;
+        public bool Eliminated { get; set; } = false;
+        public Team Team { get; set; }
+
+        public int Wins { get; set; } = 0;
+        public int Losses { get; set; } = 0;
+        public int Points { get; set; } = 0;
+    }
+}

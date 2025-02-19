@@ -6,8 +6,6 @@ export interface Standing {
   tournamentId: number;
   name: string;
   type: StandingType;
-  startDate: Date;
-  endDate: Date;
   maxTeams: number;
   matches: Match[];
   teams: Team[];

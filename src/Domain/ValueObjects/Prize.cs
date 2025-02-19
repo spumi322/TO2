@@ -9,9 +9,7 @@ namespace Domain.ValueObjects
 {
     public class Prize : ValueObjectBase
     {
-        private Prize()
-        {
-        }
+        private Prize() { }
 
         public int Place { get; private set; }
 

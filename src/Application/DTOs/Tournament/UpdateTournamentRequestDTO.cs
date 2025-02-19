@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs.Tournament
 {
-    public record UpdateTournamentRequestDTO(string Name, string Description, DateTime StartDate, DateTime EndDate);
+    public record UpdateTournamentRequestDTO(string Name, string Description);
 }

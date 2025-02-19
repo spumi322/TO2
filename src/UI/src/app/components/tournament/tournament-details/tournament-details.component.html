@@ -5,10 +5,11 @@
         <img src="../../../../assets/ph_logo.png" alt="Tournament Logo" class="tournament-logo" />
         <div class="header-content">
           <h1>{{ tournament.name }}</h1>
-          <h2>
+          <!--<h2>
             {{ tournament.startDate | date:'MMMM dd, yyyy' }}
-            <span *ngIf="tournament.startDate !== tournament.endDate">- {{ tournament.endDate | date:'MMMM dd, yyyy' }}</span>
-          </h2>
+            <span *ngIf="tournament.startDate !== tournament.
+                  ">- {{ tournament.endDate | date:'MMMM dd, yyyy' }}</span>
+          </h2>-->
         </div>
       </div>
     </ng-template>

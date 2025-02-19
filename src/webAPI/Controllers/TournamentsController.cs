@@ -75,11 +75,11 @@ namespace TO2.Controllers
         }
 
         // POST: api/Tournament/5/5
-        [HttpPost("{teamId}/{tournamentId}")]
-        public async Task<IActionResult> AddTeam(long teamId, long tournamentId)
-        {
-            return Ok(await _tournamentService.AddTeamToTournamentAsync(teamId, tournamentId));
-        }
+        //[HttpPost("{teamId}/{tournamentId}")]
+        //public async Task<IActionResult> AddTeam(long teamId, long tournamentId)
+        //{
+        //    return Ok(await _tournamentService.AddTeamToTournamentAsync(teamId, tournamentId));
+        //}
 
         // DELETE: api/Tournament/5/5
         [HttpDelete("{teamId}/{tournamentId}")]

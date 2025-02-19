@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs.Tournament
 {
-    public record CreateTournamentRequestDTO(string Name, string Description, int MaxTeams, DateTime StartDate, DateTime EndDate, Format Format, int? TeamsPerGroup, int? TeamsPerBracket);
+    public record CreateTournamentRequestDTO(string Name, string Description, int MaxTeams, Format Format, int? TeamsPerGroup, int? TeamsPerBracket);
 }

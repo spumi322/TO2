@@ -96,7 +96,7 @@ namespace Application.Services
                 return new SeedGroupsResponseDTO("Groups are already seeded!", false, seededStandingIds);
             }
 
-            var groupsCount = standings.Count(s => s.Type is StandingType.Group);
+            var groupsCount = standings.Count(s => s.StandingType is StandingType.Group);
             List<GetTeamResponseDTO> teamsDTO = await _tournamentService.GetTeamsByTournamentAsync(tournamentId);
             List<Team> teams = _mapper.Map<List<Team>>(teamsDTO);
 
@@ -126,7 +126,7 @@ namespace Application.Services
 
                 foreach (var team in groups[i])
                 {
-                    var participant = await _dbContext.TournamentParticipants
+                    var participant = await _dbContext.GroupEntries
                         .FirstOrDefaultAsync(tp => tp.TeamId == team.Id && tp.TournamentId == tournamentId);
 
                     if (participant != null)
@@ -170,7 +170,7 @@ namespace Application.Services
         {
             // Get standings and validate bracket hasn't been seeded yet
             var standings = await _standingService.GetStandingsAsync(tournamentId);
-            var bracket = standings.FirstOrDefault(s => s.Type == StandingType.Bracket);
+            var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket);
 
             if (bracket == null)
                 return new BracketSeedResponseDTO("Bracket standing not found!", false);

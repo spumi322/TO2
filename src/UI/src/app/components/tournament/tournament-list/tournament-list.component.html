@@ -11,10 +11,10 @@
           </ng-template>
           <p>{{ tournament.description }}</p>
           <p>Teams: {{ tournament.teams.length }} /{{tournament.maxTeams}}</p>
-          <p>
+          <!--<p>
             Date: {{ tournament.startDate | date:'MMMM dd' }}
             <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>
-          </p>
+          </p>-->
           <ng-template pTemplate="footer">
             <div class="flex gap-3 mt-1">
               <p-button label="Details" (onClick)="goToDetails(tournament.id)" styleClass="w-full" />
@@ -35,10 +35,10 @@
           </ng-template>
           <p>{{ tournament.description }}</p>
           <p>Teams: {{ tournament.teams.length }} /{{tournament.maxTeams}}</p>
-          <p>
+          <!--<p>
             Date: {{ tournament.startDate | date:'MMMM dd' }}
             <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>
-          </p>
+          </p>-->
           <ng-template pTemplate="footer">
             <div class="flex gap-3 mt-1">
               <p-button label="Details" (onClick)="goToDetails(tournament.id)" styleClass="w-full" />
@@ -59,10 +59,10 @@
           </ng-template>
           <p>{{ tournament.description }}</p>
           <p>Teams: {{ tournament.teams.length }} /{{tournament.maxTeams}}</p>
-          <p>
+          <!--<p>
             Date: {{ tournament.startDate | date:'MMMM dd' }}
             <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>
-          </p>
+          </p>-->
           <ng-template pTemplate="footer">
             <div class="flex gap-3 mt-1">
               <p-button label="Details" (onClick)="goToDetails(tournament.id)" styleClass="w-full" />

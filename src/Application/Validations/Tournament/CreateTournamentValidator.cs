@@ -19,18 +19,6 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
              .InclusiveBetween(2, 32)
              .WithMessage("Max teams must be between 2 and 32.");
 
-        // Outcommented for testing purposes
-
-        //RuleFor(x => x.StartDate)
-        //    .NotEmpty()
-        //    .GreaterThan(DateTime.UtcNow)
-        //    .WithMessage("Start date must be in the future.");
-
-        //RuleFor(x => x.EndDate)
-        //    .NotEmpty()
-        //    .GreaterThan(x => x.StartDate)
-        //    .WithMessage("End date must be after the start date.");
-
         RuleFor(x => x.Format)
             .IsInEnum()
             .WithMessage("Invalid tournament format.");

@@ -5,8 +5,6 @@ export interface Tournament {
   name: string;
   description: string;
   maxTeams: number;
-  startDate: Date;
-  endDate: Date;
   format: Format;
   status: TournamentStatus;
   isRegistrationOpen: boolean;

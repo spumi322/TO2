@@ -19,12 +19,6 @@ namespace Application.Validations.Tournament
 
             RuleFor(x => x.Description)
                 .MaximumLength(250);
-
-// Outcommented for development purposes
-
-            //RuleFor(x => x.StartDate).NotEmpty().WithMessage("Start Date is required");
-            //RuleFor(x => x.EndDate).NotEmpty().WithMessage("End Date is required");
-            //RuleFor(x => x.StartDate).LessThan(x => x.EndDate).WithMessage("Start Date must be less than End Date");
         }
     }
 }

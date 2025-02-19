@@ -23,19 +23,18 @@ export class CreateTournamentComponent {
       name: [''],
       description: [''],
       maxTeams: [''],
-      startDate: [''],
-      endDate: [''],
       format: [''],
       teamsPerGroup: [''],
       teamsPerBracket: ['']
     });
   }
 
-  validateEndDate(control: any) {
-    const startDate = this.tournamentForm.get('startDate')?.value;
-    const endDate = control.value;
-    return startDate < endDate ? null : { invalidEndDate: true };
-  }
+  //validate
+  //(control: any) {
+  //  const startDate = this.tournamentForm.get('startDate')?.value;
+  //  const endDate = control.value;
+  //  return startDate < endDate ? null : { invalidEndDate: true };
+  //}
 
   onSubmit() {
     if (this.tournamentForm.valid) {

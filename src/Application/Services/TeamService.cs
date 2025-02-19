@@ -58,7 +58,7 @@ namespace Application.Services
 
         public async Task<List<GetTeamWithStatsResponseDTO>> GetTeamsWithStatsAsync(long standingId)
         {
-            var participants = await _dbContext.TournamentParticipants
+            var participants = await _dbContext.GroupEntries
                 .Where(tp => tp.StandingId == standingId)
                 .ToListAsync();
 

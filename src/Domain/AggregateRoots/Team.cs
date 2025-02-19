@@ -11,16 +11,14 @@ namespace Domain.AggregateRoots
     public class Team : AggregateRootBase
     {
         private readonly List<Player> _players = new ();
-        private readonly List<TournamentParticipants> _tournamentParticipants = new();
+        private readonly List<Group> _tournamentParticipants = new();
 
-        private Team()
-        {
-        }
+        private Team() { }
 
         public string Name { get; private set; }
 
         public IReadOnlyList<Player> Players => _players;
 
-        public IReadOnlyList<TournamentParticipants> TournamentParticipants => _tournamentParticipants;
+        public IReadOnlyList<Group> TournamentParticipants => _tournamentParticipants;
     }
 }

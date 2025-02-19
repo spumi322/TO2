@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(TO2DbContext))]
-    [Migration("20250211152206_AddWinLossScoreToParticipants")]
-    partial class AddWinLossScoreToParticipants
+    [Migration("20250219121206_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -117,9 +117,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("EndDate")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("Format")
                         .HasColumnType("INTEGER");
 
@@ -141,9 +138,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("StartDate")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("Status")
                         .HasColumnType("INTEGER");
 
@@ -153,6 +147,56 @@ namespace Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("Tournaments");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Bracket", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Eliminated")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LastModifiedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("StandingId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("TeamId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TeamName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("TournamentId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StandingId");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("TournamentId");
+
+                    b.ToTable("BracketEntries");
                 });
 
             modelBuilder.Entity("Domain.Entities.Game", b =>
@@ -203,6 +247,65 @@ namespace Infrastructure.Migrations
                     b.ToTable("Games");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Group", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("Eliminated")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("LastModifiedBy")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("Losses")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Points")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("StandingId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<long>("TeamId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("TeamName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("TournamentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("Wins")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StandingId");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("TournamentId");
+
+                    b.ToTable("GroupEntries");
+                });
+
             modelBuilder.Entity("Domain.Entities.Player", b =>
                 {
                     b.Property<long>("Id")
@@ -243,17 +346,11 @@ namespace Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("CanSetMatchScore")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("EndDate")
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsFinished")
@@ -276,13 +373,10 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("StartDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("TournamentId")
+                    b.Property<int>("StandingType")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Type")
+                    b.Property<long>("TournamentId")
                         .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
@@ -290,61 +384,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("TournamentId");
 
                     b.ToTable("Standings");
-                });
-
-            modelBuilder.Entity("Domain.Entities.TournamentParticipants", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<bool>("Eliminated")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("LastModifiedBy")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("LastModifiedDate")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("Losses")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Points")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long?>("StandingId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("TeamId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<long>("TournamentId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("Wins")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StandingId");
-
-                    b.HasIndex("TeamId");
-
-                    b.HasIndex("TournamentId");
-
-                    b.ToTable("TournamentParticipants");
                 });
 
             modelBuilder.Entity("Domain.AggregateRoots.Match", b =>
@@ -356,6 +395,33 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Domain.Entities.Bracket", b =>
+                {
+                    b.HasOne("Domain.Entities.Standing", "Standing")
+                        .WithMany()
+                        .HasForeignKey("StandingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.AggregateRoots.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.AggregateRoots.Tournament", "Tournament")
+                        .WithMany()
+                        .HasForeignKey("TournamentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Standing");
+
+                    b.Navigation("Team");
+
+                    b.Navigation("Tournament");
+                });
+
             modelBuilder.Entity("Domain.Entities.Game", b =>
                 {
                     b.HasOne("Domain.AggregateRoots.Match", null)
@@ -365,29 +431,13 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.Entities.Player", b =>
-                {
-                    b.HasOne("Domain.AggregateRoots.Team", "Team")
-                        .WithMany("Players")
-                        .HasForeignKey("TeamId");
-
-                    b.Navigation("Team");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Standing", b =>
-                {
-                    b.HasOne("Domain.AggregateRoots.Tournament", null)
-                        .WithMany("Standings")
-                        .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Domain.Entities.TournamentParticipants", b =>
+            modelBuilder.Entity("Domain.Entities.Group", b =>
                 {
                     b.HasOne("Domain.Entities.Standing", "Standing")
-                        .WithMany("TournamentParticipants")
-                        .HasForeignKey("StandingId");
+                        .WithMany()
+                        .HasForeignKey("StandingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Domain.AggregateRoots.Team", "Team")
                         .WithMany("TournamentParticipants")
@@ -404,6 +454,26 @@ namespace Infrastructure.Migrations
                     b.Navigation("Standing");
 
                     b.Navigation("Team");
+
+                    b.Navigation("Tournament");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Player", b =>
+                {
+                    b.HasOne("Domain.AggregateRoots.Team", "Team")
+                        .WithMany("Players")
+                        .HasForeignKey("TeamId");
+
+                    b.Navigation("Team");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Standing", b =>
+                {
+                    b.HasOne("Domain.AggregateRoots.Tournament", "Tournament")
+                        .WithMany("Standings")
+                        .HasForeignKey("TournamentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Tournament");
                 });
@@ -430,8 +500,6 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Standing", b =>
                 {
                     b.Navigation("Matches");
-
-                    b.Navigation("TournamentParticipants");
                 });
 #pragma warning restore 612, 618
         }

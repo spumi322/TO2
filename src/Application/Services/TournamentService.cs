@@ -146,7 +146,7 @@ namespace Application.Services
 
         public async Task<List<GetTeamResponseDTO>> GetTeamsByTournamentAsync(long tournamentId)
         {
-            var teams = await _dbContext.TournamentParticipants
+            var teams = await _dbContext.GroupEntries
                 .Where(tt => tt.TournamentId == tournamentId)
                 .Select(tt => tt.Team)
                 .ToListAsync();
@@ -154,36 +154,35 @@ namespace Application.Services
             return _mapper.Map<List<GetTeamResponseDTO>>(teams);
         }
 
-        public async Task<AddTeamToTournamentResponseDTO> AddTeamToTournamentAsync(long teamId, long tournamentId)
-        {
-            var existingTeam = await _teamService.GetTeamAsync(teamId) ?? throw new Exception("Team not found");
-            var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
-            var teamsInTournament = await GetTeamsByTournamentAsync(tournamentId);
+        //public async Task<AddTeamToTournamentResponseDTO> AddTeamToTournamentAsync(long teamId, long tournamentId)
+        //{
+        //    var existingTeam = await _teamService.GetTeamAsync(teamId) ?? throw new Exception("Team not found");
+        //    var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
+        //    var teamsInTournament = await GetTeamsByTournamentAsync(tournamentId);
 
-            if (teamsInTournament.Count >= existingTournament.MaxTeams)
-            {
-                throw new Exception("Tournament is full");
-            }
+        //    if (teamsInTournament.Count >= existingTournament.MaxTeams)
+        //    {
+        //        throw new Exception("Tournament is full");
+        //    }
 
-            var teamTournamentEntry = new TournamentParticipants(
-                existingTeam.Id,
-                existingTournament.Id,
-                existingTeam.Name);
+        //    var teamTournamentEntry = new Group(
+        //        tournamentId,
+        //        );
 
-            try
-            {
-               await _dbContext.TournamentParticipants.AddAsync(teamTournamentEntry);
-               await _dbContext.SaveChangesAsync();
+        //    try
+        //    {
+        //       await _dbContext.TournamentParticipants.AddAsync(teamTournamentEntry);
+        //       await _dbContext.SaveChangesAsync();
 
-               return new AddTeamToTournamentResponseDTO(teamTournamentEntry.TeamId, teamTournamentEntry.TournamentId);
-            }
-            catch (Exception)
-            {
-                _logger.LogError("Error adding team to tournament, teams can only added to a tournament once.");
+        //       return new AddTeamToTournamentResponseDTO(teamTournamentEntry.TeamId, teamTournamentEntry.TournamentId);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        _logger.LogError("Error adding team to tournament, teams can only added to a tournament once.");
 
-                throw new Exception("Error adding team to tournament, teams can only added to a tournament once.");
-            }
-        }
+        //        throw new Exception("Error adding team to tournament, teams can only added to a tournament once.");
+        //    }
+        //}
 
         public async Task RemoveTeamFromTournamentAsync(long teamId, long tournamentId)
         {
@@ -192,9 +191,9 @@ namespace Application.Services
 
             try
             {
-                await _dbContext.TournamentParticipants
+                await _dbContext.GroupEntries
                     .Where(tt => tt.TeamId == existingTeam.Id && tt.TournamentId == existingTournament.Id)
-                    .ForEachAsync(tt => _dbContext.TournamentParticipants.Remove(tt));
+                    .ForEachAsync(tt => _dbContext.GroupEntries.Remove(tt));
                 await _dbContext.SaveChangesAsync();
             }
             catch (Exception)

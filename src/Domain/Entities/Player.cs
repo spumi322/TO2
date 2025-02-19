@@ -10,9 +10,7 @@ namespace Domain.Entities
 {
     public class Player : EntityBase
     {
-        private Player()
-        {
-        }
+        private Player() { }
 
         public string Name { get; private set; }
 

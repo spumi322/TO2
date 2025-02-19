@@ -28,7 +28,7 @@ namespace Infrastructure.Profiles
             CreateMap<UpdateTeamRequestDTO, Team>();
             CreateMap<Team, GetAllTeamsResponseDTO>();
             CreateMap<GetTeamResponseDTO, Team>();
-            CreateMap<TournamentParticipants, GetTeamWithStatsResponseDTO>()
+            CreateMap<Group, GetTeamWithStatsResponseDTO>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.TeamName))
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TeamId));
         }

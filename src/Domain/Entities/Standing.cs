@@ -13,45 +13,30 @@ namespace Domain.Entities
     public class Standing : EntityBase
     {
         private readonly List<Match> _matches = new();
-        private readonly List<TournamentParticipants> _tournamentParticipants = new();
 
-        private Standing()
-        {
-        }
+        private Standing() { }
 
-        public Standing(string name, StandingType type, DateTime startDate, DateTime endDate, int? maxTeams)
+        public Standing(string name, int? maxTeams, StandingType standingType)
         {
             Name = name;
-            Type = type;
-            StartDate = startDate;
-            EndDate = endDate;
             MaxTeams = (int)maxTeams;
-            CanSetMatchScore = false;
-            IsFinished = false;
-            IsSeeded = false;
+            StandingType = standingType;
         }
 
         public long TournamentId { get; set; }
+        public Tournament Tournament { get; set; }
 
         public string Name { get; set; }
 
-        public StandingType Type { get; set; }
-
-        public DateTime StartDate { get; set; }
-
-        public DateTime EndDate { get; set; }
-
         public int MaxTeams { get; set; }
 
-        public bool CanSetMatchScore { get; set; }
+        public StandingType StandingType { get; set; }
 
-        public bool IsFinished { get; set; }
+        public bool IsFinished { get; set; } = false;
 
-        public bool IsSeeded { get; set; }
+        public bool IsSeeded { get; set; } = false;
 
         public IReadOnlyList<Match> Matches => _matches;
-
-        public IReadOnlyList<TournamentParticipants> TournamentParticipants => _tournamentParticipants;
-
     }
 }
+

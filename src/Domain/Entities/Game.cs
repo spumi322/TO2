@@ -10,9 +10,7 @@ namespace Domain.Entities
 {
     public class Game : EntityBase
     {
-        private Game()
-        {
-        }
+        private Game() { }
 
         public Game(Match match, long teamAId, long teamBId)
         {
