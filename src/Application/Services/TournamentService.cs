@@ -232,5 +232,12 @@ namespace Application.Services
                 return new StartTournamentDTO("Tournament already started", false);
             }
         }
+
+        public async Task<IsNameUniqueResponseDTO> CheckNameIsUniqueAsync(string name)
+        {
+            var isUnique = (await _tournamentRepository.GetAll()).Any(t => t.Name == name);
+
+            return new IsNameUniqueResponseDTO(!isUnique);
+        }
     }
 }

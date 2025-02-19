@@ -1,53 +1,75 @@
-<div class="create-tournament-form">
-  <h2>Create New Tournament</h2>
-  <form [formGroup]="tournamentForm" (ngSubmit)="onSubmit()">
-    <div class="p-fluid">
-      <div class="p-field">
-        <label for="name">Tournament Name</label>
-        <input id="name" type="text" pInputText formControlName="name" />
-      </div>
+<mat-card class="create-tournament-card">
+  <mat-horizontal-stepper [linear]="true" #stepper>
+    <!-- Step 1: Basic Details -->
+    <mat-step [stepControl]="basicInfoGroup">
+      <form [formGroup]="basicInfoGroup">
+        <ng-template matStepLabel>Basic Details</ng-template>
 
-      <div class="p-field">
-        <label for="description">Description</label>
-        <textarea id="description" pInputTextarea formControlName="description"></textarea>
-      </div>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Tournament Name</mat-label>
+          <input matInput formControlName="name" placeholder="Enter tournament name" required />
+          <mat-error *ngIf="basicInfoGroup.get('name')?.hasError('required')">Tournament name is required.</mat-error>
+          <mat-error *ngIf="basicInfoGroup.get('name')?.hasError('minlength')">Must be at least 4 characters.</mat-error>
+          <mat-error *ngIf="basicInfoGroup.get('name')?.hasError('nonUnique')">This tournament name is already taken.</mat-error>
+        </mat-form-field>
 
-      <div class="p-field">
-        <label for="maxTeams">Max Teams</label>
-        <input id="maxTeams" type="number" pInputText formControlName="maxTeams" />
-      </div>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Description (Prize Pool, etc.)</mat-label>
+          <textarea matInput formControlName="description" placeholder="Enter description, prize pool, etc."></textarea>
+        </mat-form-field>
 
-      <div class="p-field">
-        <label for="format">Format</label>
-        <p-dropdown id="format" [options]="formatOptions" formControlName="format"></p-dropdown>
-      </div>
+        <div class="button-row">
+          <button mat-button matStepperNext [disabled]="!basicInfoGroup.valid">Next</button>
+        </div>
+      </form>
+    </mat-step>
 
-      <div class="p-field" *ngIf="tournamentForm.get('format')?.value === formatOptions[1].value">
-        <label for="teamsPerGroup">Teams Per Group</label>
-        <input id="teamsPerGroup" type="number" pInputText formControlName="teamsPerGroup" />
-      </div>
+    <!-- Step 2: Tournament Settings -->
+    <mat-step [stepControl]="settingsGroup">
+      <form [formGroup]="settingsGroup">
+        <ng-template matStepLabel>Tournament Settings</ng-template>
 
-      <div class="p-field" *ngIf="tournamentForm.get('format')?.value === formatOptions[1].value">
-        <label for="teamsPerBracket">Teams Per Bracket</label>
-        <input id="teamsPerBracket" type="number" pInputText formControlName="teamsPerBracket" />
-      </div>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Max Teams</mat-label>
+          <input matInput type="number" formControlName="maxTeams" placeholder="Enter maximum teams" required />
+        </mat-form-field>
 
-      <div class="p-field" *ngIf="tournamentForm.get('format')?.value === formatOptions[0].value">
-        <label for="teamsPerBracket">Teams Per Bracket</label>
-        <input id="teamsPerBracket" type="number" pInputText formControlName="teamsPerBracket" />
-      </div>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Format</mat-label>
+          <mat-select formControlName="format" required>
+            <!-- A disabled option as a prompt -->
+            <mat-option value="" disabled>Select format</mat-option>
+            <mat-option *ngFor="let option of formatOptions" [value]="option.value">
+              {{ option.label }}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="settingsGroup.get('format')?.hasError('required')">Format is required.</mat-error>
+        </mat-form-field>
 
-      <div class="p-field">
-        <label for="startDate">Start Date</label>
-        <input id="startDate" type="date" pInputText formControlName="startDate" />
-      </div>
+        <div class="button-row">
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-button matStepperNext [disabled]="!settingsGroup.valid">Next</button>
+        </div>
+      </form>
+    </mat-step>
 
-      <!--<div class="p-field">
-        <label for="endDate">End Date</label>
-        <input id="endDate" type="date" pInputText formControlName="endDate" />
-      </div>-->
+    <!-- Step 3: Schedule -->
+    <mat-step [stepControl]="scheduleGroup">
+      <form [formGroup]="scheduleGroup">
+        <ng-template matStepLabel>Schedule</ng-template>
 
-      <button pButton type="submit" label="Create Tournament"></button>
-    </div>
-  </form>
-</div>
+        <mat-form-field appearance="fill" class="full-width">
+          <mat-label>Start Date</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="startDate" required />
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <div class="button-row">
+          <button mat-button matStepperPrevious>Back</button>
+          <button mat-button color="primary" (click)="onSubmit()" [disabled]="!scheduleGroup.valid">Submit</button>
+        </div>
+      </form>
+    </mat-step>
+  </mat-horizontal-stepper>
+</mat-card>

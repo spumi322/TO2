@@ -1,43 +1,27 @@
-.create-tournament-form {
+.create-tournament-card {
   max-width: 600px;
-  margin: 20px auto;
+  margin: 40px auto;
   padding: 20px;
   border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
 }
 
-  .create-tournament-form h2 {
-    text-align: center;
-    margin-bottom: 20px;
-  }
+.full-width {
+  width: 100%;
+}
 
-.p-fluid {
+.button-row {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 
-.p-field {
+mat-form-field {
   margin-bottom: 20px;
 }
 
-  .p-field label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-  }
-
-  .p-field input,
-  .p-field textarea,
-  .p-field .p-dropdown {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-button {
-  display: block;
-  width: 100%;
-  padding: 10px;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  text-align: center;
+.mat-form-field-label-wrapper .mat-form-field-label {
+  font-size: 16px; /* Adjust the label size as needed */
+  color: #333; /* Adjust the label color as needed */
 }

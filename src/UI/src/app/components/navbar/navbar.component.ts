@@ -1,20 +1,25 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-navbar',
   templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
+  styleUrls: ['./navbar.component.css']  // Fixed to plural "styleUrls"
 })
 export class NavbarComponent {
-  items: MenuItem[] = [
-    { label: 'Home', icon: 'pi pi-home', routerLink: '/' },
-    {
-      label: 'Tournaments',
-      icon: 'pi pi-list',
-      items: [
-        { label: 'Create', icon: 'pi pi-cog', routerLink: '/create-tournament' },
-      ]
-    },
-  ];
+  items: MenuItem[] = []; // You can leave this empty if you're using custom start/end facets
+
+  constructor(private router: Router) { }
+
+  goToCreateTournament(event: Event): void {
+    event.stopPropagation();
+    this.router.navigate(['/create-tournament']);
+  }
+
+  goToSignIn(event: Event): void {
+    event.stopPropagation();
+    // Navigate to a sign in route, for example:
+    this.router.navigate(['/signin']);
+  }
 }

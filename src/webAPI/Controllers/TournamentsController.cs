@@ -98,5 +98,14 @@ namespace TO2.Controllers
 
             return result.Success ? Ok() : BadRequest();
         }
+
+        //checkTournamentNameUnique(name: string) : Observable<boolean> {
+        //        return this.http.get<boolean>(`${this.apiUrl}/check-unique/${name}`)}
+
+        [HttpGet("/check-unique/{name}")]
+        public async Task<IActionResult> CheckTournamentNameIsUnique(string name)
+        {
+            return Ok(await _tournamentService.CheckNameIsUniqueAsync(name));
+        }
     }
 }

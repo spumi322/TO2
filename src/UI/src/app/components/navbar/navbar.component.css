@@ -1,28 +1,80 @@
-/* navbar.component.css */
-.p-menubar {
-  width: 100%; /* Ensures the menubar fills the full width of the viewport */
-  position: fixed; /* Keeps the navbar fixed at the top of the page */
+/* Base navbar styling */
+.navbar {
+  width: 100%;
+  position: fixed;
   top: 0;
   left: 0;
-  z-index: 1000; /* Makes sure the navbar stays on top of other content */
+  z-index: 1000;
+  background-color: #1976d2; /* Modern blue */
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-body {
-  padding-top: 50px; /* Adjust this value based on the actual height of your navbar */
+  /* Start facet (left side) */
+  .navbar .navbar-left {
+    display: flex;
+    align-items: center;
+  }
+
+.home-link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 10px 15px;
 }
 
-.p-menubar .p-menubar-root-list {
+/* End facet (right side) */
+.navbar .navbar-right {
   display: flex;
-  align-items: center; /* Centers items vertically within the navbar */
-  justify-content: center; /* Center items horizontally - modify if you prefer left alignment */
+  align-items: center;
+  gap: 10px;
+  padding-right: 15px;
 }
 
+/* Button styling overrides */
+.create-btn {
+  background-color: #ffffff;
+  border: none;
+  color: #1976d2;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+  .create-btn:hover {
+    background-color: #e3f2fd;
+  }
+
+.signin-btn {
+  background-color: transparent;
+  border: 1px solid #ffffff;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+  .signin-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+/* Adjust body padding so content isn’t hidden behind the fixed navbar */
+body {
+  padding-top: 60px; /* Adjust based on the navbar height */
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
-  .p-menubar .p-menubar-root-list {
-    flex-direction: column;
+  .navbar .navbar-left .home-link {
+    font-size: 1.2rem;
+    padding: 8px 10px;
+  }
+
+  .navbar .navbar-right {
+    gap: 5px;
+    padding-right: 10px;
   }
 
   body {
-    padding-top: 100px; /* Increase padding for smaller screens if the navbar becomes taller */
+    padding-top: 80px; /* Increase if navbar height increases on smaller screens */
   }
 }

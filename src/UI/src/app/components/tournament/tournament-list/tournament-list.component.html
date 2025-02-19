@@ -1,74 +1,67 @@
-<!-- tournament-list.component.html -->
-<div class="tournament-layout">
-  <!-- Upcoming Tournaments -->
-  <div class="tournament-category">
-    <h2>Upcoming</h2>
-    <div class="tournament-container">
-      <ng-container *ngFor="let tournament of ((tournaments$ | async) ?? [] | filterByStatus: 1)">
-        <p-card [header]="tournament.name" [subheader]="'500$'" [style]="{ width: '360px' }">
-          <ng-template pTemplate="header">
-            <img alt="Card" class="tournament-logo" src="../../../../assets/ph_logo.png">
-          </ng-template>
-          <p>{{ tournament.description }}</p>
-          <p>Teams: {{ tournament.teams.length }} /{{tournament.maxTeams}}</p>
-          <!--<p>
-            Date: {{ tournament.startDate | date:'MMMM dd' }}
-            <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>
-          </p>-->
-          <ng-template pTemplate="footer">
-            <div class="flex gap-3 mt-1">
-              <p-button label="Details" (onClick)="goToDetails(tournament.id)" styleClass="w-full" />
-            </div>
-          </ng-template>
-        </p-card>
-      </ng-container>
+<div class="landing-page" *ngIf="groupedTournaments$ | async as tournaments">
+  <!-- Upcoming Tournaments Section -->
+  <section class="tournament-section" *ngIf="tournaments.upcoming.length">
+    <h2 class="section-title">Upcoming Tournaments</h2>
+    <div class="tournament-grid">
+      <div *ngFor="let tournament of tournaments.upcoming; trackBy: trackByTournament"
+           class="tournament-card"
+           (click)="goToDetails(tournament.id)">
+        <div class="card-header">
+          <img class="tournament-logo" src="../../../../assets/ph_logo.png" alt="Logo">
+          <h3 class="tournament-title">{{ tournament.name }}</h3>
+        </div>
+        <p class="tournament-description">{{ tournament.description }}</p>
+        <div class="card-footer">
+          <span class="team-info">Teams: {{ tournament.teams.length }} / {{ tournament.maxTeams }}</span>
+          <button class="details-btn" (click)="action(tournament, $event)">
+            {{ getActionLabel(tournament) }}
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="tournament-category">
-    <h2>Ongoing</h2>
-    <div class="tournament-container">
-      <ng-container *ngFor="let tournament of ((tournaments$ | async) ?? [] | filterByStatus: 2)">
-        <p-card [header]="tournament.name" [subheader]="'500$'" [style]="{ width: '360px' }">
-          <ng-template pTemplate="header">
-            <img alt="Card" class="tournament-logo" src="../../../../assets/ph_logo.png">
-          </ng-template>
-          <p>{{ tournament.description }}</p>
-          <p>Teams: {{ tournament.teams.length }} /{{tournament.maxTeams}}</p>
-          <!--<p>
-            Date: {{ tournament.startDate | date:'MMMM dd' }}
-            <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>
-          </p>-->
-          <ng-template pTemplate="footer">
-            <div class="flex gap-3 mt-1">
-              <p-button label="Details" (onClick)="goToDetails(tournament.id)" styleClass="w-full" />
-            </div>
-          </ng-template>
-        </p-card>
-      </ng-container>
+  <!-- Ongoing Tournaments Section -->
+  <section class="tournament-section" *ngIf="tournaments.ongoing.length">
+    <h2 class="section-title">Ongoing Tournaments</h2>
+    <div class="tournament-grid">
+      <div *ngFor="let tournament of tournaments.ongoing; trackBy: trackByTournament"
+           class="tournament-card"
+           (click)="goToDetails(tournament.id)">
+        <div class="card-header">
+          <img class="tournament-logo" src="../../../../assets/ph_logo.png" alt="Logo">
+          <h3 class="tournament-title">{{ tournament.name }}</h3>
+        </div>
+        <p class="tournament-description">{{ tournament.description }}</p>
+        <div class="card-footer">
+          <span class="team-info">Teams: {{ tournament.teams.length }} / {{ tournament.maxTeams }}</span>
+          <button class="details-btn" (click)="action(tournament, $event)">
+            {{ getActionLabel(tournament) }}
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="tournament-category">
-    <h2>Finished</h2>
-    <div class="tournament-container">
-      <ng-container *ngFor="let tournament of ((tournaments$ | async) ?? [] | filterByStatus: 3)">
-        <p-card [header]="tournament.name" [subheader]="'500$'" [style]="{ width: '360px' }">
-          <ng-template pTemplate="header">
-            <img alt="Card" class="tournament-logo" src="../../../../assets/ph_logo.png">
-          </ng-template>
-          <p>{{ tournament.description }}</p>
-          <p>Teams: {{ tournament.teams.length }} /{{tournament.maxTeams}}</p>
-          <!--<p>
-            Date: {{ tournament.startDate | date:'MMMM dd' }}
-            <span *ngIf="tournament.startDate !== tournament.endDate"> - {{ tournament.endDate | date:'MMMM dd' }}</span>
-          </p>-->
-          <ng-template pTemplate="footer">
-            <div class="flex gap-3 mt-1">
-              <p-button label="Details" (onClick)="goToDetails(tournament.id)" styleClass="w-full" />
-            </div>
-          </ng-template>
-        </p-card>
-      </ng-container>
+  <!-- Finished Tournaments Section -->
+  <section class="tournament-section" *ngIf="tournaments.finished.length">
+    <h2 class="section-title">Finished Tournaments</h2>
+    <div class="tournament-grid">
+      <div *ngFor="let tournament of tournaments.finished; trackBy: trackByTournament"
+           class="tournament-card"
+           (click)="goToDetails(tournament.id)">
+        <div class="card-header">
+          <img class="tournament-logo" src="../../../../assets/ph_logo.png" alt="Logo">
+          <h3 class="tournament-title">{{ tournament.name }}</h3>
+        </div>
+        <p class="tournament-description">{{ tournament.description }}</p>
+        <div class="card-footer">
+          <span class="team-info">Teams: {{ tournament.teams.length }} / {{ tournament.maxTeams }}</span>
+          <button class="details-btn" (click)="action(tournament, $event)">
+            {{ getActionLabel(tournament) }}
+          </button>
+        </div>
+      </div>
     </div>
-  </div>
+  </section>
+</div>

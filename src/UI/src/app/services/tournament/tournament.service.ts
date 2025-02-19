@@ -78,4 +78,8 @@ export class TournamentService {
   startTournament(tournamentId: number) {
     return this.http.put(`${this.apiUrl}/${tournamentId}/start`, {});
   }
+
+  checkTournamentNameUnique(name: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/check-unique/${name}`)
+  }
 }
