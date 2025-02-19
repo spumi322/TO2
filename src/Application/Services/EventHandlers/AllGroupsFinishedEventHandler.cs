@@ -36,15 +36,13 @@ namespace Application.Services.EventHandlers
         public async Task HandleAsync(AllGroupsFinishedEvent domainEvent)
         {
             var tournamentId = domainEvent.TournamentId;
-            var groups = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
-                .Where(g => g.Type == StandingType.Group)
-                .ToList();
+            var groups = domainEvent.Groups;
             var bracket = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
                 .Where(g => g.Type == StandingType.Bracket)
-                .ToList();
+                .FirstOrDefault();
             var topTeams = new List<TournamentParticipants>();
-            var bottomTeams = new List<TournamentParticipants>();
-            var topX = bracket.First().MaxTeams / groups.Count;
+            //var bottomTeams = new List<TournamentParticipants>();
+            var topX = bracket.MaxTeams / groups.Count;
 
             foreach (var group in groups)
             {
@@ -55,30 +53,31 @@ namespace Application.Services.EventHandlers
                 var ordered = teams.OrderByDescending(t => t.Points).ToList();
 
                 topTeams.AddRange(ordered.Take(topX));
-                bottomTeams.AddRange(ordered.Skip(topX));
+                //bottomTeams.AddRange(ordered.Skip(topX));
             }
 
             foreach (var team in topTeams)
             {
 
-                team.StandingId = bracket.First().Id;
-                team.Status = TeamStatus.Advanced;
-                team.Wins = 0;
-                team.Losses = 0;
-                team.Points = 0;
+                var teamToAdvance = new TournamentParticipants(
+                    team.Id,
+                    tournamentId,
+                    bracket.Id,
+                    TeamStatus.Advanced,
+                    team.TeamName);
                 
-                await _participantsRepository.Add(team);
+                await _participantsRepository.Add(teamToAdvance);
+                await _participantsRepository.Save();
             }
 
-            foreach (var team in bottomTeams)
-            {
-                team.Eliminated = true;
-                team.Status = TeamStatus.Eliminated;
+            //foreach (var team in bottomTeams)
+            //{
+            //    team.Eliminated = true;
+            //    team.Status = TeamStatus.Eliminated;
 
-                await _participantsRepository.Update(team);
-            }
-
-            await _dbContext.SaveChangesAsync();
+            //    await _participantsRepository.Update(team);
+            //    await _participantsRepository.Save();
+            //}
         }
     }
 }

@@ -106,7 +106,7 @@ namespace Application.Services
             if (allGroups.All(ag => ag.IsFinished) &&
                 !tournament.DomainEvents.Any(e => e is AllGroupsFinishedEvent))
             {
-                tournament.AddDomainEvent(new AllGroupsFinishedEvent(tournamentId));
+                tournament.AddDomainEvent(new AllGroupsFinishedEvent(tournamentId, allGroups));
             }
 
             await _tournamentRepository.Save();
