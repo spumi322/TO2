@@ -46,7 +46,6 @@ namespace Application.Services
             try
             {
                 var tournament = _mapper.Map<Tournament>(request);
-                tournament.Status = TournamentStatus.Upcoming;
                 tournament.IsRegistrationOpen = true;
 
                 await _tournamentRepository.Add(tournament);

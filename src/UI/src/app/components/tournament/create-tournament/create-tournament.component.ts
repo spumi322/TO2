@@ -1,63 +1,55 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Format, Tournament } from '../../../models/tournament';
+import { TournamentService } from '../../../services/tournament/tournament.service';
 
 @Component({
   selector: 'app-create-tournament',
   templateUrl: './create-tournament.component.html',
-  styleUrls: ['./create-tournament.component.css']
+  styleUrls: ['./create-tournament.component.css'] // Correct property name!
 })
-export class CreateTournamentComponent {
-  basicInfoGroup: FormGroup;
-  settingsGroup: FormGroup;
-  scheduleGroup: FormGroup;
 
-  formatOptions = [
-    { value: 'Bracket', label: 'Bracket' },
-    { value: 'Group', label: 'Group' },
-    { value: 'BracketAndGroup', label: 'Bracket and Group' }
-  ];
+export class CreateTournamentComponent implements OnInit {
+  form!: FormGroup;
+  Format = Format;
 
-  constructor(
-    private fb: FormBuilder,
-    private http: HttpClient,
-    private router: Router
-  ) {
-    this.basicInfoGroup = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(4)]],
-      description: ['']
-    });
+  constructor(private fb: FormBuilder, private tournamentService: TournamentService) { }
 
-    this.settingsGroup = this.fb.group({
-      maxTeams: ['', Validators.required],
-      format: ['', Validators.required]
-    });
-
-    this.scheduleGroup = this.fb.group({
-      startDate: ['', Validators.required]
+  ngOnInit(): void {
+    this.form = this.fb.group({
+      name: ['', Validators.required],
+      description: ['', Validators.required],
+      format: [null, Validators.required],
+      maxTeams: [''],
+      teamsPerGroup: [''],
+      teamsPerBracket: ['']
     });
   }
 
-  onSubmit() {
-    const tournamentData = {
-      name: this.basicInfoGroup.get('name')?.value,
-      description: this.basicInfoGroup.get('description')?.value,
-      maxTeams: this.settingsGroup.get('maxTeams')?.value,
-      format: this.settingsGroup.get('format')?.value,
-      teamsPerGroup: this.settingsGroup.get('format')?.value === 'BracketAndGroup' ? 4 : null,
-      teamsPerBracket: this.settingsGroup.get('format')?.value === 'BracketAndGroup' ? 8 : null
-    };
+  onFormatChange(): void {
+    const format = this.form.get('format')?.value;
+    if (format === Format.BracketOnly) {
+      this.form.get('maxTeams')?.setValidators(Validators.required);
+      this.form.get('teamsPerGroup')?.clearValidators();
+      this.form.get('teamsPerBracket')?.clearValidators();
+    } else if (format === Format.BracketAndGroups) {
+      this.form.get('teamsPerGroup')?.setValidators(Validators.required);
+      this.form.get('teamsPerBracket')?.setValidators(Validators.required);
+      this.form.get('maxTeams')?.clearValidators();
+    }
+    this.form.get('maxTeams')?.updateValueAndValidity();
+    this.form.get('teamsPerGroup')?.updateValueAndValidity();
+    this.form.get('teamsPerBracket')?.updateValueAndValidity();
+  }
 
-    this.http.post('your-backend-api-url/create-tournament', tournamentData)
-      .subscribe(
-        (response) => {
-          console.log('Tournament created successfully:', response);
-          this.router.navigate(['/tournaments']);
-        },
-        (error) => {
-          console.error('Error creating tournament:', error);
-        }
-      );
+  submit(): void {
+    if (this.form.valid) {
+      const newTournament: Tournament = this.form.value;
+
+      this.tournamentService.createTournament(newTournament).subscribe({
+        next: (res) => console.log('Tournament created:', res),
+        error: (err) => console.error('Error creating tournament:', err)
+      });
+    }
   }
 }

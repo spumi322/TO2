@@ -19,14 +19,12 @@ namespace Domain.AggregateRoots
 
         private Tournament() { }
 
-        public Tournament(string name, string description, int maxTeams, Format format, TournamentStatus status)
+        public Tournament(string name, string description, int maxTeams, Format format)
         {
             Name = name;
             Description = description;
             MaxTeams = maxTeams;
             Format = format;
-            Status = status;
-            IsRegistrationOpen = false;
         }
 
         [Required]
@@ -49,9 +47,9 @@ namespace Domain.AggregateRoots
         [EnumDataType(typeof(TournamentStatus))]
         [Range(0, 2)]
         [DefaultValue(TournamentStatus.Upcoming)]
-        public TournamentStatus Status { get; set; }
+        public TournamentStatus Status { get; set; } = TournamentStatus.Upcoming;
 
-        public bool IsRegistrationOpen { get; set; }
+        public bool IsRegistrationOpen { get; set; } = false;
 
         public List<Prize> PrizePool { get; set; }
 

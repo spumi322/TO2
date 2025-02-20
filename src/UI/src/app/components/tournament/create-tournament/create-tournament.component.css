@@ -1,27 +1,87 @@
-.create-tournament-card {
-  max-width: 600px;
-  margin: 40px auto;
+:host {
+  display: block;
   padding: 20px;
+  /* Adjust this value to ensure the card doesn't overlap your navbar */
+  margin-top: 80px;
+  background: #f5f7fa; /* A light background to contrast with the card */
+  min-height: calc(100vh - 80px);
+}
+
+.tournament-form {
+  max-width: 600px;
+  margin: 0 auto;
   border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  background-color: #fff;
+  overflow: hidden;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+  .tournament-form:hover {
+    transform: translateY(-3px);
+  }
+
+mat-card-header {
+  background: #1976d2; /* Use your brand or accent color */
+  color: #fff;
+  padding: 16px;
+}
+
+mat-card-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+mat-card-content {
+  padding: 24px;
 }
 
 .full-width {
   width: 100%;
 }
 
-.button-row {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 20px;
-}
-
 mat-form-field {
-  margin-bottom: 20px;
+  width: 100%;
+  margin-bottom: 16px;
 }
 
-.mat-form-field-label-wrapper .mat-form-field-label {
-  font-size: 16px; /* Adjust the label size as needed */
-  color: #333; /* Adjust the label color as needed */
+  mat-form-field.mat-form-field {
+    background: #fafafa;
+    border-radius: 4px;
+  }
+
+input[matInput],
+textarea[matInput],
+mat-select {
+  font-size: 1rem;
+  padding: 8px;
+}
+
+button[mat-raised-button] {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+  margin-top: 16px;
+}
+
+  button[mat-raised-button]:disabled {
+    background-color: #ccc !important;
+  }
+
+@media (max-width: 600px) {
+  :host {
+    padding: 10px;
+    margin-top: 70px;
+  }
+
+  .tournament-form {
+    margin: 10px;
+  }
+
+  mat-card-content {
+    padding: 16px;
+  }
 }
