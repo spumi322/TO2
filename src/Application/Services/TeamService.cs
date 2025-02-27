@@ -1,7 +1,9 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Team;
+using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
+using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
@@ -15,16 +17,19 @@ namespace Application.Services
     public class TeamService : ITeamService
     {
         private readonly IGenericRepository<Team> _teamRepository;
+        private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly ITO2DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<TeamService> _logger;
 
         public TeamService(IGenericRepository<Team> teamRepository,
+                           IGenericRepository<Tournament> tournamentRepository,
                            ITO2DbContext dbContext,
                            IMapper mapper,
                            ILogger<TeamService> logger)
         {
             _teamRepository = teamRepository;
+            _tournamentRepository = tournamentRepository;
             _dbContext = dbContext;
             _mapper = mapper;
             _logger = logger;
@@ -72,14 +77,6 @@ namespace Application.Services
             return _mapper.Map<GetTeamResponseDTO>(existingTeam) ?? throw new Exception("Team not found");
         }
 
-        //// DTO
-        //public async Task<List<Team>> GetTeamsByTournamentAsync(long tournamentId)
-        //{
-        //    var teams = await _teamRepository.GetAllByFK("TournamentId", tournamentId);
-
-        //    return teams.ToList();
-        //}
-
         public async Task<UpdateTeamResponseDTO> UpdateTeamAsync(long id, UpdateTeamRequestDTO request)
         {
             var existingTeam = await _teamRepository.Get(id) ?? throw new Exception("Team not found");
@@ -114,6 +111,50 @@ namespace Application.Services
 
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task<AddTeamToTournamentResponseDTO> AddTeamToTournamentAsync(AddTeamToTournamentRequestDTO request)
+        {
+            // Validate that both team and tournament exist
+            var team = await _teamRepository.Get(request.TeamId)
+                ?? throw new Exception("Team not found");
+            var tournament = await _tournamentRepository.Get(request.TournamentId)
+                ?? throw new Exception("Tournament not found");
+
+            // Check registration open
+            if (!tournament.IsRegistrationOpen)
+                throw new Exception("Tournament registration is closed");
+
+            // Check if team already in tournament
+            var existingParticipation =  _dbContext.TournamentTeams
+                .FirstOrDefaultAsync(tt => tt.TournamentId == request.TournamentId && tt.TeamId == request.TeamId);
+
+            if (existingParticipation != null)
+                throw new Exception("Team is already registered in this tournament");
+
+            // Check unique team name constraint
+            var sameNameTeamExists = await _dbContext.TournamentTeams
+                .Where(tt => tt.TournamentId == request.TournamentId)
+                .Join(_dbContext.Teams, tt => tt.TeamId, t => t.Id, (tt, t) => t)
+                .AnyAsync(t => t.Name.ToLower() == team.Name.ToLower());
+
+            if (sameNameTeamExists)
+                throw new Exception($"A team with the name '{team.Name}' is already registered in this tournament");
+
+            // Check capacity
+            var currentParticipantsCount = await _dbContext.TournamentTeams
+                .CountAsync(tt => tt.TournamentId == request.TournamentId);
+
+            if (currentParticipantsCount >= tournament.MaxTeams)
+                throw new Exception("Tournament is at maximum capacity");
+
+            // Create and save
+            var tournamentTeam = new TournamentTeam(request.TournamentId, request.TeamId);
+
+            await _dbContext.TournamentTeams.AddAsync(tournamentTeam);
+            await _dbContext.SaveChangesAsync();
+
+            return new AddTeamToTournamentResponseDTO(request.TournamentId, request.TeamId);
         }
     }
 }

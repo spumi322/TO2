@@ -38,6 +38,7 @@ namespace Infrastructure.Persistence
         public DbSet<Game> Games { get; set; }
         public DbSet<Group> GroupEntries { get; set; }
         public DbSet<Bracket> BracketEntries { get; set; }
+        public DbSet<TournamentTeam> TournamentTeams { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -57,11 +58,28 @@ namespace Infrastructure.Persistence
 
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<TournamentTeam>(entity =>
+            {
+                entity.HasKey(tt => new { tt.TournamentId, tt.TeamId });
+
+                entity.HasOne(tt => tt.Tournament)
+                    .WithMany(t => t.TournamentTeams)
+                    .HasForeignKey(tt => tt.TournamentId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(tt => tt.Team)
+                    .WithMany(t => t.TournamentParticipations)
+                    .HasForeignKey(tt => tt.TeamId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(Tournament).Assembly);
 
             modelBuilder.Entity<Tournament>()
                 .HasIndex(e => e.Name)
                 .IsUnique();
+
+
         }
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

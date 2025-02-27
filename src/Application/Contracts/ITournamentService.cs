@@ -19,7 +19,6 @@ namespace Application.Contracts
         Task SoftDeleteTournamentAsync(long id);
         Task SetTournamentStatusAsync(long id, TournamentStatus status);
         Task<List<GetTeamResponseDTO>> GetTeamsByTournamentAsync(long tournamentId);
-        //Task<AddTeamToTournamentResponseDTO> AddTeamToTournamentAsync(long teamId, long tournamentId);
         Task RemoveTeamFromTournamentAsync(long teamId, long tournamentId);
         Task<StartTournamentDTO> StartTournament(long tournamentId);
         Task<IsNameUniqueResponseDTO> CheckNameIsUniqueAsync(string name);

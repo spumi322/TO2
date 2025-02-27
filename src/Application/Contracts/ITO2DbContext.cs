@@ -19,7 +19,7 @@ namespace Application.Contracts
         DbSet<Game> Games { get; }
         DbSet<Group> GroupEntries { get; }
         DbSet<Bracket> BracketEntries { get; }
-
+        DbSet<TournamentTeam> TournamentTeams { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }

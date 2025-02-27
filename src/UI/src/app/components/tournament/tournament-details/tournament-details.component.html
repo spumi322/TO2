@@ -1,88 +1,140 @@
-<div class="tournament-details" *ngIf="tournament$ | async as tournament">
-  <p-card>
-    <ng-template pTemplate="header">
-      <div class="tournament-header">
-        <img src="../../../../assets/ph_logo.png" alt="Tournament Logo" class="tournament-logo" />
-        <div class="header-content">
-          <h1>{{ tournament.name }}</h1>
-          <!--<h2>
-            {{ tournament.startDate | date:'MMMM dd, yyyy' }}
-            <span *ngIf="tournament.startDate !== tournament.
-                  ">- {{ tournament.endDate | date:'MMMM dd, yyyy' }}</span>
-          </h2>-->
-        </div>
+<div class="tournament-details-container" *ngIf="tournament$ | async as tournament">
+  <!-- Tournament Header -->
+  <div class="tournament-header">
+    <div class="header-content">
+      <div class="tournament-badge" [ngClass]="getStatusClass(tournament.status)">
+        {{ getStatusLabel(tournament.status) }}
       </div>
-    </ng-template>
-
-    <p-tabView>
-      <p-tabPanel header="Overview" align="left">
-        <p-card>
-          <h2>Description:</h2>
-          <p>{{ tournament.description }}</p>
-          <h2>Format:</h2>
-          <p>{{ getFormatLabel(tournament.format) }}</p>
-          <h2>Maximum Teams:</h2>
-          <p>{{ tournament.maxTeams }}</p>
-          <h2>Prize Pool:</h2>
-          <p>TBA</p>
-          <h2>Participants:</h2>
-          <ul class="participants-list">
-            <li *ngFor="let team of tournament.teams">
-              <img src="../../../../assets/ph_team_logo.png" alt="{{ team.name }} logo" class="team-logo">
-              <span>{{ team.name }}</span>
-            </li>
-          </ul>
-
-          <div class="button-group">
-            <button *ngIf="tournament.isRegistrationOpen"
-                    pButton type="button" label="Add Team" icon="pi pi-plus" class="p-button-success"
-                    (click)="showAddTeamDialog()">
-            </button>
-            <button *ngIf="tournament.isRegistrationOpen"
-                    pButton type="button" label="Remove Team" icon="pi pi-minus" class="p-button-danger"
-                    (click)="showRemoveTeamDialog()">
-            </button>
-          </div>
-
-          <p-dialog header="Select a Team to {{ dialogType === 'add' ? 'Add' : 'Remove' }}" [(visible)]="displayDialog" [modal]="true" [responsive]="true">
-            <ng-container *ngIf="dialogType === 'add'">
-              <p-listbox [options]="availableTeams" [(ngModel)]="selectedTeam" [filter]="true" optionLabel="name" [style]="{'width':'100%'}"></p-listbox>
-              <p-footer>
-                <button pButton type="button" label="Add" icon="pi pi-check" (click)="addTeam()"></button>
-                <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="hideDialog()"></button>
-              </p-footer>
-            </ng-container>
-            <ng-container *ngIf="dialogType === 'remove'">
-              <h3>Select a team to remove</h3>
-              <p-listbox [options]="tournament.teams" [(ngModel)]="selectedTeam" optionLabel="name" [style]="{'width':'100%'}"></p-listbox>
-              <p-footer>
-                <button pButton type="button" label="Remove" icon="pi pi-check" (click)="removeTeam()"></button>
-                <button pButton type="button" label="Cancel" icon="pi pi-times" (click)="hideDialog()"></button>
-              </p-footer>
-            </ng-container>
-          </p-dialog>
-
-          <h2>Results: </h2>
-          <p> Table of Results</p>
-        </p-card>
-      </p-tabPanel>
-
-      <p-tabPanel header="Group Stage" *ngIf="!tournament.isRegistrationOpen && tournament.format === 2">
-        <app-standing-group [tournament]="tournament"></app-standing-group>
-      </p-tabPanel>
-
-      <p-tabPanel header="Bracket" *ngIf="!tournament.isRegistrationOpen && (tournament.format === 1 || tournament.format === 2)">
-        <app-standing-bracket [brackets]="brackets"></app-standing-bracket>
-      </p-tabPanel>
-    </p-tabView>
-
-    <div class="start-tournament-button-container">
-      <button *ngIf="tournament.isRegistrationOpen"
-              pButton type="button" label="Start Tournament"
-              (click)="startTournament()"
-              [disabled]="!tournament || tournament.teams.length === 0"
-              class="p-button-lg">
+      <h1>{{ tournament?.name }}</h1>
+      <p class="format-label">{{ getFormatLabel(tournament.format) }}</p>
+    </div>
+    <div class="tournament-actions" *ngIf="tournament?.isRegistrationOpen">
+      <button mat-raised-button color="primary" (click)="startTournament()"
+              [disabled]="!tournament || (tournament?.teams?.length || 0) < 2 || isReloading">
+        <mat-icon>play_arrow</mat-icon> Start Tournament
       </button>
     </div>
-  </p-card>
+  </div>
+  <!-- Main Content Area -->
+  <div class="tournament-content">
+    <mat-tab-group animationDuration="300ms" mat-stretch-tabs="false" mat-align-tabs="start">
+      <!-- Overview Tab -->
+      <mat-tab label="Overview">
+        <div class="tab-content">
+          <div class="overview-grid">
+            <!-- Tournament Info -->
+            <mat-card class="info-card">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>info</mat-icon>
+                <mat-card-title>Tournament Details</mat-card-title>
+              </mat-card-header>
+              <mat-card-content>
+                <p *ngIf="tournament?.description">{{ tournament?.description }}</p>
+                <p *ngIf="!tournament?.description" class="muted-text">No description provided</p>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <span class="label">Format</span>
+                    <span class="value">{{ getFormatLabel(tournament.format) }}</span>
+                  </div>
+                  <div class="info-item">
+                    <span class="label">Max Teams</span>
+                    <span class="value">{{ tournament?.maxTeams }}</span>
+                  </div>
+                  <div class="info-item" *ngIf="tournament?.format === Format.BracketAndGroups">
+                    <span class="label">Teams per Group</span>
+                    <span class="value">{{ tournament?.teamsPerGroup }}</span>
+                  </div>
+                </div>
+              </mat-card-content>
+            </mat-card>
+            <!-- Team Management -->
+            <mat-card class="teams-card" *ngIf="tournament?.isRegistrationOpen">
+              <mat-card-header>
+                <mat-icon mat-card-avatar>groups</mat-icon>
+                <mat-card-title>Team Management</mat-card-title>
+                <mat-card-subtitle>{{ tournament?.teams?.length || 0 }}/{{ tournament?.maxTeams }} teams registered</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <mat-progress-bar mode="determinate" [value]="((tournament?.teams?.length || 0) / (tournament?.maxTeams || 1)) * 100"></mat-progress-bar>
+
+                <!-- Bulk Add Form -->
+                <form [formGroup]="bulkAddForm" (ngSubmit)="addBulkTeams()" class="bulk-add-form">
+                  <mat-form-field appearance="outline" class="full-width">
+                    <mat-label>Team Names (comma separated)</mat-label>
+                    <textarea matInput formControlName="teamNames"  rows="3"></textarea>
+                    <mat-hint>Enter multiple team names separated by commas</mat-hint>
+                    <mat-error *ngIf="bulkAddForm.get('teamNames')?.hasError('required')">Team names are required</mat-error>
+                  </mat-form-field>
+                  <div class="form-actions">
+                    <button mat-raised-button color="primary" type="submit" [disabled]="bulkAddForm.invalid || isAddingTeams">
+                      <mat-icon>add_circle</mat-icon> Add Teams
+                    </button>
+                  </div>
+                </form>
+              </mat-card-content>
+            </mat-card>
+          </div>
+          <!-- Registered Teams -->
+          <mat-card class="registered-teams-card">
+            <mat-card-header>
+              <mat-icon mat-card-avatar>people</mat-icon>
+              <mat-card-title>Registered Teams</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div *ngIf="!(tournament?.teams?.length)" class="empty-state">
+                <mat-icon class="empty-icon">sports_esports</mat-icon>
+                <p>No teams have been registered yet</p>
+                <p *ngIf="tournament?.isRegistrationOpen" class="muted-text">Add teams using the form above</p>
+              </div>
+              <div *ngIf="tournament?.teams?.length" class="teams-grid">
+                <div *ngFor="let team of tournament?.teams" class="team-card">
+                  <div class="team-avatar">{{ team?.name?.charAt(0) }}</div>
+                  <div class="team-name">{{ team?.name }}</div>
+                  <button *ngIf="tournament?.isRegistrationOpen" mat-icon-button color="warn" (click)="confirmRemoveTeam(team)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </mat-tab>
+      <!-- Group Stage Tab (only if format is BracketAndGroups and tournament has started) -->
+      <mat-tab label="Group Stage" *ngIf="!tournament?.isRegistrationOpen && tournament?.format === Format.BracketAndGroups">
+        <div class="tab-content">
+          <app-standing-group [tournament]="tournament"></app-standing-group>
+        </div>
+      </mat-tab>
+      <!-- Bracket Tab (only if tournament has started) -->
+      <mat-tab label="Bracket" *ngIf="!tournament?.isRegistrationOpen && (tournament?.format === Format.BracketOnly || tournament?.format === Format.BracketAndGroups)">
+        <div class="tab-content">
+          <app-standing-bracket [brackets]="brackets"></app-standing-bracket>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>
+<!-- Loading Indicator -->
+<div class="loading-container" *ngIf="isReloading">
+  <mat-spinner></mat-spinner>
+  <p>Loading tournament data...</p>
+</div>
+<!-- Confirmation Dialog Template -->
+<ng-template #confirmDialog>
+  <h2 mat-dialog-title>Confirm Removal</h2>
+  <mat-dialog-content>
+    Are you sure you want to remove <strong>{{ teamToRemove?.name }}</strong> from this tournament?
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close>Cancel</button>
+    <button mat-raised-button color="warn" [mat-dialog-close]="true">Remove</button>
+  </mat-dialog-actions>
+</ng-template>
+<!-- Error Messages -->
+<div *ngIf="errorMessage" class="error-container">
+  <mat-icon>error</mat-icon>
+  <p>{{ errorMessage }}</p>
+  <button mat-icon-button (click)="errorMessage = ''">
+    <mat-icon>close</mat-icon>
+  </button>
 </div>
