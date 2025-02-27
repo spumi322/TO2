@@ -1,0 +1,45 @@
+.bracket-container {
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  margin-top: 30px;
+  align-items: center;
+}
+
+.round {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+}
+
+.match {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  width: 220px;
+  text-align: center;
+  border: 2px solid #ccc;
+}
+
+.team {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 200px;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.score {
+  font-weight: bold;
+  margin-left: 10px;
+  color: #555;
+  font-size: 18px;
+}
+

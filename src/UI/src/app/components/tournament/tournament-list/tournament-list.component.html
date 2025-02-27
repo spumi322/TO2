@@ -1,0 +1,67 @@
+<div class="landing-page" *ngIf="groupedTournaments$ | async as tournaments">
+  <!-- Upcoming Tournaments Section -->
+  <section class="tournament-section" *ngIf="tournaments.upcoming.length">
+    <h2 class="section-title">Upcoming Tournaments</h2>
+    <div class="tournament-grid">
+      <div *ngFor="let tournament of tournaments.upcoming; trackBy: trackByTournament"
+           class="tournament-card"
+           (click)="goToDetails(tournament.id)">
+        <div class="card-header">
+          <img class="tournament-logo" src="../../../../assets/ph_logo.png" alt="Logo">
+          <h3 class="tournament-title">{{ tournament.name }}</h3>
+        </div>
+        <p class="tournament-description">{{ tournament.description }}</p>
+        <div class="card-footer">
+          <span class="team-info">Teams: {{ tournament.teams.length }} / {{ tournament.maxTeams }}</span>
+          <button class="details-btn" (click)="action(tournament, $event)">
+            {{ getActionLabel(tournament) }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Ongoing Tournaments Section -->
+  <section class="tournament-section" *ngIf="tournaments.ongoing.length">
+    <h2 class="section-title">Ongoing Tournaments</h2>
+    <div class="tournament-grid">
+      <div *ngFor="let tournament of tournaments.ongoing; trackBy: trackByTournament"
+           class="tournament-card"
+           (click)="goToDetails(tournament.id)">
+        <div class="card-header">
+          <img class="tournament-logo" src="../../../../assets/ph_logo.png" alt="Logo">
+          <h3 class="tournament-title">{{ tournament.name }}</h3>
+        </div>
+        <p class="tournament-description">{{ tournament.description }}</p>
+        <div class="card-footer">
+          <span class="team-info">Teams: {{ tournament.teams.length }} / {{ tournament.maxTeams }}</span>
+          <button class="details-btn" (click)="action(tournament, $event)">
+            {{ getActionLabel(tournament) }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Finished Tournaments Section -->
+  <section class="tournament-section" *ngIf="tournaments.finished.length">
+    <h2 class="section-title">Finished Tournaments</h2>
+    <div class="tournament-grid">
+      <div *ngFor="let tournament of tournaments.finished; trackBy: trackByTournament"
+           class="tournament-card"
+           (click)="goToDetails(tournament.id)">
+        <div class="card-header">
+          <img class="tournament-logo" src="../../../../assets/ph_logo.png" alt="Logo">
+          <h3 class="tournament-title">{{ tournament.name }}</h3>
+        </div>
+        <p class="tournament-description">{{ tournament.description }}</p>
+        <div class="card-footer">
+          <span class="team-info">Teams: {{ tournament.teams.length }} / {{ tournament.maxTeams }}</span>
+          <button class="details-btn" (click)="action(tournament, $event)">
+            {{ getActionLabel(tournament) }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

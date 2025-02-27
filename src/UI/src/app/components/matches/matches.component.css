@@ -1,0 +1,37 @@
+.group-matches {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+  .group-matches th, .group-matches td {
+    padding: 12px;
+    text-align: center;
+    font-size: 1rem;
+  }
+
+  .group-matches th {
+    background-color: var(--primary-color);
+    color: var(--primary-color-text);
+  }
+
+.loading-spinner {
+  text-align: center;
+  color: var(--secondary-color);
+  font-weight: bold;
+}
+
+.winner {
+  background-color: green;
+  color: white;
+}
+
+.loser {
+  background-color: red;
+  color: white;
+}
+
+button[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

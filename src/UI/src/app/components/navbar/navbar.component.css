@@ -1,0 +1,80 @@
+/* Base navbar styling */
+.navbar {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  background-color: #1976d2; /* Modern blue */
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+  /* Start facet (left side) */
+  .navbar .navbar-left {
+    display: flex;
+    align-items: center;
+  }
+
+.home-link {
+  color: #fff;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 10px 15px;
+}
+
+/* End facet (right side) */
+.navbar .navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 15px;
+}
+
+/* Button styling overrides */
+.create-btn {
+  background-color: #ffffff;
+  border: none;
+  color: #1976d2;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+  .create-btn:hover {
+    background-color: #e3f2fd;
+  }
+
+.signin-btn {
+  background-color: transparent;
+  border: 1px solid #ffffff;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+  .signin-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+/* Adjust body padding so content isn’t hidden behind the fixed navbar */
+body {
+  padding-top: 60px; /* Adjust based on the navbar height */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navbar .navbar-left .home-link {
+    font-size: 1.2rem;
+    padding: 8px 10px;
+  }
+
+  .navbar .navbar-right {
+    gap: 5px;
+    padding-right: 10px;
+  }
+
+  body {
+    padding-top: 80px; /* Increase if navbar height increases on smaller screens */
+  }
+}

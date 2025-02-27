@@ -1,0 +1,15 @@
+<div class="bracket-container">
+  <div class="round" *ngFor="let round of rounds; let roundIndex = index">
+    <h3>Round {{ roundIndex + 1 }}</h3>
+    <div class="match" *ngFor="let match of round; let matchIndex = index">
+      <div class="team">
+        <span>{{ match.team1 }}</span>
+        <span class="score">{{ match.team1Score }}</span>
+      </div>
+      <div class="team">
+        <span>{{ match.team2 }}</span>
+        <span class="score">{{ match.team2Score }}</span>
+      </div>
+    </div>
+  </div>
+</div>

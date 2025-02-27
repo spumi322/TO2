@@ -31,3 +31,5 @@ if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
   ], { stdio: 'inherit', })
   .on('exit', (code) => process.exit(code));
 }
+
+fs.mkdirSync(baseFolder, { recursive: true });

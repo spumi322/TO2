@@ -10,9 +10,9 @@ namespace Domain.Common
     {
         public DateTime OccurredOn { get; private set; }
 
-        public DomainEvent()
+        protected DomainEvent()
         {
-            OccurredOn = DateTime.Now;
+            OccurredOn = DateTime.UtcNow;
         }
     }
 }

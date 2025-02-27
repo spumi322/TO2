@@ -1,0 +1,87 @@
+/* 📌 Group Container */
+.group-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+/* 📌 Group Card */
+.group-card {
+  background: var(--card-color);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 📌 Group Header */
+.group-header {
+  background: var(--primary-color);
+  color: var(--primary-color-text);
+  padding: 16px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* 📌 Standings Table */
+.group-standings {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  background: var(--card-color);
+  color: var(--primary-color-text);
+  border-radius: 10px;
+}
+
+  /* 📌 Table Headers */
+  .group-standings th {
+    background: var(--table-header-bg);
+    padding: 12px;
+    text-align: center;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  /* 📌 Table Rows */
+  .group-standings td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  /* 📌 Last row border removal */
+  .group-standings tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+/* 📌 Team Info */
+.team-info {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+/* 📌 Rank Number */
+.team-rank {
+  font-weight: bold;
+  color: #ffd700; /* Gold ranking */
+}
+
+/* 📌 Team Name */
+.team-name {
+  font-weight: normal;
+  font-size: 1rem;
+  color: var(--primary-color-text);
+}
+
+/* 📌 Responsive Design */
+@media (max-width: 768px) {
+  .group-container {
+    grid-template-columns: 1fr;
+  }
+}
