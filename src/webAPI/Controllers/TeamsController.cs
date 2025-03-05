@@ -38,7 +38,7 @@ namespace TO2.Controllers
         }
 
         // POST: api/Teams/5/5
-        [HttpPost("{teamId}/{tournamentId}")]
+        [HttpPost("tournamentId/teamId")]
         public async Task<IActionResult> AddTeamToTournament(AddTeamToTournamentRequestDTO request)
         {
             return Ok(await _teamService.AddTeamToTournamentAsync(request));

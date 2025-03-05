@@ -71,6 +71,8 @@ namespace Infrastructure.Persistence
                     .WithMany(t => t.TournamentParticipations)
                     .HasForeignKey(tt => tt.TeamId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Ignore(tt => tt.Id);
             });
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(Tournament).Assembly);

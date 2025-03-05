@@ -18,18 +18,21 @@ namespace Application.Services
     {
         private readonly IGenericRepository<Team> _teamRepository;
         private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly ITO2DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<TeamService> _logger;
 
         public TeamService(IGenericRepository<Team> teamRepository,
                            IGenericRepository<Tournament> tournamentRepository,
+                           IGenericRepository<TournamentTeam> tournamentTeamRepository,
                            ITO2DbContext dbContext,
                            IMapper mapper,
                            ILogger<TeamService> logger)
         {
             _teamRepository = teamRepository;
             _tournamentRepository = tournamentRepository;
+            _tournamentTeamRepository = tournamentTeamRepository;
             _dbContext = dbContext;
             _mapper = mapper;
             _logger = logger;
@@ -126,11 +129,11 @@ namespace Application.Services
                 throw new Exception("Tournament registration is closed");
 
             // Check if team already in tournament
-            var existingParticipation =  _dbContext.TournamentTeams
-                .FirstOrDefaultAsync(tt => tt.TournamentId == request.TournamentId && tt.TeamId == request.TeamId);
+            var existingEntry = await _dbContext.TournamentTeams
+                .Where(tt => tt.TournamentId == request.TournamentId && tt.TeamId == request.TeamId)
+                .FirstOrDefaultAsync();
 
-            if (existingParticipation != null)
-                throw new Exception("Team is already registered in this tournament");
+            if (existingEntry != null) throw new Exception("Team is already in the tournament!");
 
             // Check unique team name constraint
             var sameNameTeamExists = await _dbContext.TournamentTeams
@@ -151,8 +154,8 @@ namespace Application.Services
             // Create and save
             var tournamentTeam = new TournamentTeam(request.TournamentId, request.TeamId);
 
-            await _dbContext.TournamentTeams.AddAsync(tournamentTeam);
-            await _dbContext.SaveChangesAsync();
+            await _tournamentTeamRepository.Add(tournamentTeam);
+            await _tournamentTeamRepository.Save();
 
             return new AddTeamToTournamentResponseDTO(request.TournamentId, request.TeamId);
         }
