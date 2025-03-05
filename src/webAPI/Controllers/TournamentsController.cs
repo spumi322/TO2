@@ -74,21 +74,15 @@ namespace TO2.Controllers
             return NoContent();
         }
 
-        // POST: api/Tournament/5/5
-        //[HttpPost("{teamId}/{tournamentId}")]
-        //public async Task<IActionResult> AddTeam(long teamId, long tournamentId)
-        //{
-        //    return Ok(await _tournamentService.AddTeamToTournamentAsync(teamId, tournamentId));
-        //}
 
         // DELETE: api/Tournament/5/5
-        [HttpDelete("{teamId}/{tournamentId}")]
-        public async Task<IActionResult> RemoveTeam(long teamId, long tournamentId)
-        {
-            await _tournamentService.RemoveTeamFromTournamentAsync(teamId, tournamentId);
+        //[HttpDelete("{teamId}/{tournamentId}")]
+        //public async Task<IActionResult> RemoveTeam(long teamId, long tournamentId)
+        //{
+        //    await _tournamentService.RemoveTeamFromTournamentAsync(teamId, tournamentId);
 
-            return NoContent();
-        }
+        //    return NoContent();
+        //}
 
         // PUT: api/tournaments/5/start
         [HttpPut("{id}/start")]
@@ -98,9 +92,6 @@ namespace TO2.Controllers
 
             return result.Success ? Ok() : BadRequest();
         }
-
-        //checkTournamentNameUnique(name: string) : Observable<boolean> {
-        //        return this.http.get<boolean>(`${this.apiUrl}/check-unique/${name}`)}
 
         [HttpGet("/check-unique/{name}")]
         public async Task<IActionResult> CheckTournamentNameIsUnique(string name)

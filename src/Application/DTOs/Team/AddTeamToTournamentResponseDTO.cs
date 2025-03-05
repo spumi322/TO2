@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.DTOs.Tournament
+namespace Application.DTOs.Team
 {
-    public record AddTeamToTournamentResponseDTO(long TeamId, long TournamentId);
+    public record AddTeamToTournamentResponseDTO(long TournamentId, long TeamId);
 }

@@ -1,54 +1,64 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
-  /* Adjust this value to ensure the card doesn't overlap your navbar */
   margin-top: 80px;
-  background: #f5f7fa; /* A light background to contrast with the card */
+  background: #f5f7fa;
   min-height: calc(100vh - 80px);
 }
 
 .tournament-form {
   max-width: 600px;
+  width: 100%;
   margin: 0 auto;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   background: #ffffff;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
-
-  .tournament-form:hover {
-    transform: translateY(-3px);
-  }
 
 mat-card-header {
-  background: #1976d2; /* Use your brand or accent color */
+  background: #1976d2;
   color: #fff;
-  padding: 16px;
+  padding: 20px;
+  position: relative;
 }
+
+  mat-card-header::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background: linear-gradient(90deg, #1976d2, #2196f3);
+  }
 
 mat-card-title {
   font-size: 1.8rem;
   font-weight: 600;
   margin: 0;
+  letter-spacing: 0.5px;
 }
 
 mat-card-content {
-  padding: 24px;
+  padding: 32px 24px;
 }
 
 .full-width {
   width: 100%;
+  margin-bottom: 20px;
 }
 
 mat-form-field {
   width: 100%;
-  margin-bottom: 16px;
 }
 
   mat-form-field.mat-form-field {
     background: #fafafa;
-    border-radius: 4px;
+    border-radius: 8px;
   }
 
 input[matInput],
@@ -58,30 +68,109 @@ mat-select {
   padding: 8px;
 }
 
-button[mat-raised-button] {
-  width: 100%;
-  padding: 12px;
-  font-size: 1rem;
-  border-radius: 4px;
-  transition: background-color 0.3s ease;
-  margin-top: 16px;
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
 }
 
-  button[mat-raised-button]:disabled {
-    background-color: #ccc !important;
+  .action-buttons button {
+    flex: 1;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: all 0.3s ease;
   }
+
+button[mat-stroked-button] {
+  border-color: #1976d2;
+  color: #1976d2;
+}
+
+  button[mat-stroked-button]:hover {
+    background-color: rgba(25, 118, 210, 0.04);
+  }
+
+button[mat-raised-button] {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+  button[mat-raised-button]:hover:not(:disabled) {
+    background-color: #0d5ca0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  button[mat-raised-button]:disabled {
+    background-color: rgba(0, 0, 0, 0.12) !important;
+    color: rgba(0, 0, 0, 0.38) !important;
+  }
+
+.spinner {
+  margin-right: 8px;
+}
+
+.alert {
+  width: 100%;
+  max-width: 600px;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border: 1px solid #a5d6a7;
+}
+
+.error {
+  background-color: #ffebee;
+  color: #c62828;
+  border: 1px solid #ef9a9a;
+}
+
+mat-hint {
+  color: #607d8b;
+  font-size: 0.8rem;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 @media (max-width: 600px) {
   :host {
-    padding: 10px;
+    padding: 12px;
     margin-top: 70px;
   }
 
   .tournament-form {
-    margin: 10px;
+    margin: 0;
+    width: 100%;
   }
 
   mat-card-content {
-    padding: 16px;
+    padding: 20px 16px;
+  }
+
+  .action-buttons {
+    flex-direction: column-reverse;
   }
 }

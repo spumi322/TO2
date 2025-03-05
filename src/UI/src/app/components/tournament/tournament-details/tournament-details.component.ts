@@ -1,13 +1,17 @@
-import { Component, OnInit } from '@angular/core';
-import { Format, Tournament } from '../../../models/tournament';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Format, Tournament, TournamentStatus } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
-import { ActivatedRoute } from '@angular/router';
-import { Observable, from, of } from 'rxjs';
-import { catchError, concatMap, finalize, switchMap, tap } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Observable, catchError, finalize, forkJoin, of, from } from 'rxjs';
+import { concatMap, switchMap, tap } from 'rxjs/operators';
 import { Standing, StandingType } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
 import { Team } from '../../../models/team';
 import { TeamService } from '../../../services/team/team.service';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { TournamentStatusLabel } from '../tournament-status-label/tournament-status-label';
 
 @Component({
   selector: 'app-tournament-details',
@@ -15,206 +19,332 @@ import { TeamService } from '../../../services/team/team.service';
   styleUrls: ['./tournament-details.component.css']
 })
 export class TournamentDetailsComponent implements OnInit {
+  @ViewChild('confirmDialog') confirmDialog!: TemplateRef<any>;
+
   tournament$: Observable<Tournament | null> = of(null);
   tournament: Tournament | null = null;
-  standings: Standing[] = [];
   tournamentId: number | null = null;
+
+  // Standings data
+  standings: Standing[] = [];
   groups: Standing[] = [];
   brackets: Standing[] = [];
-  displayDialog: boolean = false;
-  dialogType!: 'add' | 'remove';
+
+  // Team management
   allTeams: Team[] = [];
-  availableTeams: Team[] = [];
-  selectedTeam: Team | null = null;
-  isReloading: boolean = false;
+  teamToRemove: Team | null = null;
+
+  // Forms
+  bulkAddForm!: FormGroup;
+
+  // UI state
+  isReloading = false;
+  isAddingTeams = false;
+  errorMessage = '';
+
+  // Constants for template
+  Format = Format;
 
   constructor(
     private tournamentService: TournamentService,
     private standingService: StandingService,
     private teamService: TeamService,
-    private route: ActivatedRoute) { }
+    private route: ActivatedRoute,
+    private router: Router,
+    private fb: FormBuilder,
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
+  ) { }
 
   ngOnInit(): void {
+    this.initForms();
+    this.loadTournamentData();
+    this.loadAllTeams();
+  }
+
+  initForms(): void {
+    this.bulkAddForm = this.fb.group({
+      teamNames: ['', Validators.required]
+    });
+  }
+
+  loadTournamentData(): void {
     this.tournament$ = this.route.paramMap.pipe(
       switchMap(params => {
         const id = params.get('id');
         if (id) {
           this.tournamentId = +id;
+          this.isReloading = true;
           return this.tournamentService.getTournamentWithTeams(this.tournamentId).pipe(
             tap(tournament => {
               if (tournament) {
                 this.tournament = tournament;
-                this.loadStandings(this.tournamentId!);
+                this.loadStandings();
               }
             }),
             catchError(error => {
-              console.error('Error loading tournament', error);
+              this.errorMessage = 'Error loading tournament data. Please try again.';
               return of(null);
-            })
+            }),
+            finalize(() => this.isReloading = false)
           );
         } else {
           return of(null);
         }
       })
     );
+  }
 
-    this.teamService.getAllTeams().subscribe(teams => {
-      this.allTeams = teams;
+  loadStandings(): void {
+    if (!this.tournamentId) return;
+
+    this.standingService.getStandingsByTournamentId(this.tournamentId).subscribe({
+      next: (standings: Standing[]) => {
+        this.standings = standings;
+        this.groups = standings.filter(s => s.type === StandingType.Group);
+        this.brackets = standings.filter(s => s.type === StandingType.Bracket);
+      },
+      error: (error) => {
+        console.error('Error loading standings', error);
+      }
     });
   }
 
-  loadStandings(tournamentId: number): void {
-    this.standingService.getStandingsByTournamentId(tournamentId).pipe(
-      tap((standings: Standing[]) => {
-        console.log('Fetched standings:', standings);
-        const separatedStandings = this.separateStandingsByType(standings);
-        this.groups = separatedStandings.groups;
-        this.brackets = separatedStandings.brackets;
+  loadAllTeams(): void {
+    this.teamService.getAllTeams().subscribe({
+      next: (teams) => {
+        this.allTeams = teams;
+      },
+      error: (error) => {
+        console.error('Error loading teams', error);
+      }
+    });
+  }
+
+  addBulkTeams(): void {
+    if (this.bulkAddForm.invalid || !this.tournamentId || !this.tournament) return;
+
+    const teamNamesInput = this.bulkAddForm.get('teamNames')?.value;
+    if (!teamNamesInput) return;
+
+    const teamNames = teamNamesInput
+      .split(',')
+      .map((name: string) => name.trim())
+      .filter((name: string) => name.length > 0);
+
+    if (!teamNames.length) {
+      this.showError('No valid team names provided');
+      return;
+    }
+
+    // Check if we'll exceed max capacity
+    const remainingSlots = this.tournament.maxTeams - this.tournament.teams.length;
+    if (teamNames.length > remainingSlots) {
+      this.showError(`Can only add ${remainingSlots} more teams. You're trying to add ${teamNames.length}.`);
+      return;
+    }
+
+    this.isAddingTeams = true;
+
+    // Process teams one by one
+    const processTeam = (name: any) => {
+      // First check if team exists
+      const existingTeam = this.allTeams.find(t => t.name.toLowerCase() === name.toLowerCase());
+
+      if (existingTeam) {
+        // Use existing team
+        return this.teamService.addTeamToTournament(existingTeam.id, this.tournamentId!).pipe(
+          catchError(error => {
+            console.error(`Error adding existing team ${name} to tournament:`, error);
+            return of(null);
+          })
+        );
+      } else {
+        // Create new team
+        return this.teamService.createTeam({ name }).pipe(
+          switchMap(createdTeam => {
+            if (!createdTeam || !createdTeam.id) {
+              return of(null);
+            }
+
+            // Add newly created team to allTeams array
+            this.allTeams.push({
+              id: createdTeam.id,
+              name: name,
+              wins: 0,
+              losses: 0,
+              points: 0
+            });
+
+            // Add to tournament
+            return this.teamService.addTeamToTournament(createdTeam.id, this.tournamentId!).pipe(
+              catchError(error => {
+                console.error(`Error adding new team ${name} to tournament:`, error);
+                return of(null);
+              })
+            );
+          }),
+          catchError(error => {
+            console.error(`Error creating team ${name}:`, error);
+            return of(null);
+          })
+        );
+      }
+    };
+
+    // Process teams sequentially to handle name conflicts properly
+    from(teamNames).pipe(
+      concatMap(name => processTeam(name)),
+      finalize(() => {
+        this.isAddingTeams = false;
+        this.bulkAddForm.reset();
+      })
+    ).subscribe({
+      complete: () => {
+        this.reloadTournamentData();
+        this.showSuccess(`Teams added successfully`);
+      },
+      error: (error) => {
+        this.showError('Error adding teams');
+        console.error('Error adding teams:', error);
+        this.reloadTournamentData();
+      }
+    });
+  }
+
+  confirmRemoveTeam(team: Team): void {
+    this.teamToRemove = team;
+
+    this.dialog.open(this.confirmDialog).afterClosed().subscribe(result => {
+      if (result && this.teamToRemove) {
+        this.removeTeam(this.teamToRemove);
+      }
+      this.teamToRemove = null;
+    });
+  }
+
+  removeTeam(team: Team): void {
+    if (!this.tournamentId) return;
+
+    this.tournamentService.removeTeam(team.id, this.tournamentId).subscribe({
+      next: () => {
+        this.reloadTournamentData();
+        this.showSuccess(`Removed ${team.name} from tournament`);
+      },
+      error: (error) => {
+        this.showError('Error removing team from tournament');
+        console.error('Error removing team:', error);
+      }
+    });
+  }
+
+  startTournament(): void {
+    if (!this.tournamentId || !this.tournament) return;
+
+    if (this.tournament.teams.length < 2) {
+      this.showError('Cannot start tournament with fewer than 2 teams');
+      return;
+    }
+
+    this.isReloading = true;
+    this.tournamentService.startTournament(this.tournamentId).pipe(
+      switchMap(() => this.generateGroupMatches()),
+      switchMap((standingIds: number[]) => {
+        const generateGamesRequests = standingIds.map(standingId =>
+          this.standingService.generateGames(standingId)
+        );
+
+        return forkJoin(generateGamesRequests.length ? generateGamesRequests : [of(null)]);
       }),
       catchError(error => {
-        console.error('Error loading standings', error);
+        this.showError('Error starting tournament');
+        console.error('Error in tournament starting process:', error);
+        return of(null);
+      }),
+      finalize(() => {
+        this.isReloading = false;
+      })
+    ).subscribe(() => {
+      this.reloadTournamentData();
+      this.showSuccess('Tournament successfully started!');
+    });
+  }
+
+  generateGroupMatches(): Observable<number[]> {
+    if (!this.tournamentId) return of([]);
+
+    return this.standingService.generateGroupMatches(this.tournamentId).pipe(
+      catchError(error => {
+        console.error('Error generating group matches:', error);
         return of([]);
       })
-    ).subscribe();
+    );
   }
 
-  separateStandingsByType(standings: Standing[]): { groups: Standing[], brackets: Standing[] } {
-    return {
-      groups: standings.filter(s => s.type === StandingType.Group),
-      brackets: standings.filter(s => s.type === StandingType.Bracket)
-    };
+  reloadTournamentData(): void {
+    if (!this.tournamentId) return;
+
+    this.isReloading = true;
+    this.tournament$ = this.tournamentService.getTournamentWithTeams(this.tournamentId).pipe(
+      tap(tournament => {
+        if (tournament) {
+          this.tournament = tournament;
+          this.loadStandings();
+        }
+      }),
+      catchError(error => {
+        this.errorMessage = 'Error reloading tournament data';
+        console.error('Error reloading tournament data', error);
+        return of(null);
+      }),
+      finalize(() => {
+        this.isReloading = false;
+      })
+    );
   }
 
+  // UI Helper Methods
   getFormatLabel(format: Format): string {
     switch (format) {
       case Format.BracketOnly:
         return 'Bracket Only';
       case Format.BracketAndGroups:
-        return 'Bracket and Group Stage';
+        return 'Group Stage + Bracket';
       default:
         return 'Unknown Format';
     }
   }
 
-  showAddTeamDialog(): void {
-    this.dialogType = 'add';
-    this.displayDialog = true;
-    this.availableTeams = this.allTeams.filter(team => !this.tournament?.teams.some(t => t.id === team.id));
-  }
-
-  showRemoveTeamDialog(): void {
-    this.dialogType = 'remove';
-    this.displayDialog = true;
-  }
-
-  hideDialog(): void {
-    this.displayDialog = false;
-    this.selectedTeam = null;
-  }
-
-  addTeam(): void {
-    if (this.selectedTeam && this.tournament) {
-      this.tournamentService.addTeam(this.selectedTeam.id, this.tournamentId!).pipe(
-        tap(() => {
-          this.tournament!.teams.push(this.selectedTeam!);
-          this.hideDialog();
-        }),
-        catchError(error => {
-          console.error('Error adding team to tournament', error);
-          return of(null);
-        })
-      ).subscribe();
+  getStatusClass(status: TournamentStatus): string {
+    switch (status) {
+      case TournamentStatus.Upcoming:
+        return 'status-upcoming';
+      case TournamentStatus.Ongoing:
+        return 'status-ongoing';
+      case TournamentStatus.Finished:
+        return 'status-finished';
+      case TournamentStatus.Cancelled:
+        return 'status-cancelled';
+      default:
+        return '';
     }
   }
 
-  removeTeam(): void {
-    if (this.selectedTeam && this.tournament) {
-      this.tournamentService.removeTeam(this.selectedTeam.id, this.tournamentId!).pipe(
-        tap(() => {
-          this.tournament!.teams = this.tournament!.teams.filter(team => team.id !== this.selectedTeam!.id);
-          this.allTeams.push(this.selectedTeam!);
-          this.hideDialog();
-        }),
-        catchError(error => {
-          console.error('Error removing team from tournament', error);
-          return of(null);
-        })
-      ).subscribe();
-    }
+  getStatusLabel(status: TournamentStatus): string {
+    return TournamentStatusLabel.getLabel(status);
   }
 
-startTournament(): void {
-  if (this.tournamentId) {
-    this.tournamentService.startTournament(this.tournamentId).pipe(
-      switchMap(() => this.generateGroupMatches()),
-      switchMap((standingIds: number[]) => {
-        return from(standingIds).pipe(
-          concatMap((standingId) => this.generateGames(standingId))
-        );
-      }),
-      catchError(error => {
-        console.error('Error in the tournament starting process:', error);
-        return of(null);  
-      })
-    ).subscribe(() => {
-      this.reloadTournamentData();
+  showSuccess(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      panelClass: ['success-snackbar']
     });
-  } else {
-    console.log('Tournament ID is null');
-  }
-}
-
-
-  generateGroupMatches(): Observable<number[]> {
-    if (this.tournamentId) {
-      this.isReloading = true;
-      return this.standingService.generateGroupMatches(this.tournamentId).pipe(
-        tap((standingIds: number[]) => {
-          console.log('Group matches generated successfully. Standing IDs:', standingIds);
-        }),
-        catchError(error => {
-          console.error('Error generating group matches:', error);
-          this.isReloading = false;
-          return of([]);  
-        })
-      );
-    } else {
-      return of([]);
-    }
   }
 
-
-  generateGames(standingId: number): Observable<void> {
-    return this.standingService.generateGames(standingId).pipe(
-      tap(() => {
-        console.log(`Games generated for standingId: ${standingId}`);
-      }),
-      catchError(error => {
-        console.error(`Error generating games for standingId: ${standingId}`, error);
-        this.isReloading = false;
-        return of();
-      })
-    )
-  }
-
-  reloadTournamentData(): void {
-    if (this.tournamentId) {
-      this.isReloading = true;
-      this.tournament$ = this.tournamentService.getTournamentWithTeams(this.tournamentId).pipe(
-        tap(tournament => {
-          if (tournament) {
-            this.tournament = tournament;
-            this.loadStandings(this.tournamentId!);
-          }
-        }),
-        catchError(error => {
-          console.error('Error reloading tournament data', error);
-          return of(null);
-        }),
-        finalize(() => {
-          this.isReloading = false;
-        })
-      );
-    }
+  showError(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 5000,
+      panelClass: ['error-snackbar']
+    });
   }
 }

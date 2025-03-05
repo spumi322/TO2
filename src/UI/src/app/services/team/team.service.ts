@@ -19,4 +19,13 @@ export class TeamService {
   getTeamsWithStatsByStandingId(standingId: number): Observable<Team[]> {
     return this.http.get<Team[]>(`${this.apiUrl}/${standingId}/teams-with-stats`);
   }
+
+  addTeamToTournament(tournamentId: number, teamId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${tournamentId}/${teamId}`, {});
+  }
+
+  // POST /api/teams
+  createTeam(request: { name: string }): Observable<{ id: number }> {
+    return this.http.post<{ id: number }>(this.apiUrl, request);
+  }
 }

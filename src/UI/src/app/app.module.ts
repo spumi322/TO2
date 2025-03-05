@@ -24,6 +24,7 @@ import { ListboxModule } from 'primeng/listbox';
 import { MatchesComponent } from './components/matches/matches.component';
 import { TableModule } from 'primeng/table';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+// Angular Material Imports
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -32,6 +33,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatCardModule } from '@angular/material/card';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatListModule } from '@angular/material/list';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 
 
 @NgModule({
@@ -64,6 +73,7 @@ import { MatCardModule } from '@angular/material/card';
     ReactiveFormsModule,
     ListboxModule,
     TableModule,
+    // Angular Material Modules
     MatCardModule,
     MatStepperModule,
     MatFormFieldModule,
@@ -72,6 +82,14 @@ import { MatCardModule } from '@angular/material/card';
     MatButtonModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatTabsModule,
+    MatIconModule,
+    MatProgressBarModule,
+    MatListModule,
+    MatDialogModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule
+    
   ],
   providers: [
     provideAnimationsAsync()
