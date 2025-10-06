@@ -19,13 +19,13 @@ export class StandingService {
 
   getGroupsByTournamentId(tournamentId: number): Observable<Standing[]> {
     return this.getStandingsByTournamentId(tournamentId).pipe(
-      map(standings => standings.filter(standing => standing.type === 1))
+      map(standings => standings.filter(standing => standing.standingType === 1))
     );
   }
 
   getBracketsByTournamentId(tournamentId: number): Observable<Standing[]> {
     return this.getStandingsByTournamentId(tournamentId).pipe(
-      map(standings => standings.filter(standing => standing.type === 2))
+      map(standings => standings.filter(standing => standing.standingType === 2))
     );
   }
 

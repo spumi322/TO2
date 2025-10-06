@@ -51,9 +51,8 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error saving team: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error saving team: {Message}", ex.Message);
+                throw;
             }
         }
 
@@ -95,9 +94,8 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error updating team: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error updating team: {Message}", ex.Message);
+                throw;
             }
         }
 
@@ -110,9 +108,8 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error deleting team: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error deleting team: {Message}", ex.Message);
+                throw;
             }
         }
 

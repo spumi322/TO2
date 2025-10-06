@@ -3,7 +3,7 @@ import { Format, Tournament, TournamentStatus } from '../../../models/tournament
 import { TournamentService } from '../../../services/tournament/tournament.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, catchError, finalize, forkJoin, of, from } from 'rxjs';
-import { concatMap, switchMap, tap } from 'rxjs/operators';
+import { concatMap, switchMap, tap, map, toArray } from 'rxjs/operators';
 import { Standing, StandingType } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
 import { Team } from '../../../models/team';
@@ -84,6 +84,7 @@ export class TournamentDetailsComponent implements OnInit {
             }),
             catchError(error => {
               this.errorMessage = 'Error loading tournament data. Please try again.';
+              console.error('Error loading tournament:', error);
               return of(null);
             }),
             finalize(() => this.isReloading = false)
@@ -101,8 +102,8 @@ export class TournamentDetailsComponent implements OnInit {
     this.standingService.getStandingsByTournamentId(this.tournamentId).subscribe({
       next: (standings: Standing[]) => {
         this.standings = standings;
-        this.groups = standings.filter(s => s.type === StandingType.Group);
-        this.brackets = standings.filter(s => s.type === StandingType.Bracket);
+        this.groups = standings.filter(s => s.standingType === StandingType.Group);
+        this.brackets = standings.filter(s => s.standingType === StandingType.Bracket);
       },
       error: (error) => {
         console.error('Error loading standings', error);
@@ -138,7 +139,7 @@ export class TournamentDetailsComponent implements OnInit {
     }
 
     // Check if we'll exceed max capacity
-    const remainingSlots = this.tournament.maxTeams - this.tournament.teams.length;
+    const remainingSlots = this.tournament.maxTeams - (this.tournament.teams?.length || 0);
     if (teamNames.length > remainingSlots) {
       this.showError(`Can only add ${remainingSlots} more teams. You're trying to add ${teamNames.length}.`);
       return;
@@ -146,63 +147,78 @@ export class TournamentDetailsComponent implements OnInit {
 
     this.isAddingTeams = true;
 
-    // Process teams one by one
-    const processTeam = (name: any) => {
-      // First check if team exists
-      const existingTeam = this.allTeams.find(t => t.name.toLowerCase() === name.toLowerCase());
+    // Process teams one by one and track results
+    from(teamNames as string[]).pipe(
+      concatMap(name => {
+        // First check if team exists
+        const existingTeam = this.allTeams.find(t => t.name.toLowerCase() === name.toLowerCase());
 
-      if (existingTeam) {
-        // Use existing team
-        return this.teamService.addTeamToTournament(existingTeam.id, this.tournamentId!).pipe(
-          catchError(error => {
-            console.error(`Error adding existing team ${name} to tournament:`, error);
-            return of(null);
-          })
-        );
-      } else {
-        // Create new team
-        return this.teamService.createTeam({ name }).pipe(
-          switchMap(createdTeam => {
-            if (!createdTeam || !createdTeam.id) {
-              return of(null);
-            }
+        if (existingTeam) {
+          // Use existing team
+          return this.teamService.addTeamToTournament(this.tournamentId!, existingTeam.id).pipe(
+            map(() => ({ name, success: true, error: null })),
+            catchError(error => {
+              const errorMsg = 'Team name already used';
+              console.error(`Error adding existing team ${name} to tournament:`, error);
+              return of({ name, success: false, error: errorMsg });
+            })
+          );
+        } else {
+          // Create new team
+          return this.teamService.createTeam(name).pipe(
+            switchMap(createdTeam => {
+              if (!createdTeam || !createdTeam.id) {
+                return of({ name, success: false, error: 'Failed to create team' });
+              }
 
-            // Add newly created team to allTeams array
-            this.allTeams.push({
-              id: createdTeam.id,
-              name: name,
-              wins: 0,
-              losses: 0,
-              points: 0
-            });
+              // Add newly created team to allTeams array
+              this.allTeams.push({
+                id: createdTeam.id,
+                name: name,
+                wins: 0,
+                losses: 0,
+                points: 0
+              });
 
-            // Add to tournament
-            return this.teamService.addTeamToTournament(createdTeam.id, this.tournamentId!).pipe(
-              catchError(error => {
-                console.error(`Error adding new team ${name} to tournament:`, error);
-                return of(null);
-              })
-            );
-          }),
-          catchError(error => {
-            console.error(`Error creating team ${name}:`, error);
-            return of(null);
-          })
-        );
-      }
-    };
-
-    // Process teams sequentially to handle name conflicts properly
-    from(teamNames).pipe(
-      concatMap(name => processTeam(name)),
+              // Add to tournament
+              return this.teamService.addTeamToTournament(this.tournamentId!, createdTeam.id).pipe(
+                map(() => ({ name, success: true, error: null })),
+                catchError(error => {
+                  const errorMsg = error?.error?.title || error?.message || 'Failed to add team to tournament';
+                  console.error(`Error adding new team ${name} to tournament:`, error);
+                  return of({ name, success: false, error: errorMsg });
+                })
+              );
+            }),
+            catchError(error => {
+              const errorMsg = error?.error?.title || error?.message || 'Failed to create team';
+              console.error(`Error creating team ${name}:`, error);
+              return of({ name, success: false, error: errorMsg });
+            })
+          );
+        }
+      }),
+      toArray(),
       finalize(() => {
         this.isAddingTeams = false;
         this.bulkAddForm.reset();
       })
     ).subscribe({
-      complete: () => {
+      next: (results) => {
         this.reloadTournamentData();
-        this.showSuccess(`Teams added successfully`);
+
+        const succeeded = results.filter(r => r.success);
+        const failed = results.filter(r => !r.success);
+
+        if (failed.length === 0) {
+          this.showSuccess(`Successfully added ${succeeded.length} team(s)`);
+        } else if (succeeded.length === 0) {
+          const failedList = failed.map(f => `${f.name} (${f.error})`).join(', ');
+          this.showError(`Failed to add teams: ${failedList}`);
+        } else {
+          const failedList = failed.map(f => `${f.name} (${f.error})`).join(', ');
+          this.showSuccess(`Added ${succeeded.length} team(s). Failed: ${failedList}`);
+        }
       },
       error: (error) => {
         this.showError('Error adding teams');
@@ -346,5 +362,13 @@ export class TournamentDetailsComponent implements OnInit {
       duration: 5000,
       panelClass: ['error-snackbar']
     });
+  }
+
+  getTeamsPerGroup(): number | null {
+    return this.groups.length > 0 ? this.groups[0].maxTeams : null;
+  }
+
+  getTeamsPerBracket(): number | null {
+    return this.brackets.length > 0 ? this.brackets[0].maxTeams : null;
   }
 }

@@ -21,11 +21,18 @@ export class TeamService {
   }
 
   addTeamToTournament(tournamentId: number, teamId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/${tournamentId}/${teamId}`, {});
+    const request = {
+      TournamentId: tournamentId,
+      TeamId: teamId
+    };
+    return this.http.post(`${this.apiUrl}/tournamentId/teamId`, request);
   }
 
   // POST /api/teams
-  createTeam(request: { name: string }): Observable<{ id: number }> {
+  createTeam(name: string): Observable<{ id: number }> {
+    const request = {
+      Name: name
+    };
     return this.http.post<{ id: number }>(this.apiUrl, request);
   }
 }

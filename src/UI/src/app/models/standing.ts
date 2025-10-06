@@ -5,7 +5,7 @@ export interface Standing {
   id: number;
   tournamentId: number;
   name: string;
-  type: StandingType;
+  standingType: StandingType;
   maxTeams: number;
   matches: Match[];
   teams: Team[];

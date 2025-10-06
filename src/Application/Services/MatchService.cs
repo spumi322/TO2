@@ -58,9 +58,8 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting matches: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error getting matches: {Message}", ex.Message);
+                throw;
             }
         }
 
@@ -80,9 +79,8 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error generating match: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error generating match: {Message}", ex.Message);
+                throw;
             }
         }
 
@@ -231,9 +229,6 @@ namespace Application.Services
                             standingId: bracket.Id
                         );
 
-                        // Update participants status
-                        
-
                         currentSeed++;
                     }
                     catch (Exception ex)
@@ -265,18 +260,6 @@ namespace Application.Services
             {
                 _logger.LogError(ex, "Error seeding bracket");
                 return new BracketSeedResponseDTO($"Error seeding bracket: {ex.Message}", false);
-            }
-        }
-
-        public class BracketSeedResponseDTO
-        {
-            public string Message { get; }
-            public bool Success { get; }
-
-            public BracketSeedResponseDTO(string message, bool success)
-            {
-                Message = message;
-                Success = success;
             }
         }
     }

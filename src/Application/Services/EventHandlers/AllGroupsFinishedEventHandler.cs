@@ -35,36 +35,61 @@ namespace Application.Services.EventHandlers
 
         public async Task HandleAsync(AllGroupsFinishedEvent domainEvent)
         {
-            //var tournamentId = domainEvent.TournamentId;
-            //var groups = domainEvent.Groups;
-            //var bracket = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
-            //    .Where(g => g.StandingType == StandingType.Bracket)
-            //    .FirstOrDefault();
-            //var topTeams = new List<Group>();
-            //var bottomTeams = new List<TournamentParticipants>();
-            //var topX = bracket.MaxTeams / groups.Count;
+            var tournamentId = domainEvent.TournamentId;
+            var groups = domainEvent.Groups;
+            var bracket = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
+                .Where(g => g.StandingType == StandingType.Bracket)
+                .FirstOrDefault();
 
-            //foreach (var group in groups)
-            //{
-            //    var teams = await _dbContext.TournamentParticipants
-            //        .Where(t => t.StandingId == group.Id && t.TournamentId == tournamentId)
-            //        .ToListAsync();
+            if (bracket == null)
+            {
+                _logger.LogWarning("No bracket found for tournament {TournamentId}", tournamentId);
+                return;
+            }
 
-            //    var ordered = teams.OrderByDescending(t => t.Points).ToList();
+            var topTeams = new List<Group>();
+            var bottomTeams = new List<Group>();
+            var topX = bracket.MaxTeams / groups.Count;
 
-            //    topTeams.AddRange(ordered.Take(topX));
-            //    bottomTeams.AddRange(ordered.Skip(topX));
-            //}
+            if (topX < 1)
+            {
+                _logger.LogWarning("Invalid bracket configuration: MaxTeams={MaxTeams}, Groups={GroupCount}",
+                    bracket.MaxTeams, groups.Count);
+                return;
+            }
 
+            foreach (var group in groups)
+            {
+                var teams = await _dbContext.GroupEntries
+                    .Where(t => t.StandingId == group.Id && t.TournamentId == tournamentId)
+                    .ToListAsync();
 
-            //foreach (var team in bottomTeams)
-            //{
-            //    team.Eliminated = true;
-            //    team.Status = TeamStatus.Eliminated;
+                var ordered = teams.OrderByDescending(t => t.Points)
+                    .ThenByDescending(t => t.Wins)
+                    .ToList();
 
-            //    await _participantsRepository.Update(team);
-            //    await _participantsRepository.Save();
-            //}
+                topTeams.AddRange(ordered.Take(topX));
+                bottomTeams.AddRange(ordered.Skip(topX));
+            }
+
+            // Mark eliminated teams
+            foreach (var team in bottomTeams)
+            {
+                team.Eliminated = true;
+                team.Status = TeamStatus.Eliminated;
+            }
+
+            // Update bracket participants with advancing teams
+            foreach (var team in topTeams)
+            {
+                team.StandingId = bracket.Id;
+                team.Status = TeamStatus.Competing;
+                team.Eliminated = false;
+            }
+
+            await _dbContext.SaveChangesAsync();
+            _logger.LogInformation("Advanced {TopTeamCount} teams to bracket, eliminated {BottomTeamCount} teams",
+                topTeams.Count, bottomTeams.Count);
         }
     }
 }

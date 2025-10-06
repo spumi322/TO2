@@ -42,7 +42,11 @@
                   </div>
                   <div class="info-item" *ngIf="tournament?.format === Format.BracketAndGroups">
                     <span class="label">Teams per Group</span>
-                    <span class="value">{{ tournament?.teamsPerGroup }}</span>
+                    <span class="value">{{ getTeamsPerGroup() || '-' }}</span>
+                  </div>
+                  <div class="info-item" *ngIf="tournament?.format === Format.BracketOnly || tournament?.format === Format.BracketAndGroups">
+                    <span class="label">Teams per Bracket</span>
+                    <span class="value">{{ getTeamsPerBracket() || '-' }}</span>
                   </div>
                 </div>
               </mat-card-content>

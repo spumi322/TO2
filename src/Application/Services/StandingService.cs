@@ -39,17 +39,17 @@ namespace Application.Services
         {
             try
             {
-                //var standing = new Standing(name, teamsPerStanding);
-                //standing.TournamentId = tournamentId;
+                var standing = new Standing(name, teamsPerStanding, type);
+                standing.TournamentId = tournamentId;
 
-                //await _standingRepository.Add(standing);
-                //await _standingRepository.Save();
+                await _standingRepository.Add(standing);
+                await _standingRepository.Save();
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error saving standing: {0}, Inner Exception: {1}", ex, ex.InnerException);
+                _logger.LogError(ex, "Error saving standing: {Message}", ex.Message);
 
-                throw new Exception(ex.Message);
+                throw;
             }
         }
 
@@ -63,9 +63,8 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error getting standings: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error getting standings: {Message}", ex.Message);
+                throw;
             }
         }
 

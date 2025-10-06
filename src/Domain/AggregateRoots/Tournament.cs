@@ -29,7 +29,7 @@ namespace Domain.AggregateRoots
 
         [Required]
         [MaxLength(100)]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
         [MaxLength(250)]
         public string? Description { get; set; }

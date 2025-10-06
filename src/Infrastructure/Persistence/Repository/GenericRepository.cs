@@ -20,8 +20,6 @@ namespace Infrastructure.Persistence.Repository
 
         public async Task<TEntity> Add(TEntity entity)
         {
-            _dbContext.Entry(entity).State = EntityState.Added;
-
             await _dbContext.AddAsync(entity);
             return entity;
         }
@@ -48,9 +46,10 @@ namespace Infrastructure.Persistence.Repository
                 .ToListAsync();
         }
 
-        public async Task Update(TEntity entity)
+        public Task Update(TEntity entity)
         {
             _dbContext.Entry(entity).State = EntityState.Modified;
+            return Task.CompletedTask;
         }
 
         public async Task Delete(object id)

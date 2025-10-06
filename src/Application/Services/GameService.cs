@@ -1,4 +1,5 @@
-﻿using Application.Contracts;
+﻿
+using Application.Contracts;
 using Application.DTOs.Game;
 using Application.DTOs.Match;
 using AutoMapper;
@@ -121,9 +122,8 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error setting game result: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error setting game result: {Message}", ex.Message);
+                throw;
             }
         }
 
@@ -167,37 +167,44 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error determining match winner: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error determining match winner: {Message}", ex.Message);
+                throw;
             }
         }
 
         public async Task UpdateStandingAfterMatch(Match match)
         {
-            //var standing = await _standingrepository.Get(match.StandingId)
-            //    ?? throw new Exception("Standing not found");
+            var standing = await _standingrepository.Get(match.StandingId)
+                ?? throw new Exception("Standing not found");
 
-            //var teamA = await _dbContext.TournamentParticipants
-            //    .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamAId && tp.StandingId == standing.Id);
+            // Only update stats for Group standings (not brackets)
+            if (standing.StandingType != StandingType.Group)
+            {
+                await _dbContext.SaveChangesAsync();
+                return;
+            }
 
-            //var teamB = await _dbContext.TournamentParticipants
-            //    .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamBId && tp.StandingId == standing.Id);
+            var teamA = await _dbContext.GroupEntries
+                .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamAId && tp.StandingId == standing.Id);
 
-            //if (teamA == null || teamB == null) throw new Exception("Teams not found");
+            var teamB = await _dbContext.GroupEntries
+                .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamBId && tp.StandingId == standing.Id);
 
-            //if (match.WinnerId == teamA.TeamId)
-            //{
-            //    teamA.Wins += 1;
-            //    teamA.Points += 3;
-            //    teamB.Losses += 1;
-            //}
-            //else if (match.WinnerId == teamB.TeamId)
-            //{
-            //    teamB.Wins += 1;
-            //    teamB.Points += 3;
-            //    teamA.Losses += 1;
-            //}
+            if (teamA == null || teamB == null)
+                throw new Exception("Teams not found in group standings");
+
+            if (match.WinnerId == teamA.TeamId)
+            {
+                teamA.Wins += 1;
+                teamA.Points += 3;
+                teamB.Losses += 1;
+            }
+            else if (match.WinnerId == teamB.TeamId)
+            {
+                teamB.Wins += 1;
+                teamB.Points += 3;
+                teamA.Losses += 1;
+            }
 
             await _dbContext.SaveChangesAsync();
         }

@@ -49,8 +49,14 @@ namespace Domain.Common
 
         public bool Equals(EntityBase? other)
         {
-            return other is not null &&
-                   Id == other.Id;
+            if (other is null)
+                return false;
+
+            // If both entities are transient (not yet persisted), use reference equality
+            if (Id == 0 && other.Id == 0)
+                return ReferenceEquals(this, other);
+
+            return Id == other.Id;
         }
 
         public override int GetHashCode()

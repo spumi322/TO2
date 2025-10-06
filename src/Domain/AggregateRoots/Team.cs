@@ -15,6 +15,11 @@ namespace Domain.AggregateRoots
 
         private Team() { }
 
+        public Team(string name)
+        {
+            Name = name;
+        }
+
         public string Name { get; private set; }
 
         public ICollection<TournamentTeam> TournamentParticipations { get; private set; } = new List<TournamentTeam>();

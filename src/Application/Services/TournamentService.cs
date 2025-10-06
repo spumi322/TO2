@@ -64,9 +64,8 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error saving tournament: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error saving tournament: {Message}", ex.Message);
+                throw;
             }
         }
 
@@ -99,9 +98,8 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error updating tournament: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error updating tournament: {Message}", ex.Message);
+                throw;
             }
         }
 
@@ -118,9 +116,8 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error deleting tournament: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error deleting tournament: {Message}", ex.Message);
+                throw;
             }
         }
 
@@ -137,15 +134,14 @@ namespace Application.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error setting tournament status: {0}, Inner Exception: {1}", ex, ex.InnerException);
-
-                throw new Exception(ex.Message);
+                _logger.LogError(ex, "Error setting tournament status: {Message}", ex.Message);
+                throw;
             }
         }
 
         public async Task<List<GetTeamResponseDTO>> GetTeamsByTournamentAsync(long tournamentId)
         {
-            var teams = await _dbContext.GroupEntries
+            var teams = await _dbContext.TournamentTeams
                 .Where(tt => tt.TournamentId == tournamentId)
                 .Select(tt => tt.Team)
                 .ToListAsync();
@@ -158,18 +154,26 @@ namespace Application.Services
             var existingTeam = await _teamService.GetTeamAsync(teamId) ?? throw new Exception("Team not found");
             var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
 
+            // Check if registration is still open
+            if (!existingTournament.IsRegistrationOpen)
+                throw new Exception("Cannot remove teams after tournament has started");
+
             try
             {
-                await _dbContext.GroupEntries
-                    .Where(tt => tt.TeamId == existingTeam.Id && tt.TournamentId == existingTournament.Id)
-                    .ForEachAsync(tt => _dbContext.GroupEntries.Remove(tt));
+                // Remove from TournamentTeams table
+                var tournamentTeam = await _dbContext.TournamentTeams
+                    .FirstOrDefaultAsync(tt => tt.TeamId == teamId && tt.TournamentId == tournamentId);
+
+                if (tournamentTeam == null)
+                    throw new Exception("Team is not registered in this tournament");
+
+                _dbContext.TournamentTeams.Remove(tournamentTeam);
                 await _dbContext.SaveChangesAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                _logger.LogError("Error removing team from tournament");
-
-                throw new Exception("Error removing team from tournament");
+                _logger.LogError(ex, "Error removing team from tournament: {Message}", ex.Message);
+                throw;
             }
         }
 

@@ -43,9 +43,15 @@ namespace Infrastructure.Persistence
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
-            //var connectionString = _configuration.GetConnectionString("DefaultConnection");
 
-            optionsBuilder.UseSqlite("Data Source=G:\\Code\\TO2\\src\\Infrastructure\\app.db");
+            if (!optionsBuilder.IsConfigured && _configuration != null)
+            {
+                var connectionString = _configuration.GetConnectionString("DefaultConnection");
+                if (!string.IsNullOrEmpty(connectionString))
+                {
+                    optionsBuilder.UseSqlite(connectionString);
+                }
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
