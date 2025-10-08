@@ -63,14 +63,16 @@ namespace Application.Services
             }
         }
 
+        /// <summary>
+        /// Legacy method: Generates and saves a single match immediately.
+        /// Use for dynamic pairing scenarios (e.g., bracket after groups).
+        /// For batch creation, use GenerateGroupMatchesBatch or GenerateBracketMatchesBatch.
+        /// </summary>
         public async Task<long> GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId)
         {
             try
             {
-                var match = new Match(teamA, teamB, BestOf.Bo3);
-                match.Round = round;
-                match.Seed = seed;
-                match.StandingId = standingId;
+                var match = CreateMatchEntity(teamA, teamB, round, seed, standingId);
 
                 await _matchRepository.Add(match);
                 await _matchRepository.Save();
@@ -81,6 +83,135 @@ namespace Application.Services
             {
                 _logger.LogError(ex, "Error generating match: {Message}", ex.Message);
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Creates a Match entity without persisting to database
+        /// </summary>
+        private Match CreateMatchEntity(Team teamA, Team teamB, int round, int seed, long standingId)
+        {
+            var match = new Match(teamA, teamB, BestOf.Bo3)
+            {
+                Round = round,
+                Seed = seed,
+                StandingId = standingId
+            };
+
+            return match;
+        }
+
+        /// <summary>
+        /// Generates all round-robin matches for a group and inserts them in a single transaction
+        /// </summary>
+        private async Task<bool> GenerateGroupMatchesBatch(
+            List<Team> teams,
+            long standingId,
+            string groupName)
+        {
+            try
+            {
+                var matches = new List<Match>();
+                int matchNumber = 1;
+
+                // Generate all team pairings
+                for (int i = 0; i < teams.Count; i++)
+                {
+                    for (int j = i + 1; j < teams.Count; j++)
+                    {
+                        var match = CreateMatchEntity(
+                            teamA: teams[i],
+                            teamB: teams[j],
+                            round: 1, // All group matches are round 1
+                            seed: matchNumber,
+                            standingId: standingId
+                        );
+
+                        matches.Add(match);
+                        matchNumber++;
+                    }
+                }
+
+                // Batch insert all matches
+                _logger.LogInformation(
+                    "Inserting {MatchCount} matches for {GroupName} (Standing {StandingId})",
+                    matches.Count,
+                    groupName,
+                    standingId
+                );
+
+                await _matchRepository.AddRange(matches);
+                await _matchRepository.Save();
+
+                _logger.LogInformation(
+                    "Successfully created {MatchCount} matches for {GroupName}",
+                    matches.Count,
+                    groupName
+                );
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex,
+                    "Failed to generate matches for {GroupName} (Standing {StandingId})",
+                    groupName,
+                    standingId
+                );
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Generates first round bracket matches in a single batch
+        /// </summary>
+        private async Task<bool> GenerateBracketMatchesBatch(
+            List<Team> shuffledTeams,
+            long bracketId)
+        {
+            try
+            {
+                var matches = new List<Match>();
+                int seed = 1;
+
+                for (int i = 0; i < shuffledTeams.Count; i += 2)
+                {
+                    if (i + 1 < shuffledTeams.Count)
+                    {
+                        var match = CreateMatchEntity(
+                            teamA: shuffledTeams[i],
+                            teamB: shuffledTeams[i + 1],
+                            round: 1,
+                            seed: seed,
+                            standingId: bracketId
+                        );
+
+                        matches.Add(match);
+                        seed++;
+                    }
+                }
+
+                _logger.LogInformation(
+                    "Inserting {MatchCount} bracket matches (Standing {BracketId})",
+                    matches.Count,
+                    bracketId
+                );
+
+                await _matchRepository.AddRange(matches);
+                await _matchRepository.Save();
+
+                _logger.LogInformation(
+                    "Successfully created {MatchCount} bracket matches",
+                    matches.Count
+                );
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate bracket matches for standing {BracketId}", bracketId);
+                return false;
             }
         }
 
@@ -163,27 +294,16 @@ namespace Application.Services
                     }
                 }
 
-                // Generate round-robin matches for this group
-                for (int j = 0; j < groups[i].Count; j++)
+                // Generate all matches for this group in a single batch
+                bool matchesGenerated = await GenerateGroupMatchesBatch(
+                    teams: groups[i],
+                    standingId: standing.Id,
+                    groupName: standing.Name
+                );
+
+                if (!matchesGenerated)
                 {
-                    for (int k = j + 1; k < groups[i].Count; k++)
-                    {
-                        try
-                        {
-                            await GenerateMatch(groups[i][j], groups[i][k], j + 1, k, standing.Id);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(
-                                ex,
-                                "Error generating match for teams {TeamAId} and {TeamBId} in standing {StandingId}",
-                                groups[i][j].Id,
-                                groups[i][k].Id,
-                                standing.Id
-                            );
-                            allMatchesGenerated = false;
-                        }
-                    }
+                    allMatchesGenerated = false;
                 }
 
                 if (allMatchesGenerated)
@@ -332,29 +452,10 @@ namespace Application.Services
                     return new SeedGroupsResponseDTO("Bracket is already seeded", false, seededStandingIds);
                 }
 
-                // Shuffle teams randomly and generate round 1 matches
+                // Shuffle teams randomly and generate round 1 matches in batch
                 var shuffledTeams = teams.OrderBy(t => Guid.NewGuid()).ToList();
-                int seed = 1;
-                bool allMatchesGenerated = true;
 
-                for (int i = 0; i < shuffledTeams.Count; i += 2)
-                {
-                    if (i + 1 < shuffledTeams.Count)
-                    {
-                        try
-                        {
-                            var teamA = shuffledTeams[i];
-                            var teamB = shuffledTeams[i + 1];
-                            await GenerateMatch(teamA, teamB, round: 1, seed, bracket.Id);
-                            seed++;
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error generating bracket match");
-                            allMatchesGenerated = false;
-                        }
-                    }
-                }
+                bool allMatchesGenerated = await GenerateBracketMatchesBatch(shuffledTeams, bracket.Id);
 
                 if (allMatchesGenerated)
                 {
