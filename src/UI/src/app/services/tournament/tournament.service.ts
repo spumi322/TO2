@@ -79,6 +79,11 @@ export class TournamentService {
     return this.http.put(`${this.apiUrl}/${tournamentId}/start`, {});
   }
 
+  // POST /api/tournaments/{tournamentId}/request-start
+  requestStartTournament(tournamentId: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/${tournamentId}/request-start`, {});
+  }
+
   checkTournamentNameUnique(name: string): Observable<boolean> {
     return this.http.get<boolean>(`${this.apiUrl}/check-unique/${name}`)
   }

@@ -211,8 +211,11 @@ namespace Application.Services
         {
             var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
 
-            // Validation: Ensure enough teams
-            if (existingTournament.TournamentTeams == null || existingTournament.TournamentTeams.Count < 2)
+            // Validation: Ensure enough teams (query TournamentTeams directly)
+            var teamCount = await _dbContext.TournamentTeams
+                .CountAsync(tt => tt.TournamentId == tournamentId);
+
+            if (teamCount < 2)
             {
                 throw new InvalidOperationException("Cannot start tournament with fewer than 2 teams");
             }

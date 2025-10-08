@@ -107,14 +107,17 @@ namespace Infrastructure.Persistence
                 }
             }
 
-            int result = await base.SaveChangesAsync(cancellationToken);
-
-            await _eventDispatcher.DispatchQueuedEvents();
-
+            // Clear events IMMEDIATELY after queuing, BEFORE saving
+            // This prevents infinite recursion when event handlers call SaveChangesAsync
             foreach (var entity in domainEntities)
             {
                 entity.ClearEvents();
             }
+
+            int result = await base.SaveChangesAsync(cancellationToken);
+
+            // Dispatch events after save
+            await _eventDispatcher.DispatchQueuedEvents();
 
             return result;
         }

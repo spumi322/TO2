@@ -263,38 +263,62 @@ export class TournamentDetailsComponent implements OnInit {
     }
 
     this.isReloading = true;
-    this.tournamentService.startTournament(this.tournamentId).pipe(
-      switchMap(() => this.generateGroupMatches()),
-      switchMap((standingIds: number[]) => {
-        const generateGamesRequests = standingIds.map(standingId =>
-          this.standingService.generateGames(standingId)
-        );
 
-        return forkJoin(generateGamesRequests.length ? generateGamesRequests : [of(null)]);
-      }),
+    this.tournamentService.requestStartTournament(this.tournamentId).pipe(
       catchError(error => {
-        this.showError('Error starting tournament');
-        console.error('Error in tournament starting process:', error);
+        const errorMessage = error?.error?.error || 'Error starting tournament';
+        this.showError(errorMessage);
+        console.error('Error starting tournament:', error);
         return of(null);
       }),
       finalize(() => {
         this.isReloading = false;
       })
-    ).subscribe(() => {
-      this.reloadTournamentData();
-      this.showSuccess('Tournament successfully started!');
+    ).subscribe(response => {
+      if (response) {
+        this.showSuccess('Tournament start initiated! Processing...');
+
+        // Poll for completion
+        this.pollTournamentStatus();
+      }
     });
   }
 
-  generateGroupMatches(): Observable<number[]> {
-    if (!this.tournamentId) return of([]);
+  private pollTournamentStatus(): void {
+    const pollInterval = setInterval(() => {
+      if (!this.tournamentId) {
+        clearInterval(pollInterval);
+        return;
+      }
 
-    return this.standingService.generateGroupMatches(this.tournamentId).pipe(
-      catchError(error => {
-        console.error('Error generating group matches:', error);
-        return of([]);
-      })
-    );
+      this.tournamentService.getTournament(this.tournamentId).subscribe({
+        next: (tournament) => {
+          // Check if processing is complete
+          if (!tournament.isProcessing) {
+            clearInterval(pollInterval);
+
+            if (tournament.status === TournamentStatus.Ongoing) {
+              this.showSuccess('Tournament started successfully!');
+              this.reloadTournamentData();
+            } else {
+              this.showError('Tournament start failed. Please try again.');
+              this.reloadTournamentData();
+            }
+          }
+        },
+        error: (error) => {
+          clearInterval(pollInterval);
+          this.showError('Error checking tournament status');
+          console.error('Polling error:', error);
+        }
+      });
+    }, 2000); // Poll every 2 seconds
+
+    // Safety timeout: stop polling after 30 seconds
+    setTimeout(() => {
+      clearInterval(pollInterval);
+      this.reloadTournamentData();
+    }, 30000);
   }
 
   reloadTournamentData(): void {

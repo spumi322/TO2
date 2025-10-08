@@ -10,9 +10,14 @@
     </div>
     <div class="tournament-actions" *ngIf="tournament?.isRegistrationOpen">
       <button mat-raised-button color="primary" (click)="startTournament()"
-              [disabled]="!tournament || (tournament?.teams?.length || 0) < 2 || isReloading">
-        <mat-icon>play_arrow</mat-icon> Start Tournament
+              [disabled]="!tournament || (tournament?.teams?.length || 0) < 2 || isReloading || tournament.isProcessing">
+        <mat-icon>play_arrow</mat-icon>
+        {{ tournament.isProcessing ? 'Processing...' : 'Start Tournament' }}
       </button>
+      <div class="processing-indicator" *ngIf="tournament.isProcessing" style="display: flex; align-items: center; gap: 8px; margin-left: 16px;">
+        <mat-spinner diameter="24"></mat-spinner>
+        <span>Initializing tournament...</span>
+      </div>
     </div>
   </div>
   <!-- Main Content Area -->

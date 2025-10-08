@@ -8,6 +8,7 @@ export interface Tournament {
   format: Format;
   status: TournamentStatus;
   isRegistrationOpen: boolean;
+  isProcessing: boolean;
   teamsPerGroup?: number;
   teamsPerBracket?: number;
   teams: Team[];

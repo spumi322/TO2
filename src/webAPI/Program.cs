@@ -35,10 +35,12 @@ namespace TO2
             builder.Services.AddScoped<IMatchService, MatchService>();
             builder.Services.AddScoped<IGameService, GameService>();
             builder.Services.AddScoped<IStartTournamentService, StartTournamentService>();
+            builder.Services.AddScoped<ITournamentRollbackService, TournamentRollbackService>();
             // Handlers
             builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             builder.Services.AddScoped<IDomainEventHandler<StandingFinishedEvent>, StandingFinishedEventHandler>();
             builder.Services.AddScoped<IDomainEventHandler<AllGroupsFinishedEvent>, AllGroupsFinishedEventHandler>();
+            builder.Services.AddScoped<IDomainEventHandler<StartTournamentEvent>, StartTournamentEventHandler>();
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddFluentValidation().AddValidatorsFromAssemblyContaining<IAssemblyMarker>();

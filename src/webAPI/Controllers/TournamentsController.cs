@@ -13,11 +13,13 @@ namespace TO2.Controllers
     {
         private readonly ITournamentService _tournamentService;
         private readonly ITeamService _teamService;
+        private readonly ILogger<TournamentsController> _logger;
 
-        public TournamentsController(ITournamentService tournamentService, ITeamService teamService)
+        public TournamentsController(ITournamentService tournamentService, ITeamService teamService, ILogger<TournamentsController> logger)
         {
             _tournamentService = tournamentService;
             _teamService = teamService;
+            _logger = logger;
         }
 
         // GET: api/Tournaments
@@ -91,6 +93,26 @@ namespace TO2.Controllers
             var result = await _tournamentService.StartTournament(id);
 
             return result.Success ? Ok() : BadRequest();
+        }
+
+        // POST: api/tournaments/5/request-start
+        [HttpPost("{id}/request-start")]
+        public async Task<IActionResult> RequestStartTournament(long id)
+        {
+            try
+            {
+                await _tournamentService.RequestStart(id);
+                return Ok(new { message = "Tournament start initiated" });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error requesting tournament start for tournament {TournamentId}", id);
+                return StatusCode(500, new { error = "Internal server error" });
+            }
         }
 
         [HttpGet("/check-unique/{name}")]

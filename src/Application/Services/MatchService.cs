@@ -103,25 +103,46 @@ namespace Application.Services
                 return new SeedGroupsResponseDTO("There are not enough teams to seed the groups!", false, seededStandingIds);
             }
 
+            // Randomize team order
             teams = teams.OrderBy(t => Guid.NewGuid()).ToList();
 
-            int teamsPerGroup = teams.Count / groupsCount;
-            int remainingTeams = teams.Count % groupsCount;
+            // Initialize groups
             List<List<Team>> groups = new List<List<Team>>();
-
-            int teamIndex = 0;
             for (int i = 0; i < groupsCount; i++)
             {
-                int groupSize = teamsPerGroup + (i < remainingTeams ? 1 : 0);
-                groups.Add(teams.GetRange(teamIndex, groupSize));
-                teamIndex += groupSize;
+                groups.Add(new List<Team>());
             }
 
+            // ROUND-ROBIN DISTRIBUTION
+            // Distribute teams in circular pattern: T1→G1, T2→G2, T3→G3, T4→G1, ...
+            for (int i = 0; i < teams.Count; i++)
+            {
+                int groupIndex = i % groupsCount;
+                groups[groupIndex].Add(teams[i]);
+            }
+
+            // Log distribution for debugging
+            _logger.LogInformation(
+                "Distributed {TeamCount} teams across {GroupCount} groups. Group sizes: {GroupSizes}",
+                teams.Count,
+                groupsCount,
+                string.Join(", ", groups.Select(g => g.Count))
+            );
+
+            // Assign teams to standings and generate matches
             for (int i = 0; i < groupsCount; i++)
             {
                 var standing = standings.FirstOrDefault(s => s.Name == $"Group {i + 1}");
+
+                if (standing == null)
+                {
+                    _logger.LogWarning("Standing 'Group {GroupNumber}' not found", i + 1);
+                    continue;
+                }
+
                 bool allMatchesGenerated = true;
 
+                // Assign teams to this standing
                 foreach (var team in groups[i])
                 {
                     var participant = await _dbContext.GroupEntries
@@ -132,8 +153,17 @@ namespace Application.Services
                         participant.StandingId = standing.Id;
                         participant.Status = TeamStatus.Competing;
                     }
+                    else
+                    {
+                        _logger.LogWarning(
+                            "GroupEntry not found for Team {TeamId} in Tournament {TournamentId}",
+                            team.Id,
+                            tournamentId
+                        );
+                    }
                 }
 
+                // Generate round-robin matches for this group
                 for (int j = 0; j < groups[i].Count; j++)
                 {
                     for (int k = j + 1; k < groups[i].Count; k++)
@@ -144,7 +174,13 @@ namespace Application.Services
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Error generating match for teams {0} and {1}", groups[i][j].Id, groups[i][k].Id);
+                            _logger.LogError(
+                                ex,
+                                "Error generating match for teams {TeamAId} and {TeamBId} in standing {StandingId}",
+                                groups[i][j].Id,
+                                groups[i][k].Id,
+                                standing.Id
+                            );
                             allMatchesGenerated = false;
                         }
                     }
@@ -163,6 +199,7 @@ namespace Application.Services
 
             return new SeedGroupsResponseDTO("Groups seeded successfully!", true, seededStandingIds);
         }
+
 
         public async Task<BracketSeedResponseDTO> SeedBracketAfterGroups(long tournamentId, List<BracketSeedDTO> advancedTeams)
         {

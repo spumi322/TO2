@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(dotnet --version)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(dotnet build:*)"
     ],
     "deny": [],
     "ask": []
