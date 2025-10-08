@@ -164,7 +164,7 @@ namespace Application.Services
             return new SeedGroupsResponseDTO("Groups seeded successfully!", true, seededStandingIds);
         }
 
-        public async Task<BracketSeedResponseDTO> SeedBracket(long tournamentId, List<BracketSeedDTO> advancedTeams)
+        public async Task<BracketSeedResponseDTO> SeedBracketAfterGroups(long tournamentId, List<BracketSeedDTO> advancedTeams)
         {
             // Get standings and validate bracket hasn't been seeded yet
             var standings = await _standingService.GetStandingsAsync(tournamentId);
@@ -260,6 +260,81 @@ namespace Application.Services
             {
                 _logger.LogError(ex, "Error seeding bracket");
                 return new BracketSeedResponseDTO($"Error seeding bracket: {ex.Message}", false);
+            }
+        }
+
+        public async Task<SeedGroupsResponseDTO> SeedBracketOnly(long tournamentId)
+        {
+            var seededStandingIds = new List<long>();
+
+            try
+            {
+                _logger.LogInformation("Seeding bracket only tournament {TournamentId}", tournamentId);
+
+                // Get all teams
+                var teamsDTO = await _tournamentService.GetTeamsByTournamentAsync(tournamentId);
+
+                if (teamsDTO.Count < 2)
+                {
+                    return new SeedGroupsResponseDTO("Need at least 2 teams to start tournament", false, seededStandingIds);
+                }
+
+                var teams = _mapper.Map<List<Team>>(teamsDTO);
+
+                // Get bracket standing
+                var standings = await _standingService.GetStandingsAsync(tournamentId);
+                var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket);
+
+                if (bracket == null)
+                {
+                    return new SeedGroupsResponseDTO("Bracket standing not found", false, seededStandingIds);
+                }
+
+                if (bracket.IsSeeded)
+                {
+                    return new SeedGroupsResponseDTO("Bracket is already seeded", false, seededStandingIds);
+                }
+
+                // Shuffle teams randomly and generate round 1 matches
+                var shuffledTeams = teams.OrderBy(t => Guid.NewGuid()).ToList();
+                int seed = 1;
+                bool allMatchesGenerated = true;
+
+                for (int i = 0; i < shuffledTeams.Count; i += 2)
+                {
+                    if (i + 1 < shuffledTeams.Count)
+                    {
+                        try
+                        {
+                            var teamA = shuffledTeams[i];
+                            var teamB = shuffledTeams[i + 1];
+                            await GenerateMatch(teamA, teamB, round: 1, seed, bracket.Id);
+                            seed++;
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, "Error generating bracket match");
+                            allMatchesGenerated = false;
+                        }
+                    }
+                }
+
+                if (allMatchesGenerated)
+                {
+                    bracket.IsSeeded = true;
+                    seededStandingIds.Add(bracket.Id);
+                    await _standingRepository.Update(bracket);
+                    await _standingRepository.Save();
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                return new SeedGroupsResponseDTO("Bracket seeded successfully", true, seededStandingIds);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error seeding bracket only tournament {TournamentId}", tournamentId);
+                return new SeedGroupsResponseDTO($"Error: {ex.Message}", false, seededStandingIds);
             }
         }
     }

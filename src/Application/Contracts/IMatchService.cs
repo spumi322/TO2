@@ -18,6 +18,7 @@ namespace Application.Contracts
         Task<List<Match>> GetMatchesAsync(long standingId);
         Task<long> GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId);
         Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId);
-        Task<BracketSeedResponseDTO> SeedBracket(long tournamentId, List<BracketSeedDTO> advancedTeams);
+        Task<BracketSeedResponseDTO> SeedBracketAfterGroups(long tournamentId, List<BracketSeedDTO> advancedTeams);
+        Task<SeedGroupsResponseDTO> SeedBracketOnly(long tournamentId);
     }
 }

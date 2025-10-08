@@ -34,6 +34,7 @@ namespace TO2
             builder.Services.AddScoped<ITeamService, TeamService>();
             builder.Services.AddScoped<IMatchService, MatchService>();
             builder.Services.AddScoped<IGameService, GameService>();
+            builder.Services.AddScoped<IStartTournamentService, StartTournamentService>();
             // Handlers
             builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             builder.Services.AddScoped<IDomainEventHandler<StandingFinishedEvent>, StandingFinishedEventHandler>();
