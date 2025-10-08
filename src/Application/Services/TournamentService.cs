@@ -3,6 +3,7 @@ using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
+using Domain.DomainEvents;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.ValueObjects;
@@ -203,6 +204,40 @@ namespace Application.Services
                 _logger.LogInformation("Tournament already started");
 
                 return new StartTournamentDTO("Tournament already started", false);
+            }
+        }
+
+        public async Task RequestStart(long tournamentId)
+        {
+            var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
+
+            // Validation: Ensure enough teams
+            if (existingTournament.TournamentTeams == null || existingTournament.TournamentTeams.Count < 2)
+            {
+                throw new InvalidOperationException("Cannot start tournament with fewer than 2 teams");
+            }
+
+            // Validation: Ensure registration is still open
+            if (!existingTournament.IsRegistrationOpen)
+            {
+                throw new InvalidOperationException("Tournament registration is already closed");
+            }
+
+            try
+            {
+                // Set processing flag
+                existingTournament.StartProcessing();
+
+                // Raise domain event
+                existingTournament.AddDomainEvent(new StartTournamentEvent(existingTournament.Id, existingTournament.Format));
+
+                await _tournamentRepository.Update(existingTournament);
+                await _tournamentRepository.Save();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error requesting tournament start: {Message}", ex.Message);
+                throw;
             }
         }
 

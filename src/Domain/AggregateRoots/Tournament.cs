@@ -51,7 +51,13 @@ namespace Domain.AggregateRoots
 
         public bool IsRegistrationOpen { get; set; } = false;
 
+        public bool IsProcessing { get; private set; }
+
         public List<Prize> PrizePool { get; set; }
+
+        public void StartProcessing() => IsProcessing = true;
+
+        public void StopProcessing() => IsProcessing = false;
 
         public ICollection<TournamentTeam> TournamentTeams { get; private set; } = new List<TournamentTeam>();
 
