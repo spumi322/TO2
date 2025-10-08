@@ -593,3 +593,6 @@ obj/
 
 src/Infrastructure/app.db
 
+/src/Infrastructure/app.db
+/src/Infrastructure/app.db-shm
+/src/Infrastructure/app.db-wal
