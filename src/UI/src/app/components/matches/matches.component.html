@@ -20,7 +20,7 @@
                 icon="pi pi-plus"
                 class="p-button-rounded p-button-primary"
                 (click)="updateMatchScore(match.id, match.teamAId, match.result.teamAWins + 1, match.result.teamBWins)"
-                [disabled]="match.winnerId || isUpdating[match.id]">
+                [disabled]="match.winnerId || isUpdating[match.id] || isGroupFinished">
         </button>
 
         <span *ngIf="!isUpdating[match.id]">{{ match.result.teamAWins }} - {{ match.result.teamBWins }}</span>
@@ -31,7 +31,7 @@
                 icon="pi pi-plus"
                 class="p-button-rounded p-button-primary"
                 (click)="updateMatchScore(match.id, match.teamBId, match.result.teamAWins, match.result.teamBWins + 1)"
-                [disabled]="match.winnerId || isUpdating[match.id]">
+                [disabled]="match.winnerId || isUpdating[match.id] || isGroupFinished">
         </button>
       </td>
 

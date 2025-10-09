@@ -13,6 +13,7 @@ import { Game } from '../../models/game';
 export class MatchesComponent implements OnInit {
   @Input() matches: Match[] = [];
   @Input() teams: Team[] = [];
+  @Input() isGroupFinished: boolean = false;
   @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
 
   isUpdating: { [key: number]: boolean } = {};

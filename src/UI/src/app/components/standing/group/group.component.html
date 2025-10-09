@@ -1,6 +1,14 @@
 <div class="group-container">
   <div class="group-card" *ngFor="let group of groups">
-    <div class="group-header">{{ group.name }}</div>
+    <div class="group-header">
+      {{ group.name }}
+      <span *ngIf="group.isFinished" class="status-badge finished">
+        <i class="pi pi-check-circle"></i> Completed
+      </span>
+      <span *ngIf="!group.isFinished" class="status-badge active">
+        <i class="pi pi-spin pi-spinner"></i> In Progress
+      </span>
+    </div>
 
     <!-- Team Standings Table -->
     <table class="group-standings">
@@ -28,6 +36,7 @@
     <h4>Matches</h4>
     <app-matches [matches]="group.matches"
                  [teams]="group.teams"
+                 [isGroupFinished]="group.isFinished"
                  (matchFinished)="onMatchFinished($event)">
     </app-matches>
   </div>
