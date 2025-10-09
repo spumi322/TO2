@@ -1,14 +1,29 @@
 <div class="bracket-container">
-  <div class="round" *ngFor="let round of rounds; let roundIndex = index">
-    <h3>Round {{ roundIndex + 1 }}</h3>
-    <div class="match" *ngFor="let match of round; let matchIndex = index">
-      <div class="team">
-        <span>{{ match.team1 }}</span>
-        <span class="score">{{ match.team1Score }}</span>
+  <div class="round" *ngFor="let round of rounds">
+    <h3>Round {{ round.roundNumber }}</h3>
+    <div class="bracket-match-card" *ngFor="let match of round.matches">
+      <div class="match-header">
+        <span>Match {{ match.seed }}</span>
+        <span *ngIf="match.winnerId" class="winner-badge">Winner: {{ getTeamName(match.winnerId) }}</span>
       </div>
-      <div class="team">
-        <span>{{ match.team2 }}</span>
-        <span class="score">{{ match.team2Score }}</span>
+
+      <div class="team" [class.winner]="match.winnerId === match.teamAId">
+        <span>{{ getTeamName(match.teamAId) }}</span>
+        <span class="score">{{ getMatchWins(match, match.teamAId) }}</span>
+      </div>
+
+      <div class="team" [class.winner]="match.winnerId === match.teamBId">
+        <span>{{ getTeamName(match.teamBId) }}</span>
+        <span class="score">{{ getMatchWins(match, match.teamBId) }}</span>
+      </div>
+
+      <!-- Integrate matches component for scoring -->
+      <div class="match-actions">
+        <app-matches [matches]="[match]"
+                     [teams]="brackets[0]?.teams || []"
+                     [isGroupFinished]="false"
+                     (matchFinished)="onMatchFinished($event)">
+        </app-matches>
       </div>
     </div>
   </div>

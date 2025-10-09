@@ -31,6 +31,7 @@ namespace Domain.Entities
         public string TeamName { get; set; }
         public TeamStatus Status { get; set; } = TeamStatus.Competing;
         public bool Eliminated { get; set; } = false;
+        public int CurrentRound { get; set; } = 1;
         public Team Team { get; set; }
     }
 }

@@ -22,9 +22,17 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let team of group.teams; let i = index">
+        <tr *ngFor="let team of group.teams; let i = index"
+            [ngClass]="{
+              'team-advanced': team.status === 2,
+              'team-eliminated': team.status === 3
+            }">
           <td class="team-rank">{{ i + 1 }}</td>
-          <td class="team-name">{{ team.name }}</td>
+          <td class="team-name">
+            {{ team.name }}
+            <span *ngIf="team.status === 2" class="badge-advanced">Advanced</span>
+            <span *ngIf="team.status === 3" class="badge-eliminated">Eliminated</span>
+          </td>
           <td>{{ team.wins }}</td>
           <td>{{ team.losses }}</td>
           <td>{{ team.points }}</td>

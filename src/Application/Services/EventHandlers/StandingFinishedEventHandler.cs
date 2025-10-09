@@ -18,13 +18,16 @@ namespace Application.Services.EventHandlers
     {
         private readonly ILogger<StandingFinishedEventHandler> _logger;
         private readonly IGenericRepository<Standing> _standingRepository;
+        private readonly IStandingService _standingService;
 
         public StandingFinishedEventHandler(
             ILogger<StandingFinishedEventHandler> logger,
-            IGenericRepository<Standing> standingsRepositry)
+            IGenericRepository<Standing> standingsRepositry,
+            IStandingService standingService)
         {
             _logger = logger;
             _standingRepository = standingsRepositry;
+            _standingService = standingService;
         }
 
         public async Task HandleAsync(StandingFinishedEvent domainEvent)
@@ -35,7 +38,10 @@ namespace Application.Services.EventHandlers
             {
                 standing.IsFinished = true;
                 _logger.LogInformation($"Standing {domainEvent.StandingId} has been finished!");
-                await _standingRepository.Save();
+                // Removed Save() call - DbContext automatically tracks changes and saves after event handlers complete
+
+                // Check if all groups are now finished
+                await _standingService.CheckAndMarkAllGroupsAreFinishedAsync(standing.TournamentId);
             }
         }
     }

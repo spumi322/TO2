@@ -17,79 +17,32 @@ namespace Application.Services.EventHandlers
     public class AllGroupsFinishedEventHandler : IDomainEventHandler<AllGroupsFinishedEvent>
     {
         private readonly ILogger<AllGroupsFinishedEventHandler> _logger;
-        private readonly ITO2DbContext _dbContext;
-        private readonly IGenericRepository<Standing> _standingRepository;
-        private readonly IGenericRepository<Group> _participantsRepository;
+        private readonly IStandingService _standingService;
+        private readonly IMatchService _matchService;
 
         public AllGroupsFinishedEventHandler(
             ILogger<AllGroupsFinishedEventHandler> logger,
-            ITO2DbContext dbContext,
-            IGenericRepository<Standing> standingRepository,
-            IGenericRepository<Group> participantsRepository)
+            IStandingService standingService,
+            IMatchService matchService)
         {
             _logger = logger;
-            _dbContext = dbContext;
-            _standingRepository = standingRepository;
-            _participantsRepository = participantsRepository;
+            _standingService = standingService;
+            _matchService = matchService;
         }
 
         public async Task HandleAsync(AllGroupsFinishedEvent domainEvent)
         {
             var tournamentId = domainEvent.TournamentId;
-            var groups = domainEvent.Groups;
-            var bracket = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
-                .Where(g => g.StandingType == StandingType.Bracket)
-                .FirstOrDefault();
 
-            if (bracket == null)
-            {
-                _logger.LogWarning("No bracket found for tournament {TournamentId}", tournamentId);
-                return;
-            }
+            _logger.LogInformation($"All groups finished for tournament {tournamentId}. Preparing bracket...");
 
-            var topTeams = new List<Group>();
-            var bottomTeams = new List<Group>();
-            var topX = bracket.MaxTeams / groups.Count;
+            // Determine which teams advance and which are eliminated
+            var advancingTeams = await _standingService.PrepareTeamsForBracket(tournamentId);
 
-            if (topX < 1)
-            {
-                _logger.LogWarning("Invalid bracket configuration: MaxTeams={MaxTeams}, Groups={GroupCount}",
-                    bracket.MaxTeams, groups.Count);
-                return;
-            }
+            // Seed the bracket with advancing teams
+            await _matchService.SeedBracket(tournamentId, advancingTeams);
 
-            foreach (var group in groups)
-            {
-                var teams = await _dbContext.GroupEntries
-                    .Where(t => t.StandingId == group.Id && t.TournamentId == tournamentId)
-                    .ToListAsync();
-
-                var ordered = teams.OrderByDescending(t => t.Points)
-                    .ThenByDescending(t => t.Wins)
-                    .ToList();
-
-                topTeams.AddRange(ordered.Take(topX));
-                bottomTeams.AddRange(ordered.Skip(topX));
-            }
-
-            // Mark eliminated teams
-            foreach (var team in bottomTeams)
-            {
-                team.Eliminated = true;
-                team.Status = TeamStatus.Eliminated;
-            }
-
-            // Update bracket participants with advancing teams
-            foreach (var team in topTeams)
-            {
-                team.StandingId = bracket.Id;
-                team.Status = TeamStatus.Competing;
-                team.Eliminated = false;
-            }
-
-            await _dbContext.SaveChangesAsync();
-            _logger.LogInformation("Advanced {TopTeamCount} teams to bracket, eliminated {BottomTeamCount} teams",
-                topTeams.Count, bottomTeams.Count);
+            _logger.LogInformation($"Bracket seeded with {advancingTeams.Count} teams");
         }
     }
 }

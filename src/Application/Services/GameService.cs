@@ -177,36 +177,58 @@ namespace Application.Services
             var standing = await _standingrepository.Get(match.StandingId)
                 ?? throw new Exception("Standing not found");
 
-            // Only update stats for Group standings (not brackets)
-            if (standing.StandingType != StandingType.Group)
+            if (standing.StandingType == StandingType.Group)
             {
+                // Update Group standings
+                var teamA = await _dbContext.GroupEntries
+                    .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamAId && tp.StandingId == standing.Id);
+
+                var teamB = await _dbContext.GroupEntries
+                    .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamBId && tp.StandingId == standing.Id);
+
+                if (teamA == null || teamB == null)
+                    throw new Exception("Teams not found in group standings");
+
+                if (match.WinnerId == teamA.TeamId)
+                {
+                    teamA.Wins += 1;
+                    teamA.Points += 3;
+                    teamB.Losses += 1;
+                }
+                else if (match.WinnerId == teamB.TeamId)
+                {
+                    teamB.Wins += 1;
+                    teamB.Points += 3;
+                    teamA.Losses += 1;
+                }
+
                 await _dbContext.SaveChangesAsync();
-                return;
             }
-
-            var teamA = await _dbContext.GroupEntries
-                .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamAId && tp.StandingId == standing.Id);
-
-            var teamB = await _dbContext.GroupEntries
-                .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamBId && tp.StandingId == standing.Id);
-
-            if (teamA == null || teamB == null)
-                throw new Exception("Teams not found in group standings");
-
-            if (match.WinnerId == teamA.TeamId)
+            else if (standing.StandingType == StandingType.Bracket)
             {
-                teamA.Wins += 1;
-                teamA.Points += 3;
-                teamB.Losses += 1;
-            }
-            else if (match.WinnerId == teamB.TeamId)
-            {
-                teamB.Wins += 1;
-                teamB.Points += 3;
-                teamA.Losses += 1;
-            }
+                // Update Bracket standings
+                var winner = await _dbContext.BracketEntries
+                    .FirstOrDefaultAsync(b => b.TeamId == match.WinnerId && b.StandingId == standing.Id);
 
-            await _dbContext.SaveChangesAsync();
+                var loser = await _dbContext.BracketEntries
+                    .FirstOrDefaultAsync(b => b.TeamId == match.LoserId && b.StandingId == standing.Id);
+
+                if (winner != null)
+                {
+                    winner.Status = TeamStatus.Advanced;
+                }
+
+                if (loser != null)
+                {
+                    loser.Status = TeamStatus.Eliminated;
+                    loser.Eliminated = true;
+                }
+
+                await _dbContext.SaveChangesAsync();
+
+                // Check if we need to generate next round or declare champion
+                await _matchService.CheckAndGenerateNextRound(standing.TournamentId, standing.Id, match.Round ?? 1);
+            }
         }
 
     }

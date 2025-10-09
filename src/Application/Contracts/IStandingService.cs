@@ -15,6 +15,6 @@ namespace Application.Contracts
         Task<List<Standing>> GetStandingsAsync(long tournamentId);
         Task CheckAndMarkStandingAsFinishedAsync(long tournamentId);
         Task CheckAndMarkAllGroupsAreFinishedAsync(long standingId);
-        //Task<int> TopX(long tournamentId);
+        Task<List<Application.DTOs.Standing.BracketSeedDTO>> PrepareTeamsForBracket(long tournamentId);
     }
 }

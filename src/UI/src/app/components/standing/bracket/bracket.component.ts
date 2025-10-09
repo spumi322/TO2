@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Standing } from '../../../models/standing';
+import { Match } from '../../../models/match';
 
 @Component({
   selector: 'app-standing-bracket',
@@ -8,7 +9,7 @@ import { Standing } from '../../../models/standing';
 })
 export class BracketComponent implements OnInit {
   @Input() brackets: Standing[] = [];
-  rounds: any[] = [];
+  rounds: { roundNumber: number, matches: Match[] }[] = [];
 
   ngOnInit() {
     this.generateBracket();
@@ -19,30 +20,44 @@ export class BracketComponent implements OnInit {
   }
 
   generateBracket(): void {
-    if (this.brackets.length > 0) {
-      const maxTeams = this.brackets[0].maxTeams;
-      this.rounds = this.createBracketStructure(maxTeams);
+    if (this.brackets.length > 0 && this.brackets[0].matches) {
+      const matches = this.brackets[0].matches;
+
+      // Group matches by round
+      const roundsMap = new Map<number, Match[]>();
+
+      matches.forEach(match => {
+        const round = match.round || 1;
+        if (!roundsMap.has(round)) {
+          roundsMap.set(round, []);
+        }
+        roundsMap.get(round)?.push(match);
+      });
+
+      // Convert to array and sort by round number
+      this.rounds = Array.from(roundsMap.entries())
+        .map(([roundNumber, matches]) => ({
+          roundNumber,
+          matches: matches.sort((a, b) => (a.seed || 0) - (b.seed || 0))
+        }))
+        .sort((a, b) => a.roundNumber - b.roundNumber);
     }
   }
 
-  createBracketStructure(maxTeams: number): any[] {
-    const rounds = Math.ceil(Math.log2(maxTeams));
-    const structure = [];
+  getTeamName(teamId: number): string {
+    if (!this.brackets || this.brackets.length === 0) return 'TBD';
 
-    for (let i = 0; i < rounds; i++) {
-      const matches = Math.pow(2, rounds - i - 1);
-      const round = [];
-      for (let j = 0; j < matches; j++) {
-        round.push({
-          team1: `Team ${j * 2 + 1}`,
-          team2: `Team ${j * 2 + 2}`,
-          team1Score: 0,
-          team2Score: 0  
-        });
-      }
-      structure.push(round);
-    }
+    const team = this.brackets[0].teams?.find(t => t.id === teamId);
+    return team ? team.name : 'TBD';
+  }
 
-    return structure;
+  getMatchWins(match: Match, teamId: number): number {
+    if (!match.games) return 0;
+    return match.games.filter(g => g.winnerId === teamId).length;
+  }
+
+  onMatchFinished(event: any) {
+    // Refresh bracket when match finishes
+    this.generateBracket();
   }
 }

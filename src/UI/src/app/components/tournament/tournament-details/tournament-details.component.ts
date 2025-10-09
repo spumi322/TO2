@@ -12,6 +12,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TournamentStatusLabel } from '../tournament-status-label/tournament-status-label';
+import { FinalStanding } from '../../../models/final-standing';
 
 @Component({
   selector: 'app-tournament-details',
@@ -34,6 +35,10 @@ export class TournamentDetailsComponent implements OnInit {
   allTeams: Team[] = [];
   teamToRemove: Team | null = null;
 
+  // Champion and Final Standings
+  champion: Team | null = null;
+  finalStandings: FinalStanding[] = [];
+
   // Forms
   bulkAddForm!: FormGroup;
 
@@ -44,6 +49,7 @@ export class TournamentDetailsComponent implements OnInit {
 
   // Constants for template
   Format = Format;
+  TournamentStatus = TournamentStatus;
 
   constructor(
     private tournamentService: TournamentService,
@@ -104,9 +110,36 @@ export class TournamentDetailsComponent implements OnInit {
         this.standings = standings;
         this.groups = standings.filter(s => s.standingType === StandingType.Group);
         this.brackets = standings.filter(s => s.standingType === StandingType.Bracket);
+
+        // Load champion and final standings if tournament is finished
+        if (this.tournament?.status === TournamentStatus.Finished) {
+          this.loadChampionAndStandings();
+        }
       },
       error: (error) => {
         console.error('Error loading standings', error);
+      }
+    });
+  }
+
+  loadChampionAndStandings(): void {
+    if (!this.tournamentId) return;
+
+    this.tournamentService.getChampion(this.tournamentId).subscribe({
+      next: (champion) => {
+        this.champion = champion;
+      },
+      error: (error) => {
+        console.error('Error loading champion', error);
+      }
+    });
+
+    this.tournamentService.getFinalStandings(this.tournamentId).subscribe({
+      next: (standings) => {
+        this.finalStandings = standings;
+      },
+      error: (error) => {
+        console.error('Error loading final standings', error);
       }
     });
   }

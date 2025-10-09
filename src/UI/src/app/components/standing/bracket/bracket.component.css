@@ -3,43 +3,88 @@
   justify-content: center;
   gap: 80px;
   margin-top: 30px;
-  align-items: center;
+  align-items: flex-start;
+  overflow-x: auto;
+  padding: 20px;
 }
 
 .round {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 30px;
+  gap: 40px;
+  min-width: 300px;
 }
 
-.match {
+.round h3 {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.bracket-match-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  background: #f8f9fa;
+  background: var(--card-color);
   padding: 15px;
   border-radius: 8px;
-  width: 220px;
-  text-align: center;
-  border: 2px solid #ccc;
+  width: 280px;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.match-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border-color);
+  font-weight: bold;
+  color: var(--primary-color-text);
+}
+
+.winner-badge {
+  background: #28a745;
+  color: white;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
 }
 
 .team {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 200px;
-  padding: 10px;
-  background: white;
-  border: 1px solid #ccc;
+  padding: 12px;
+  margin: 5px 0;
+  background: var(--table-header-bg);
+  border: 1px solid var(--border-color);
   border-radius: 5px;
+  color: var(--primary-color-text);
+  transition: all 0.2s;
+}
+
+.team.winner {
+  background: #d4edda;
+  border-color: #28a745;
+  border-width: 2px;
+  font-weight: bold;
 }
 
 .score {
   font-weight: bold;
   margin-left: 10px;
-  color: #555;
+  color: var(--primary-color);
   font-size: 18px;
+}
+
+.match-actions {
+  margin-top: 10px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
 }
 

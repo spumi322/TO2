@@ -267,6 +267,21 @@ namespace Application.Services
                     }
                 }
 
+                // Create BracketEntry records for all advancing teams
+                foreach (var advancedTeam in advancedTeams)
+                {
+                    var team = await _dbContext.Teams.FindAsync(advancedTeam.TeamId);
+                    if (team != null)
+                    {
+                        var bracketEntry = new Bracket(tournamentId, bracket.Id, team);
+                        bracketEntry.Status = TeamStatus.Competing;
+                        bracketEntry.CurrentRound = 1;
+
+                        await _dbContext.BracketEntries.AddAsync(bracketEntry);
+                        _logger.LogInformation($"Created BracketEntry for {team.Name} starting in Round 1");
+                    }
+                }
+
                 if (allMatchesGenerated)
                 {
                     bracket.IsSeeded = true;
@@ -289,6 +304,97 @@ namespace Application.Services
             {
                 _logger.LogError(ex, "Error seeding bracket");
                 return new BracketSeedResponseDTO($"Error seeding bracket: {ex.Message}", false);
+            }
+        }
+
+        public async Task CheckAndGenerateNextRound(long tournamentId, long standingId, int currentRound)
+        {
+            try
+            {
+                // Get all matches in current round
+                var currentRoundMatches = (await GetMatchesAsync(standingId))
+                    .Where(m => m.Round == currentRound)
+                    .ToList();
+
+                if (currentRoundMatches.Count == 0)
+                {
+                    _logger.LogWarning($"No matches found for round {currentRound} in standing {standingId}");
+                    return;
+                }
+
+                // Check if all matches in current round are complete
+                bool allMatchesComplete = currentRoundMatches.All(m => m.WinnerId.HasValue && m.LoserId.HasValue);
+
+                if (!allMatchesComplete)
+                {
+                    _logger.LogInformation($"Not all matches complete in round {currentRound}. Waiting for completion.");
+                    return;
+                }
+
+                _logger.LogInformation($"All matches in round {currentRound} are complete. Checking for next round or championship.");
+
+                // Check if this is the final match (only 1 match in the round means finals)
+                if (currentRoundMatches.Count == 1)
+                {
+                    var finalMatch = currentRoundMatches.First();
+                    _logger.LogInformation($"Final match complete. Winner: Team {finalMatch.WinnerId}");
+
+                    // This was the finals, declare champion
+                    await _tournamentService.DeclareChampion(tournamentId, finalMatch.WinnerId.Value);
+                    return;
+                }
+
+                // Generate next round matches
+                _logger.LogInformation($"Generating round {currentRound + 1} matches");
+
+                var winners = currentRoundMatches
+                    .OrderBy(m => m.Seed)
+                    .Select(m => m.WinnerId.Value)
+                    .ToList();
+
+                int nextRoundSeed = 1;
+                for (int i = 0; i < winners.Count; i += 2)
+                {
+                    if (i + 1 < winners.Count)
+                    {
+                        var teamA = await _dbContext.Teams.FindAsync(winners[i]);
+                        var teamB = await _dbContext.Teams.FindAsync(winners[i + 1]);
+
+                        if (teamA != null && teamB != null)
+                        {
+                            await GenerateMatch(
+                                teamA,
+                                teamB,
+                                round: currentRound + 1,
+                                seed: nextRoundSeed,
+                                standingId: standingId
+                            );
+
+                            _logger.LogInformation($"Created Round {currentRound + 1} match {nextRoundSeed}: {teamA.Name} vs {teamB.Name}");
+                            nextRoundSeed++;
+                        }
+                    }
+                }
+
+                // Reset advancing teams' status from Advanced back to Competing for the new round
+                var advancingBracketEntries = await _dbContext.BracketEntries
+                    .Where(b => b.StandingId == standingId && winners.Contains(b.TeamId))
+                    .ToListAsync();
+
+                foreach (var entry in advancingBracketEntries)
+                {
+                    entry.Status = TeamStatus.Competing;
+                    entry.CurrentRound = currentRound + 1;
+                    _logger.LogInformation($"Advanced {entry.TeamName} to Round {currentRound + 1}");
+                }
+
+                await _dbContext.SaveChangesAsync();
+                _logger.LogInformation($"Round {currentRound + 1} generation complete");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error in CheckAndGenerateNextRound");
+                throw;
             }
         }
     }

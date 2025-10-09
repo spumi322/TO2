@@ -212,5 +212,137 @@ namespace Application.Services
 
             return new IsNameUniqueResponseDTO(!isUnique);
         }
+
+        public async Task DeclareChampion(long tournamentId, long championTeamId)
+        {
+            var tournament = await _tournamentRepository.Get(tournamentId)
+                ?? throw new Exception("Tournament not found");
+
+            try
+            {
+                // Set tournament status to Finished
+                tournament.Status = TournamentStatus.Finished;
+
+                // Find the bracket standing
+                var bracketStanding = (await _standingService.GetStandingsAsync(tournamentId))
+                    .FirstOrDefault(s => s.StandingType == StandingType.Bracket);
+
+                if (bracketStanding != null)
+                {
+                    // Mark the champion in BracketEntries
+                    var championEntry = await _dbContext.BracketEntries
+                        .FirstOrDefaultAsync(b => b.TeamId == championTeamId && b.StandingId == bracketStanding.Id);
+
+                    if (championEntry != null)
+                    {
+                        championEntry.Status = TeamStatus.Champion;
+                        _logger.LogInformation($"Team {championEntry.TeamName} (ID: {championTeamId}) declared champion of tournament {tournament.Name}");
+                    }
+                }
+
+                await _tournamentRepository.Update(tournament);
+                await _tournamentRepository.Save();
+
+                _logger.LogInformation($"Tournament {tournament.Name} completed. Champion: Team {championTeamId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error declaring champion: {Message}", ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<GetTeamResponseDTO?> GetChampion(long tournamentId)
+        {
+            var tournament = await _tournamentRepository.Get(tournamentId)
+                ?? throw new Exception("Tournament not found");
+
+            if (tournament.Status != TournamentStatus.Finished)
+            {
+                return null;
+            }
+
+            try
+            {
+                var bracketStanding = (await _standingService.GetStandingsAsync(tournamentId))
+                    .FirstOrDefault(s => s.StandingType == StandingType.Bracket);
+
+                if (bracketStanding == null)
+                {
+                    return null;
+                }
+
+                var championEntry = await _dbContext.BracketEntries
+                    .Include(b => b.Team)
+                    .FirstOrDefaultAsync(b => b.StandingId == bracketStanding.Id && b.Status == TeamStatus.Champion);
+
+                if (championEntry == null)
+                {
+                    return null;
+                }
+
+                return _mapper.Map<GetTeamResponseDTO>(championEntry.Team);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting champion: {Message}", ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<FinalStandingDTO>> GetFinalStandings(long tournamentId)
+        {
+            var tournament = await _tournamentRepository.Get(tournamentId)
+                ?? throw new Exception("Tournament not found");
+
+            if (tournament.Status != TournamentStatus.Finished)
+            {
+                return new List<FinalStandingDTO>();
+            }
+
+            try
+            {
+                var bracketStanding = (await _standingService.GetStandingsAsync(tournamentId))
+                    .FirstOrDefault(s => s.StandingType == StandingType.Bracket);
+
+                if (bracketStanding == null)
+                {
+                    return new List<FinalStandingDTO>();
+                }
+
+                var bracketEntries = await _dbContext.BracketEntries
+                    .Where(b => b.StandingId == bracketStanding.Id)
+                    .OrderByDescending(b => b.Status == TeamStatus.Champion ? 1 : 0)
+                    .ThenByDescending(b => b.CurrentRound)
+                    .ThenBy(b => b.Eliminated ? 1 : 0)
+                    .ToListAsync();
+
+                var standings = new List<FinalStandingDTO>();
+                int placement = 1;
+
+                foreach (var entry in bracketEntries)
+                {
+                    standings.Add(new FinalStandingDTO(
+                        entry.TeamId,
+                        entry.TeamName,
+                        placement,
+                        entry.Status,
+                        entry.CurrentRound
+                    ));
+
+                    placement++;
+
+                    if (placement > 8)
+                        break;
+                }
+
+                return standings;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting final standings: {Message}", ex.Message);
+                throw;
+            }
+        }
     }
 }
