@@ -16,6 +16,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7A830D06-4A04-4467-83C1-C28B36AF2CCE}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\docs\domainv1.dgml = ..\..\docs\domainv1.dgml
+		play_tournament_devnote.md = play_tournament_devnote.md
 		todo.md = todo.md
 		TOSystemOverview.md = TOSystemOverview.md
 		..\..\docs\TournamentLifeCycle.md = ..\..\docs\TournamentLifeCycle.md

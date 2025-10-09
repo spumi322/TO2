@@ -25,10 +25,28 @@ dotnet ef migrations add MigrationName --project ../Infrastructure --startup-pro
 # Update the database
 dotnet ef database update --project ../Infrastructure --startup-project .
 
-# Run from solution root
+# Run from solution root (if not in src/webAPI/)
 dotnet build src/webAPI/TO2.sln
 dotnet run --project src/webAPI/TO2.csproj
 ```
+
+### Full-Stack Development
+
+To run the full application:
+
+1. **Terminal 1** - Start backend API:
+   ```bash
+   cd src/webAPI
+   dotnet run
+   ```
+   Backend will run on `https://localhost:5001` (or port shown in terminal)
+
+2. **Terminal 2** - Start Angular dev server:
+   ```bash
+   cd src/UI
+   npm start
+   ```
+   Frontend will run on `https://127.0.0.1:4200`
 
 ### Frontend (Angular)
 
@@ -196,7 +214,8 @@ This dual purpose is important - it's NOT just a join table.
 ## Database
 
 - **SQLite** database located at `src/Infrastructure/app.db`
-- Connection string hardcoded in `TO2DbContext.OnConfiguring()`
+- Connection string configured in `src/webAPI/appsettings.json` under `ConnectionStrings:DefaultConnection`
+- `TO2DbContext` reads connection string from configuration in `Program.cs:24-27`
 - Use EF Core migrations from `src/webAPI/` directory
 - Soft deletes: Set `TournamentStatus.Cancelled` instead of removing
 

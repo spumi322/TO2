@@ -22,6 +22,16 @@ namespace Domain.Entities
             Team = team;
         }
 
+        // Constructor without Team entity to avoid EF Core tracking conflicts
+        public Group(long tournamentId, long standingId, long teamId, string teamName)
+        {
+            TournamentId = tournamentId;
+            StandingId = standingId;
+            TeamId = teamId;
+            TeamName = teamName;
+            // Don't set Team navigation property - let EF Core handle it
+        }
+
         public long TournamentId { get; set; }
         public Tournament Tournament { get; set; }
 

@@ -120,19 +120,47 @@ namespace Application.Services
             for (int i = 0; i < groupsCount; i++)
             {
                 var standing = standings.FirstOrDefault(s => s.Name == $"Group {i + 1}");
+
+                if (standing == null)
+                {
+                    _logger.LogError($"Standing 'Group {i + 1}' not found!");
+                    continue;
+                }
+
                 bool allMatchesGenerated = true;
 
                 foreach (var team in groups[i])
                 {
-                    var participant = await _dbContext.GroupEntries
-                        .FirstOrDefaultAsync(tp => tp.TeamId == team.Id && tp.TournamentId == tournamentId);
-
-                    if (participant != null)
+                    try
                     {
-                        participant.StandingId = standing.Id;
-                        participant.Status = TeamStatus.Competing;
+                        var participant = await _dbContext.GroupEntries
+                            .FirstOrDefaultAsync(tp => tp.TeamId == team.Id && tp.TournamentId == tournamentId);
+
+                        if (participant != null)
+                        {
+                            // Update existing entry
+                            participant.StandingId = standing.Id;
+                            participant.Status = TeamStatus.Competing;
+                            _logger.LogInformation($"Updated GroupEntry for team {team.Name} (ID: {team.Id}) in {standing.Name} (ID: {standing.Id})");
+                        }
+                        else
+                        {
+                            // Create new GroupEntry for this team (using TeamId/Name to avoid EF tracking conflicts)
+                            var groupEntry = new Group(tournamentId, standing.Id, team.Id, team.Name);
+                            groupEntry.Status = TeamStatus.Competing;
+                            await _dbContext.GroupEntries.AddAsync(groupEntry);
+
+                            _logger.LogInformation($"Created GroupEntry for team {team.Name} (ID: {team.Id}) in {standing.Name} (ID: {standing.Id})");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error creating/updating GroupEntry for team {team.Id} in standing {standing.Id}: {ex.Message}");
+                        // Continue with match generation even if GroupEntry creation fails
                     }
                 }
+
+                _logger.LogInformation($"Generating matches for {standing.Name} with {groups[i].Count} teams");
 
                 for (int j = 0; j < groups[i].Count; j++)
                 {
@@ -140,11 +168,12 @@ namespace Application.Services
                     {
                         try
                         {
+                            _logger.LogInformation($"Generating match: {groups[i][j].Name} vs {groups[i][k].Name} (Round {j + 1}, Seed {k})");
                             await GenerateMatch(groups[i][j], groups[i][k], j + 1, k, standing.Id);
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Error generating match for teams {0} and {1}", groups[i][j].Id, groups[i][k].Id);
+                            _logger.LogError(ex, "Error generating match for teams {0} and {1}: {2}", groups[i][j].Id, groups[i][k].Id, ex.Message);
                             allMatchesGenerated = false;
                         }
                     }
