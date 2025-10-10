@@ -71,24 +71,23 @@ namespace Application.Services
         public async Task CheckAndMarkStandingAsFinishedAsync(long tournamentId)
         {
             var standings = (await GetStandingsAsync(tournamentId))
-                .Where(s => s.IsSeeded)
+                .Where(s => s.IsSeeded && !s.IsFinished)  // Only check unfinished standings
                 .ToList();
-            var standingsToUpdate = new List<Standing>();
 
             foreach (var standing in standings)
             {
                 var matches = await _matchRepository.GetAllByFK("StandingId", standing.Id);
-                if (matches.All(m => m.WinnerId != null && m.LoserId != null))
-                {
-                    standingsToUpdate.Add(standing);
-                }
-            }
 
-            foreach (var standing in standingsToUpdate)
-            {
-                if (!standing.DomainEvents.Any(e => e is StandingFinishedEvent))
+                if (matches.Any() && matches.All(m => m.WinnerId != null && m.LoserId != null))
                 {
-                    standing.AddDomainEvent(new StandingFinishedEvent(standing.Id));
+                    // Directly set the flag instead of using domain events
+                    standing.IsFinished = true;
+                    await _standingRepository.Update(standing);
+
+                    _logger.LogInformation($"Standing {standing.Id} ({standing.Name}) marked as finished");
+
+                    // Check if all groups are finished (this will trigger bracket seeding if needed)
+                    await CheckAndMarkAllGroupsAreFinishedAsync(tournamentId);
                 }
             }
 

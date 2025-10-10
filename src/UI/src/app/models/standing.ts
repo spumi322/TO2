@@ -9,6 +9,8 @@ export interface Standing {
   maxTeams: number;
   matches: Match[];
   teams: Team[];
+  isFinished: boolean;
+  isSeeded: boolean;
 }
 
 export enum StandingType {

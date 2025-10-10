@@ -1,90 +1,466 @@
-.bracket-container {
+/* ===========================
+   Loading State
+   =========================== */
+.loading-container {
   display: flex;
   justify-content: center;
-  gap: 80px;
-  margin-top: 30px;
-  align-items: flex-start;
+  align-items: center;
+  min-height: 400px;
+  padding: 40px;
+}
+
+.loading-spinner {
+  text-align: center;
+  color: #666;
+}
+
+.loading-spinner i {
+  font-size: 48px;
+  color: #3f51b5;
+  margin-bottom: 16px;
+}
+
+.loading-spinner p {
+  font-size: 16px;
+  margin-top: 12px;
+}
+
+/* ===========================
+   Champion Celebration Banner
+   =========================== */
+.champion-celebration {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+  border-radius: 16px;
+  padding: 40px 20px;
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  box-shadow: 0 8px 32px rgba(255, 215, 0, 0.4);
+  animation: championGlow 3s ease-in-out infinite;
+  border: 3px solid #ffa000;
+}
+
+@keyframes championGlow {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(255, 215, 0, 0.4);
+  }
+  50% {
+    box-shadow: 0 12px 40px rgba(255, 215, 0, 0.6);
+  }
+}
+
+.trophy-container {
+  display: flex;
+  align-items: center;
+}
+
+.trophy-icon {
+  font-size: 72px;
+  color: #ff6f00;
+  animation: trophyBounce 2s ease-in-out infinite;
+}
+
+@keyframes trophyBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.champion-text {
+  text-align: center;
+  color: #4a2800;
+}
+
+.champion-text h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 3px;
+  opacity: 0.9;
+}
+
+.champion-text h1 {
+  margin: 8px 0;
+  font-size: 3rem;
+  font-weight: 800;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.celebration-message {
+  margin-top: 8px;
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+/* ===========================
+   Empty State
+   =========================== */
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #888;
+}
+
+.empty-icon {
+  font-size: 80px;
+  color: #ccc;
+  margin-bottom: 24px;
+}
+
+.empty-state h3 {
+  margin: 16px 0;
+  font-size: 1.5rem;
+  color: #555;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  color: #888;
+}
+
+/* ===========================
+   Bracket Container
+   =========================== */
+.bracket-container {
+  width: 100%;
   overflow-x: auto;
+  overflow-y: visible;
+  padding: 20px 10px;
+  margin-bottom: 20px;
+}
+
+.bracket-rounds {
+  display: flex;
+  gap: 80px;
+  min-width: min-content;
   padding: 20px;
 }
 
-.round {
+/* ===========================
+   Round Column
+   =========================== */
+.round-column {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 40px;
-  min-width: 300px;
+  min-width: 320px;
+  gap: 20px;
 }
 
-.round h3 {
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: var(--primary-color);
-  margin-bottom: 10px;
+.round-header {
   text-align: center;
+  padding: 16px;
+  background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(63, 81, 181, 0.3);
+  margin-bottom: 8px;
 }
 
-.bracket-match-card {
+.round-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.round-subtitle {
+  display: block;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 4px;
+}
+
+/* ===========================
+   Round Matches
+   =========================== */
+.round-matches {
   display: flex;
   flex-direction: column;
-  background: var(--card-color);
-  padding: 15px;
-  border-radius: 8px;
-  width: 280px;
-  border: 2px solid var(--border-color);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  gap: 40px;
+  justify-content: space-around;
 }
 
+.match-container {
+  position: relative;
+}
+
+/* ===========================
+   Match Card
+   =========================== */
+.bracket-match-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.bracket-match-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.bracket-match-card.match-complete {
+  border-color: #4caf50;
+  background: #f1f8f4;
+}
+
+.bracket-match-card.match-disabled {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* ===========================
+   Match Header
+   =========================== */
 .match-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--border-color);
-  font-weight: bold;
-  color: var(--primary-color-text);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e0e0e0;
 }
 
-.winner-badge {
-  background: #28a745;
-  color: white;
-  padding: 3px 10px;
-  border-radius: 12px;
-  font-size: 11px;
+.match-seed {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #3f51b5;
+  text-transform: uppercase;
+}
+
+.match-complete-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.85rem;
+  color: #4caf50;
   font-weight: 600;
 }
 
-.team {
+/* ===========================
+   Team Rows
+   =========================== */
+.team-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  margin: 5px 0;
-  background: var(--table-header-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 5px;
-  color: var(--primary-color-text);
-  transition: all 0.2s;
+  margin: 6px 0;
+  background: #f5f5f5;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
-.team.winner {
-  background: #d4edda;
-  border-color: #28a745;
-  border-width: 2px;
-  font-weight: bold;
+.team-row:hover {
+  background: #eeeeee;
 }
 
-.score {
-  font-weight: bold;
-  margin-left: 10px;
-  color: var(--primary-color);
+.team-row.team-winner {
+  background: #e8f5e9;
+  border-color: #4caf50;
+  font-weight: 700;
+}
+
+.team-row.team-loser {
+  background: #fce4ec;
+  border-color: #f48fb1;
+  opacity: 0.8;
+}
+
+.team-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.team-name {
+  font-size: 1rem;
+  color: #333;
+}
+
+.team-row.team-winner .team-name {
+  color: #2e7d32;
+}
+
+.team-score {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #3f51b5;
+  min-width: 30px;
+  text-align: center;
+}
+
+/* ===========================
+   Team Status Badges
+   =========================== */
+.team-status-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.team-status-badge.status-champion {
+  background: #ffd700;
+  color: #795548;
+  box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+}
+
+.team-status-badge.status-advanced {
+  background: #4caf50;
+  color: white;
+}
+
+.team-status-badge.status-eliminated {
+  background: #f44336;
+  color: white;
+}
+
+.team-status-badge.status-competing {
+  background: #2196f3;
+  color: white;
+}
+
+/* ===========================
+   VS Divider
+   =========================== */
+.vs-divider {
+  text-align: center;
+  margin: 4px 0;
+}
+
+.vs-text {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #e0e0e0;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #666;
+  letter-spacing: 1px;
+}
+
+/* ===========================
+   Match Controls (Scoring)
+   =========================== */
+.match-controls {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 2px solid #e0e0e0;
+}
+
+/* ===========================
+   Match Winner Display
+   =========================== */
+.match-winner-display {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px;
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+}
+
+.winner-trophy {
   font-size: 18px;
+  color: #ffd700;
 }
 
-.match-actions {
-  margin-top: 10px;
-  border-top: 1px solid var(--border-color);
-  padding-top: 10px;
+.winner-text {
+  font-size: 0.95rem;
 }
 
+/* ===========================
+   Tournament Finished Message
+   =========================== */
+.tournament-finished-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: #fff3cd;
+  border: 2px solid #ffc107;
+  border-radius: 8px;
+  color: #856404;
+  font-weight: 600;
+  margin-top: 20px;
+}
+
+.tournament-finished-message i {
+  font-size: 20px;
+}
+
+/* ===========================
+   Responsive Design
+   =========================== */
+@media (max-width: 768px) {
+  .champion-celebration {
+    flex-direction: column;
+    gap: 20px;
+    padding: 30px 15px;
+  }
+
+  .trophy-icon {
+    font-size: 56px;
+  }
+
+  .champion-text h1 {
+    font-size: 2rem;
+  }
+
+  .champion-text h2 {
+    font-size: 1rem;
+  }
+
+  .bracket-rounds {
+    gap: 40px;
+  }
+
+  .round-column {
+    min-width: 280px;
+  }
+
+  .round-title {
+    font-size: 1.2rem;
+  }
+
+  .team-name {
+    font-size: 0.9rem;
+  }
+
+  .team-score {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .round-column {
+    min-width: 260px;
+  }
+
+  .bracket-match-card {
+    padding: 12px;
+  }
+
+  .team-row {
+    padding: 10px;
+  }
+}

@@ -123,7 +123,12 @@
       <!-- Bracket Tab (only if tournament has started) -->
       <mat-tab label="Bracket" *ngIf="!tournament?.isRegistrationOpen && (tournament?.format === Format.BracketOnly || tournament?.format === Format.BracketAndGroups)">
         <div class="tab-content">
-          <app-standing-bracket [brackets]="brackets"></app-standing-bracket>
+          <app-standing-bracket
+            [bracket]="brackets[0]"
+            [tournament]="tournament"
+            (matchFinished)="reloadTournamentData()"
+            (tournamentFinished)="loadChampionAndStandings()">
+          </app-standing-bracket>
         </div>
       </mat-tab>
 
