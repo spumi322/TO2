@@ -22,6 +22,7 @@ namespace Application.Services
         private readonly ITournamentService _tournamentService;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<Standing> _standingRepository;
+        private readonly IGenericRepository<Bracket> _bracketRepository;
         private readonly ITO2DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<MatchService> _logger;
@@ -30,6 +31,7 @@ namespace Application.Services
                             ITournamentService tournamentService,
                             IGenericRepository<Match> matchRepository,
                             IGenericRepository<Standing> standingRepository,
+                            IGenericRepository<Bracket> bracketRepository,
                             ITO2DbContext tO2DbContext,
                             IMapper mapper,
                             ILogger<MatchService> logger)
@@ -38,6 +40,7 @@ namespace Application.Services
             _tournamentService = tournamentService;
             _matchRepository = matchRepository;
             _standingRepository = standingRepository;
+            _bracketRepository = bracketRepository;
             _dbContext = tO2DbContext;
             _mapper = mapper;
             _logger = logger;
@@ -73,7 +76,7 @@ namespace Application.Services
                 match.StandingId = standingId;
 
                 await _matchRepository.Add(match);
-                await _matchRepository.Save();
+                // Changes are tracked by EF Core and will be saved by the caller
 
                 return match.Id;
             }
@@ -184,10 +187,11 @@ namespace Application.Services
                     standing.IsSeeded = true;
                     seededStandingIds.Add(standing.Id);
                     await _standingRepository.Update(standing);
-                    await _standingRepository.Save();
+                    await _standingRepository.Save(); // Save standing changes to _standingRepository's DbContext
                 }
             }
 
+            // Save matches and group entries to _dbContext
             await _dbContext.SaveChangesAsync();
 
             return new SeedGroupsResponseDTO("Groups seeded successfully!", true, seededStandingIds);
@@ -277,7 +281,7 @@ namespace Application.Services
                         bracketEntry.Status = TeamStatus.Competing;
                         bracketEntry.CurrentRound = 1;
 
-                        await _dbContext.BracketEntries.AddAsync(bracketEntry);
+                        await _bracketRepository.Add(bracketEntry);
                         _logger.LogInformation($"Created BracketEntry for {team.Name} starting in Round 1");
                     }
                 }
@@ -286,10 +290,7 @@ namespace Application.Services
                 {
                     bracket.IsSeeded = true;
                     await _standingRepository.Update(bracket);
-                    await _standingRepository.Save();
                 }
-
-                await _dbContext.SaveChangesAsync();
 
                 if (remainingTeams.Any())
                 {

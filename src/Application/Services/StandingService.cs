@@ -87,6 +87,8 @@ namespace Application.Services
                     _logger.LogInformation($"Standing {standing.Id} ({standing.Name}) marked as finished");
 
                     // Check if all groups are finished (this will trigger bracket seeding if needed)
+                    // Note: We don't pass IMatchService here to avoid circular dependency
+                    // Bracket seeding will be handled by the event system
                     await CheckAndMarkAllGroupsAreFinishedAsync(tournamentId);
                 }
             }
@@ -101,13 +103,15 @@ namespace Application.Services
                                 .Where(s => s.StandingType == StandingType.Group)
                                 .ToList();
 
-            if (allGroups.All(ag => ag.IsFinished) &&
+            // Check if all groups are finished and event hasn't been raised yet
+            if (allGroups.Any() && allGroups.All(ag => ag.IsFinished) &&
                 !tournament.DomainEvents.Any(e => e is AllGroupsFinishedEvent))
             {
+                _logger.LogInformation($"All groups finished for tournament {tournamentId}. Raising AllGroupsFinishedEvent...");
+
+                // Raise domain event - the event handler will handle bracket seeding
                 tournament.AddDomainEvent(new AllGroupsFinishedEvent(tournamentId, allGroups));
             }
-
-            // Removed Save() call - DbContext automatically tracks changes and saves after event handlers complete
         }
 
         public async Task<List<Application.DTOs.Standing.BracketSeedDTO>> PrepareTeamsForBracket(long tournamentId)
@@ -167,8 +171,7 @@ namespace Application.Services
                 }
             }
 
-            await _dbContext.SaveChangesAsync();
-
+            // Changes are tracked by EF Core and will be saved by the caller
             return advancingTeams;
         }
     }

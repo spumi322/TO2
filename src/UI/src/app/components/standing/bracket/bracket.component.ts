@@ -153,18 +153,23 @@ export class BracketComponent implements OnInit, OnChanges {
   onMatchFinished(result: MatchFinishedIds): void {
     this.matchFinished.emit(result);
 
-    // Wait for backend to process (generate next round if needed)
-    setTimeout(() => {
-      this.loadBracketData();
+    // Reload bracket data immediately to show updates
+    this.loadBracketData();
 
-      // Check if tournament finished
+    // Check if tournament finished after backend processing
+    setTimeout(() => {
       if (this.tournament?.status === TournamentStatus.Finished) {
         this.tournamentFinished.emit();
       }
-    }, 800);
+    }, 500);
   }
 
   isTournamentFinished(): boolean {
     return this.tournament?.status === TournamentStatus.Finished;
+  }
+
+  isMatchPlayable(match: Match): boolean {
+    // Match is playable if it has no winner and tournament is not finished
+    return !match.winnerId && !this.isTournamentFinished();
   }
 }

@@ -117,7 +117,10 @@
       <!-- Group Stage Tab (only if format is BracketAndGroups and tournament has started) -->
       <mat-tab label="Group Stage" *ngIf="!tournament?.isRegistrationOpen && tournament?.format === Format.BracketAndGroups">
         <div class="tab-content">
-          <app-standing-group [tournament]="tournament"></app-standing-group>
+          <app-standing-group
+            [tournament]="tournament"
+            (matchFinished)="onGroupMatchFinished($event)">
+          </app-standing-group>
         </div>
       </mat-tab>
       <!-- Bracket Tab (only if tournament has started) -->

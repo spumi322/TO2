@@ -116,6 +116,13 @@ namespace Infrastructure.Persistence
                 entity.ClearEvents();
             }
 
+            // Save again if event handlers made any changes
+            if (ChangeTracker.HasChanges())
+            {
+                AddTimestamps();
+                result = await base.SaveChangesAsync(cancellationToken);
+            }
+
             return result;
         }
 

@@ -6,7 +6,8 @@
       "Bash(dotnet ef migrations add:*)",
       "Bash(dotnet ef database update:*)",
       "Bash(dotnet ef migrations:*)",
-      "Bash(npm start)"
+      "Bash(npm start)",
+      "Bash(ng build)"
     ],
     "deny": [],
     "ask": []

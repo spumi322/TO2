@@ -352,6 +352,11 @@ export class TournamentDetailsComponent implements OnInit {
     );
   }
 
+  onGroupMatchFinished(result: any): void {
+    // Reload tournament data to get latest status and check if bracket needs seeding
+    this.reloadTournamentData();
+  }
+
   // UI Helper Methods
   getFormatLabel(format: Format): string {
     switch (format) {

@@ -92,11 +92,11 @@
             </div>
 
             <!-- Match Controls (Scoring) -->
-            <div *ngIf="!isTournamentFinished()" class="match-controls">
+            <div *ngIf="isMatchPlayable(match)" class="match-controls">
               <app-matches
                 [matches]="[match]"
                 [teams]="bracketTeams"
-                [isGroupFinished]="isTournamentFinished()"
+                [isGroupFinished]="false"
                 (matchFinished)="onMatchFinished($event)">
               </app-matches>
             </div>
