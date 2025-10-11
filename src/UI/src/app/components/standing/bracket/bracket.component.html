@@ -1,120 +1,76 @@
-<!-- Loading State -->
-<div *ngIf="isLoading" class="loading-container">
-  <div class="loading-spinner">
-    <i class="pi pi-spin pi-spinner"></i>
-    <p>Loading bracket...</p>
+<div class="bracket-container">
+  <!-- Show loading or empty state if no bracket data -->
+  <div class="empty-state" *ngIf="!bracket || rounds.length === 0">
+    <mat-icon class="empty-icon">account_tree</mat-icon>
+    <p>Bracket matches will appear here after groups are completed</p>
   </div>
-</div>
 
-<!-- Champion Celebration Banner -->
-<div *ngIf="championTeam && tournament?.status === TournamentStatus.Finished" class="champion-celebration">
-  <div class="trophy-container">
-    <i class="pi pi-trophy trophy-icon"></i>
-  </div>
-  <div class="champion-text">
-    <h2>TOURNAMENT CHAMPION</h2>
-    <h1>{{ championTeam.name }}</h1>
-    <p class="celebration-message">Congratulations on winning the tournament!</p>
-  </div>
-  <div class="trophy-container">
-    <i class="pi pi-trophy trophy-icon"></i>
-  </div>
-</div>
-
-<!-- Empty State: No Bracket Data -->
-<div *ngIf="!isLoading && rounds.length === 0 && bracket" class="empty-state">
-  <i class="pi pi-sitemap empty-icon"></i>
-  <h3>Bracket Not Seeded</h3>
-  <p *ngIf="!bracket.isSeeded">The bracket will be populated once the group stage is completed.</p>
-  <p *ngIf="bracket.isSeeded">No matches found in the bracket.</p>
-</div>
-
-<!-- Bracket Container -->
-<div *ngIf="!isLoading && rounds.length > 0" class="bracket-container">
-  <div class="bracket-rounds">
-    <!-- Round Column -->
-    <div class="round-column" *ngFor="let round of rounds; let roundIndex = index">
-      <!-- Round Header -->
+  <!-- Display bracket rounds -->
+  <div class="bracket-wrapper" *ngIf="bracket && rounds.length > 0">
+    <div class="bracket-round" *ngFor="let round of rounds; let roundIndex = index">
       <div class="round-header">
-        <h3 class="round-title">{{ round.roundName }}</h3>
-        <span class="round-subtitle">Round {{ round.roundNumber }}</span>
+        <h3 class="round-title">{{ getRoundName(roundIndex) }}</h3>
+        <span class="round-info">Round {{ roundIndex + 1 }}</span>
       </div>
 
-      <!-- Matches in Round -->
       <div class="round-matches">
-        <div class="match-container" *ngFor="let match of round.matches">
-          <!-- Match Card -->
-          <div class="bracket-match-card"
-               [class.match-complete]="match.winnerId"
-               [class.match-disabled]="isTournamentFinished()">
-
-            <!-- Match Header -->
+        <div class="match-wrapper" *ngFor="let match of round; let matchIndex = index">
+          <div class="match-card" [class.completed]="match.winnerId">
             <div class="match-header">
-              <span class="match-seed">Match {{ match.seed }}</span>
-              <span *ngIf="match.winnerId" class="match-complete-badge">
-                <i class="pi pi-check-circle"></i> Complete
-              </span>
+              <span class="match-label">Match {{ match.seed }}</span>
             </div>
 
-            <!-- Team A Row -->
-            <div class="team-row"
-                 [class.team-winner]="match.winnerId === match.teamAId"
-                 [class.team-loser]="match.loserId === match.teamAId">
-              <div class="team-info">
-                <span class="team-name">{{ getTeamName(match.teamAId) }}</span>
-                <span *ngIf="getTeamStatus(match.teamAId)"
-                      class="team-status-badge"
-                      [ngClass]="getStatusBadgeClass(getTeamStatus(match.teamAId))">
-                  {{ getStatusLabel(getTeamStatus(match.teamAId)) }}
-                </span>
-              </div>
-              <span class="team-score">{{ getMatchWins(match, match.teamAId) }}</span>
+            <div class="team-slot" [class.winner]="match.winnerId === match.teamAId">
+              <span class="team-name">{{ getTeamName(match.teamAId) }}</span>
+              <span class="team-score">{{ match.result?.teamAWins || 0 }}</span>
             </div>
 
-            <!-- VS Divider -->
-            <div class="vs-divider">
-              <span class="vs-text">VS</span>
+            <div class="team-slot" [class.winner]="match.winnerId === match.teamBId">
+              <span class="team-name">{{ getTeamName(match.teamBId) }}</span>
+              <span class="team-score">{{ match.result?.teamBWins || 0 }}</span>
             </div>
 
-            <!-- Team B Row -->
-            <div class="team-row"
-                 [class.team-winner]="match.winnerId === match.teamBId"
-                 [class.team-loser]="match.loserId === match.teamBId">
-              <div class="team-info">
-                <span class="team-name">{{ getTeamName(match.teamBId) }}</span>
-                <span *ngIf="getTeamStatus(match.teamBId)"
-                      class="team-status-badge"
-                      [ngClass]="getStatusBadgeClass(getTeamStatus(match.teamBId))">
-                  {{ getStatusLabel(getTeamStatus(match.teamBId)) }}
-                </span>
-              </div>
-              <span class="team-score">{{ getMatchWins(match, match.teamBId) }}</span>
+            <!-- Match controls -->
+            <div class="match-controls" *ngIf="!match.winnerId">
+              <button mat-icon-button
+                      color="primary"
+                      (click)="onMatchFinished({winnerId: match.teamAId, loserId: match.teamBId})"
+                      [disabled]="!match.teamAId || !match.teamBId"
+                      matTooltip="Score for {{ getTeamName(match.teamAId) }}">
+                <mat-icon>add_circle</mat-icon>
+              </button>
+              <button mat-icon-button
+                      color="accent"
+                      (click)="onMatchFinished({winnerId: match.teamBId, loserId: match.teamAId})"
+                      [disabled]="!match.teamAId || !match.teamBId"
+                      matTooltip="Score for {{ getTeamName(match.teamBId) }}">
+                <mat-icon>add_circle</mat-icon>
+              </button>
             </div>
 
-            <!-- Match Controls (Scoring) -->
-            <div *ngIf="isMatchPlayable(match)" class="match-controls">
-              <app-matches
-                [matches]="[match]"
-                [teams]="bracketTeams"
-                [isGroupFinished]="false"
-                (matchFinished)="onMatchFinished($event)">
-              </app-matches>
+            <!-- Champion indicator for finals winner -->
+            <div class="champion-indicator" *ngIf="match.winnerId && roundIndex === rounds.length - 1">
+              <mat-icon>emoji_events</mat-icon>
+              <span>CHAMPION</span>
             </div>
+          </div>
 
-            <!-- Winner Display (when match complete) -->
-            <div *ngIf="match.winnerId" class="match-winner-display">
-              <i class="pi pi-trophy winner-trophy"></i>
-              <span class="winner-text">Winner: {{ getTeamName(match.winnerId) }}</span>
-            </div>
+          <!-- Connector line to next round -->
+          <div class="connector" *ngIf="roundIndex < rounds.length - 1">
+            <div class="connector-line"></div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Tournament Finished Message -->
-<div *ngIf="isTournamentFinished() && rounds.length > 0" class="tournament-finished-message">
-  <i class="pi pi-lock"></i>
-  <span>Tournament has concluded. Match scoring is disabled.</span>
+  <!-- Alternative: Use matches component for scoring (if preferred) -->
+  <div class="bracket-matches-list" *ngIf="false && bracket">
+    <h3>All Bracket Matches</h3>
+    <app-matches
+      [matches]="bracket.matches"
+      [teams]="tournament.teams"
+      (matchFinished)="onMatchFinished($event)">
+    </app-matches>
+  </div>
 </div>

@@ -1,470 +1,286 @@
-/* ===========================
-   Loading State
-   =========================== */
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 400px;
-  padding: 40px;
+.bracket-container {
+  padding: 20px;
+  background-color: #1a1a1a;
+  min-height: 500px;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
-.loading-spinner {
-  text-align: center;
-  color: #666;
-}
-
-.loading-spinner i {
-  font-size: 48px;
-  color: #3f51b5;
-  margin-bottom: 16px;
-}
-
-.loading-spinner p {
-  font-size: 16px;
-  margin-top: 12px;
-}
-
-/* ===========================
-   Champion Celebration Banner
-   =========================== */
-.champion-celebration {
-  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
-  border-radius: 16px;
-  padding: 32px 20px;
-  margin-bottom: 24px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 32px;
-  box-shadow: 0 8px 32px rgba(255, 215, 0, 0.4);
-  animation: championGlow 3s ease-in-out infinite;
-  border: 3px solid #ffa000;
-}
-
-@keyframes championGlow {
-  0%, 100% {
-    box-shadow: 0 8px 32px rgba(255, 215, 0, 0.4);
-  }
-  50% {
-    box-shadow: 0 12px 40px rgba(255, 215, 0, 0.6);
-  }
-}
-
-.trophy-container {
-  display: flex;
-  align-items: center;
-}
-
-.trophy-icon {
-  font-size: 64px;
-  color: #ff6f00;
-  animation: trophyBounce 2s ease-in-out infinite;
-}
-
-@keyframes trophyBounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.champion-text {
-  text-align: center;
-  color: #4a2800;
-}
-
-.champion-text h2 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: 2px;
-  opacity: 0.9;
-}
-
-.champion-text h1 {
-  margin: 8px 0;
-  font-size: 2.5rem;
-  font-weight: 800;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.celebration-message {
-  margin-top: 8px;
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-/* ===========================
-   Empty State
-   =========================== */
 .empty-state {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   padding: 60px 20px;
   color: #888;
+  text-align: center;
 }
 
 .empty-icon {
-  font-size: 64px;
-  color: #ccc;
+  font-size: 72px;
+  width: 72px;
+  height: 72px;
   margin-bottom: 20px;
-}
-
-.empty-state h3 {
-  margin: 12px 0;
-  font-size: 1.3rem;
   color: #555;
 }
 
 .empty-state p {
-  font-size: 0.95rem;
-  color: #888;
+  font-size: 16px;
+  margin: 0;
 }
 
-/* ===========================
-   Bracket Container - New Vertical Layout
-   =========================== */
-.bracket-container {
-  width: 100%;
-  padding: 20px;
-  overflow-x: auto;
-}
-
-.bracket-rounds {
+/* Bracket wrapper - horizontal layout */
+.bracket-wrapper {
   display: flex;
-  gap: 60px;
-  min-width: min-content;
+  gap: 80px;
+  padding: 20px;
   justify-content: center;
-  padding: 20px 0;
+  align-items: center;
 }
 
-/* ===========================
-   Round Column - Vertical Stacking
-   =========================== */
-.round-column {
+/* Each round column */
+.bracket-round {
   display: flex;
   flex-direction: column;
-  min-width: 280px;
-  gap: 16px;
+  min-width: 250px;
 }
 
 .round-header {
   text-align: center;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%);
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(63, 81, 181, 0.2);
-  margin-bottom: 8px;
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #ffd700;
 }
 
 .round-title {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: white;
+  margin: 0 0 5px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffd700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
 
-.round-subtitle {
-  display: block;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 2px;
+.round-info {
+  font-size: 12px;
+  color: #888;
+  text-transform: uppercase;
 }
 
-/* ===========================
-   Round Matches - Compact Vertical List
-   =========================== */
+/* Matches in a round */
 .round-matches {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  justify-content: center;
+  gap: 40px;
+  justify-content: space-around;
+  flex: 1;
 }
 
-.match-container {
+/* Match wrapper with connector */
+.match-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Match card */
+.match-card {
+  background-color: #2a2a2a;
+  border: 2px solid #444;
+  border-radius: 8px;
+  overflow: hidden;
+  min-width: 220px;
+  transition: all 0.3s ease;
   position: relative;
 }
 
-/* ===========================
-   Match Card - Compact Design
-   =========================== */
-.bracket-match-card {
-  background: white;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s ease;
+.match-card:hover {
+  border-color: #ffd700;
+  box-shadow: 0 4px 12px rgba(255, 215, 0, 0.2);
 }
 
-.bracket-match-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
+.match-card.completed {
+  border-color: #4a9eff;
 }
 
-.bracket-match-card.match-complete {
-  border-color: #4caf50;
-  background: #f9fdf9;
-}
-
-.bracket-match-card.match-disabled {
-  opacity: 0.7;
-}
-
-/* ===========================
-   Match Header - Compact
-   =========================== */
 .match-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #e0e0e0;
+  background-color: #1a1a1a;
+  padding: 8px 12px;
+  border-bottom: 1px solid #444;
 }
 
-.match-seed {
-  font-weight: 600;
-  font-size: 0.75rem;
-  color: #3f51b5;
+.match-label {
+  font-size: 11px;
+  color: #888;
   text-transform: uppercase;
-}
-
-.match-complete-badge {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 0.7rem;
-  color: #4caf50;
   font-weight: 600;
-}
-
-.match-complete-badge i {
-  font-size: 0.9rem;
-}
-
-/* ===========================
-   Team Rows - Compact
-   =========================== */
-.team-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 10px;
-  margin: 4px 0;
-  background: #f5f5f5;
-  border: 2px solid transparent;
-  border-radius: 6px;
-  transition: all 0.15s ease;
-}
-
-.team-row:hover {
-  background: #eeeeee;
-}
-
-.team-row.team-winner {
-  background: #e8f5e9;
-  border-color: #4caf50;
-  font-weight: 700;
-}
-
-.team-row.team-loser {
-  background: #fce4ec;
-  border-color: #f48fb1;
-  opacity: 0.8;
-}
-
-.team-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  min-width: 0; /* Allow text truncation */
-}
-
-.team-name {
-  font-size: 0.9rem;
-  color: #333;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.team-row.team-winner .team-name {
-  color: #2e7d32;
-}
-
-.team-score {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #3f51b5;
-  min-width: 24px;
-  text-align: center;
-}
-
-/* ===========================
-   Team Status Badges - Compact
-   =========================== */
-.team-status-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.team-status-badge.status-champion {
-  background: #ffd700;
-  color: #795548;
-}
-
-.team-status-badge.status-advanced {
-  background: #4caf50;
-  color: white;
-}
-
-.team-status-badge.status-eliminated {
-  background: #f44336;
-  color: white;
-}
-
-.team-status-badge.status-competing {
-  background: #2196f3;
-  color: white;
-}
-
-/* ===========================
-   VS Divider - Minimal
-   =========================== */
-.vs-divider {
-  text-align: center;
-  margin: 2px 0;
-}
-
-.vs-text {
-  display: inline-block;
-  padding: 2px 8px;
-  background: #e0e0e0;
-  border-radius: 8px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: #666;
   letter-spacing: 0.5px;
 }
 
-/* ===========================
-   Match Controls (Scoring) - Compact
-   =========================== */
-.match-controls {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #e0e0e0;
-}
-
-/* ===========================
-   Match Winner Display - Compact
-   =========================== */
-.match-winner-display {
+/* Team slots */
+.team-slot {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  padding: 6px;
-  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 100%);
-  border-radius: 6px;
-  color: white;
-  font-weight: 600;
-  font-size: 0.8rem;
+  padding: 12px 15px;
+  border-bottom: 1px solid #333;
+  background-color: #2a2a2a;
+  transition: background-color 0.2s ease;
 }
 
-.winner-trophy {
+.team-slot:last-of-type {
+  border-bottom: none;
+}
+
+.team-slot:hover {
+  background-color: #333;
+}
+
+.team-slot.winner {
+  background-color: #1a4d1a;
+  border-left: 4px solid #4caf50;
+}
+
+.team-slot.winner .team-name {
+  font-weight: 700;
+  color: #4caf50;
+}
+
+.team-name {
+  color: #e0e0e0;
   font-size: 14px;
-  color: #ffd700;
+  font-weight: 500;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* ===========================
-   Tournament Finished Message
-   =========================== */
-.tournament-finished-message {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 20px;
-  background: #fff3cd;
-  border: 2px solid #ffc107;
-  border-radius: 6px;
-  color: #856404;
-  font-weight: 600;
-  margin-top: 16px;
-  font-size: 0.9rem;
-}
-
-.tournament-finished-message i {
+.team-score {
   font-size: 16px;
+  font-weight: 700;
+  color: #ffd700;
+  margin-left: 10px;
+  min-width: 25px;
+  text-align: center;
 }
 
-/* ===========================
-   Responsive Design
-   =========================== */
-@media (max-width: 768px) {
-  .bracket-rounds {
-    gap: 40px;
-    padding: 10px 0;
+/* Match controls */
+.match-controls {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px;
+  background-color: #1a1a1a;
+  border-top: 1px solid #444;
+}
+
+.match-controls button {
+  flex: 1;
+  margin: 0 4px;
+}
+
+/* Champion indicator */
+.champion-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #1a1a1a;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.champion-indicator mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* Connector lines */
+.connector {
+  position: absolute;
+  left: 100%;
+  top: 50%;
+  width: 80px;
+  height: 2px;
+  z-index: 1;
+}
+
+.connector-line {
+  width: 100%;
+  height: 2px;
+  background-color: #555;
+  position: relative;
+}
+
+.connector-line::after {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  background-color: #ffd700;
+  border-radius: 50%;
+  border: 2px solid #1a1a1a;
+}
+
+/* Spacing adjustments for rounds */
+.bracket-round:nth-child(2) .round-matches {
+  gap: 120px;
+}
+
+.bracket-round:nth-child(3) .round-matches {
+  gap: 280px;
+}
+
+/* Alternative: Bracket matches list view */
+.bracket-matches-list {
+  margin-top: 40px;
+  padding: 20px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+
+.bracket-matches-list h3 {
+  color: #ffd700;
+  margin-top: 0;
+  margin-bottom: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .bracket-wrapper {
+    gap: 50px;
   }
 
-  .round-column {
-    min-width: 240px;
+  .bracket-round {
+    min-width: 200px;
+  }
+
+  .match-card {
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .bracket-container {
+    padding: 10px;
+  }
+
+  .bracket-wrapper {
+    gap: 30px;
   }
 
   .round-title {
-    font-size: 1rem;
+    font-size: 16px;
   }
 
   .team-name {
-    font-size: 0.85rem;
-  }
-
-  .team-score {
-    font-size: 1.1rem;
-  }
-
-  .champion-celebration {
-    flex-direction: column;
-    gap: 20px;
-    padding: 24px 15px;
-  }
-
-  .trophy-icon {
-    font-size: 48px;
-  }
-
-  .champion-text h1 {
-    font-size: 2rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .round-column {
-    min-width: 220px;
-  }
-
-  .bracket-match-card {
-    padding: 10px;
-  }
-
-  .team-row {
-    padding: 6px 8px;
-  }
-
-  .bracket-container {
-    padding: 10px;
+    font-size: 12px;
   }
 }

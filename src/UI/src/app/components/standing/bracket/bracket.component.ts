@@ -1,77 +1,64 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Standing } from '../../../models/standing';
-import { Match } from '../../../models/match';
-import { Team } from '../../../models/team';
-import { Tournament, TournamentStatus } from '../../../models/tournament';
-import { MatchService } from '../../../services/match/match.service';
 import { StandingService } from '../../../services/standing/standing.service';
+import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { Tournament } from '../../../models/tournament';
+import { MatchService } from '../../../services/match/match.service';
+import { Match } from '../../../models/match';
 import { MatchFinishedIds } from '../../../models/matchresult';
-import { forkJoin } from 'rxjs';
-
-interface RoundData {
-  roundNumber: number;
-  roundName: string;
-  matches: Match[];
-}
 
 @Component({
   selector: 'app-standing-bracket',
   templateUrl: './bracket.component.html',
   styleUrls: ['./bracket.component.css']
 })
-export class BracketComponent implements OnInit, OnChanges {
-  @Input() bracket: Standing | null = null;
-  @Input() tournament: Tournament | null = null;
+export class BracketComponent implements OnInit {
+  @Input() tournament!: Tournament;
   @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
-  @Output() tournamentFinished = new EventEmitter<void>();
 
-  rounds: RoundData[] = [];
-  bracketTeams: Team[] = [];
-  championTeam: Team | null = null;
-  isLoading = false;
-
-  // Constants for template
-  TournamentStatus = TournamentStatus;
+  bracket$: Observable<Standing | null> = of(null);
+  bracket: Standing | null = null;
+  rounds: Match[][] = [];
 
   constructor(
-    private matchService: MatchService,
-    private standingService: StandingService
-  ) {}
+    private standingService: StandingService,
+    private matchService: MatchService
+  ) { }
 
   ngOnInit(): void {
-    this.loadBracketData();
+    this.refreshBracket();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['bracket'] || changes['tournament']) {
-      this.loadBracketData();
+  refreshBracket(): void {
+    if (this.tournament.id) {
+      this.bracket$ = this.standingService.getBracketsByTournamentId(this.tournament.id).pipe(
+        switchMap((brackets) => {
+          if (!brackets || brackets.length === 0) {
+            return of(null);
+          }
+
+          const bracket = brackets[0]; // Get first bracket
+
+          return this.matchService.getMatchesByStandingId(bracket.id).pipe(
+            map((matches) => {
+              // Organize matches by rounds
+              this.organizeBracketRounds(matches || []);
+
+              return {
+                ...bracket,
+                matches: matches ?? []
+              };
+            }),
+            catchError(() => of(bracket))
+          );
+        }),
+        catchError(() => of(null))
+      );
+
+      this.bracket$.subscribe((bracket) => {
+        this.bracket = bracket;
+      });
     }
-  }
-
-  loadBracketData(): void {
-    if (!this.bracket?.id) {
-      this.rounds = [];
-      this.bracketTeams = [];
-      return;
-    }
-
-    this.isLoading = true;
-
-    forkJoin({
-      matches: this.matchService.getMatchesByStandingId(this.bracket.id),
-      teams: this.standingService.getTeamsWithStatsByStandingId(this.bracket.id)
-    }).subscribe({
-      next: ({ matches, teams }) => {
-        this.bracketTeams = teams;
-        this.organizeBracketRounds(matches);
-        this.findChampion();
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error loading bracket data:', error);
-        this.isLoading = false;
-      }
-    });
   }
 
   organizeBracketRounds(matches: Match[]): void {
@@ -80,96 +67,45 @@ export class BracketComponent implements OnInit, OnChanges {
       return;
     }
 
+    // Find the maximum round number
     const maxRound = Math.max(...matches.map(m => m.round || 1));
+
+    // Initialize rounds array
     this.rounds = [];
 
+    // Group matches by round
     for (let round = 1; round <= maxRound; round++) {
       const roundMatches = matches
-        .filter(m => (m.round || 1) === round)
+        .filter(m => m.round === round)
         .sort((a, b) => (a.seed || 0) - (b.seed || 0));
 
-      if (roundMatches.length > 0) {
-        this.rounds.push({
-          roundNumber: round,
-          roundName: this.getRoundName(round, maxRound),
-          matches: roundMatches
-        });
-      }
+      this.rounds.push(roundMatches);
     }
   }
 
-  getRoundName(round: number, totalRounds: number): string {
-    const matchesInRound = this.rounds.find(r => r.roundNumber === round)?.matches.length || 0;
+  getRoundName(roundIndex: number): string {
+    const matchesInRound = this.rounds[roundIndex]?.length || 0;
 
-    // Determine by number of matches in the round
     if (matchesInRound === 1) return 'Finals';
     if (matchesInRound === 2) return 'Semi-Finals';
     if (matchesInRound === 4) return 'Quarter-Finals';
-    if (matchesInRound === 8) return 'Round of 16';
 
-    // Fallback to round number
-    return `Round ${round}`;
+    return `Round ${roundIndex + 1}`;
   }
 
-  findChampion(): void {
-    this.championTeam = this.bracketTeams.find(t => t.status === 4) || null;
+  getTeamName(teamId: number | null | undefined): string {
+    if (!teamId) return 'TBD';
+
+    const team = this.tournament.teams?.find(t => t.id === teamId);
+    return team?.name || 'Unknown Team';
   }
 
-  getTeamName(teamId: number): string {
-    const team = this.bracketTeams.find(t => t.id === teamId);
-    return team?.name || 'TBD';
-  }
+  onMatchFinished(matchUpdate: MatchFinishedIds): void {
+    this.matchFinished.emit(matchUpdate);
 
-  getMatchWins(match: Match, teamId: number): number {
-    if (!match.games) return 0;
-    return match.games.filter(g => g.winnerId === teamId).length;
-  }
-
-  getTeamStatus(teamId: number): number | null {
-    const team = this.bracketTeams.find(t => t.id === teamId);
-    return team?.status ?? null;
-  }
-
-  getStatusLabel(status: number | null): string {
-    switch (status) {
-      case 4: return 'Champion';
-      case 2: return 'Advanced';
-      case 3: return 'Eliminated';
-      case 1: return 'Competing';
-      default: return '';
-    }
-  }
-
-  getStatusBadgeClass(status: number | null): string {
-    switch (status) {
-      case 4: return 'status-champion';
-      case 2: return 'status-advanced';
-      case 3: return 'status-eliminated';
-      case 1: return 'status-competing';
-      default: return '';
-    }
-  }
-
-  onMatchFinished(result: MatchFinishedIds): void {
-    this.matchFinished.emit(result);
-
-    // Reload bracket data immediately to show updates
-    this.loadBracketData();
-
-    // Check if tournament finished after backend processing
+    // Refresh bracket after a short delay to allow backend to update
     setTimeout(() => {
-      if (this.tournament?.status === TournamentStatus.Finished) {
-        this.tournamentFinished.emit();
-      }
+      this.refreshBracket();
     }, 500);
-  }
-
-  isTournamentFinished(): boolean {
-    return this.tournament?.status === TournamentStatus.Finished;
-  }
-
-  isMatchPlayable(match: Match): boolean {
-    // Match is playable if it has no winner and tournament is not finished
-    return !match.winnerId && !this.isTournamentFinished();
   }
 }

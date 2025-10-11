@@ -357,6 +357,11 @@ export class TournamentDetailsComponent implements OnInit {
     this.reloadTournamentData();
   }
 
+  onBracketMatchFinished(result: any): void {
+    // Reload tournament data to get latest bracket status
+    this.reloadTournamentData();
+  }
+
   // UI Helper Methods
   getFormatLabel(format: Format): string {
     switch (format) {
