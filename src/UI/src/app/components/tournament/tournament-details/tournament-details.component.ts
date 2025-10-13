@@ -353,8 +353,48 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   onGroupMatchFinished(result: any): void {
-    // Reload tournament data to get latest status and check if bracket needs seeding
-    this.reloadTournamentData();
+    console.log('Group match finished, reloading tournament data...');
+
+    // Reload tournament data and check if all groups are finished
+    if (!this.tournamentId) return;
+
+    this.isReloading = true;
+    this.tournamentService.getTournamentWithTeams(this.tournamentId).pipe(
+      tap(tournament => {
+        if (tournament) {
+          this.tournament = tournament;
+        }
+      }),
+      switchMap(() => this.standingService.getStandingsByTournamentId(this.tournamentId!)),
+      tap((standings: Standing[]) => {
+        this.standings = standings;
+        this.groups = standings.filter(s => s.standingType === StandingType.Group);
+        this.brackets = standings.filter(s => s.standingType === StandingType.Bracket);
+
+        // Check if all groups are finished
+        const allGroupsFinished = this.groups.length > 0 && this.groups.every(g => g.isFinished);
+
+        if (allGroupsFinished) {
+          console.log('All groups finished! Redirecting to bracket view...');
+          this.showSuccess('All groups completed! Loading bracket...');
+
+          // Redirect to bracket page
+          setTimeout(() => {
+            this.router.navigate(['/tournament', this.tournamentId, 'bracket']);
+          }, 1500);
+        } else {
+          console.log('Groups not all finished yet:', this.groups.map(g => ({ name: g.name, isFinished: g.isFinished })));
+        }
+      }),
+      catchError(error => {
+        this.errorMessage = 'Error reloading tournament data';
+        console.error('Error reloading tournament data', error);
+        return of(null);
+      }),
+      finalize(() => {
+        this.isReloading = false;
+      })
+    ).subscribe();
   }
 
   onBracketMatchFinished(result: any): void {

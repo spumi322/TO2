@@ -14,7 +14,10 @@
       "WebSearch",
       "WebFetch(domain:drarig29.github.io)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(npm install:*)",
+      "Bash(cat:*)",
+      "Bash(ng generate component:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,0 +1,31 @@
+<div class="test-container">
+  <h1>Bracket Viewer{{ tournament ? ' - ' + tournament.name : ' Test' }}</h1>
+
+  <div class="status">
+    <p><strong>Mode:</strong> {{ tournament ? 'REAL DATA' : 'TEST MODE' }}</p>
+    <p><strong>Library Loaded:</strong> {{ libraryLoaded ? 'YES' : 'NO' }}</p>
+    <p><strong>Element Exists:</strong> {{ elementExists ? 'YES' : 'NO' }}</p>
+    <p *ngIf="tournament"><strong>Tournament ID:</strong> {{ tournament.id }}</p>
+    <p *ngIf="standingId"><strong>Standing ID:</strong> {{ standingId }}</p>
+    <p *ngIf="tournament"><strong>Matches Loaded:</strong> {{ matches?.length || 0 }}</p>
+    <p><strong>Render Status:</strong> {{ renderStatus }}</p>
+  </div>
+
+  <!-- Back button when in real mode -->
+  <button *ngIf="tournament" routerLink="/tournaments" class="back-button">
+    Back to Tournaments
+  </button>
+
+  <!-- Test button only in test mode -->
+  <button *ngIf="!tournament" (click)="testRender()" [disabled]="!libraryLoaded">
+    Test Render Bracket
+  </button>
+
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="loading-state">
+    <p>Loading...</p>
+  </div>
+
+  <!-- The bracket container -->
+  <div class="brackets-viewer"></div>
+</div>

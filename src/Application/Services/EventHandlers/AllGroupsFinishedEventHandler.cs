@@ -34,15 +34,24 @@ namespace Application.Services.EventHandlers
         {
             var tournamentId = domainEvent.TournamentId;
 
-            _logger.LogInformation($"All groups finished for tournament {tournamentId}. Preparing bracket...");
+            _logger.LogInformation($"========== AllGroupsFinishedEvent Handler Started ==========");
+            _logger.LogInformation($"Tournament ID: {tournamentId}");
+            _logger.LogInformation($"Groups completed: {domainEvent.Groups.Count}");
 
             // Determine which teams advance and which are eliminated
             var advancingTeams = await _standingService.PrepareTeamsForBracket(tournamentId);
 
-            // Seed the bracket with advancing teams
-            await _matchService.SeedBracket(tournamentId, advancingTeams);
+            _logger.LogInformation($"Teams advancing to bracket: {advancingTeams.Count}");
+            foreach (var team in advancingTeams)
+            {
+                _logger.LogInformation($"  - Team ID {team.TeamId} from Group {team.GroupId} (Placement: {team.Placement})");
+            }
 
-            _logger.LogInformation($"Bracket seeded with {advancingTeams.Count} teams");
+            // Seed the bracket with advancing teams
+            var result = await _matchService.SeedBracket(tournamentId, advancingTeams);
+
+            _logger.LogInformation($"Bracket seeding result: {result.Message}, Success: {result.Success}");
+            _logger.LogInformation($"========== AllGroupsFinishedEvent Handler Completed ==========");
         }
     }
 }

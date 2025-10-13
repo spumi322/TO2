@@ -1,9 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { Standing } from '../../../models/standing';
-import { StandingService } from '../../../services/standing/standing.service';
-import { Observable, catchError, map, of, switchMap } from 'rxjs';
+import { Component, Input, OnInit, OnChanges, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { Tournament } from '../../../models/tournament';
 import { MatchService } from '../../../services/match/match.service';
+import { BracketAdapterService } from '../../../services/bracket-adapter.service';
 import { Match } from '../../../models/match';
 
 @Component({
@@ -11,73 +9,117 @@ import { Match } from '../../../models/match';
   templateUrl: './bracket.component.html',
   styleUrls: ['./bracket.component.css']
 })
-export class BracketComponent implements OnInit {
+export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() tournament!: Tournament;
+  @Input() standingId?: number;
 
-  bracket$: Observable<Standing | null> = of(null);
-  bracket: Standing | null = null;
-  rounds: Match[][] = [];
+  matches: Match[] = [];
+  isLoading = true;
+  private viewInitialized = false;
 
   constructor(
-    private standingService: StandingService,
-    private matchService: MatchService
-  ) { }
+    private matchService: MatchService,
+    private bracketAdapter: BracketAdapterService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-  ngOnInit(): void {
-    this.loadBracket();
+  ngOnInit() {
+    this.loadMatches();
   }
 
-  loadBracket(): void {
-    if (this.tournament.id) {
-      this.bracket$ = this.standingService.getBracketsByTournamentId(this.tournament.id).pipe(
-        switchMap((brackets) => {
-          if (!brackets || brackets.length === 0) {
-            return of(null);
-          }
-
-          const bracket = brackets[0];
-
-          return this.matchService.getMatchesByStandingId(bracket.id).pipe(
-            map((matches) => {
-              this.organizeBracketRounds(matches || []);
-              return {
-                ...bracket,
-                matches: matches ?? []
-              };
-            }),
-            catchError(() => of(bracket))
-          );
-        }),
-        catchError(() => of(null))
-      );
-
-      this.bracket$.subscribe((bracket) => {
-        this.bracket = bracket;
-      });
+  ngOnChanges() {
+    if (this.viewInitialized) {
+      this.loadMatches();
     }
   }
 
-  organizeBracketRounds(matches: Match[]): void {
-    if (!matches || matches.length === 0) {
-      this.rounds = [];
+  ngAfterViewInit() {
+    this.viewInitialized = true;
+    // If matches were already loaded before view init, render now
+    if (this.matches.length > 0) {
+      this.renderBracket();
+    }
+  }
+
+  /**
+   * Load matches from backend
+   */
+  loadMatches() {
+    if (!this.standingId) {
+      console.warn('No standingId provided');
+      this.isLoading = false;
       return;
     }
 
-    const maxRound = Math.max(...matches.map(m => m.round || 1));
-    this.rounds = [];
+    this.isLoading = true;
 
-    for (let round = 1; round <= maxRound; round++) {
-      const roundMatches = matches
-        .filter(m => m.round === round)
-        .sort((a, b) => (a.seed || 0) - (b.seed || 0));
+    this.matchService.getMatchesByStandingId(this.standingId).subscribe({
+      next: (matches) => {
+        console.log('Matches loaded:', matches.length);
+        this.matches = matches;
+        this.isLoading = false;
 
-      this.rounds.push(roundMatches);
-    }
+        // Only render if view is initialized (tab is visible)
+        if (this.viewInitialized) {
+          // Small delay to ensure DOM is updated
+          setTimeout(() => this.renderBracket(), 50);
+        }
+      },
+      error: (err) => {
+        console.error('Error loading matches:', err);
+        this.isLoading = false;
+      }
+    });
   }
 
-  getTeamName(teamId: number | null | undefined): string {
-    if (!teamId) return 'TBD';
-    const team = this.tournament.teams?.find(t => t.id === teamId);
-    return team?.name || 'Unknown';
+  /**
+   * Render bracket using brackets-viewer.js library
+   * The library does ALL the rendering (HTML/CSS)
+   * We just provide the data structure
+   */
+  renderBracket() {
+    // Check if library is loaded
+    if (!(window as any).bracketsViewer) {
+      console.error('brackets-viewer library not loaded! Check angular.json configuration');
+      return;
+    }
+
+    // Verify DOM element exists
+    const element = document.querySelector('.brackets-viewer');
+    if (!element) {
+      console.error('Bracket container element not found in DOM!');
+      return;
+    }
+
+    // Only render if we have matches
+    if (this.matches.length === 0) {
+      console.warn('No matches to display');
+      return;
+    }
+
+    // Transform data using adapter
+    const data = this.bracketAdapter.transformToBracketsViewer(
+      this.tournament,
+      this.matches
+    );
+
+    if (!data) {
+      console.warn('No bracket data to display');
+      return;
+    }
+
+    console.log('Calling bracketsViewer.render() - library will handle all rendering');
+    console.log('DOM element found:', element);
+
+    try {
+      // Call library to render - it creates all HTML/CSS
+      (window as any).bracketsViewer.render(data, {
+        selector: '.brackets-viewer',
+        clear: true
+      });
+      console.log('Bracket rendered successfully!');
+    } catch (error) {
+      console.error('Error rendering bracket:', error);
+    }
   }
 }

@@ -1,28 +1,18 @@
 <div class="bracket-container">
-  <!-- Empty state -->
-  <div class="empty-state" *ngIf="!bracket || rounds.length === 0">
-    <p>No bracket data available</p>
+  <!-- Loading state -->
+  <div class="loading-state" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading bracket...</p>
   </div>
 
-  <!-- Bracket visualization -->
-  <div class="bracket" *ngIf="bracket && rounds.length > 0">
-    <div class="round" *ngFor="let round of rounds; let roundIndex = index">
-      <div class="round-matches">
-        <div class="match-container" *ngFor="let match of round">
-          <!-- Match box -->
-          <div class="match" [class.has-winner]="match.winnerId">
-            <div class="team" [class.winner]="match.winnerId === match.teamAId">
-              {{ getTeamName(match.teamAId) }}
-            </div>
-            <div class="team" [class.winner]="match.winnerId === match.teamBId">
-              {{ getTeamName(match.teamBId) }}
-            </div>
-          </div>
+  <!-- Bracket visualization (library injects HTML here) -->
+  <!-- Always present so the library can find it -->
+  <div class="brackets-viewer"></div>
 
-          <!-- Connector line -->
-          <div class="connector" *ngIf="roundIndex < rounds.length - 1"></div>
-        </div>
-      </div>
-    </div>
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!isLoading && matches.length === 0">
+    <mat-icon class="empty-icon">emoji_events</mat-icon>
+    <p>No bracket matches yet</p>
+    <p class="hint">Start the tournament to generate bracket</p>
   </div>
 </div>

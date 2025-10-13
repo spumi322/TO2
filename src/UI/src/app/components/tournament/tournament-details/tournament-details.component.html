@@ -129,7 +129,7 @@
         <div class="tab-content">
           <app-standing-bracket
             [tournament]="tournament"
-            (matchFinished)="onBracketMatchFinished($event)">
+            [standingId]="brackets[0]?.id">
           </app-standing-bracket>
         </div>
       </mat-tab>

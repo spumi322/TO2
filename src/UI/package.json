@@ -23,6 +23,8 @@
     "@angular/platform-browser": "^17.3.0",
     "@angular/platform-browser-dynamic": "^17.3.0",
     "@angular/router": "^17.3.0",
+    "brackets-model": "^1.5.0",
+    "brackets-viewer": "^1.8.1",
     "jest-editor-support": "*",
     "primeicons": "^7.0.0",
     "primeng": "^17.16.1",
