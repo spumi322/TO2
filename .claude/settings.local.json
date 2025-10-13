@@ -10,7 +10,11 @@
       "Bash(ng build)",
       "Bash(dotnet build)",
       "Bash(taskkill:*)",
-      "Bash(ng build:*)"
+      "Bash(ng build:*)",
+      "WebSearch",
+      "WebFetch(domain:drarig29.github.io)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "deny": [],
     "ask": []

@@ -1,76 +1,28 @@
 <div class="bracket-container">
-  <!-- Show loading or empty state if no bracket data -->
+  <!-- Empty state -->
   <div class="empty-state" *ngIf="!bracket || rounds.length === 0">
-    <mat-icon class="empty-icon">account_tree</mat-icon>
-    <p>Bracket matches will appear here after groups are completed</p>
+    <p>No bracket data available</p>
   </div>
 
-  <!-- Display bracket rounds -->
-  <div class="bracket-wrapper" *ngIf="bracket && rounds.length > 0">
-    <div class="bracket-round" *ngFor="let round of rounds; let roundIndex = index">
-      <div class="round-header">
-        <h3 class="round-title">{{ getRoundName(roundIndex) }}</h3>
-        <span class="round-info">Round {{ roundIndex + 1 }}</span>
-      </div>
-
+  <!-- Bracket visualization -->
+  <div class="bracket" *ngIf="bracket && rounds.length > 0">
+    <div class="round" *ngFor="let round of rounds; let roundIndex = index">
       <div class="round-matches">
-        <div class="match-wrapper" *ngFor="let match of round; let matchIndex = index">
-          <div class="match-card" [class.completed]="match.winnerId">
-            <div class="match-header">
-              <span class="match-label">Match {{ match.seed }}</span>
+        <div class="match-container" *ngFor="let match of round">
+          <!-- Match box -->
+          <div class="match" [class.has-winner]="match.winnerId">
+            <div class="team" [class.winner]="match.winnerId === match.teamAId">
+              {{ getTeamName(match.teamAId) }}
             </div>
-
-            <div class="team-slot" [class.winner]="match.winnerId === match.teamAId">
-              <span class="team-name">{{ getTeamName(match.teamAId) }}</span>
-              <span class="team-score">{{ match.result?.teamAWins || 0 }}</span>
-            </div>
-
-            <div class="team-slot" [class.winner]="match.winnerId === match.teamBId">
-              <span class="team-name">{{ getTeamName(match.teamBId) }}</span>
-              <span class="team-score">{{ match.result?.teamBWins || 0 }}</span>
-            </div>
-
-            <!-- Match controls -->
-            <div class="match-controls" *ngIf="!match.winnerId">
-              <button mat-icon-button
-                      color="primary"
-                      (click)="onMatchFinished({winnerId: match.teamAId, loserId: match.teamBId})"
-                      [disabled]="!match.teamAId || !match.teamBId"
-                      matTooltip="Score for {{ getTeamName(match.teamAId) }}">
-                <mat-icon>add_circle</mat-icon>
-              </button>
-              <button mat-icon-button
-                      color="accent"
-                      (click)="onMatchFinished({winnerId: match.teamBId, loserId: match.teamAId})"
-                      [disabled]="!match.teamAId || !match.teamBId"
-                      matTooltip="Score for {{ getTeamName(match.teamBId) }}">
-                <mat-icon>add_circle</mat-icon>
-              </button>
-            </div>
-
-            <!-- Champion indicator for finals winner -->
-            <div class="champion-indicator" *ngIf="match.winnerId && roundIndex === rounds.length - 1">
-              <mat-icon>emoji_events</mat-icon>
-              <span>CHAMPION</span>
+            <div class="team" [class.winner]="match.winnerId === match.teamBId">
+              {{ getTeamName(match.teamBId) }}
             </div>
           </div>
 
-          <!-- Connector line to next round -->
-          <div class="connector" *ngIf="roundIndex < rounds.length - 1">
-            <div class="connector-line"></div>
-          </div>
+          <!-- Connector line -->
+          <div class="connector" *ngIf="roundIndex < rounds.length - 1"></div>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Alternative: Use matches component for scoring (if preferred) -->
-  <div class="bracket-matches-list" *ngIf="false && bracket">
-    <h3>All Bracket Matches</h3>
-    <app-matches
-      [matches]="bracket.matches"
-      [teams]="tournament.teams"
-      (matchFinished)="onMatchFinished($event)">
-    </app-matches>
   </div>
 </div>

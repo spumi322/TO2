@@ -1,11 +1,10 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Standing } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
-import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { Observable, catchError, map, of, switchMap } from 'rxjs';
 import { Tournament } from '../../../models/tournament';
 import { MatchService } from '../../../services/match/match.service';
 import { Match } from '../../../models/match';
-import { MatchFinishedIds } from '../../../models/matchresult';
 
 @Component({
   selector: 'app-standing-bracket',
@@ -14,7 +13,6 @@ import { MatchFinishedIds } from '../../../models/matchresult';
 })
 export class BracketComponent implements OnInit {
   @Input() tournament!: Tournament;
-  @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
 
   bracket$: Observable<Standing | null> = of(null);
   bracket: Standing | null = null;
@@ -26,10 +24,10 @@ export class BracketComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.refreshBracket();
+    this.loadBracket();
   }
 
-  refreshBracket(): void {
+  loadBracket(): void {
     if (this.tournament.id) {
       this.bracket$ = this.standingService.getBracketsByTournamentId(this.tournament.id).pipe(
         switchMap((brackets) => {
@@ -37,13 +35,11 @@ export class BracketComponent implements OnInit {
             return of(null);
           }
 
-          const bracket = brackets[0]; // Get first bracket
+          const bracket = brackets[0];
 
           return this.matchService.getMatchesByStandingId(bracket.id).pipe(
             map((matches) => {
-              // Organize matches by rounds
               this.organizeBracketRounds(matches || []);
-
               return {
                 ...bracket,
                 matches: matches ?? []
@@ -67,13 +63,9 @@ export class BracketComponent implements OnInit {
       return;
     }
 
-    // Find the maximum round number
     const maxRound = Math.max(...matches.map(m => m.round || 1));
-
-    // Initialize rounds array
     this.rounds = [];
 
-    // Group matches by round
     for (let round = 1; round <= maxRound; round++) {
       const roundMatches = matches
         .filter(m => m.round === round)
@@ -83,29 +75,9 @@ export class BracketComponent implements OnInit {
     }
   }
 
-  getRoundName(roundIndex: number): string {
-    const matchesInRound = this.rounds[roundIndex]?.length || 0;
-
-    if (matchesInRound === 1) return 'Finals';
-    if (matchesInRound === 2) return 'Semi-Finals';
-    if (matchesInRound === 4) return 'Quarter-Finals';
-
-    return `Round ${roundIndex + 1}`;
-  }
-
   getTeamName(teamId: number | null | undefined): string {
     if (!teamId) return 'TBD';
-
     const team = this.tournament.teams?.find(t => t.id === teamId);
-    return team?.name || 'Unknown Team';
-  }
-
-  onMatchFinished(matchUpdate: MatchFinishedIds): void {
-    this.matchFinished.emit(matchUpdate);
-
-    // Refresh bracket after a short delay to allow backend to update
-    setTimeout(() => {
-      this.refreshBracket();
-    }, 500);
+    return team?.name || 'Unknown';
   }
 }
