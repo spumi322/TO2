@@ -25,6 +25,7 @@ namespace Application.Services
         private readonly ITO2DbContext _dbContext;
         private readonly IStandingService _standingService;
         private readonly IMatchService _matchService;
+        private readonly ITournamentLifecycleService _lifecycleService;
         private readonly ILogger<GameService> _logger;
 
 
@@ -34,6 +35,7 @@ namespace Application.Services
                            ITO2DbContext dbContext,
                            IStandingService standingService,
                            IMatchService matchService,
+                           ITournamentLifecycleService lifecycleService,
                            ILogger<GameService> logger)
         {
             _gameRepository = gameRepository;
@@ -42,6 +44,7 @@ namespace Application.Services
             _dbContext = dbContext;
             _standingService = standingService;
             _matchService = matchService;
+            _lifecycleService = lifecycleService;
             _logger = logger;
         }
 
@@ -113,9 +116,14 @@ namespace Application.Services
                 {
                     var standing = await _standingrepository.Get(match.StandingId);
 
-                    await _standingService.CheckAndMarkStandingAsFinishedAsync(standing.TournamentId);
-
-                    return new MatchResultDTO(result.WinnerId, result.LoserId);
+                    // STEP 3: Use TournamentLifecycleService instead of direct call
+                    // This returns enhanced DTO with bracket seeding information
+                    return await _lifecycleService.OnMatchCompleted(
+                        match.Id,
+                        result.WinnerId,
+                        result.LoserId,
+                        standing.TournamentId
+                    );
                 }
 
                 return null;

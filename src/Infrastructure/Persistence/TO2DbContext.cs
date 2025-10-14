@@ -1,5 +1,7 @@
-﻿using Application.Contracts;
-using Application.Services.EventHandling;
+﻿// STEP 1 FIX: Removed unused using statements for domain events
+//using Application.Contracts;
+//using Application.Services.EventHandling;
+using Application.Contracts;
 using Domain.AggregateRoots;
 using Domain.Common;
 using Domain.Entities;
@@ -17,17 +19,16 @@ namespace Infrastructure.Persistence
     public class TO2DbContext : DbContext, ITO2DbContext
     {
         private readonly IConfiguration _configuration;
-        private readonly IDomainEventDispatcher _eventDispatcher;
+        // STEP 1 FIX: Removed _eventDispatcher dependency - no longer needed without domain events
 
         public TO2DbContext()
         {
         }
 
-        public TO2DbContext(DbContextOptions<TO2DbContext> options, IConfiguration configuration, IDomainEventDispatcher eventDispatcher)
+        public TO2DbContext(DbContextOptions<TO2DbContext> options, IConfiguration configuration)
             : base(options)
         {
             _configuration = configuration;
-            _eventDispatcher = eventDispatcher;
         }
 
         public DbSet<Tournament> Tournaments { get; set; }
@@ -94,29 +95,30 @@ namespace Infrastructure.Persistence
         {
             AddTimestamps();
 
-            var domainEntities = ChangeTracker.Entries<EntityBase>()
-                .Where(x => x.Entity.DomainEvents.Any())
-                .Select(x => x.Entity)
-                .ToList();
+            // STEP 1: Domain Events Disabled - Moving to explicit state machine via TournamentLifecycleService
+            //var domainEntities = ChangeTracker.Entries<EntityBase>()
+            //    .Where(x => x.Entity.DomainEvents.Any())
+            //    .Select(x => x.Entity)
+            //    .ToList();
 
-            foreach (var entity in domainEntities)
-            {
-                foreach (var domainEvent in entity.DomainEvents)
-                {
-                    _eventDispatcher.QueueEvent(domainEvent);
-                }
-            }
+            //foreach (var entity in domainEntities)
+            //{
+            //    foreach (var domainEvent in entity.DomainEvents)
+            //    {
+            //        _eventDispatcher.QueueEvent(domainEvent);
+            //    }
+            //}
 
             int result = await base.SaveChangesAsync(cancellationToken);
 
-            await _eventDispatcher.DispatchQueuedEvents();
+            //await _eventDispatcher.DispatchQueuedEvents();
 
-            foreach (var entity in domainEntities)
-            {
-                entity.ClearEvents();
-            }
+            //foreach (var entity in domainEntities)
+            //{
+            //    entity.ClearEvents();
+            //}
 
-            // Save again if event handlers made any changes
+            // Save again if there are changes (no longer from event handlers, but keep for safety)
             if (ChangeTracker.HasChanges())
             {
                 AddTimestamps();

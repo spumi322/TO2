@@ -1,7 +1,7 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Team;
 using Domain.AggregateRoots;
-using Domain.DomainEvents;
+//using Domain.DomainEvents; // STEP 1 FIX: No longer needed
 using Domain.Entities;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -68,11 +68,13 @@ namespace Application.Services
             }
         }
 
-        public async Task CheckAndMarkStandingAsFinishedAsync(long tournamentId)
+        public async Task<bool> CheckAndMarkStandingAsFinishedAsync(long tournamentId)
         {
             var standings = (await GetStandingsAsync(tournamentId))
                 .Where(s => s.IsSeeded && !s.IsFinished)  // Only check unfinished standings
                 .ToList();
+
+            bool anyStandingFinished = false;
 
             foreach (var standing in standings)
             {
@@ -80,38 +82,42 @@ namespace Application.Services
 
                 if (matches.Any() && matches.All(m => m.WinnerId != null && m.LoserId != null))
                 {
-                    // Directly set the flag instead of using domain events
+                    // Directly set the flag
                     standing.IsFinished = true;
                     await _standingRepository.Update(standing);
+                    anyStandingFinished = true;
 
-                    _logger.LogInformation($"Standing {standing.Id} ({standing.Name}) marked as finished");
-
-                    // Check if all groups are finished (this will trigger bracket seeding if needed)
-                    // Note: We don't pass IMatchService here to avoid circular dependency
-                    // Bracket seeding will be handled by the event system
-                    await CheckAndMarkAllGroupsAreFinishedAsync(tournamentId);
+                    _logger.LogInformation($"✓ Standing {standing.Id} ({standing.Name}) just finished!");
                 }
             }
 
-            await _standingRepository.Save();
+            if (anyStandingFinished)
+            {
+                await _standingRepository.Save();
+            }
+
+            return anyStandingFinished;
         }
 
-        public async Task CheckAndMarkAllGroupsAreFinishedAsync(long tournamentId)
+        public async Task<bool> CheckAndMarkAllGroupsAreFinishedAsync(long tournamentId)
         {
-            var tournament = await _tournamentRepository.Get(tournamentId);
             var allGroups = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
                                 .Where(s => s.StandingType == StandingType.Group)
                                 .ToList();
 
-            // Check if all groups are finished and event hasn't been raised yet
-            if (allGroups.Any() && allGroups.All(ag => ag.IsFinished) &&
-                !tournament.DomainEvents.Any(e => e is AllGroupsFinishedEvent))
-            {
-                _logger.LogInformation($"All groups finished for tournament {tournamentId}. Raising AllGroupsFinishedEvent...");
+            // Check if all groups are finished
+            bool allGroupsFinished = allGroups.Any() && allGroups.All(ag => ag.IsFinished);
 
-                // Raise domain event - the event handler will handle bracket seeding
-                tournament.AddDomainEvent(new AllGroupsFinishedEvent(tournamentId, allGroups));
+            if (allGroupsFinished)
+            {
+                _logger.LogInformation($"✓ ALL GROUPS FINISHED for tournament {tournamentId}!");
             }
+            else
+            {
+                _logger.LogInformation($"Groups not all finished yet for tournament {tournamentId}.");
+            }
+
+            return allGroupsFinished;
         }
 
         public async Task<List<Application.DTOs.Standing.BracketSeedDTO>> PrepareTeamsForBracket(long tournamentId)

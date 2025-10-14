@@ -5,7 +5,14 @@ export interface MatchResult {
   teamBWins: number;
 }
 
+/**
+ * Enhanced interface matching backend MatchResultDTO.
+ * Includes tournament lifecycle state information.
+ */
 export interface MatchFinishedIds {
   winnerId: number;
   loserId: number;
+  allGroupsFinished?: boolean;
+  bracketSeeded?: boolean;
+  bracketSeedMessage?: string;
 }

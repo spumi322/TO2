@@ -84,16 +84,9 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
       return;
     }
 
-    // Verify DOM element exists
-    const element = document.querySelector('.brackets-viewer');
-    if (!element) {
-      console.error('Bracket container element not found in DOM!');
-      return;
-    }
-
-    // Only render if we have matches
-    if (this.matches.length === 0) {
-      console.warn('No matches to display');
+    // Check if we have matches to display
+    if (!this.matches || this.matches.length === 0) {
+      console.warn('No matches to render - bracket not seeded yet');
       return;
     }
 
@@ -103,13 +96,13 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
       this.matches
     );
 
+    // Check if adapter returned valid data
     if (!data) {
-      console.warn('No bracket data to display');
+      console.warn('Adapter returned null - cannot render bracket');
       return;
     }
 
     console.log('Calling bracketsViewer.render() - library will handle all rendering');
-    console.log('DOM element found:', element);
 
     try {
       // Call library to render - it creates all HTML/CSS

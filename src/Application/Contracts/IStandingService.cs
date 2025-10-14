@@ -13,8 +13,14 @@ namespace Application.Contracts
     {
         Task GenerateStanding(long tournamentId, string name, StandingType type, int? teamsPerStanding);
         Task<List<Standing>> GetStandingsAsync(long tournamentId);
-        Task CheckAndMarkStandingAsFinishedAsync(long tournamentId);
-        Task CheckAndMarkAllGroupsAreFinishedAsync(long standingId);
+        /// <summary>
+        /// Checks if any standings finished and marks them. Returns true if a standing was just marked finished.
+        /// </summary>
+        Task<bool> CheckAndMarkStandingAsFinishedAsync(long tournamentId);
+        /// <summary>
+        /// Checks if all groups are finished. Returns true if all groups finished.
+        /// </summary>
+        Task<bool> CheckAndMarkAllGroupsAreFinishedAsync(long tournamentId);
         Task<List<Application.DTOs.Standing.BracketSeedDTO>> PrepareTeamsForBracket(long tournamentId);
     }
 }

@@ -28,7 +28,7 @@
 
   <!-- Main Content Area -->
   <div class="tournament-content">
-    <mat-tab-group animationDuration="300ms" mat-stretch-tabs="false" mat-align-tabs="start">
+    <mat-tab-group [(selectedIndex)]="selectedTabIndex" animationDuration="300ms" mat-stretch-tabs="false" mat-align-tabs="start">
       <!-- Overview Tab -->
       <mat-tab label="Overview">
         <div class="tab-content">

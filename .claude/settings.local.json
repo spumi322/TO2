@@ -17,7 +17,11 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(npm install:*)",
       "Bash(cat:*)",
-      "Bash(ng generate component:*)"
+      "Bash(ng generate component:*)",
+      "Bash(tasklist)",
+      "Bash(tasklist:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet run)"
     ],
     "deny": [],
     "ask": []
