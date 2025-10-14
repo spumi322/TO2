@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Standing } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
 import { Observable, catchError, forkJoin, map, of, switchMap, tap } from 'rxjs';
@@ -14,6 +14,7 @@ import { MatchFinishedIds } from '../../../models/matchresult';
 })
 export class GroupComponent implements OnInit {
   @Input() tournament!: Tournament;
+  @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
 
   groups$: Observable<Standing[]> = of([]);
   groups: Standing[] = [];
@@ -55,6 +56,7 @@ export class GroupComponent implements OnInit {
 
   onMatchFinished(matchUpdate: MatchFinishedIds): void {
     this.refreshGroups();
+    this.matchFinished.emit(matchUpdate);
   }
 }
 

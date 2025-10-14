@@ -16,9 +16,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7A830D06-4A04-4467-83C1-C28B36AF2CCE}"
 	ProjectSection(SolutionItems) = preProject
 		..\..\docs\bracket-viewer-implementation-v2.md = ..\..\docs\bracket-viewer-implementation-v2.md
-		..\..\docs\console.md = ..\..\docs\console.md
 		..\..\docs\play_tournament_devnote.md = ..\..\docs\play_tournament_devnote.md
 		..\..\docs\todo.md = ..\..\docs\todo.md
+		..\..\docs\todo_flowfix.md = ..\..\docs\todo_flowfix.md
 	EndProjectSection
 EndProject
 Global
