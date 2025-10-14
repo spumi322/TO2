@@ -1,0 +1,307 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36" version="28.2.7">
+  <diagram name="Tournament Lifecycle" id="1PXNvSy5S0UCT8VkTshk">
+    <mxGraphModel dx="1783" dy="981" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-1" value="Frontend" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;size=40;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="100" height="1900" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-2" value="Controller" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#ffe6cc;strokeColor=#d79b00;size=40;" vertex="1" parent="1">
+          <mxGeometry x="200" y="40" width="100" height="1900" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-3" value="Tournament&#xa;Service" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#fff2cc;strokeColor=#d6b656;size=40;" vertex="1" parent="1">
+          <mxGeometry x="360" y="40" width="110" height="1900" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-4" value="Match&#xa;Service" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#f8cecc;strokeColor=#b85450;size=40;" vertex="1" parent="1">
+          <mxGeometry x="530" y="40" width="110" height="1900" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-5" value="Standing&#xa;Service" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#e1d5e7;strokeColor=#9673a6;size=40;" vertex="1" parent="1">
+          <mxGeometry x="700" y="40" width="110" height="1900" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-6" value="Game&#xa;Service" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#d5e8d4;strokeColor=#82b366;size=40;" vertex="1" parent="1">
+          <mxGeometry x="870" y="40" width="110" height="1900" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-7" value="Tournament&#xa;Lifecycle&#xa;Service" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;fillColor=#f5f5f5;strokeColor=#666666;size=40;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="40" width="120" height="1900" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-8" value="FLOW 1: START TOURNAMENT &amp; SEED GROUPS" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffe6cc;strokeColor=#d79b00;align=left;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="1120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-9" value="PUT /tournaments/{id}/start" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="90" y="170" as="sourcePoint" />
+            <mxPoint x="250" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-10" value="StartTournament(tournamentId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="250" y="190" as="sourcePoint" />
+            <mxPoint x="415" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-11" value="Sets:&#xa;IsRegistrationOpen = false&#xa;Status = Ongoing" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff2cc;align=left;size=10;" vertex="1" parent="1">
+          <mxGeometry x="430" y="200" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-12" value="StartTournamentDTO" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="415" y="280" as="sourcePoint" />
+            <mxPoint x="90" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-13" value="POST /standings/{tournamentId}/generate-groupmatches" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="90" y="320" as="sourcePoint" />
+            <mxPoint x="250" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-14" value="SeedGroups(tournamentId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="250" y="340" as="sourcePoint" />
+            <mxPoint x="585" y="340" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-15" value="GetStandingsAsync(tournamentId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="585" y="360" as="sourcePoint" />
+            <mxPoint x="755" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-16" value="List&lt;Standing&gt;" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="755" y="380" as="sourcePoint" />
+            <mxPoint x="585" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-17" value="GetTeamsByTournamentAsync(tournamentId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="585" y="400" as="sourcePoint" />
+            <mxPoint x="415" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-18" value="List&lt;GetTeamResponseDTO&gt;" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="415" y="420" as="sourcePoint" />
+            <mxPoint x="585" y="420" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-19" value="Loop: For each Group&#xa;• Randomly distribute teams&#xa;• Create GroupEntry records&#xa;• Generate round-robin matches&#xa;  (all teams vs all teams)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#f8cecc;align=left;size=10;" vertex="1" parent="1">
+          <mxGeometry x="600" y="440" width="200" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-20" value="GenerateMatch(teamA, teamB, round, seed, standingId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="585" y="560" as="sourcePoint" />
+            <mxPoint x="585" y="580" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="650" y="560" />
+              <mxPoint x="650" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-21" value="SeedGroupsResponseDTO" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="585" y="600" as="sourcePoint" />
+            <mxPoint x="90" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-22" value="POST /standings/{standingId}/generate-games" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="90" y="640" as="sourcePoint" />
+            <mxPoint x="250" y="640" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-23" value="GetMatchesAsync(standingId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="250" y="660" as="sourcePoint" />
+            <mxPoint x="585" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-24" value="List&lt;Match&gt;" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="585" y="680" as="sourcePoint" />
+            <mxPoint x="250" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-25" value="Loop: For each Match" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#d5e8d4;align=left;size=10;" vertex="1" parent="1">
+          <mxGeometry x="870" y="700" width="150" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-26" value="GenerateGames(matchId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="250" y="760" as="sourcePoint" />
+            <mxPoint x="925" y="760" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-27" value="Creates games based on BestOf:&#xa;• Bo1 = 1 game&#xa;• Bo3 = 3 games&#xa;• Bo5 = 5 games" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#d5e8d4;align=left;size=10;" vertex="1" parent="1">
+          <mxGeometry x="940" y="770" width="180" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-28" value="200 OK" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="925" y="860" as="sourcePoint" />
+            <mxPoint x="90" y="860" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-29" value="FLOW 2: SET GAME RESULT → MATCH COMPLETION → LIFECYCLE" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#d5e8d4;strokeColor=#82b366;align=left;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="920" width="1120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-30" value="PUT /matches/{gameId}/result" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="90" y="970" as="sourcePoint" />
+            <mxPoint x="250" y="970" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-31" value="SetGameResult(gameId, SetGameResultDTO)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="250" y="990" as="sourcePoint" />
+            <mxPoint x="925" y="990" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-32" value="1. Set winnerId on Game&#xa;2. Save game result" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#d5e8d4;align=left;size=10;" vertex="1" parent="1">
+          <mxGeometry x="940" y="1000" width="160" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-33" value="DetermineMatchWinner(matchId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="925" y="1070" as="sourcePoint" />
+            <mxPoint x="925" y="1090" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="990" y="1070" />
+              <mxPoint x="990" y="1090" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-34" value="Check if team won enough games:&#xa;• Bo1: 1 win&#xa;• Bo3: 2 wins&#xa;• Bo5: 3 wins&#xa;&#xa;If yes: Set match winner/loser" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#d5e8d4;align=left;size=10;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="1060" width="200" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-35" value="UpdateStandingAfterMatch(match)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="925" y="1170" as="sourcePoint" />
+            <mxPoint x="925" y="1190" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="990" y="1170" />
+              <mxPoint x="990" y="1190" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-36" value="IF Group Match:&#xa;• Update GroupEntry&#xa;  (wins, losses, points)&#xa;&#xa;IF Bracket Match:&#xa;• Set winner = Advanced&#xa;• Set loser = Eliminated&#xa;• CheckAndGenerateNextRound()" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#d5e8d4;align=left;size=10;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="1160" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-37" value="MatchResult?" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="925" y="1300" as="sourcePoint" />
+            <mxPoint x="925" y="1320" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="860" y="1300" />
+              <mxPoint x="860" y="1320" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-38" value="IF match completed (winnerId set)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#f5f5f5;align=center;size=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="1340" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-39" value="OnMatchCompleted(matchId, winnerId, loserId, tournamentId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="925" y="1390" as="sourcePoint" />
+            <mxPoint x="1100" y="1390" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-40" value="CheckAndMarkStandingAsFinishedAsync(tournamentId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="1100" y="1410" as="sourcePoint" />
+            <mxPoint x="755" y="1410" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-41" value="Loop all unfinished standings:&#xa;• Get all matches&#xa;• If ALL matches complete:&#xa;  Set IsFinished = true" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#e1d5e7;align=left;size=10;" vertex="1" parent="1">
+          <mxGeometry x="600" y="1420" width="180" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-42" value="bool (standing finished?)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="755" y="1520" as="sourcePoint" />
+            <mxPoint x="1100" y="1520" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-43" value="CheckAndMarkAllGroupsAreFinishedAsync(tournamentId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="1100" y="1540" as="sourcePoint" />
+            <mxPoint x="755" y="1540" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-44" value="Check if ALL groups&#xa;have IsFinished = true" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#e1d5e7;align=left;size=10;" vertex="1" parent="1">
+          <mxGeometry x="600" y="1550" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-45" value="bool (all groups finished?)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="755" y="1620" as="sourcePoint" />
+            <mxPoint x="1100" y="1620" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-46" value="IF ALL GROUPS FINISHED: SEED BRACKET" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#f8cecc;strokeColor=#b85450;align=center;fontStyle=1;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="800" y="1660" width="360" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-47" value="SeedBracketIfReady(tournamentId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="1100" y="1710" as="sourcePoint" />
+            <mxPoint x="1100" y="1730" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="1170" y="1710" />
+              <mxPoint x="1170" y="1730" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-48" value="PrepareTeamsForBracket(tournamentId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="1100" y="1750" as="sourcePoint" />
+            <mxPoint x="755" y="1750" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-49" value="1. Calculate teams advancing per group&#xa;2. Rank teams: Points → Wins → Losses&#xa;3. Mark top teams as Advanced&#xa;4. Mark remaining as Eliminated&#xa;5. Return List&lt;BracketSeedDTO&gt;" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#e1d5e7;align=left;size=10;" vertex="1" parent="1">
+          <mxGeometry x="560" y="1760" width="220" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-50" value="List&lt;BracketSeedDTO&gt;" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="755" y="1890" as="sourcePoint" />
+            <mxPoint x="1100" y="1890" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-51" value="SeedBracket(tournamentId, advancingTeams)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="1100" y="1910" as="sourcePoint" />
+            <mxPoint x="585" y="1910" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-52" value="Pairing Strategy:&#xa;• Highest vs Lowest from different groups&#xa;• #1 Group A vs #2 Group B&#xa;• #1 Group B vs #2 Group A&#xa;• Creates BracketEntry records&#xa;• Generates matches with seeds" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#f8cecc;align=left;size=10;" vertex="1" parent="1">
+          <mxGeometry x="380" y="1920" width="220" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-53" value="GenerateMatch(teamA, teamB, 1, seed, bracketStandingId)" style="html=1;verticalAlign=bottom;endArrow=block;rounded=0;dashed=1;" edge="1" parent="1">
+          <mxGeometry width="80" relative="1" as="geometry">
+            <mxPoint x="585" y="2060" as="sourcePoint" />
+            <mxPoint x="585" y="2080" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="650" y="2060" />
+              <mxPoint x="650" y="2080" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-54" value="BracketSeedResponseDTO" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="585" y="2100" as="sourcePoint" />
+            <mxPoint x="1100" y="2100" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-55" value="MatchResultDTO (with lifecycle state)" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;endSize=8;rounded=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1100" y="2120" as="sourcePoint" />
+            <mxPoint x="90" y="2120" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-56" value="KEY DESIGN PATTERNS:&#xa;&#xa;• TournamentLifecycleService = Explicit State Machine&#xa;• Replaces domain events with clear orchestration&#xa;• OnMatchCompleted() triggers state transitions&#xa;&#xa;CRITICAL FLOW:&#xa;Game Result → Match Winner → Standing Check →&#xa;All Groups Done? → Seed Bracket → Bracket Round 1&#xa;&#xa;DTOs RETURNED:&#xa;• MatchResultDTO includes lifecycle state flags&#xa;• Frontend knows if bracket seeded, tournament finished, etc." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#fff9e6;strokeColor=#FF8000;align=left;size=15;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="2180" width="400" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-57" value="⚠️ DESIGN FLAWS FOUND:&#xa;&#xa;1. MatchService.SeedGroups() uses TWO DbContexts&#xa;   → _standingRepository.Save() AND _dbContext.SaveChangesAsync()&#xa;   → Transaction boundary issue!&#xa;&#xa;2. GenerateMatch() does NOT save&#xa;   → Relies on EF Core change tracking + caller to save&#xa;   → Implicit behavior, easy to miss&#xa;&#xa;3. CheckAndMarkAllGroupsAreFinishedAsync() name misleading&#xa;   → Only checks, doesn&#39;t mark anything&#xa;   → Rename to AreAllGroupsFinishedAsync()&#xa;&#xa;4. Potential N+1 queries in SeedGroups loop&#xa;   → Calls FirstOrDefaultAsync() per team&#xa;   → Should batch load GroupEntries" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#ffe6e6;strokeColor=#FF0000;align=left;size=15;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="480" y="2180" width="380" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="b70pZqKQFfTjQ2AUIG4p-58" value="✅ NO UNUSED METHODS!&#xa;&#xa;All 38 service methods are used by either:&#xa;• API Controllers (public endpoints)&#xa;• Other Services (internal orchestration)&#xa;&#xa;This is excellent - no dead code." style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;fillColor=#e6ffe6;strokeColor=#00CC00;align=left;size=15;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="900" y="2180" width="260" height="140" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -12,3 +12,7 @@ Optional:
 6. Score edit 
 7. Scheduling
 8. Stats
+
+
+
+Create Tournament -> Add/Remove Teams -> Start Tournament(change to start groups?) | BETWEEN STATE UNTIL GROUPS ARE PROPERLY SEEDED | -> Play matches in groups -> All Groups Finished -> *I NEED A NEW STEP HERE (start bracket maybe) | ITS A BETWEEN STATE TOO, WHERE BRACKET ARE SEEDED| -> Play Bracket Matches(WIP, not important now) -> Declare Champion -> Tournament Finished
