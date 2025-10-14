@@ -1,10 +1,11 @@
 using Application.Common;
 using Application.Contracts;
 using Application.Services;
-using Application.Services.EventHandlers;
-using Application.Services.EventHandling;
+// STEP 1 FIX: Removed unused using statements for domain events
+//using Application.Services.EventHandlers;
+//using Application.Services.EventHandling;
 using Domain.AggregateRoots;
-using Domain.DomainEvents;
+//using Domain.DomainEvents;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.Persistence;
@@ -34,10 +35,12 @@ namespace TO2
             builder.Services.AddScoped<ITeamService, TeamService>();
             builder.Services.AddScoped<IMatchService, MatchService>();
             builder.Services.AddScoped<IGameService, GameService>();
-            // Handlers
-            builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-            builder.Services.AddScoped<IDomainEventHandler<StandingFinishedEvent>, StandingFinishedEventHandler>();
-            builder.Services.AddScoped<IDomainEventHandler<AllGroupsFinishedEvent>, AllGroupsFinishedEventHandler>();
+            // STEP 2: Lifecycle Service - Replaces domain event handlers
+            builder.Services.AddScoped<ITournamentLifecycleService, TournamentLifecycleService>();
+            // STEP 1: Domain Event Handlers Disabled - Replaced by TournamentLifecycleService
+            //builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+            //builder.Services.AddScoped<IDomainEventHandler<StandingFinishedEvent>, StandingFinishedEventHandler>();
+            //builder.Services.AddScoped<IDomainEventHandler<AllGroupsFinishedEvent>, AllGroupsFinishedEventHandler>();
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddFluentValidation().AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
