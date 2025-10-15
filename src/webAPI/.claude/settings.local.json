@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//g/Code/TO2/**)",
+      "mcp__exa__get_code_context_exa"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
