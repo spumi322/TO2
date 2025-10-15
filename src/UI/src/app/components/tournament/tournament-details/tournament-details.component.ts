@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { Format, Tournament, TournamentStatus } from '../../../models/tournament';
+import { Format, Tournament, TournamentStatus, TournamentStateDTO } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, catchError, finalize, forkJoin, of, from } from 'rxjs';
@@ -25,6 +25,7 @@ export class TournamentDetailsComponent implements OnInit {
   tournament$: Observable<Tournament | null> = of(null);
   tournament: Tournament | null = null;
   tournamentId: number | null = null;
+  tournamentState: TournamentStateDTO | null = null;
 
   // Standings data
   standings: Standing[] = [];
@@ -66,6 +67,7 @@ export class TournamentDetailsComponent implements OnInit {
   ngOnInit(): void {
     this.initForms();
     this.loadTournamentData();
+    this.loadTournamentState();
     this.loadAllTeams();
   }
 
@@ -101,6 +103,26 @@ export class TournamentDetailsComponent implements OnInit {
         }
       })
     );
+  }
+
+  loadTournamentState(): void {
+    this.route.paramMap.pipe(
+      switchMap(params => {
+        const id = params.get('id');
+        if (id) {
+          this.tournamentId = +id;
+          return this.tournamentService.getTournamentState(this.tournamentId);
+        }
+        return of(null);
+      })
+    ).subscribe({
+      next: (state) => {
+        this.tournamentState = state;
+      },
+      error: (error) => {
+        console.error('Error loading tournament state:', error);
+      }
+    });
   }
 
   loadStandings(): void {
@@ -320,6 +342,34 @@ export class TournamentDetailsComponent implements OnInit {
     });
   }
 
+  onStartGroups(): void {
+    if (!confirm('Start group stage? Registration will be closed.')) {
+      return;
+    }
+
+    if (!this.tournamentId) return;
+
+    this.isReloading = true;
+    this.tournamentService.startGroups(this.tournamentId).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.showSuccess(response.message);
+          this.loadTournamentState();
+          this.reloadTournamentData();
+        } else {
+          this.showError(response.message);
+        }
+      },
+      error: (err) => {
+        this.showError('Error starting groups');
+        console.error('Error starting groups:', err);
+      },
+      complete: () => {
+        this.isReloading = false;
+      }
+    });
+  }
+
   generateGroupMatches(): Observable<number[]> {
     if (!this.tournamentId) return of([]);
 
@@ -399,9 +449,14 @@ export class TournamentDetailsComponent implements OnInit {
 
   getStatusClass(status: TournamentStatus): string {
     switch (status) {
-      case TournamentStatus.Upcoming:
-        return 'status-upcoming';
-      case TournamentStatus.Ongoing:
+      case TournamentStatus.Setup:
+        return 'status-setup';
+      case TournamentStatus.SeedingGroups:
+      case TournamentStatus.SeedingBracket:
+        return 'status-seeding';
+      case TournamentStatus.GroupsInProgress:
+      case TournamentStatus.GroupsCompleted:
+      case TournamentStatus.BracketInProgress:
         return 'status-ongoing';
       case TournamentStatus.Finished:
         return 'status-finished';

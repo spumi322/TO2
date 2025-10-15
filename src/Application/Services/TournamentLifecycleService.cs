@@ -1,8 +1,10 @@
 using Application.Contracts;
 using Application.DTOs.Match;
 using Application.DTOs.Standing;
+using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
+using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -19,59 +21,55 @@ namespace Application.Services
         private readonly ILogger<TournamentLifecycleService> _logger;
         private readonly IStandingService _standingService;
         private readonly IMatchService _matchService;
-        private readonly IGenericRepository<Standing> _standingRepository;
+        private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly ITournamentStateMachine _stateMachine;
 
         public TournamentLifecycleService(
             ILogger<TournamentLifecycleService> logger,
             IStandingService standingService,
             IMatchService matchService,
-            IGenericRepository<Standing> standingRepository)
+            IGenericRepository<Tournament> tournamentRepository,
+            ITournamentStateMachine stateMachine
+            )
         {
             _logger = logger;
             _standingService = standingService;
             _matchService = matchService;
-            _standingRepository = standingRepository;
+            _tournamentRepository = tournamentRepository;
+            _stateMachine = stateMachine;
         }
 
         public async Task<MatchResultDTO> OnMatchCompleted(long matchId, long winnerId, long loserId, long tournamentId)
         {
-            _logger.LogInformation($"=== Tournament Lifecycle: Match {matchId} completed ===");
-            _logger.LogInformation($"Winner: {winnerId}, Loser: {loserId}, Tournament: {tournamentId}");
+            var tournament = await _tournamentRepository.Get(tournamentId)
+                ?? throw new Exception("Tournament not found");
 
-            // 1. Check if this match completion causes any standing to finish
             bool standingJustFinished = await _standingService.CheckAndMarkStandingAsFinishedAsync(tournamentId);
 
-            // 2. ONLY check if all groups finished when a standing just finished
-            if (!standingJustFinished)
+            if (standingJustFinished && tournament.Status == TournamentStatus.GroupsInProgress)
             {
-                _logger.LogInformation("No standing finished with this match. Normal match completion.");
-                return new MatchResultDTO(winnerId, loserId);
+                bool allGroupsFinished = await _standingService.CheckAndMarkAllGroupsAreFinishedAsync(tournamentId);
+
+                if (allGroupsFinished)
+                {
+                    _logger.LogInformation("✓✓ ALL GROUPS FINISHED! Waiting for admin to start bracket.");
+
+                    // Validate and auto-transition to GroupsCompleted
+                    _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.GroupsCompleted);
+                    tournament.Status = TournamentStatus.GroupsCompleted;
+                    await _tournamentRepository.Update(tournament);
+                    await _tournamentRepository.Save();
+
+                    return new MatchResultDTO(
+                        WinnerId: winnerId,
+                        LoserId: loserId,
+                        AllGroupsFinished: true,
+                        BracketSeeded: false
+                    );
+                }
             }
 
-            _logger.LogInformation("✓ A standing just finished! Checking if all groups are now complete...");
-
-            // 3. Check if ALL groups are finished
-            bool allGroupsFinished = await _standingService.CheckAndMarkAllGroupsAreFinishedAsync(tournamentId);
-
-            if (!allGroupsFinished)
-            {
-                _logger.LogInformation("Not all groups finished yet. No bracket seeding.");
-                return new MatchResultDTO(winnerId, loserId);
-            }
-
-            _logger.LogInformation("✓✓✓ ALL GROUPS FINISHED! Seeding bracket now...");
-
-            // 4. If all groups finished, seed bracket
-            var seedingResult = await SeedBracketIfReady(tournamentId);
-
-            // 5. Return enriched DTO with lifecycle state - ONLY when bracket seeded!
-            return new MatchResultDTO(
-                WinnerId: winnerId,
-                LoserId: loserId,
-                AllGroupsFinished: true,
-                BracketSeeded: seedingResult.Success,
-                BracketSeedMessage: seedingResult.Message
-            );
+            return new MatchResultDTO(winnerId, loserId);
         }
 
         public async Task<BracketSeedResponseDTO> SeedBracketIfReady(long tournamentId)

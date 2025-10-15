@@ -25,6 +25,7 @@ namespace Application.Services
         private readonly ITO2DbContext _dbContext;
         private readonly IStandingService _standingService;
         private readonly IMatchService _matchService;
+        private readonly ITournamentService _tournamentService;
         private readonly ITournamentLifecycleService _lifecycleService;
         private readonly ILogger<GameService> _logger;
 
@@ -35,6 +36,7 @@ namespace Application.Services
                            ITO2DbContext dbContext,
                            IStandingService standingService,
                            IMatchService matchService,
+                           ITournamentService tournamentService,
                            ITournamentLifecycleService lifecycleService,
                            ILogger<GameService> logger)
         {
@@ -44,6 +46,7 @@ namespace Application.Services
             _dbContext = dbContext;
             _standingService = standingService;
             _matchService = matchService;
+            _tournamentService = tournamentService;
             _lifecycleService = lifecycleService;
             _logger = logger;
         }
@@ -235,7 +238,14 @@ namespace Application.Services
                 await _dbContext.SaveChangesAsync();
 
                 // Check if we need to generate next round or declare champion
-                await _matchService.CheckAndGenerateNextRound(standing.TournamentId, standing.Id, match.Round ?? 1);
+                var roundResult = await _matchService.CheckAndGenerateNextRound(standing.TournamentId, standing.Id, match.Round ?? 1);
+
+                // If tournament is complete, declare the champion
+                if (roundResult.IsTournamentComplete && roundResult.ChampionTeamId.HasValue)
+                {
+                    _logger.LogInformation($"Tournament {standing.TournamentId} is complete. Declaring champion: Team {roundResult.ChampionTeamId}");
+                    await _tournamentService.DeclareChampion(standing.TournamentId, roundResult.ChampionTeamId.Value);
+                }
             }
         }
 

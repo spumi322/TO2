@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Tournament } from '../../models/tournament';
+import { StartGroupsResponse, Tournament, TournamentStateDTO } from '../../models/tournament';
 import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { Team } from '../../models/team';
 import { FinalStanding } from '../../models/final-standing';
@@ -95,6 +95,19 @@ export class TournamentService {
   getFinalStandings(tournamentId: number): Observable<FinalStanding[]> {
     return this.http.get<FinalStanding[]>(`${this.apiUrl}/${tournamentId}/final-standings`).pipe(
       catchError(() => of([]))
+    );
+  }
+
+  startGroups(tournamentId: number): Observable<StartGroupsResponse> {
+    return this.http.post<StartGroupsResponse>(
+      `${this.apiUrl}/${tournamentId}/start-groups`,
+      {}
+    );
+  }
+
+  getTournamentState(tournamentId: number): Observable<TournamentStateDTO> {
+    return this.http.get<TournamentStateDTO>(
+      `${this.apiUrl}/${tournamentId}/state`
     );
   }
 }

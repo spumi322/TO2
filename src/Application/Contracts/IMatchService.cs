@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Standing;
+﻿using Application.DTOs.Match;
+using Application.DTOs.Standing;
 using Application.DTOs.Team;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -19,6 +20,6 @@ namespace Application.Contracts
         Task<long> GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId);
         Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId);
         Task<BracketSeedResponseDTO> SeedBracket(long tournamentId, List<BracketSeedDTO> advancedTeams);
-        Task CheckAndGenerateNextRound(long tournamentId, long standingId, int currentRound);
+        Task<CheckRoundResultDTO> CheckAndGenerateNextRound(long tournamentId, long standingId, int currentRound);
     }
 }

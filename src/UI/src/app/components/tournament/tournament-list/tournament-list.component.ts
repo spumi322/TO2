@@ -27,9 +27,18 @@ export class TournamentListComponent implements OnInit {
   ngOnInit(): void {
     this.groupedTournaments$ = this.tournamentService.getAllTournamentsWithTeams().pipe(
       map(tournaments => ({
-        upcoming: tournaments.filter(t => t.status === TournamentStatus.Upcoming),
-        ongoing: tournaments.filter(t => t.status === TournamentStatus.Ongoing),
-        finished: tournaments.filter(t => t.status === TournamentStatus.Finished)
+        upcoming: tournaments.filter(t => t.status === TournamentStatus.Setup),
+        ongoing: tournaments.filter(t =>
+          t.status === TournamentStatus.SeedingGroups ||
+          t.status === TournamentStatus.GroupsInProgress ||
+          t.status === TournamentStatus.GroupsCompleted ||
+          t.status === TournamentStatus.SeedingBracket ||
+          t.status === TournamentStatus.BracketInProgress
+        ),
+        finished: tournaments.filter(t =>
+          t.status === TournamentStatus.Finished ||
+          t.status === TournamentStatus.Cancelled
+        )
       }))
     );
   }
@@ -42,30 +51,40 @@ export class TournamentListComponent implements OnInit {
   // Determines the label of the action button based on tournament status
   getActionLabel(tournament: Tournament): string {
     switch (tournament.status) {
-      case TournamentStatus.Upcoming:
+      case TournamentStatus.Setup:
         return 'Edit';
-      case TournamentStatus.Ongoing:
+      case TournamentStatus.SeedingGroups:
+      case TournamentStatus.GroupsInProgress:
+      case TournamentStatus.GroupsCompleted:
+      case TournamentStatus.SeedingBracket:
+      case TournamentStatus.BracketInProgress:
         return 'Play';
       case TournamentStatus.Finished:
+      case TournamentStatus.Cancelled:
         return 'Results';
       default:
         return 'Details';
     }
   }
 
-  // Handles the action button click. Stops event propagation so the card click isn’t triggered.
+  // Handles the action button click. Stops event propagation so the card click isn't triggered.
   action(tournament: Tournament, event: Event): void {
     event.stopPropagation();
     switch (tournament.status) {
-      case TournamentStatus.Upcoming:
+      case TournamentStatus.Setup:
         // Navigate to the edit tournament component.
         this.router.navigate(['/tournament/edit', tournament.id]);
         break;
-      case TournamentStatus.Ongoing:
+      case TournamentStatus.SeedingGroups:
+      case TournamentStatus.GroupsInProgress:
+      case TournamentStatus.GroupsCompleted:
+      case TournamentStatus.SeedingBracket:
+      case TournamentStatus.BracketInProgress:
         // Navigate to a tournament details view where you can enter match results.
         this.router.navigate(['/tournament/play', tournament.id]);
         break;
       case TournamentStatus.Finished:
+      case TournamentStatus.Cancelled:
         // Navigate to the tournament results view.
         this.router.navigate(['/tournament/results', tournament.id]);
         break;

@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.DTOs.Match;
 using Application.DTOs.Standing;
 using Application.DTOs.Team;
 using AutoMapper;
@@ -19,7 +20,6 @@ namespace Application.Services
     public class MatchService : IMatchService
     {
         private readonly IStandingService _standingService;
-        private readonly ITournamentService _tournamentService;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<Standing> _standingRepository;
         private readonly IGenericRepository<Bracket> _bracketRepository;
@@ -28,7 +28,6 @@ namespace Application.Services
         private readonly ILogger<MatchService> _logger;
 
         public MatchService(IStandingService standingService,
-                            ITournamentService tournamentService,
                             IGenericRepository<Match> matchRepository,
                             IGenericRepository<Standing> standingRepository,
                             IGenericRepository<Bracket> bracketRepository,
@@ -37,7 +36,6 @@ namespace Application.Services
                             ILogger<MatchService> logger)
         {
             _standingService = standingService;
-            _tournamentService = tournamentService;
             _matchRepository = matchRepository;
             _standingRepository = standingRepository;
             _bracketRepository = bracketRepository;
@@ -98,8 +96,12 @@ namespace Application.Services
             }
 
             var groupsCount = standings.Count(s => s.StandingType is StandingType.Group);
-            List<GetTeamResponseDTO> teamsDTO = await _tournamentService.GetTeamsByTournamentAsync(tournamentId);
-            List<Team> teams = _mapper.Map<List<Team>>(teamsDTO);
+
+            // Query teams directly from DbContext to avoid circular dependency
+            var teams = await _dbContext.TournamentTeams
+                .Where(tt => tt.TournamentId == tournamentId)
+                .Select(tt => tt.Team)
+                .ToListAsync();
 
             if (teams.Count < groupsCount)
             {
@@ -308,7 +310,7 @@ namespace Application.Services
             }
         }
 
-        public async Task CheckAndGenerateNextRound(long tournamentId, long standingId, int currentRound)
+        public async Task<CheckRoundResultDTO> CheckAndGenerateNextRound(long tournamentId, long standingId, int currentRound)
         {
             try
             {
@@ -320,7 +322,7 @@ namespace Application.Services
                 if (currentRoundMatches.Count == 0)
                 {
                     _logger.LogWarning($"No matches found for round {currentRound} in standing {standingId}");
-                    return;
+                    return new CheckRoundResultDTO(false, null, "No matches found for current round");
                 }
 
                 // Check if all matches in current round are complete
@@ -329,7 +331,7 @@ namespace Application.Services
                 if (!allMatchesComplete)
                 {
                     _logger.LogInformation($"Not all matches complete in round {currentRound}. Waiting for completion.");
-                    return;
+                    return new CheckRoundResultDTO(false, null, "Not all matches are complete");
                 }
 
                 _logger.LogInformation($"All matches in round {currentRound} are complete. Checking for next round or championship.");
@@ -340,9 +342,8 @@ namespace Application.Services
                     var finalMatch = currentRoundMatches.First();
                     _logger.LogInformation($"Final match complete. Winner: Team {finalMatch.WinnerId}");
 
-                    // This was the finals, declare champion
-                    await _tournamentService.DeclareChampion(tournamentId, finalMatch.WinnerId.Value);
-                    return;
+                    // This was the finals - return result indicating tournament is complete
+                    return new CheckRoundResultDTO(true, finalMatch.WinnerId.Value, "Tournament complete - champion determined");
                 }
 
                 // Generate next round matches
@@ -391,6 +392,8 @@ namespace Application.Services
 
                 await _dbContext.SaveChangesAsync();
                 _logger.LogInformation($"Round {currentRound + 1} generation complete");
+
+                return new CheckRoundResultDTO(false, null, $"Round {currentRound + 1} generated successfully");
             }
             catch (Exception ex)
             {

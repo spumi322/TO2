@@ -19,8 +19,28 @@ export enum Format {
 }
 
 export enum TournamentStatus {
-  Upcoming = 1,
-  Ongoing = 2,
-  Finished = 3,
-  Cancelled = 4,
+  Setup = 1,
+  SeedingGroups = 2,
+  GroupsInProgress = 3,
+  GroupsCompleted = 4,
+  SeedingBracket = 5,
+  BracketInProgress = 6,
+  Finished = 7,
+  Cancelled = 8
+}
+
+export interface TournamentStateDTO {
+  currentStatus: TournamentStatus;
+  isTransitionState: boolean;
+  isActiveState: boolean;
+  canScoreMatches: boolean;
+  canModifyTeams: boolean;
+  statusDisplayName: string;
+  statusDescription: string;
+}
+
+export interface StartGroupsResponse {
+  success: boolean;
+  message: string;
+  tournamentStatus: TournamentStatus;
 }

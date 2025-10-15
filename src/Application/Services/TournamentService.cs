@@ -5,6 +5,7 @@ using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
+using Domain.StateMachine;
 using Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -23,23 +24,112 @@ namespace Application.Services
         private readonly ITeamService _teamService;
         private readonly ITO2DbContext _dbContext;
         private readonly IStandingService _standingService;
+        private readonly IMatchService _matchService;
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
+        private readonly ITournamentStateMachine _stateMachine;
 
         public TournamentService(IGenericRepository<Tournament> tournamentRepository,
                                  ITeamService teamService,
                                  ITO2DbContext tO2DbContext,
                                  IStandingService standingService,
+                                 IMatchService matchService,
                                  IMapper mapper,
-                                 ILogger<TournamentService> logger)
+                                 ILogger<TournamentService> logger,
+                                 ITournamentStateMachine stateMachine)
         {
             _tournamentRepository = tournamentRepository;
             _teamService = teamService;
             _dbContext = tO2DbContext;
             _standingService = standingService;
+            _matchService = matchService;
             _mapper = mapper;
             _logger = logger;
+            _stateMachine = stateMachine;
         }
+
+        public async Task<StartGroupsResponseDTO> StartGroups(long tournamentId)
+        {
+            var tournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
+
+            try
+            {
+                // 1. Validate and transition to SeedingGroups
+                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingGroups);
+                tournament.Status = TournamentStatus.SeedingGroups;
+                await _tournamentRepository.Update(tournament);
+                await _tournamentRepository.Save();
+
+                // 2. Seed groups
+                var result = await _matchService.SeedGroups(tournamentId);
+                if (!result.Success)
+                {
+                    throw new Exception(result.Response);
+                }
+
+                // 3. Validate and transition to GroupsInProgress
+                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.GroupsInProgress);
+                tournament.Status = TournamentStatus.GroupsInProgress;
+                await _tournamentRepository.Update(tournament);
+                await _tournamentRepository.Save();
+
+                _logger.LogInformation($"Tournament {tournament.Id} group stage started successfully.");
+
+                return new StartGroupsResponseDTO(true, "Group stage started successfully", tournament.Status);
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning($"Invalid state transition: {ex.Message}");
+                return new StartGroupsResponseDTO(false, ex.Message, tournament.Status);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error starting groups: {Message}", ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<TournamentStateDTO> GetTournamentState(long tournamentId)
+        {
+            var tournament = await _tournamentRepository.Get(tournamentId)
+                ?? throw new Exception("Tournament not found");
+
+            return new TournamentStateDTO(
+                CurrentStatus: tournament.Status,
+                IsTransitionState: _stateMachine.IsTransitionState(tournament.Status),
+                IsActiveState: _stateMachine.IsActiveState(tournament.Status),
+                CanScoreMatches: _stateMachine.CanScoreMatches(tournament.Status),
+                CanModifyTeams: _stateMachine.CanModifyTeams(tournament.Status),
+                StatusDisplayName: GetStatusDisplayName(tournament.Status),
+                StatusDescription: GetStatusDescription(tournament.Status)
+            );
+        }
+
+        private string GetStatusDisplayName(TournamentStatus status) => status switch
+        {
+            TournamentStatus.Setup => "Setup",
+            TournamentStatus.SeedingGroups => "Seeding Groups...",
+            TournamentStatus.GroupsInProgress => "Groups In Progress",
+            TournamentStatus.GroupsCompleted => "Groups Completed",
+            TournamentStatus.SeedingBracket => "Seeding Bracket...",
+            TournamentStatus.BracketInProgress => "Bracket In Progress",
+            TournamentStatus.Finished => "Finished",
+            TournamentStatus.Cancelled => "Cancelled",
+            _ => "Unknown"
+        };
+
+        private string GetStatusDescription(TournamentStatus status) => status switch
+        {
+            TournamentStatus.Setup => "Add teams and configure tournament",
+            TournamentStatus.SeedingGroups => "Generating group matches...",
+            TournamentStatus.GroupsInProgress => "Group stage in progress - score matches",
+            TournamentStatus.GroupsCompleted => "All groups finished - ready to start bracket",
+            TournamentStatus.SeedingBracket => "Generating bracket matches...",
+            TournamentStatus.BracketInProgress => "Bracket stage in progress - score matches",
+            TournamentStatus.Finished => "Tournament complete",
+            TournamentStatus.Cancelled => "Tournament cancelled",
+            _ => ""
+        };
 
         public async Task<CreateTournamentResponseDTO> CreateTournamentAsync(CreateTournamentRequestDTO request)
         {
@@ -109,6 +199,8 @@ namespace Application.Services
 
             try
             {
+                // Validate transition before setting
+                _stateMachine.ValidateTransition(existingTournament.Status, TournamentStatus.Cancelled);
                 existingTournament.Status = TournamentStatus.Cancelled;
 
                 await _tournamentRepository.Update(existingTournament);
@@ -127,6 +219,8 @@ namespace Application.Services
 
             try
             {
+                // Validate transition before setting
+                _stateMachine.ValidateTransition(existingTournament.Status, status);
                 existingTournament.Status = status;
 
                 await _tournamentRepository.Update(existingTournament);
@@ -220,7 +314,8 @@ namespace Application.Services
 
             try
             {
-                // Set tournament status to Finished
+                // Validate transition and set tournament status to Finished
+                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.Finished);
                 tournament.Status = TournamentStatus.Finished;
 
                 // Find the bracket standing

@@ -45,11 +45,10 @@ namespace Domain.AggregateRoots
 
         [Required]
         [EnumDataType(typeof(TournamentStatus))]
-        [Range(0, 2)]
-        [DefaultValue(TournamentStatus.Upcoming)]
-        public TournamentStatus Status { get; set; } = TournamentStatus.Upcoming;
+        [DefaultValue(TournamentStatus.Setup)]
+        public TournamentStatus Status { get; set; } = TournamentStatus.Setup;
 
-        public bool IsRegistrationOpen { get; set; } = false;
+        public bool IsRegistrationOpen { get; set; } = true;
 
         public List<Prize> PrizePool { get; set; }
 
