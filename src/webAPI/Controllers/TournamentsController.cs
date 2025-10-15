@@ -113,5 +113,24 @@ namespace TO2.Controllers
         {
             return Ok(await _tournamentService.GetFinalStandings(id));
         }
+
+        /// <summary>
+        /// Starts the group stage (Setup -> GroupsInProgress).
+        /// </summary>
+        [HttpPost("{id}/start-groups")]
+        public async Task<IActionResult> StartGroups(long id)
+        {
+            var result = await _tournamentService.StartGroups(id);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        /// <summary>
+        /// Gets the current state machine status.
+        /// </summary>
+        [HttpGet("{id}/state")]
+        public async Task<IActionResult> GetTournamentState(long id)
+        {
+            return Ok(await _tournamentService.GetTournamentState(id));
+        }
     }
 }

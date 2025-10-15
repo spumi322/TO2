@@ -3,7 +3,11 @@
     "allow": [
       "Read(//g/Code/TO2/**)",
       "mcp__exa__get_code_context_exa",
-      "Bash(dotnet build)"
+      "Bash(dotnet build)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 10 dotnet run)",
+      "Bash(timeout 15 dotnet run)",
+      "Bash(timeout 8 dotnet run)"
     ],
     "deny": [],
     "ask": []
