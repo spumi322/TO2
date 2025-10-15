@@ -13,6 +13,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TournamentStatusLabel } from '../tournament-status-label/tournament-status-label';
 import { FinalStanding } from '../../../models/final-standing';
+import { MatchService } from '../../../services/match/match.service';
 
 @Component({
   selector: 'app-tournament-details',
@@ -26,6 +27,7 @@ export class TournamentDetailsComponent implements OnInit {
   tournament: Tournament | null = null;
   tournamentId: number | null = null;
   tournamentState: TournamentStateDTO | null = null;
+  bracketMatches: any[] = []; // Placeholder for bracket matches
 
   // Standings data
   standings: Standing[] = [];
@@ -57,6 +59,7 @@ export class TournamentDetailsComponent implements OnInit {
     private tournamentService: TournamentService,
     private standingService: StandingService,
     private teamService: TeamService,
+    private matchService: MatchService,
     private route: ActivatedRoute,
     private router: Router,
     private fb: FormBuilder,
@@ -75,6 +78,29 @@ export class TournamentDetailsComponent implements OnInit {
     this.bulkAddForm = this.fb.group({
       teamNames: ['', Validators.required]
     });
+  }
+
+  loadBracketMatches(): void {
+    // Only load if in bracket stage
+    if (this.tournamentState?.currentStatus === TournamentStatus.BracketInProgress ||
+      this.tournamentState?.currentStatus === TournamentStatus.Finished) {
+
+      // Find the bracket standing
+      const bracketStanding = this.brackets.length > 0 ? this.brackets[0] : null;
+
+      if (bracketStanding) {
+        this.matchService.getMatchesByStandingId(bracketStanding.id)
+          .subscribe({
+            next: (matches) => {
+              // Sort by round (descending) then seed (ascending) for display
+              this.bracketMatches = matches.sort((a, b) => (b.round || 0) - (a.round || 0) || (a.seed || 0) - (b.seed || 0));
+            },
+            error: (error) => {
+              console.error('Error loading bracket matches:', error);
+            }
+          });
+      }
+    }
   }
 
   loadTournamentData(): void {
@@ -134,6 +160,9 @@ export class TournamentDetailsComponent implements OnInit {
         this.groups = standings.filter(s => s.standingType === StandingType.Group);
         this.brackets = standings.filter(s => s.standingType === StandingType.Bracket);
 
+        // Load bracket matches if in bracket stage
+        this.loadBracketMatches();
+
         // Load champion and final standings if tournament is finished
         if (this.tournament?.status === TournamentStatus.Finished) {
           this.loadChampionAndStandings();
@@ -141,6 +170,36 @@ export class TournamentDetailsComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading standings', error);
+      }
+    });
+  }
+
+  onStartBracket(): void {
+    if (!confirm('Start bracket? This will seed teams from group results.')) {
+      return;
+    }
+
+    if (!this.tournamentId) return;
+
+    this.isReloading = true;
+    this.tournamentService.startBracket(this.tournamentId).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.showSuccess(response.message);
+          this.loadTournamentState();
+          this.reloadTournamentData();
+          // Delay bracket loading slightly to ensure standings are updated
+          setTimeout(() => this.loadBracketMatches(), 500);
+        } else {
+          this.showError(response.message);
+        }
+      },
+      error: (err) => {
+        this.showError('Error starting bracket');
+        console.error('Error starting bracket:', err);
+      },
+      complete: () => {
+        this.isReloading = false;
       }
     });
   }

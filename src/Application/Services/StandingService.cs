@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.DTOs.Standing;
 using Application.DTOs.Team;
 using Domain.AggregateRoots;
 //using Domain.DomainEvents; // STEP 1 FIX: No longer needed
@@ -120,7 +121,7 @@ namespace Application.Services
             return allGroupsFinished;
         }
 
-        public async Task<List<Application.DTOs.Standing.BracketSeedDTO>> PrepareTeamsForBracket(long tournamentId)
+        public async Task<List<BracketSeedDTO>> PrepareTeamsForBracket(long tournamentId)
         {
             var tournament = await _tournamentRepository.Get(tournamentId);
             var standings = await GetStandingsAsync(tournamentId);
@@ -138,7 +139,7 @@ namespace Application.Services
 
             _logger.LogInformation($"Teams advancing per group: {teamsAdvancingPerGroup} (Bracket: {bracket.MaxTeams}, Groups: {groups.Count})");
 
-            var advancingTeams = new List<Application.DTOs.Standing.BracketSeedDTO>();
+            var advancingTeams = new List<BracketSeedDTO>();
 
             foreach (var group in groups)
             {
@@ -158,11 +159,12 @@ namespace Application.Services
                 foreach (var team in advancing)
                 {
                     team.Status = TeamStatus.Advanced;
-                    advancingTeams.Add(new Application.DTOs.Standing.BracketSeedDTO
+                    advancingTeams.Add(new BracketSeedDTO
                     {
                         TeamId = team.TeamId,
                         GroupId = group.Id,
-                        Placement = placement++
+                        Placement = placement++,
+                        TeamName = team.TeamName
                     });
 
                     _logger.LogInformation($"Team {team.TeamName} advanced from {group.Name} (Placement: {placement - 1})");

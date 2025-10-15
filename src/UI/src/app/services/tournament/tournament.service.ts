@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { StartGroupsResponse, Tournament, TournamentStateDTO } from '../../models/tournament';
+import { StartBracketResponse, StartGroupsResponse, Tournament, TournamentStateDTO } from '../../models/tournament';
 import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { Team } from '../../models/team';
 import { FinalStanding } from '../../models/final-standing';
@@ -108,6 +108,13 @@ export class TournamentService {
   getTournamentState(tournamentId: number): Observable<TournamentStateDTO> {
     return this.http.get<TournamentStateDTO>(
       `${this.apiUrl}/${tournamentId}/state`
+    );
+  }
+
+  startBracket(tournamentId: number): Observable<StartBracketResponse> {
+    return this.http.post<StartBracketResponse>(
+      `${this.apiUrl}/${tournamentId}/start-bracket`,
+      {}
     );
   }
 }

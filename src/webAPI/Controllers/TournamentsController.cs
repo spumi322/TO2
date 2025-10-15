@@ -132,5 +132,15 @@ namespace TO2.Controllers
         {
             return Ok(await _tournamentService.GetTournamentState(id));
         }
+
+        /// <summary>
+        /// Starts the bracket stage (GroupsCompleted -> BracketInProgress).
+        /// </summary>
+        [HttpPost("{id}/start-bracket")]
+        public async Task<IActionResult> StartBracket(long id)
+        {
+            var result = await _tournamentService.StartBracket(id);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
     }
 }

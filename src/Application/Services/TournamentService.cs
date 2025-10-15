@@ -28,6 +28,7 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
         private readonly ITournamentStateMachine _stateMachine;
+        private readonly ITournamentLifecycleService _lifecycleService;
 
         public TournamentService(IGenericRepository<Tournament> tournamentRepository,
                                  ITeamService teamService,
@@ -36,7 +37,8 @@ namespace Application.Services
                                  IMatchService matchService,
                                  IMapper mapper,
                                  ILogger<TournamentService> logger,
-                                 ITournamentStateMachine stateMachine)
+                                 ITournamentStateMachine stateMachine,
+                                 ITournamentLifecycleService lifecycleService)
         {
             _tournamentRepository = tournamentRepository;
             _teamService = teamService;
@@ -46,6 +48,7 @@ namespace Application.Services
             _mapper = mapper;
             _logger = logger;
             _stateMachine = stateMachine;
+            _lifecycleService = lifecycleService;
         }
 
         public async Task<StartGroupsResponseDTO> StartGroups(long tournamentId)
@@ -57,6 +60,7 @@ namespace Application.Services
                 // 1. Validate and transition to SeedingGroups
                 _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingGroups);
                 tournament.Status = TournamentStatus.SeedingGroups;
+                tournament.IsRegistrationOpen = false; // Close registration when starting groups
                 await _tournamentRepository.Update(tournament);
                 await _tournamentRepository.Save();
 
@@ -130,6 +134,64 @@ namespace Application.Services
             TournamentStatus.Cancelled => "Tournament cancelled",
             _ => ""
         };
+
+        public async Task<StartBracketResponseDTO> StartBracket(long tournamentId)
+        {
+            var tournament = await _tournamentRepository.Get(tournamentId)
+                ?? throw new Exception("Tournament not found");
+
+            try
+            {
+                // Validate state
+                if (tournament.Status != TournamentStatus.GroupsCompleted)
+                {
+                    return new StartBracketResponseDTO(
+                        Success: false,
+                        Message: $"Cannot start bracket from {tournament.Status}. Groups must be completed first.",
+                        TournamentStatus: tournament.Status
+                    );
+                }
+
+                // 1. Validate and transition to SeedingBracket
+                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingBracket);
+                tournament.Status = TournamentStatus.SeedingBracket;
+                await _tournamentRepository.Update(tournament);
+                await _tournamentRepository.Save();
+
+                // 2. Seed bracket
+                var seedResult = await _lifecycleService.SeedBracketIfReady(tournamentId);
+                if (!seedResult.Success)
+                {
+                    return new StartBracketResponseDTO(false, seedResult.Message, tournament.Status);
+                }
+
+                // 3. Validate and transition to BracketInProgress
+                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.BracketInProgress);
+                tournament.Status = TournamentStatus.BracketInProgress;
+                await _tournamentRepository.Update(tournament);
+                await _tournamentRepository.Save();
+
+                _logger.LogInformation($"Tournament {tournamentId} bracket started.");
+
+                return new StartBracketResponseDTO(
+                    Success: true,
+                    Message: "Bracket started successfully!",
+                    TournamentStatus: tournament.Status
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning($"Invalid state transition: {ex.Message}");
+                return new StartBracketResponseDTO(false, ex.Message, tournament.Status);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error starting bracket: {Message}", ex.Message);
+                throw;
+            }
+        }
+
+
 
         public async Task<CreateTournamentResponseDTO> CreateTournamentAsync(CreateTournamentRequestDTO request)
         {

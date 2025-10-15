@@ -1,4 +1,5 @@
-﻿using Domain.AggregateRoots;
+﻿using Application.DTOs.Standing;
+using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
 using System;
@@ -21,6 +22,6 @@ namespace Application.Contracts
         /// Checks if all groups are finished. Returns true if all groups finished.
         /// </summary>
         Task<bool> CheckAndMarkAllGroupsAreFinishedAsync(long tournamentId);
-        Task<List<Application.DTOs.Standing.BracketSeedDTO>> PrepareTeamsForBracket(long tournamentId);
+        Task<List<BracketSeedDTO>> PrepareTeamsForBracket(long tournamentId);
     }
 }

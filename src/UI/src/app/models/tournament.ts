@@ -44,3 +44,9 @@ export interface StartGroupsResponse {
   message: string;
   tournamentStatus: TournamentStatus;
 }
+
+export interface StartBracketResponse {
+  success: boolean;
+  message: string;
+  tournamentStatus: TournamentStatus;
+}
