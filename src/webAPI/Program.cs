@@ -6,6 +6,7 @@ using Application.Services;
 //using Application.Services.EventHandling;
 using Domain.AggregateRoots;
 //using Domain.DomainEvents;
+using Domain.StateMachine;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Infrastructure.Persistence;
@@ -29,7 +30,9 @@ namespace TO2
             // UoW, Repos
             builder.Services.AddScoped<ITO2DbContext, TO2DbContext>();
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            // Services
+            // Domain Services
+            builder.Services.AddScoped<ITournamentStateMachine, TournamentStateMachine>();
+            // Application Services
             builder.Services.AddScoped<ITournamentService, TournamentService>();
             builder.Services.AddScoped<IStandingService, StandingService>();
             builder.Services.AddScoped<ITeamService, TeamService>();

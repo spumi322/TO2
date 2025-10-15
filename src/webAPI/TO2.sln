@@ -20,6 +20,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7A830D06-4
 		..\..\docs\play_tournament_devnote.md = ..\..\docs\play_tournament_devnote.md
 		..\..\docs\todo.md = ..\..\docs\todo.md
 		..\..\docs\todo_flowfix.md = ..\..\docs\todo_flowfix.md
+		..\..\docs\tournament-state-machine-implementation-v3.md = ..\..\docs\tournament-state-machine-implementation-v3.md
 	EndProjectSection
 EndProject
 Global
