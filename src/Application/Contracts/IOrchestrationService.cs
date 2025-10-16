@@ -8,7 +8,7 @@ namespace Application.Contracts
     /// Manages explicit tournament lifecycle state transitions.
     /// Replaces domain events with synchronous, testable state machine pattern.
     /// </summary>
-    public interface ITournamentLifecycleService
+    public interface IOrchestrationService
     {
         /// <summary>
         /// Called when a match is completed. Checks if this triggers any lifecycle transitions
@@ -27,5 +27,7 @@ namespace Application.Contracts
         /// <param name="tournamentId">Tournament ID</param>
         /// <returns>Seeding result</returns>
         Task<BracketSeedResponseDTO> SeedBracketIfReady(long tournamentId);
+
+        Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId);
     }
 }

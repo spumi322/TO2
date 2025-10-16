@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs.Standing
 {
-    public record SeedGroupsResponseDTO (string Response, bool Success, List<long> StandingId);
+    public record SeedGroupsResponseDTO (bool Success, string Response);
 }

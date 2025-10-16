@@ -28,7 +28,7 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
         private readonly ITournamentStateMachine _stateMachine;
-        private readonly ITournamentLifecycleService _lifecycleService;
+        private readonly IOrchestrationService _orchestrationService;
 
         public TournamentService(IGenericRepository<Tournament> tournamentRepository,
                                  ITeamService teamService,
@@ -38,7 +38,7 @@ namespace Application.Services
                                  IMapper mapper,
                                  ILogger<TournamentService> logger,
                                  ITournamentStateMachine stateMachine,
-                                 ITournamentLifecycleService lifecycleService)
+                                 IOrchestrationService orchestrationService)
         {
             _tournamentRepository = tournamentRepository;
             _teamService = teamService;
@@ -48,7 +48,7 @@ namespace Application.Services
             _mapper = mapper;
             _logger = logger;
             _stateMachine = stateMachine;
-            _lifecycleService = lifecycleService;
+            _orchestrationService = orchestrationService;
         }
 
         public async Task<StartGroupsResponseDTO> StartGroups(long tournamentId)
@@ -65,7 +65,7 @@ namespace Application.Services
                 await _tournamentRepository.Save();
 
                 // 2. Seed groups
-                var result = await _matchService.SeedGroups(tournamentId);
+                var result = await _orchestrationService.SeedGroups(tournamentId);
                 if (!result.Success)
                 {
                     throw new Exception(result.Response);
@@ -159,7 +159,7 @@ namespace Application.Services
                 await _tournamentRepository.Save();
 
                 // 2. Seed bracket
-                var seedResult = await _lifecycleService.SeedBracketIfReady(tournamentId);
+                var seedResult = await _orchestrationService.SeedBracketIfReady(tournamentId);
                 if (!seedResult.Success)
                 {
                     return new StartBracketResponseDTO(false, seedResult.Message, tournament.Status);

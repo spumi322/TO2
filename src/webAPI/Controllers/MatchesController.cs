@@ -17,12 +17,12 @@ namespace TO2.Controllers
             _gameService = gameService;
         }
 
-        // GET match by id
-        [HttpGet("match/{id}")]
-        public async Task<IActionResult> GetMatch(long id)
-        {
-            return Ok(await _matchService.GetMatchAsync(id));
-        }
+        //// GET match by id
+        //[HttpGet("match/{id}")]
+        //public async Task<IActionResult> GetMatch(long id)
+        //{
+        //    return Ok(await _matchService.GetMatchAsync(id));
+        //}
 
         // GET matches by standingId
         [HttpGet("all/{standingId}")]
@@ -45,13 +45,13 @@ namespace TO2.Controllers
             return Ok(await _gameService.GetAllGamesByMatch(matchId));
         }
 
-        // PUT game result
-        [HttpPut("{gameId}/result")]
-        public async Task<IActionResult> SetGameResult(long gameId, SetGameResultDTO request)
-        {
-            var response = await _gameService.SetGameResult(gameId, request);
+        //// PUT game result
+        //[HttpPut("{gameId}/result")]
+        //public async Task<IActionResult> SetGameResult(long gameId, SetGameResultDTO request)
+        //{
+        //    var response = await _gameService.SetGameResult(gameId, request);
 
-            return response is not null ? Ok(response) : NoContent();
-        }
+        //    return response is not null ? Ok(response) : NoContent();
+        //}
     }
 }

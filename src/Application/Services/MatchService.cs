@@ -26,6 +26,7 @@ namespace Application.Services
         private readonly ITO2DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<MatchService> _logger;
+        private readonly Func<IGameService> _gameServiceFactory;
 
         public MatchService(IStandingService standingService,
                             IGenericRepository<Match> matchRepository,
@@ -33,7 +34,8 @@ namespace Application.Services
                             IGenericRepository<Bracket> bracketRepository,
                             ITO2DbContext tO2DbContext,
                             IMapper mapper,
-                            ILogger<MatchService> logger)
+                            ILogger<MatchService> logger,
+                            Func<IGameService> gameServiceFactory)
         {
             _standingService = standingService;
             _matchRepository = matchRepository;
@@ -42,11 +44,7 @@ namespace Application.Services
             _dbContext = tO2DbContext;
             _mapper = mapper;
             _logger = logger;
-        }
-
-        public async Task<Match> GetMatchAsync(long id)
-        {
-            return await _matchRepository.Get(id);
+            _gameServiceFactory = gameServiceFactory;
         }
 
         public async Task<List<Match>> GetMatchesAsync(long standingId)
@@ -64,140 +62,138 @@ namespace Application.Services
             }
         }
 
-        public async Task<long> GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId)
+        public async Task<GenerateMatchDTO> GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId)
         {
-            try
-            {
-                var match = new Match(teamA, teamB, BestOf.Bo3);
-                match.Round = round;
-                match.Seed = seed;
-                match.StandingId = standingId;
+            var gameService = _gameServiceFactory();
 
-                await _matchRepository.Add(match);
-                // Changes are tracked by EF Core and will be saved by the caller
+            var match = new Match(teamA, teamB, BestOf.Bo3);
+            match.Round = round;
+            match.Seed = seed;
+            match.StandingId = standingId;
 
-                return match.Id;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error generating match: {Message}", ex.Message);
-                throw;
-            }
+            await _matchRepository.Add(match);
+            await _matchRepository.Save();
+            // Cant find matches until saved?
+            var result = await gameService.GenerateGames(match.Id);
+
+            return result.Success
+                ? new GenerateMatchDTO(true, "Match and games generated successfully")
+                : new GenerateMatchDTO(false, $"Match created but error generating games: {result.Message}");
         }
 
-        public async Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId)
-        {
-            var standings = await _standingService.GetStandingsAsync(tournamentId);
-            List<long> seededStandingIds = new List<long>();
+        //public async Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId)
+        //{
+        //    // Get standings and validate groups haven't been seeded yet
+        //    var standings = await _standingService.GetStandingsAsync(tournamentId);
 
-            if (standings.Any(standing => standing.IsSeeded))
-            {
-                return new SeedGroupsResponseDTO("Groups are already seeded!", false, seededStandingIds);
-            }
+        //    if (standings.Any(standing => standing.IsSeeded))
+        //    {
+        //        return new SeedGroupsResponseDTO(false, "Groups are already seeded!");
+        //    }
 
-            var groupsCount = standings.Count(s => s.StandingType is StandingType.Group);
+        //    // Seeding requirements - at least one group and enough teams
+        //    var groupsCount = standings.Count(s => s.StandingType is StandingType.Group);
+        //    var teams = await _dbContext.TournamentTeams
+        //        .Where(tt => tt.TournamentId == tournamentId)
+        //        .Select(tt => tt.Team)
+        //        .ToListAsync();
 
-            // Query teams directly from DbContext to avoid circular dependency
-            var teams = await _dbContext.TournamentTeams
-                .Where(tt => tt.TournamentId == tournamentId)
-                .Select(tt => tt.Team)
-                .ToListAsync();
+        //    if (teams.Count < groupsCount)
+        //    {
+        //        return new SeedGroupsResponseDTO(false, "There are not enough teams to seed the groups!");
+        //    }
 
-            if (teams.Count < groupsCount)
-            {
-                return new SeedGroupsResponseDTO("There are not enough teams to seed the groups!", false, seededStandingIds);
-            }
+        //    // Shuffle teams and distribute into groups 
+        //    teams = teams.OrderBy(t => Guid.NewGuid()).ToList();
+        //    int teamsPerGroup = teams.Count / groupsCount;
+        //    int remainingTeams = teams.Count % groupsCount;
+        //    int teamIndex = 0;
+        //    List<List<Team>> groups = new List<List<Team>>();
 
-            teams = teams.OrderBy(t => Guid.NewGuid()).ToList();
+        //    for (int i = 0; i < groupsCount; i++)
+        //    {
+        //        int groupSize = teamsPerGroup + (i < remainingTeams ? 1 : 0);
+        //        groups.Add(teams.GetRange(teamIndex, groupSize));
+        //        teamIndex += groupSize;
+        //    }
 
-            int teamsPerGroup = teams.Count / groupsCount;
-            int remainingTeams = teams.Count % groupsCount;
-            List<List<Team>> groups = new List<List<Team>>();
+        //    for (int i = 0; i < groupsCount; i++)
+        //    {
+        //        // 
+        //        var standing = standings.FirstOrDefault(s => s.Name == $"Group {i + 1}");
 
-            int teamIndex = 0;
-            for (int i = 0; i < groupsCount; i++)
-            {
-                int groupSize = teamsPerGroup + (i < remainingTeams ? 1 : 0);
-                groups.Add(teams.GetRange(teamIndex, groupSize));
-                teamIndex += groupSize;
-            }
+        //        if (standing == null)
+        //        {
+        //            _logger.LogError($"Standing 'Group {i + 1}' not found!");
+        //            continue;
+        //        }
 
-            for (int i = 0; i < groupsCount; i++)
-            {
-                var standing = standings.FirstOrDefault(s => s.Name == $"Group {i + 1}");
+        //        bool allMatchesGenerated = true;
 
-                if (standing == null)
-                {
-                    _logger.LogError($"Standing 'Group {i + 1}' not found!");
-                    continue;
-                }
+        //        // GroupEntry creation/updating, consider to move out to separate method
+        //        foreach (var team in groups[i])
+        //        {
+        //            try
+        //            {
+        //                var participant = await _dbContext.GroupEntries
+        //                    .FirstOrDefaultAsync(tp => tp.TeamId == team.Id && tp.TournamentId == tournamentId);
 
-                bool allMatchesGenerated = true;
+        //                if (participant != null)
+        //                {
+        //                    // Update existing entry
+        //                    participant.StandingId = standing.Id;
+        //                    participant.Status = TeamStatus.Competing;
+        //                    _logger.LogInformation($"Updated GroupEntry for team {team.Name} (ID: {team.Id}) in {standing.Name} (ID: {standing.Id})");
+        //                }
+        //                else
+        //                {
+        //                    // Create new GroupEntry for this team (using TeamId/Name to avoid EF tracking conflicts)
+        //                    var groupEntry = new Group(tournamentId, standing.Id, team.Id, team.Name);
+        //                    groupEntry.Status = TeamStatus.Competing;
+        //                    await _dbContext.GroupEntries.AddAsync(groupEntry);
 
-                foreach (var team in groups[i])
-                {
-                    try
-                    {
-                        var participant = await _dbContext.GroupEntries
-                            .FirstOrDefaultAsync(tp => tp.TeamId == team.Id && tp.TournamentId == tournamentId);
+        //                    _logger.LogInformation($"Created GroupEntry for team {team.Name} (ID: {team.Id}) in {standing.Name} (ID: {standing.Id})");
+        //                }
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                _logger.LogError(ex, $"Error creating/updating GroupEntry for team {team.Id} in standing {standing.Id}: {ex.Message}");
+        //                // Continue with match generation even if GroupEntry creation fails
+        //            }
+        //        }
 
-                        if (participant != null)
-                        {
-                            // Update existing entry
-                            participant.StandingId = standing.Id;
-                            participant.Status = TeamStatus.Competing;
-                            _logger.LogInformation($"Updated GroupEntry for team {team.Name} (ID: {team.Id}) in {standing.Name} (ID: {standing.Id})");
-                        }
-                        else
-                        {
-                            // Create new GroupEntry for this team (using TeamId/Name to avoid EF tracking conflicts)
-                            var groupEntry = new Group(tournamentId, standing.Id, team.Id, team.Name);
-                            groupEntry.Status = TeamStatus.Competing;
-                            await _dbContext.GroupEntries.AddAsync(groupEntry);
+        //        _logger.LogInformation($"Generating matches for {standing.Name} with {groups[i].Count} teams");
 
-                            _logger.LogInformation($"Created GroupEntry for team {team.Name} (ID: {team.Id}) in {standing.Name} (ID: {standing.Id})");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"Error creating/updating GroupEntry for team {team.Id} in standing {standing.Id}: {ex.Message}");
-                        // Continue with match generation even if GroupEntry creation fails
-                    }
-                }
+        //        for (int j = 0; j < groups[i].Count; j++)
+        //        {
+        //            for (int k = j + 1; k < groups[i].Count; k++)
+        //            {
+        //                try
+        //                {
+        //                    _logger.LogInformation($"Generating match: {groups[i][j].Name} vs {groups[i][k].Name} (Round {j + 1}, Seed {k})");
+        //                    await GenerateMatch(groups[i][j], groups[i][k], j + 1, k, standing.Id);
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                    _logger.LogError(ex, "Error generating match for teams {0} and {1}: {2}", groups[i][j].Id, groups[i][k].Id, ex.Message);
+        //                    allMatchesGenerated = false;
+        //                }
+        //            }
+        //        }
 
-                _logger.LogInformation($"Generating matches for {standing.Name} with {groups[i].Count} teams");
+        //        if (allMatchesGenerated)
+        //        {
+        //            standing.IsSeeded = true;
+        //            await _standingRepository.Update(standing);
+        //            await _standingRepository.Save(); // Save standing changes to _standingRepository's DbContext
+        //        }
+        //    }
 
-                for (int j = 0; j < groups[i].Count; j++)
-                {
-                    for (int k = j + 1; k < groups[i].Count; k++)
-                    {
-                        try
-                        {
-                            _logger.LogInformation($"Generating match: {groups[i][j].Name} vs {groups[i][k].Name} (Round {j + 1}, Seed {k})");
-                            await GenerateMatch(groups[i][j], groups[i][k], j + 1, k, standing.Id);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error generating match for teams {0} and {1}: {2}", groups[i][j].Id, groups[i][k].Id, ex.Message);
-                            allMatchesGenerated = false;
-                        }
-                    }
-                }
+        //    // Save matches and group entries to _dbContext
+        //    await _dbContext.SaveChangesAsync();
 
-                if (allMatchesGenerated)
-                {
-                    standing.IsSeeded = true;
-                    seededStandingIds.Add(standing.Id);
-                    await _standingRepository.Update(standing);
-                    await _standingRepository.Save(); // Save standing changes to _standingRepository's DbContext
-                }
-            }
-
-            // Save matches and group entries to _dbContext
-            await _dbContext.SaveChangesAsync();
-
-            return new SeedGroupsResponseDTO("Groups seeded successfully!", true, seededStandingIds);
-        }
+        //    return new SeedGroupsResponseDTO(true, "Groups seeded successfully!");
+        //}
 
         public async Task<BracketSeedResponseDTO> SeedBracket(long tournamentId, List<BracketSeedDTO> advancedTeams)
         {

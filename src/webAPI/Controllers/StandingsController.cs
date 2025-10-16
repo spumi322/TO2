@@ -29,13 +29,13 @@ namespace TO2.Controllers
             return Ok(await _standingService.GetStandingsAsync(tournamentId));
         }
 
-        [HttpPost("{tournamentId}/generate-groupmatches")]
-        public async Task<IActionResult> GenerateGroupMatches(long tournamentId)
-        {
-            var result = await _matchService.SeedGroups(tournamentId);
+        //[HttpPost("{tournamentId}/generate-groupmatches")]
+        //public async Task<IActionResult> GenerateGroupMatches(long tournamentId)
+        //{
+        //    var result = await _matchService.SeedGroups(tournamentId);
 
-            return result.Success ? Ok(result.StandingId.ToList()) : BadRequest();
-        }
+        //    return result.Success ? Ok(result) : BadRequest(result.Response);
+        //}
 
         //[HttpPost("{tournamentId}/generate-bracketmatches")]
         //public async Task<IActionResult> GenerateBracketMatches(long tournamentId)
@@ -47,18 +47,18 @@ namespace TO2.Controllers
         //    return Ok();
         //}
 
-        [HttpPost("{standingId}/generate-games")]
-        public async Task<IActionResult> GenerateGames(long standingId)
-        {
-            var matches = await _matchService.GetMatchesAsync(standingId);
+        //[HttpPost("{standingId}/generate-games")]
+        //public async Task<IActionResult> GenerateGames(long standingId)
+        //{
+        //    var matches = await _matchService.GetMatchesAsync(standingId);
 
-            foreach (var match in matches)
-            {
-                await _gameService.GenerateGames(match.Id);
-            }
+        //    foreach (var match in matches)
+        //    {
+        //        await _gameService.GenerateGames(match.Id);
+        //    }
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
         [HttpPost("{tournamentId}/finish-groups")]
         public async Task<IActionResult> FinishGroupsAsync(long tournamentId)

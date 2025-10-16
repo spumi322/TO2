@@ -13,10 +13,10 @@ namespace Application.Contracts
 {
     public interface IGameService
     {
-        Task GenerateGames(long matchId);
+        Task<GenerateGamesDTO> GenerateGames(long matchId);
         Task<Game> GetGameAsync(long gameId);
         Task<List<Game>> GetAllGamesByMatch(long matchId);
-        Task<MatchResultDTO?> SetGameResult(long gameId, SetGameResultDTO request);
-        Task<MatchResult?> DetermineMatchWinner(long matchId);
+        //Task<MatchResultDTO?> SetGameResult(long gameId, SetGameResultDTO request);
+        //Task<MatchResult?> DetermineMatchWinner(long matchId);
     }
 }

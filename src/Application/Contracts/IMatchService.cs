@@ -15,10 +15,9 @@ namespace Application.Contracts
 {
     public interface IMatchService
     {
-        Task<Match?> GetMatchAsync(long id);
         Task<List<Match>> GetMatchesAsync(long standingId);
-        Task<long> GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId);
-        Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId);
+        Task<GenerateMatchDTO> GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId);
+        //Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId);
         Task<BracketSeedResponseDTO> SeedBracket(long tournamentId, List<BracketSeedDTO> advancedTeams);
         Task<CheckRoundResultDTO> CheckAndGenerateNextRound(long tournamentId, long standingId, int currentRound);
     }

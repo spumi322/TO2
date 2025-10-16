@@ -38,8 +38,10 @@ namespace TO2
             builder.Services.AddScoped<ITeamService, TeamService>();
             builder.Services.AddScoped<IMatchService, MatchService>();
             builder.Services.AddScoped<IGameService, GameService>();
+            builder.Services.AddScoped<Func<IGameService>>(sp => () => sp.GetRequiredService<IGameService>());
             // STEP 2: Lifecycle Service - Replaces domain event handlers
-            builder.Services.AddScoped<ITournamentLifecycleService, TournamentLifecycleService>();
+            builder.Services.AddScoped<IOrchestrationService, OrchestrationService>();
+            builder.Services.AddScoped<Func<IOrchestrationService>>(sp => () => sp.GetRequiredService<IOrchestrationService>());
             // STEP 1: Domain Event Handlers Disabled - Replaced by TournamentLifecycleService
             //builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             //builder.Services.AddScoped<IDomainEventHandler<StandingFinishedEvent>, StandingFinishedEventHandler>();

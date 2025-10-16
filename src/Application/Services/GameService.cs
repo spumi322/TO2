@@ -23,37 +23,39 @@ namespace Application.Services
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<Standing> _standingrepository;
         private readonly ITO2DbContext _dbContext;
-        private readonly IStandingService _standingService;
-        private readonly IMatchService _matchService;
         private readonly ITournamentService _tournamentService;
-        private readonly ITournamentLifecycleService _lifecycleService;
         private readonly ILogger<GameService> _logger;
+        private readonly Func<IOrchestrationService> _orchestrationServiceFactory;
 
 
         public GameService(IGenericRepository<Game> gameRepository,
                            IGenericRepository<Match> matchRepository,
                            IGenericRepository<Standing> standingRepository,
                            ITO2DbContext dbContext,
-                           IStandingService standingService,
-                           IMatchService matchService,
                            ITournamentService tournamentService,
-                           ITournamentLifecycleService lifecycleService,
-                           ILogger<GameService> logger)
+                           ILogger<GameService> logger,
+                           Func<IOrchestrationService> orchestrationServiceFactory)
         {
             _gameRepository = gameRepository;
             _matchRepository = matchRepository;
             _standingrepository = standingRepository;
             _dbContext = dbContext;
-            _standingService = standingService;
-            _matchService = matchService;
             _tournamentService = tournamentService;
-            _lifecycleService = lifecycleService;
             _logger = logger;
+            _orchestrationServiceFactory = orchestrationServiceFactory;
         }
 
-        public async Task GenerateGames(long matchId)
+        public async Task<GenerateGamesDTO> GenerateGames(long matchId)
         {
-            var existingMatch = await _matchService.GetMatchAsync(matchId) ?? throw new Exception("Match not found");
+            var existingMatch = await _dbContext.Matches.FindAsync(matchId) ?? throw new Exception("Match not found");
+            var gamesAlreadyGenerated = await _gameRepository.GetAllByFK("MatchId", matchId);
+
+            if(gamesAlreadyGenerated.Count > 0)
+            {
+                _logger.LogWarning("Attempted to generate games for match {MatchId}, but games already exist.", matchId);
+                throw new Exception("Games already generated for this match");
+            }
+
             var games = new List<Game>();
             var matchesToPlay = existingMatch.BestOf switch
             {
@@ -70,7 +72,8 @@ namespace Application.Services
             }
 
             await _gameRepository.AddRange(games);
-            await _gameRepository.Save();
+
+            return new GenerateGamesDTO(true, $"{games} games generated for match {matchId}");
         }
 
         public async Task<Game> GetGameAsync(long gameId)
@@ -87,167 +90,166 @@ namespace Application.Services
             return games.ToList();
         }
 
-        public async Task<MatchResultDTO?> SetGameResult(long gameId, SetGameResultDTO request)
-        {
-            var existingGame = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
-            var match = await _matchService.GetMatchAsync(existingGame.MatchId) ?? throw new Exception("Match not found");
+        //public async Task<MatchResultDTO?> SetGameResult(long gameId, SetGameResultDTO request)
+        //{
+        //    var existingGame = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
+        //    var match = await _dbContext.Matches.FindAsync(existingGame.MatchId) ?? throw new Exception("Match not found");
 
-            if (match.WinnerId.HasValue)
-                throw new Exception("Match already has a winner");
+        //    if (match.WinnerId.HasValue)
+        //        throw new Exception("Match already has a winner");
 
-            var teamAId = existingGame.TeamAId;
-            var teamBId = existingGame.TeamBId;
+        //    var teamAId = existingGame.TeamAId;
+        //    var teamBId = existingGame.TeamBId;
 
-            try
-            {
-                if(request.TeamAScore.HasValue || request.TeamBScore.HasValue)
-                {
-                    existingGame.TeamAScore = request.TeamAScore;
-                    existingGame.TeamBScore = request.TeamBScore;
-                }
+        //    try
+        //    {
+        //        if(request.TeamAScore.HasValue || request.TeamBScore.HasValue)
+        //        {
+        //            existingGame.TeamAScore = request.TeamAScore;
+        //            existingGame.TeamBScore = request.TeamBScore;
+        //        }
 
-                existingGame.WinnerId = request.WinnerId == teamAId ? teamAId 
-                                      : request.WinnerId == teamBId ? teamBId
-                                      : throw new Exception("Invalid winner id");
+        //        existingGame.WinnerId = request.WinnerId == teamAId ? teamAId 
+        //                              : request.WinnerId == teamBId ? teamBId
+        //                              : throw new Exception("Invalid winner id");
 
-                await _gameRepository.Update(existingGame);
-                await _gameRepository.Save();
+        //        await _gameRepository.Update(existingGame);
+        //        await _gameRepository.Save();
 
-                var result = await DetermineMatchWinner(match.Id);
+        //        var result = await DetermineMatchWinner(match.Id);
 
-                if (result is not null)
-                {
-                    var standing = await _standingrepository.Get(match.StandingId);
+        //        if (result is not null)
+        //        {
+        //            var standing = await _standingrepository.Get(match.StandingId);
+        //            var orchestrationService = _orchestrationServiceFactory(); 
 
-                    // STEP 3: Use TournamentLifecycleService instead of direct call
-                    // This returns enhanced DTO with bracket seeding information
-                    return await _lifecycleService.OnMatchCompleted(
-                        match.Id,
-                        result.WinnerId,
-                        result.LoserId,
-                        standing.TournamentId
-                    );
-                }
+        //            return await orchestrationService.OnMatchCompleted(
+        //                match.Id,
+        //                result.WinnerId,
+        //                result.LoserId,
+        //                standing.TournamentId
+        //            );
+        //        }
 
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error setting game result: {Message}", ex.Message);
-                throw;
-            }
-        }
+        //        return null;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error setting game result: {Message}", ex.Message);
+        //        throw;
+        //    }
+        //}
 
-        public async Task<MatchResult?> DetermineMatchWinner(long matchId)
-        {
-            var match = await _matchService.GetMatchAsync(matchId) ?? throw new Exception("Match not found");
+        //public async Task<MatchResult?> DetermineMatchWinner(long matchId)
+        //{
+        //    var match = await _dbContext.Matches.FindAsync(matchId) ?? throw new Exception("Match not found");
 
-            var gamesToWin = match.BestOf switch
-            {
-                BestOf.Bo1 => 1,
-                BestOf.Bo3 => 2,
-                BestOf.Bo5 => 3,
-                _ => 1
-            };
+        //    var gamesToWin = match.BestOf switch
+        //    {
+        //        BestOf.Bo1 => 1,
+        //        BestOf.Bo3 => 2,
+        //        BestOf.Bo5 => 3,
+        //        _ => 1
+        //    };
 
-            try
-            {
-                var games = await _gameRepository.GetAllByFK("MatchId", matchId);
+        //    try
+        //    {
+        //        var games = await _gameRepository.GetAllByFK("MatchId", matchId);
 
-                var winner = games.GroupBy(g => g.WinnerId)
-                                  .Where(g => g.Count() == gamesToWin)
-                                  .Select(g => g.Key)
-                                  .FirstOrDefault();
+        //        var winner = games.GroupBy(g => g.WinnerId)
+        //                          .Where(g => g.Count() == gamesToWin)
+        //                          .Select(g => g.Key)
+        //                          .FirstOrDefault();
 
-                if (winner.HasValue)
-                {
-                    var loser = winner.Value == match.TeamAId ? match.TeamBId : match.TeamAId;
+        //        if (winner.HasValue)
+        //        {
+        //            var loser = winner.Value == match.TeamAId ? match.TeamBId : match.TeamAId;
 
-                    match.WinnerId = winner.Value;
-                    match.LoserId = loser;
+        //            match.WinnerId = winner.Value;
+        //            match.LoserId = loser;
                     
-                    await _matchRepository.Update(match);
-                    await _matchRepository.Save();
+        //            await _matchRepository.Update(match);
+        //            await _matchRepository.Save();
 
-                    await UpdateStandingAfterMatch(match);
+        //            await UpdateStandingAfterMatch(match);
 
-                    return new MatchResult(winner.Value, loser);
-                }
+        //            return new MatchResult(winner.Value, loser);
+        //        }
 
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error determining match winner: {Message}", ex.Message);
-                throw;
-            }
-        }
+        //        return null;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error determining match winner: {Message}", ex.Message);
+        //        throw;
+        //    }
+        //}
 
-        public async Task UpdateStandingAfterMatch(Match match)
-        {
-            var standing = await _standingrepository.Get(match.StandingId)
-                ?? throw new Exception("Standing not found");
+        //public async Task UpdateStandingAfterMatch(Match match)
+        //{
+        //    var standing = await _standingrepository.Get(match.StandingId)
+        //        ?? throw new Exception("Standing not found");
 
-            if (standing.StandingType == StandingType.Group)
-            {
-                // Update Group standings
-                var teamA = await _dbContext.GroupEntries
-                    .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamAId && tp.StandingId == standing.Id);
+        //    if (standing.StandingType == StandingType.Group)
+        //    {
+        //        // Update Group standings
+        //        var teamA = await _dbContext.GroupEntries
+        //            .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamAId && tp.StandingId == standing.Id);
 
-                var teamB = await _dbContext.GroupEntries
-                    .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamBId && tp.StandingId == standing.Id);
+        //        var teamB = await _dbContext.GroupEntries
+        //            .FirstOrDefaultAsync(tp => tp.TeamId == match.TeamBId && tp.StandingId == standing.Id);
 
-                if (teamA == null || teamB == null)
-                    throw new Exception("Teams not found in group standings");
+        //        if (teamA == null || teamB == null)
+        //            throw new Exception("Teams not found in group standings");
 
-                if (match.WinnerId == teamA.TeamId)
-                {
-                    teamA.Wins += 1;
-                    teamA.Points += 3;
-                    teamB.Losses += 1;
-                }
-                else if (match.WinnerId == teamB.TeamId)
-                {
-                    teamB.Wins += 1;
-                    teamB.Points += 3;
-                    teamA.Losses += 1;
-                }
+        //        if (match.WinnerId == teamA.TeamId)
+        //        {
+        //            teamA.Wins += 1;
+        //            teamA.Points += 3;
+        //            teamB.Losses += 1;
+        //        }
+        //        else if (match.WinnerId == teamB.TeamId)
+        //        {
+        //            teamB.Wins += 1;
+        //            teamB.Points += 3;
+        //            teamA.Losses += 1;
+        //        }
 
-                await _dbContext.SaveChangesAsync();
-            }
-            else if (standing.StandingType == StandingType.Bracket)
-            {
-                // Update Bracket standings
-                var winner = await _dbContext.BracketEntries
-                    .FirstOrDefaultAsync(b => b.TeamId == match.WinnerId && b.StandingId == standing.Id);
+        //        await _dbContext.SaveChangesAsync();
+        //    }
+        //    else if (standing.StandingType == StandingType.Bracket)
+        //    {
+        //        // Update Bracket standings
+        //        var winner = await _dbContext.BracketEntries
+        //            .FirstOrDefaultAsync(b => b.TeamId == match.WinnerId && b.StandingId == standing.Id);
 
-                var loser = await _dbContext.BracketEntries
-                    .FirstOrDefaultAsync(b => b.TeamId == match.LoserId && b.StandingId == standing.Id);
+        //        var loser = await _dbContext.BracketEntries
+        //            .FirstOrDefaultAsync(b => b.TeamId == match.LoserId && b.StandingId == standing.Id);
 
-                if (winner != null)
-                {
-                    winner.Status = TeamStatus.Advanced;
-                }
+        //        if (winner != null)
+        //        {
+        //            winner.Status = TeamStatus.Advanced;
+        //        }
 
-                if (loser != null)
-                {
-                    loser.Status = TeamStatus.Eliminated;
-                    loser.Eliminated = true;
-                }
+        //        if (loser != null)
+        //        {
+        //            loser.Status = TeamStatus.Eliminated;
+        //            loser.Eliminated = true;
+        //        }
 
-                await _dbContext.SaveChangesAsync();
+        //        await _dbContext.SaveChangesAsync();
 
-                // Check if we need to generate next round or declare champion
-                var roundResult = await _matchService.CheckAndGenerateNextRound(standing.TournamentId, standing.Id, match.Round ?? 1);
+        //        // Check if we need to generate next round or declare champion
+        //        var roundResult = await _matchService.CheckAndGenerateNextRound(standing.TournamentId, standing.Id, match.Round ?? 1);
 
-                // If tournament is complete, declare the champion
-                if (roundResult.IsTournamentComplete && roundResult.ChampionTeamId.HasValue)
-                {
-                    _logger.LogInformation($"Tournament {standing.TournamentId} is complete. Declaring champion: Team {roundResult.ChampionTeamId}");
-                    await _tournamentService.DeclareChampion(standing.TournamentId, roundResult.ChampionTeamId.Value);
-                }
-            }
-        }
+        //        // If tournament is complete, declare the champion
+        //        if (roundResult.IsTournamentComplete && roundResult.ChampionTeamId.HasValue)
+        //        {
+        //            _logger.LogInformation($"Tournament {standing.TournamentId} is complete. Declaring champion: Team {roundResult.ChampionTeamId}");
+        //            await _tournamentService.DeclareChampion(standing.TournamentId, roundResult.ChampionTeamId.Value);
+        //        }
+        //    }
+        //}
 
     }
 }
