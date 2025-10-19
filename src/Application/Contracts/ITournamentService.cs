@@ -27,6 +27,6 @@ namespace Application.Contracts
         Task<List<FinalStandingDTO>> GetFinalStandings(long tournamentId);
         Task<StartGroupsResponseDTO> StartGroups(long tournamentId);
         Task<TournamentStateDTO> GetTournamentState(long tournamentId);
-        Task<StartBracketResponseDTO> StartBracket(long tournamentId);
+        //Task<StartBracketResponseDTO> StartBracket(long tournamentId);
     }
 }

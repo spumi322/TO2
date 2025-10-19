@@ -17,11 +17,11 @@ namespace Application.Contracts
         /// <summary>
         /// Checks if any standings finished and marks them. Returns true if a standing was just marked finished.
         /// </summary>
-        Task<bool> CheckAndMarkStandingAsFinishedAsync(long tournamentId);
+        Task<bool> CheckAndMarkStandingAsFinished(long tournamentId);
         /// <summary>
         /// Checks if all groups are finished. Returns true if all groups finished.
         /// </summary>
-        Task<bool> CheckAndMarkAllGroupsAreFinishedAsync(long tournamentId);
+        Task<bool> CheckAndMarkAllGroupsAreFinished(long tournamentId);
         Task<List<BracketSeedDTO>> PrepareTeamsForBracket(long tournamentId);
     }
 }

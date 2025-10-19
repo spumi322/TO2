@@ -24,7 +24,6 @@ namespace Application.Services
         private readonly ITeamService _teamService;
         private readonly ITO2DbContext _dbContext;
         private readonly IStandingService _standingService;
-        private readonly IMatchService _matchService;
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
         private readonly ITournamentStateMachine _stateMachine;
@@ -34,7 +33,6 @@ namespace Application.Services
                                  ITeamService teamService,
                                  ITO2DbContext tO2DbContext,
                                  IStandingService standingService,
-                                 IMatchService matchService,
                                  IMapper mapper,
                                  ILogger<TournamentService> logger,
                                  ITournamentStateMachine stateMachine,
@@ -44,7 +42,6 @@ namespace Application.Services
             _teamService = teamService;
             _dbContext = tO2DbContext;
             _standingService = standingService;
-            _matchService = matchService;
             _mapper = mapper;
             _logger = logger;
             _stateMachine = stateMachine;
@@ -135,61 +132,61 @@ namespace Application.Services
             _ => ""
         };
 
-        public async Task<StartBracketResponseDTO> StartBracket(long tournamentId)
-        {
-            var tournament = await _tournamentRepository.Get(tournamentId)
-                ?? throw new Exception("Tournament not found");
+        //public async Task<StartBracketResponseDTO> StartBracket(long tournamentId)
+        //{
+        //    var tournament = await _tournamentRepository.Get(tournamentId)
+        //        ?? throw new Exception("Tournament not found");
 
-            try
-            {
-                // Validate state
-                if (tournament.Status != TournamentStatus.GroupsCompleted)
-                {
-                    return new StartBracketResponseDTO(
-                        Success: false,
-                        Message: $"Cannot start bracket from {tournament.Status}. Groups must be completed first.",
-                        TournamentStatus: tournament.Status
-                    );
-                }
+        //    try
+        //    {
+        //        // Validate state
+        //        if (tournament.Status != TournamentStatus.GroupsCompleted)
+        //        {
+        //            return new StartBracketResponseDTO(
+        //                Success: false,
+        //                Message: $"Cannot start bracket from {tournament.Status}. Groups must be completed first.",
+        //                TournamentStatus: tournament.Status
+        //            );
+        //        }
 
-                // 1. Validate and transition to SeedingBracket
-                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingBracket);
-                tournament.Status = TournamentStatus.SeedingBracket;
-                await _tournamentRepository.Update(tournament);
-                await _tournamentRepository.Save();
+        //        // 1. Validate and transition to SeedingBracket
+        //        _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingBracket);
+        //        tournament.Status = TournamentStatus.SeedingBracket;
+        //        await _tournamentRepository.Update(tournament);
+        //        await _tournamentRepository.Save();
 
-                // 2. Seed bracket
-                var seedResult = await _orchestrationService.SeedBracketIfReady(tournamentId);
-                if (!seedResult.Success)
-                {
-                    return new StartBracketResponseDTO(false, seedResult.Message, tournament.Status);
-                }
+        //        // 2. Seed bracket
+        //        var seedResult = await _orchestrationService.SeedBracketIfReady(tournamentId);
+        //        if (!seedResult.Success)
+        //        {
+        //            return new StartBracketResponseDTO(false, seedResult.Message, tournament.Status);
+        //        }
 
-                // 3. Validate and transition to BracketInProgress
-                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.BracketInProgress);
-                tournament.Status = TournamentStatus.BracketInProgress;
-                await _tournamentRepository.Update(tournament);
-                await _tournamentRepository.Save();
+        //        // 3. Validate and transition to BracketInProgress
+        //        _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.BracketInProgress);
+        //        tournament.Status = TournamentStatus.BracketInProgress;
+        //        await _tournamentRepository.Update(tournament);
+        //        await _tournamentRepository.Save();
 
-                _logger.LogInformation($"Tournament {tournamentId} bracket started.");
+        //        _logger.LogInformation($"Tournament {tournamentId} bracket started.");
 
-                return new StartBracketResponseDTO(
-                    Success: true,
-                    Message: "Bracket started successfully!",
-                    TournamentStatus: tournament.Status
-                );
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning($"Invalid state transition: {ex.Message}");
-                return new StartBracketResponseDTO(false, ex.Message, tournament.Status);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting bracket: {Message}", ex.Message);
-                throw;
-            }
-        }
+        //        return new StartBracketResponseDTO(
+        //            Success: true,
+        //            Message: "Bracket started successfully!",
+        //            TournamentStatus: tournament.Status
+        //        );
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        _logger.LogWarning($"Invalid state transition: {ex.Message}");
+        //        return new StartBracketResponseDTO(false, ex.Message, tournament.Status);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error starting bracket: {Message}", ex.Message);
+        //        throw;
+        //    }
+        //}
 
 
 

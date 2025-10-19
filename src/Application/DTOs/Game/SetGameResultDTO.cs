@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs.Game
 {
-    public record SetGameResultDTO(long WinnerId, int? TeamAScore, int? TeamBScore);
+    public record SetGameResultDTO(long gameId, long WinnerId, int? TeamAScore, int? TeamBScore, long StandingId, long TournamentId);
 }

@@ -69,7 +69,7 @@ namespace Application.Services
             }
         }
 
-        public async Task<bool> CheckAndMarkStandingAsFinishedAsync(long tournamentId)
+        public async Task<bool> CheckAndMarkStandingAsFinished(long tournamentId)
         {
             var standings = (await GetStandingsAsync(tournamentId))
                 .Where(s => s.IsSeeded && !s.IsFinished)  // Only check unfinished standings
@@ -83,7 +83,6 @@ namespace Application.Services
 
                 if (matches.Any() && matches.All(m => m.WinnerId != null && m.LoserId != null))
                 {
-                    // Directly set the flag
                     standing.IsFinished = true;
                     await _standingRepository.Update(standing);
                     anyStandingFinished = true;
@@ -92,21 +91,15 @@ namespace Application.Services
                 }
             }
 
-            if (anyStandingFinished)
-            {
-                await _standingRepository.Save();
-            }
-
             return anyStandingFinished;
         }
 
-        public async Task<bool> CheckAndMarkAllGroupsAreFinishedAsync(long tournamentId)
+        public async Task<bool> CheckAndMarkAllGroupsAreFinished(long tournamentId)
         {
             var allGroups = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
                                 .Where(s => s.StandingType == StandingType.Group)
                                 .ToList();
 
-            // Check if all groups are finished
             bool allGroupsFinished = allGroups.Any() && allGroups.All(ag => ag.IsFinished);
 
             if (allGroupsFinished)

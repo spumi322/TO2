@@ -14,6 +14,7 @@ export class MatchesComponent implements OnInit {
   @Input() matches: Match[] = [];
   @Input() teams: Team[] = [];
   @Input() isGroupFinished: boolean = false;
+  @Input() tournamentId!: number;
   @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
 
   isUpdating: { [key: number]: boolean } = {};
@@ -61,17 +62,33 @@ export class MatchesComponent implements OnInit {
 
     this.isUpdating[matchId] = true;
 
-    const gameResult = { winnerId: gameWinnerId, teamAScore, teamBScore };
-
     this.matchService.getAllGamesByMatch(matchId).subscribe(games => {
       const gameToUpdate = games.find(game => !game.winnerId);
       if (gameToUpdate) {
-        this.matchService.setGameResult(gameToUpdate.id, gameResult).subscribe((result: MatchFinishedIds | null) => {
-          if (result) {
-            match.winnerId = result.winnerId;
-            match.loserId = result.loserId;
-            this.matchFinished.emit(result);
+        const gameResult = {
+          gameId: gameToUpdate.id,
+          winnerId: gameWinnerId,
+          teamAScore,
+          teamBScore,
+          standingId: match.standingId,
+          tournamentId: this.tournamentId
+        };
+        this.matchService.setGameResult(gameResult).subscribe(result => {
+          // Check if match finished and update accordingly
+          if (result.matchFinished && result.matchWinnerId && result.matchLoserId) {
+            match.winnerId = result.matchWinnerId;
+            match.loserId = result.matchLoserId;
+            
+            // Convert to MatchFinishedIds format for parent component
+            const matchFinishedData: MatchFinishedIds = {
+              winnerId: result.matchWinnerId,
+              loserId: result.matchLoserId,
+              allGroupsFinished: result.allGroupsFinished
+            };
+            this.matchFinished.emit(matchFinishedData);
           }
+          
+          // Refresh match scores regardless of match completion
           this.matchService.getAllGamesByMatch(matchId).subscribe(updatedGames => {
             match.result = this.getMatchResults(updatedGames);
             this.isUpdating[matchId] = false;

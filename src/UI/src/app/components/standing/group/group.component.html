@@ -45,6 +45,7 @@
     <app-matches [matches]="group.matches"
                  [teams]="group.teams"
                  [isGroupFinished]="group.isFinished"
+                 [tournamentId]="tournament.id"
                  (matchFinished)="onMatchFinished($event)">
     </app-matches>
   </div>

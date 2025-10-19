@@ -1,5 +1,7 @@
 using Application.Contracts;
+using Application.DTOs.Game;
 using Application.DTOs.Match;
+using Application.DTOs.Orchestration;
 using Application.DTOs.Standing;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -9,7 +11,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Group = Domain.Entities.Group;
 
 namespace Application.Services
 {
@@ -22,6 +27,7 @@ namespace Application.Services
         private readonly ILogger<OrchestrationService> _logger;
         private readonly IStandingService _standingService;
         private readonly IMatchService _matchService;
+        private readonly IGameService _gameService;
         private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
         private readonly ITO2DbContext _dbContext;
@@ -30,6 +36,7 @@ namespace Application.Services
             ILogger<OrchestrationService> logger,
             IStandingService standingService,
             IMatchService matchService,
+            IGameService gameService,
             IGenericRepository<Tournament> tournamentRepository,
             ITournamentStateMachine stateMachine,
             ITO2DbContext dbContext
@@ -38,92 +45,241 @@ namespace Application.Services
             _logger = logger;
             _standingService = standingService;
             _matchService = matchService;
+            _gameService = gameService;
             _tournamentRepository = tournamentRepository;
             _stateMachine = stateMachine;
             _dbContext = dbContext;
         }
 
-        public async Task<MatchResultDTO> OnMatchCompleted(long matchId, long winnerId, long loserId, long tournamentId)
+        public async Task<GameProcessResultDTO> ProcessGameResult(SetGameResultDTO gameResult)
         {
-            var tournament = await _tournamentRepository.Get(tournamentId)
-                ?? throw new Exception("Tournament not found");
-
-            bool standingJustFinished = await _standingService.CheckAndMarkStandingAsFinishedAsync(tournamentId);
-
-            if (standingJustFinished && tournament.Status == TournamentStatus.GroupsInProgress)
-            {
-                bool allGroupsFinished = await _standingService.CheckAndMarkAllGroupsAreFinishedAsync(tournamentId);
-
-                if (allGroupsFinished)
-                {
-                    _logger.LogInformation("✓✓ ALL GROUPS FINISHED! Waiting for admin to start bracket.");
-
-                    // Validate and auto-transition to GroupsCompleted
-                    _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.GroupsCompleted);
-                    tournament.Status = TournamentStatus.GroupsCompleted;
-                    await _tournamentRepository.Update(tournament);
-                    await _tournamentRepository.Save();
-
-                    return new MatchResultDTO(
-                        WinnerId: winnerId,
-                        LoserId: loserId,
-                        AllGroupsFinished: true,
-                        BracketSeeded: false
-                    );
-                }
-            }
-
-            return new MatchResultDTO(winnerId, loserId);
-        }
-
-        public async Task<BracketSeedResponseDTO> SeedBracketIfReady(long tournamentId)
-        {
-            _logger.LogInformation($"=== Tournament Lifecycle: Checking bracket seeding for tournament {tournamentId} ===");
+            _logger.LogInformation("Processing game result for GameId: {GameId}, WinnerId: {WinnerId}",
+                gameResult.gameId, gameResult.WinnerId);
 
             try
             {
-                // 1. Get standings
-                var standings = await _standingService.GetStandingsAsync(tournamentId);
-                var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket);
+                // 1. Set game result (writes score into Game table)
+                var setResultResponse = await _gameService.SetGameResult(
+                    gameResult.gameId,
+                    gameResult.WinnerId,
+                    gameResult.TeamAScore,
+                    gameResult.TeamBScore
+                );
 
-                if (bracket == null)
+                var matchId = setResultResponse; // SetGameResult returns matchId
+
+                _logger.LogInformation("Game result set for GameId: {GameId}, MatchId: {MatchId}",
+                    gameResult.gameId, matchId);
+
+                // 2. Check if match has a winner (counts wins per team)
+                var matchWinner = await _gameService.GetMatchWinner(matchId);
+
+                // If no winner yet, game was scored but match not finished
+                if (matchWinner is null)
                 {
-                    _logger.LogWarning("No bracket standing found!");
-                    return new BracketSeedResponseDTO("Bracket standing not found", false);
+                    _logger.LogInformation("Match {MatchId} still in progress (no winner yet)", matchId);
+                    return new GameProcessResultDTO(
+                        Success: true,
+                        MatchFinished: false,
+                        Message: "Game result recorded. Match still in progress."
+                    );
                 }
 
-                // 2. Check if already seeded (prevent duplicate seeding)
-                if (bracket.IsSeeded)
+                _logger.LogInformation("Match {MatchId} finished. Winner: {WinnerId}, Loser: {LoserId}",
+                    matchId, matchWinner.WinnerId, matchWinner.LoserId);
+
+                // 3. Match finished - update standing entries (Group or Bracket tables)
+                await _gameService.UpdateStandingEntries(
+                    gameResult.StandingId,
+                    matchWinner.WinnerId,
+                    matchWinner.LoserId
+                );
+
+                await _dbContext.SaveChangesAsync();
+
+                // 4. Check if this match finishing caused the standing to finish
+                bool standingJustFinished = await _standingService.CheckAndMarkStandingAsFinished(
+                    gameResult.TournamentId
+                );
+
+                // If standing didn't finish, return match result only
+                if (!standingJustFinished)
                 {
-                    _logger.LogInformation("Bracket already seeded. Skipping.");
-                    return new BracketSeedResponseDTO("Bracket already seeded", true);
+                    return new GameProcessResultDTO(
+                        Success: true,
+                        MatchFinished: true,
+                        MatchWinnerId: matchWinner.WinnerId,
+                        MatchLoserId: matchWinner.LoserId,
+                        Message: "Match completed."
+                    );
                 }
 
-                // 3. Prepare teams from groups
-                _logger.LogInformation("Preparing teams for bracket from group standings...");
-                var advancingTeams = await _standingService.PrepareTeamsForBracket(tournamentId);
+                _logger.LogInformation("Standing finished for TournamentId: {TournamentId}",
+                    gameResult.TournamentId);
 
-                _logger.LogInformation($"Teams advancing to bracket: {advancingTeams.Count}");
-                foreach (var team in advancingTeams)
+                // 5. Standing finished - load tournament to check status
+                var tournament = await _tournamentRepository.Get(gameResult.TournamentId);
+
+                if (tournament == null)
                 {
-                    _logger.LogInformation($"  - Team ID {team.TeamId} from Group {team.GroupId} (Placement: {team.Placement})");
+                    _logger.LogError("Tournament {TournamentId} not found", gameResult.TournamentId);
+                    return new GameProcessResultDTO(
+                        Success: false,
+                        MatchFinished: true,
+                        MatchWinnerId: matchWinner.WinnerId,
+                        MatchLoserId: matchWinner.LoserId,
+                        Message: "Tournament not found"
+                    );
                 }
 
-                // 4. Seed the bracket
-                _logger.LogInformation("Seeding bracket matches...");
-                var result = await _matchService.SeedBracket(tournamentId, advancingTeams);
+                // Only check for "all groups finished" if we're in GroupsInProgress status
+                if (tournament.Status != TournamentStatus.GroupsInProgress)
+                {
+                    return new GameProcessResultDTO(
+                        Success: true,
+                        MatchFinished: true,
+                        MatchWinnerId: matchWinner.WinnerId,
+                        MatchLoserId: matchWinner.LoserId,
+                        StandingFinished: true,
+                        Message: "Match completed and standing finished."
+                    );
+                }
 
-                _logger.LogInformation($"✓ Bracket seeding completed: {result.Message}, Success: {result.Success}");
-                _logger.LogInformation("=== Tournament Lifecycle: Bracket seeding finished ===");
+                // 6. Check if ALL groups are finished (triggers transition to GroupsCompleted)
+                bool allGroupsFinished = await _standingService.CheckAndMarkAllGroupsAreFinished(gameResult.TournamentId);
 
-                return result;
+                if (!allGroupsFinished)
+                {
+                    return new GameProcessResultDTO(
+                        Success: true,
+                        MatchFinished: true,
+                        MatchWinnerId: matchWinner.WinnerId,
+                        MatchLoserId: matchWinner.LoserId,
+                        StandingFinished: true,
+                        Message: "Match completed and standing finished. Other groups still in progress."
+                    );
+                }
+
+                _logger.LogInformation("All groups finished for TournamentId: {TournamentId}. Transitioning to GroupsCompleted.",
+                    gameResult.TournamentId);
+
+                // 7. All groups finished - validate and transition tournament status
+                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.GroupsCompleted);
+                tournament.Status = TournamentStatus.GroupsCompleted;
+
+                await _tournamentRepository.Update(tournament);
+                await _dbContext.SaveChangesAsync();
+
+                _logger.LogInformation("Tournament {TournamentId} transitioned to GroupsCompleted status",
+                    gameResult.TournamentId);
+
+                // 8. Return full result with state transition information
+                return new GameProcessResultDTO(
+                    Success: true,
+                    MatchFinished: true,
+                    MatchWinnerId: matchWinner.WinnerId,
+                    MatchLoserId: matchWinner.LoserId,
+                    StandingFinished: true,
+                    AllGroupsFinished: true,
+                    NewTournamentStatus: TournamentStatus.GroupsCompleted,
+                    Message: "All groups finished! Tournament transitioned to GroupsCompleted status. Admin can now seed bracket."
+                );
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error seeding bracket for tournament {tournamentId}: {ex.Message}");
-                return new BracketSeedResponseDTO($"Bracket seeding failed: {ex.Message}", false);
+                _logger.LogError(ex, "Error processing game result for GameId: {GameId}. Error: {Message}",
+                    gameResult.gameId, ex.Message);
+
+                return new GameProcessResultDTO(
+                    Success: false,
+                    MatchFinished: false,
+                    Message: $"Failed to process game result: {ex.Message}"
+                );
             }
         }
+
+
+        //public async Task<MatchResultDTO> OnMatchCompleted(long matchId, long winnerId, long loserId, long tournamentId)
+        //{
+        //    var tournament = await _tournamentRepository.Get(tournamentId)
+        //        ?? throw new Exception("Tournament not found");
+
+        //    bool standingJustFinished = await _standingService.CheckAndMarkStandingAsFinishedAsync(tournamentId);
+
+        //    if (standingJustFinished && tournament.Status == TournamentStatus.GroupsInProgress)
+        //    {
+        //        bool allGroupsFinished = await _standingService.CheckAndMarkAllGroupsAreFinished(tournamentId);
+
+        //        if (allGroupsFinished)
+        //        {
+        //            _logger.LogInformation("✓✓ ALL GROUPS FINISHED! Waiting for admin to start bracket.");
+
+        //            // Validate and auto-transition to GroupsCompleted
+        //            _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.GroupsCompleted);
+        //            tournament.Status = TournamentStatus.GroupsCompleted;
+        //            await _tournamentRepository.Update(tournament);
+        //            await _tournamentRepository.Save();
+
+        //            return new MatchResultDTO(
+        //                WinnerId: winnerId,
+        //                LoserId: loserId,
+        //                AllGroupsFinished: true,
+        //                BracketSeeded: false
+        //            );
+        //        }
+        //    }
+
+        //    return new MatchResultDTO(winnerId, loserId);
+        //}
+
+        //public async Task<BracketSeedResponseDTO> SeedBracketIfReady(long tournamentId)
+        //{
+        //    _logger.LogInformation($"=== Tournament Lifecycle: Checking bracket seeding for tournament {tournamentId} ===");
+
+        //    try
+        //    {
+        //        // 1. Get standings
+        //        var standings = await _standingService.GetStandingsAsync(tournamentId);
+        //        var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket);
+
+        //        if (bracket == null)
+        //        {
+        //            _logger.LogWarning("No bracket standing found!");
+        //            return new BracketSeedResponseDTO("Bracket standing not found", false);
+        //        }
+
+        //        // 2. Check if already seeded (prevent duplicate seeding)
+        //        if (bracket.IsSeeded)
+        //        {
+        //            _logger.LogInformation("Bracket already seeded. Skipping.");
+        //            return new BracketSeedResponseDTO("Bracket already seeded", true);
+        //        }
+
+        //        // 3. Prepare teams from groups
+        //        _logger.LogInformation("Preparing teams for bracket from group standings...");
+        //        var advancingTeams = await _standingService.PrepareTeamsForBracket(tournamentId);
+
+        //        _logger.LogInformation($"Teams advancing to bracket: {advancingTeams.Count}");
+        //        foreach (var team in advancingTeams)
+        //        {
+        //            _logger.LogInformation($"  - Team ID {team.TeamId} from Group {team.GroupId} (Placement: {team.Placement})");
+        //        }
+
+        //        // 4. Seed the bracket
+        //        _logger.LogInformation("Seeding bracket matches...");
+        //        var result = await _matchService.SeedBracket(tournamentId, advancingTeams);
+
+        //        _logger.LogInformation($"✓ Bracket seeding completed: {result.Message}, Success: {result.Success}");
+        //        _logger.LogInformation("=== Tournament Lifecycle: Bracket seeding finished ===");
+
+        //        return result;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, $"Error seeding bracket for tournament {tournamentId}: {ex.Message}");
+        //        return new BracketSeedResponseDTO($"Bracket seeding failed: {ex.Message}", false);
+        //    }
+        //}
 
         public async Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId)
         {
@@ -186,10 +342,8 @@ namespace Application.Services
                             }
                             else
                             {
-                                var groupEntry = new Group(tournamentId, standing.Id, team.Id, team.Name)
-                                {
-                                    Status = TeamStatus.Competing
-                                };
+                                var groupEntry = new Group(tournamentId, standing.Id, team.Id, team.Name);
+
                                 await _dbContext.GroupEntries.AddAsync(groupEntry);
                                 _logger.LogInformation($"Created GroupEntry for team {team.Name} in {standing.Name}");
                             }

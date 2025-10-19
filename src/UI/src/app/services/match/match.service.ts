@@ -6,7 +6,7 @@ import { Team } from '../../models/team';
 import { Game } from '../../models/game';
 import { Time } from '@angular/common';
 import { MatchFinishedIds, MatchResult } from '../../models/matchresult';
-import { Gameresult } from '../../models/gameresult';
+import { GameResult, GameProcessResult } from '../../models/gameresult';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +27,7 @@ export class MatchService {
     return this.http.get<Game[]>(`${this.apiUrl}/games/${matchId}`);
   }
 
-  setGameResult(gameId: number, request: Gameresult): Observable<MatchFinishedIds | null> {
-    return this.http.put<MatchFinishedIds | null>(`${this.apiUrl}/${gameId}/result`, request);
+  setGameResult(request: GameResult): Observable<GameProcessResult> {
+    return this.http.put<GameProcessResult>(`${this.apiUrl}/${request.gameId}/result`, request);
   }
 }

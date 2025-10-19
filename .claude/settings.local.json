@@ -21,7 +21,8 @@
       "Bash(tasklist)",
       "Bash(tasklist:*)",
       "Bash(dotnet build:*)",
-      "Bash(dotnet run)"
+      "Bash(dotnet run)",
+      "mcp__exa__get_code_context_exa"
     ],
     "deny": [],
     "ask": []
