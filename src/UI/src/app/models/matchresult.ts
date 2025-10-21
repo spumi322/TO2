@@ -13,6 +13,4 @@ export interface MatchFinishedIds {
   winnerId: number;
   loserId: number;
   allGroupsFinished?: boolean;
-  bracketSeeded?: boolean;
-  bracketSeedMessage?: string;
 }

@@ -463,26 +463,21 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   onGroupMatchFinished(result: any): void {
-    console.log('STEP 4: Group match finished with lifecycle info:', result);
+    console.log('Group match finished:', result);
 
     if (!this.tournamentId) return;
 
-    // STEP 4: Use lifecycle information from backend instead of polling
-    // Backend now tells us explicitly when bracket is seeded
-    if (result.allGroupsFinished && result.bracketSeeded) {
-      console.log('✓ All groups finished and bracket seeded! Redirecting immediately...');
-      this.showSuccess(result.bracketSeedMessage || 'Bracket seeded! Redirecting...');
+    // Check if all groups are now finished
+    if (result.allGroupsFinished) {
+      console.log('All groups completed! Tournament status: GroupsCompleted');
+      this.showSuccess('All groups completed! You can now start the bracket.');
 
-      // Immediate redirect - no timeout needed!
-      this.router.navigate(['/tournament', this.tournamentId, 'bracket']);
+      // Reload tournament state to show updated status and Start Bracket button
+      this.loadTournamentState();
+      this.reloadTournamentData();
       return;
     }
 
-    if (result.allGroupsFinished && !result.bracketSeeded) {
-      // Rare case: groups finished but seeding failed
-      console.warn('Groups finished but bracket seeding failed:', result.bracketSeedMessage);
-      this.showError(result.bracketSeedMessage || 'Bracket seeding failed');
-    }
 
     // Normal case: just a regular match completion, reload data
     console.log('Regular match completion, reloading tournament data...');
