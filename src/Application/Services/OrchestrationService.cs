@@ -58,22 +58,19 @@ namespace Application.Services
 
             try
             {
+                var matchId = gameResult.MatchId;
                 // 1. Set game result (writes score into Game table)
-                var setResultResponse = await _gameService.SetGameResult(
+                await _gameService.SetGameResult(
                     gameResult.gameId,
                     gameResult.WinnerId,
                     gameResult.TeamAScore,
                     gameResult.TeamBScore
                 );
 
-                var matchId = setResultResponse; // SetGameResult returns matchId
-
                 _logger.LogInformation("Game result set for GameId: {GameId}, MatchId: {MatchId}",
                     gameResult.gameId, matchId);
-
                 // 2. Check if match has a winner (counts wins per team)
-                var matchWinner = await _gameService.GetMatchWinner(matchId);
-
+                var matchWinner = await _gameService.SetMatchWinner(matchId);
                 // If no winner yet, game was scored but match not finished
                 if (matchWinner is null)
                 {
@@ -89,22 +86,17 @@ namespace Application.Services
                     matchId, matchWinner.WinnerId, matchWinner.LoserId);
 
                 // 3. Match finished - update standing entries (Group or Bracket tables)
-                await _gameService.UpdateStandingEntries(
+                // Note: UpdateStandingEntries now handles its own Save() via repository pattern
+                var standingType = await _gameService.UpdateStandingEntries(
                     gameResult.StandingId,
                     matchWinner.WinnerId,
                     matchWinner.LoserId
                 );
 
-                await _dbContext.SaveChangesAsync();
-
                 // 4. Check if this match finishing caused the standing to finish
-                bool standingJustFinished = await _standingService.CheckAndMarkStandingAsFinished(
-                    gameResult.TournamentId
-                );
+                bool standingJustFinished = await _standingService.CheckAndMarkStandingAsFinished(gameResult.StandingId);
 
-                // If standing didn't finish, return match result only
-                if (!standingJustFinished)
-                {
+                if (!standingJustFinished) 
                     return new GameProcessResultDTO(
                         Success: true,
                         MatchFinished: true,
@@ -112,41 +104,12 @@ namespace Application.Services
                         MatchLoserId: matchWinner.LoserId,
                         Message: "Match completed."
                     );
-                }
 
                 _logger.LogInformation("Standing finished for TournamentId: {TournamentId}",
                     gameResult.TournamentId);
 
-                // 5. Standing finished - load tournament to check status
-                var tournament = await _tournamentRepository.Get(gameResult.TournamentId);
-
-                if (tournament == null)
-                {
-                    _logger.LogError("Tournament {TournamentId} not found", gameResult.TournamentId);
-                    return new GameProcessResultDTO(
-                        Success: false,
-                        MatchFinished: true,
-                        MatchWinnerId: matchWinner.WinnerId,
-                        MatchLoserId: matchWinner.LoserId,
-                        Message: "Tournament not found"
-                    );
-                }
-
-                // Only check for "all groups finished" if we're in GroupsInProgress status
-                if (tournament.Status != TournamentStatus.GroupsInProgress)
-                {
-                    return new GameProcessResultDTO(
-                        Success: true,
-                        MatchFinished: true,
-                        MatchWinnerId: matchWinner.WinnerId,
-                        MatchLoserId: matchWinner.LoserId,
-                        StandingFinished: true,
-                        Message: "Match completed and standing finished."
-                    );
-                }
-
-                // 6. Check if ALL groups are finished (triggers transition to GroupsCompleted)
-                bool allGroupsFinished = await _standingService.CheckAndMarkAllGroupsAreFinished(gameResult.TournamentId);
+                // 5. Check if ALL groups are finished (triggers transition to GroupsCompleted)
+                bool allGroupsFinished = await _standingService.CheckAllGroupsAreFinished(gameResult.TournamentId);
 
                 if (!allGroupsFinished)
                 {
@@ -163,17 +126,20 @@ namespace Application.Services
                 _logger.LogInformation("All groups finished for TournamentId: {TournamentId}. Transitioning to GroupsCompleted.",
                     gameResult.TournamentId);
 
-                // 7. All groups finished - validate and transition tournament status
+                // 6. All groups finished - validate and transition tournament status
+                var tournament = await _tournamentRepository.Get(gameResult.TournamentId)
+                    ?? throw new Exception($"Tournament with id: {gameResult.TournamentId} was not found!");
+
                 _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.GroupsCompleted);
                 tournament.Status = TournamentStatus.GroupsCompleted;
 
                 await _tournamentRepository.Update(tournament);
-                await _dbContext.SaveChangesAsync();
+                await _tournamentRepository.Save();
 
                 _logger.LogInformation("Tournament {TournamentId} transitioned to GroupsCompleted status",
                     gameResult.TournamentId);
 
-                // 8. Return full result with state transition information
+                // 7. Return full result with state transition information
                 return new GameProcessResultDTO(
                     Success: true,
                     MatchFinished: true,

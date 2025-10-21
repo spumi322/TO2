@@ -3,6 +3,7 @@ export interface GameResult {
   winnerId: number;
   teamAScore?: number;
   teamBScore?: number;
+  matchId: number;
   standingId: number;
   tournamentId: number;
 }

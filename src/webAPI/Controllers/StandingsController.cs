@@ -63,7 +63,7 @@ namespace TO2.Controllers
         [HttpPost("{tournamentId}/finish-groups")]
         public async Task<IActionResult> FinishGroupsAsync(long tournamentId)
         {
-            await _standingService.CheckAndMarkAllGroupsAreFinished(tournamentId);
+            await _standingService.CheckAllGroupsAreFinished(tournamentId);
 
             return Ok();
         }

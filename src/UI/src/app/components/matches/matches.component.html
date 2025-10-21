@@ -19,7 +19,7 @@
                 type="button"
                 icon="pi pi-plus"
                 class="p-button-rounded p-button-primary"
-                (click)="updateMatchScore(match.id, match.teamAId, match.result.teamAWins + 1, match.result.teamBWins)"
+                (click)="updateMatchScore(match.id, match.teamAId, match.result.teamAWins, match.result.teamBWins)"
                 [disabled]="match.winnerId || isUpdating[match.id] || isGroupFinished">
         </button>
 
@@ -30,7 +30,7 @@
                 type="button"
                 icon="pi pi-plus"
                 class="p-button-rounded p-button-primary"
-                (click)="updateMatchScore(match.id, match.teamBId, match.result.teamAWins, match.result.teamBWins + 1)"
+                (click)="updateMatchScore(match.id, match.teamBId, match.result.teamAWins, match.result.teamBWins)"
                 [disabled]="match.winnerId || isUpdating[match.id] || isGroupFinished">
         </button>
       </td>

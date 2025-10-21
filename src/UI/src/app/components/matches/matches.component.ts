@@ -70,6 +70,7 @@ export class MatchesComponent implements OnInit {
           winnerId: gameWinnerId,
           teamAScore,
           teamBScore,
+          matchId: matchId,
           standingId: match.standingId,
           tournamentId: this.tournamentId
         };

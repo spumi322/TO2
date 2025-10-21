@@ -16,9 +16,9 @@ namespace Application.Contracts
         Task<GenerateGamesDTO> GenerateGames(long matchId);
         Task<Game> GetGameAsync(long gameId);
         Task<List<Game>> GetAllGamesByMatch(long matchId);
-        Task<long> SetGameResult(long gameId, long winnerId, int? teamAScore, int? teamBScore);
+        Task SetGameResult(long gameId, long winnerId, int? teamAScore, int? teamBScore);
         //Task<MatchResult?> DetermineMatchWinner(long matchId);
-        Task<MatchWinner?> GetMatchWinner(long matchId);
-        Task UpdateStandingEntries(long standingId, long winnerId, long loserId);
+        Task<MatchWinner?> SetMatchWinner(long matchId);
+        Task<StandingType> UpdateStandingEntries(long standingId, long winnerId, long loserId);
     }
 }

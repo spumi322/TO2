@@ -41,7 +41,7 @@ namespace Application.Services.EventHandlers
                 // Removed Save() call - DbContext automatically tracks changes and saves after event handlers complete
 
                 // Check if all groups are now finished
-                await _standingService.CheckAndMarkAllGroupsAreFinished(standing.TournamentId);
+                await _standingService.CheckAllGroupsAreFinished(standing.TournamentId);
             }
         }
     }

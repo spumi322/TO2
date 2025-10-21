@@ -23,6 +23,8 @@ namespace Application.Services
         private readonly IGenericRepository<Game> _gameRepository;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<Standing> _standingrepository;
+        private readonly IGenericRepository<Group> _groupRepository;
+        private readonly IGenericRepository<Bracket> _bracketRepository;
         private readonly ITO2DbContext _dbContext;
         private readonly ILogger<GameService> _logger;
 
@@ -30,12 +32,16 @@ namespace Application.Services
         public GameService(IGenericRepository<Game> gameRepository,
                            IGenericRepository<Match> matchRepository,
                            IGenericRepository<Standing> standingRepository,
+                           IGenericRepository<Group> groupRepository,
+                           IGenericRepository<Bracket> bracketRepository,
                            ITO2DbContext dbContext,
                            ILogger<GameService> logger)
         {
             _gameRepository = gameRepository;
             _matchRepository = matchRepository;
             _standingrepository = standingRepository;
+            _groupRepository = groupRepository;
+            _bracketRepository = bracketRepository;
             _dbContext = dbContext;
             _logger = logger;
         }
@@ -135,7 +141,7 @@ namespace Application.Services
         //    }
         //}
 
-        public async Task<long> SetGameResult(long gameId,long winnerId, int? teamAScore, int? teamBScore)
+        public async Task SetGameResult(long gameId,long winnerId, int? teamAScore, int? teamBScore)
         {
             var existingGame = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
             var match = await _dbContext.Matches.FindAsync(existingGame.MatchId) ?? throw new Exception("Match not found");
@@ -153,13 +159,10 @@ namespace Application.Services
                 existingGame.TeamBScore = teamBScore;
             }
 
-            existingGame.WinnerId = winnerId == teamAId ? teamAId
-                                  : winnerId == teamBId ? teamBId
-                                  : throw new Exception("Invalid winner id");
+            existingGame.WinnerId = winnerId;
 
             await _gameRepository.Update(existingGame);
-
-            return match.Id;
+            await _gameRepository.Save();
         }
 
         //public async Task<MatchResult?> DetermineMatchWinner(long matchId)
@@ -207,9 +210,10 @@ namespace Application.Services
         //    }
         //}
 
-        public async Task<MatchWinner?> GetMatchWinner(long matchId)
+        public async Task<MatchWinner?> SetMatchWinner(long matchId)
         {
-            var match = await _dbContext.Matches.FindAsync(matchId) ?? throw new Exception("Match not found");
+            var match = await _matchRepository.Get(matchId) ?? throw new Exception("Match not found");
+            var games = await _gameRepository.GetAllByFK("MatchId", matchId);
 
             var gamesToWin = match.BestOf switch
             {
@@ -218,8 +222,6 @@ namespace Application.Services
                 BestOf.Bo5 => 3,
                 _ => 1
             };
-
-            var games = await _gameRepository.GetAllByFK("MatchId", matchId);
 
             var winnerId = games
                 .Where(g => g.WinnerId.HasValue)
@@ -237,48 +239,56 @@ namespace Application.Services
             match.LoserId = loserId;
 
             await _matchRepository.Update(match);
+            await _matchRepository.Save();
 
             return new MatchWinner(winnerId.Value, loserId);
         }
 
-        public async Task UpdateStandingEntries(long standingId, long winnerId, long loserId)
+        public async Task<StandingType> UpdateStandingEntries(long standingId, long winnerId, long loserId)
         {
-            var standing = await _standingrepository.Get(standingId)
-                ?? throw new Exception("Standing not found");
+            var standing = await _standingrepository.Get(standingId) ?? throw new Exception("Standing not found");
 
             switch (standing.StandingType)
             {
                 case StandingType.Group:
                     {
-                        var winner = await _dbContext.GroupEntries
-                            .FirstOrDefaultAsync(tp => tp.TeamId == winnerId && tp.StandingId == standing.Id);
-                        var loser = await _dbContext.GroupEntries
-                            .FirstOrDefaultAsync(tp => tp.TeamId == loserId && tp.StandingId == standing.Id);
+                        // Load group entries using repository
+                        var groupEntries = await _groupRepository.GetAllByFK("StandingId", standingId);
+
+                        var winner = groupEntries.FirstOrDefault(tp => tp.TeamId == winnerId);
+                        var loser = groupEntries.FirstOrDefault(tp => tp.TeamId == loserId);
 
                         if (winner == null || loser == null)
                             throw new Exception("Teams not found in group standings");
 
-                            winner.Wins += 1;
-                            winner.Points += 3;
-                            loser.Losses += 1;
+                        winner.Wins += 1;
+                        winner.Points += 3;
+                        loser.Losses += 1;
+
+                        await _groupRepository.Update(winner);
+                        await _groupRepository.Update(loser);
+                        await _groupRepository.Save();
 
                         break;
                     }
 
                 case StandingType.Bracket:
                     {
-                        var winner = await _dbContext.BracketEntries
-                            .FirstOrDefaultAsync(b => b.TeamId == winnerId && b.StandingId == standing.Id);
+                        var bracketEntries = await _bracketRepository.GetAllByFK("StandingId", standingId);
 
-                        var loser = await _dbContext.BracketEntries
-                            .FirstOrDefaultAsync(b => b.TeamId == loserId && b.StandingId == standing.Id);
+                        var winner = bracketEntries.FirstOrDefault(b => b.TeamId == winnerId);
+                        var loser = bracketEntries.FirstOrDefault(b => b.TeamId == loserId);
 
-                        if (winner != null && loser != null)
-                        {
-                            winner.Status = TeamStatus.Advanced;
-                            loser.Status = TeamStatus.Eliminated;
-                            loser.Eliminated = true;
-                        }
+                        if (winner == null || loser == null)
+                            throw new Exception("Teams not found in bracket standings");
+
+                        winner.Status = TeamStatus.Advanced;
+                        loser.Status = TeamStatus.Eliminated;
+                        loser.Eliminated = true;
+
+                        await _bracketRepository.Update(winner);
+                        await _bracketRepository.Update(loser);
+                        await _bracketRepository.Save();
 
                         break;
                     }
@@ -286,6 +296,8 @@ namespace Application.Services
                 default:
                     throw new Exception("Unsupported standing type");
             }
+
+            return standing.StandingType;
         }
 
 

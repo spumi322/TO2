@@ -69,36 +69,30 @@ namespace Application.Services
             }
         }
 
-        public async Task<bool> CheckAndMarkStandingAsFinished(long tournamentId)
+        public async Task<bool> CheckAndMarkStandingAsFinished(long standingId)
         {
-            var standings = (await GetStandingsAsync(tournamentId))
-                .Where(s => s.IsSeeded && !s.IsFinished)  // Only check unfinished standings
-                .ToList();
+            var standing = await _standingRepository.Get(standingId)
+                ?? throw new Exception($"Standing with Id: {standingId} was not found!");
+            var matches = await _matchRepository.GetAllByFK("StandingId", standingId)
+                ?? throw new Exception($"Matches for the standing Id : {standingId} were not found!");
+            bool standingFinished = false;
 
-            bool anyStandingFinished = false;
-
-            foreach (var standing in standings)
+            if (matches.All(m => m.WinnerId is not null && m.LoserId is not null))
             {
-                var matches = await _matchRepository.GetAllByFK("StandingId", standing.Id);
-
-                if (matches.Any() && matches.All(m => m.WinnerId != null && m.LoserId != null))
-                {
-                    standing.IsFinished = true;
-                    await _standingRepository.Update(standing);
-                    anyStandingFinished = true;
-
-                    _logger.LogInformation($"✓ Standing {standing.Id} ({standing.Name}) just finished!");
-                }
+                standingFinished = true;
+                standing.IsFinished = true;
+                await _standingRepository.Update(standing);
+                await _standingRepository.Save();
             }
 
-            return anyStandingFinished;
+            return standingFinished;
         }
 
-        public async Task<bool> CheckAndMarkAllGroupsAreFinished(long tournamentId)
+        public async Task<bool> CheckAllGroupsAreFinished(long tournamentId)
         {
-            var allGroups = (await _standingRepository.GetAllByFK("TournamentId", tournamentId))
-                                .Where(s => s.StandingType == StandingType.Group)
-                                .ToList();
+            var allStandings = await _standingRepository.GetAllByFK("TournamentId", tournamentId)
+                ?? throw new Exception($"Standings with tournamentId: {tournamentId} was not found!");
+            var allGroups = allStandings.Where(s => s.StandingType == StandingType.Group);
 
             bool allGroupsFinished = allGroups.Any() && allGroups.All(ag => ag.IsFinished);
 
