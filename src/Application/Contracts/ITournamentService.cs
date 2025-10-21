@@ -25,7 +25,6 @@ namespace Application.Contracts
         Task DeclareChampion(long tournamentId, long championTeamId);
         Task<GetTeamResponseDTO?> GetChampion(long tournamentId);
         Task<List<FinalStandingDTO>> GetFinalStandings(long tournamentId);
-        Task<StartGroupsResponseDTO> StartGroups(long tournamentId);
         Task<TournamentStateDTO> GetTournamentState(long tournamentId);
         //Task<StartBracketResponseDTO> StartBracket(long tournamentId);
     }

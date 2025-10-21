@@ -48,9 +48,9 @@ namespace Application.Services.EventHandlers
             }
 
             // Seed the bracket with advancing teams
-            var result = await _matchService.SeedBracket(tournamentId, advancingTeams);
+            // Domain events disabled - this should be triggered manually via OrchestrationService.StartBracket()
 
-            _logger.LogInformation($"Bracket seeding result: {result.Message}, Success: {result.Success}");
+            // _logger.LogInformation($"Bracket seeding result: {result.Message}, Success: {result.Success}");
             _logger.LogInformation($"========== AllGroupsFinishedEvent Handler Completed ==========");
         }
     }

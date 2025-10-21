@@ -7,7 +7,7 @@
 
   <!-- Bracket visualization (library injects HTML here) -->
   <!-- Always present so the library can find it -->
-  <div class="brackets-viewer"></div>
+  <div #bracketContainer class="brackets-viewer"></div>
 
   <!-- Empty state -->
   <div class="empty-state" *ngIf="!isLoading && matches.length === 0">

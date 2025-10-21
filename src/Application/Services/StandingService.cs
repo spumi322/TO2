@@ -169,5 +169,7 @@ namespace Application.Services
             // Changes are tracked by EF Core and will be saved by the caller
             return advancingTeams;
         }
+
+
     }
 }

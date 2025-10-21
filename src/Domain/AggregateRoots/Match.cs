@@ -13,7 +13,7 @@ namespace Domain.AggregateRoots
     {
         private readonly List<Game> _games = new();
 
-        private Match() { }
+        public Match() { }  // Public for EF Core and TBD match creation
 
         public Match(Team teamA, Team teamB, BestOf bestOf)
         {

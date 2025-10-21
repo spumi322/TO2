@@ -13,11 +13,13 @@ namespace TO2.Controllers
     {
         private readonly ITournamentService _tournamentService;
         private readonly ITeamService _teamService;
+        private readonly IOrchestrationService _orchestrationService;
 
-        public TournamentsController(ITournamentService tournamentService, ITeamService teamService)
+        public TournamentsController(ITournamentService tournamentService, ITeamService teamService, IOrchestrationService orchestrationService)
         {
             _tournamentService = tournamentService;
             _teamService = teamService;
+            _orchestrationService = orchestrationService;
         }
 
         // GET: api/Tournaments
@@ -120,7 +122,17 @@ namespace TO2.Controllers
         [HttpPost("{id}/start-groups")]
         public async Task<IActionResult> StartGroups(long id)
         {
-            var result = await _tournamentService.StartGroups(id);
+            var result = await _orchestrationService.StartGroups(id);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
+        /// <summary>
+        /// Starts the bracket stage (GroupsCompleted -> BracketInProgress).
+        /// </summary>
+        [HttpPost("{id}/start-bracket")]
+        public async Task<IActionResult> StartBracket(long id)
+        {
+            var result = await _orchestrationService.StartBracket(id);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 

@@ -48,48 +48,6 @@ namespace Application.Services
             _orchestrationService = orchestrationService;
         }
 
-        public async Task<StartGroupsResponseDTO> StartGroups(long tournamentId)
-        {
-            var tournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
-
-            try
-            {
-                // 1. Validate and transition to SeedingGroups
-                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingGroups);
-                tournament.Status = TournamentStatus.SeedingGroups;
-                tournament.IsRegistrationOpen = false; // Close registration when starting groups
-                await _tournamentRepository.Update(tournament);
-                await _tournamentRepository.Save();
-
-                // 2. Seed groups
-                var result = await _orchestrationService.SeedGroups(tournamentId);
-                if (!result.Success)
-                {
-                    throw new Exception(result.Response);
-                }
-
-                // 3. Validate and transition to GroupsInProgress
-                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.GroupsInProgress);
-                tournament.Status = TournamentStatus.GroupsInProgress;
-                await _tournamentRepository.Update(tournament);
-                await _tournamentRepository.Save();
-
-                _logger.LogInformation($"Tournament {tournament.Id} group stage started successfully.");
-
-                return new StartGroupsResponseDTO(true, "Group stage started successfully", tournament.Status);
-            }
-            catch (InvalidOperationException ex)
-            {
-                _logger.LogWarning($"Invalid state transition: {ex.Message}");
-                return new StartGroupsResponseDTO(false, ex.Message, tournament.Status);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error starting groups: {Message}", ex.Message);
-                throw;
-            }
-        }
-
         public async Task<TournamentStateDTO> GetTournamentState(long tournamentId)
         {
             var tournament = await _tournamentRepository.Get(tournamentId)

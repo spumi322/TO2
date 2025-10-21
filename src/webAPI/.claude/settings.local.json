@@ -8,7 +8,10 @@
       "Bash(timeout 10 dotnet run)",
       "Bash(timeout 15 dotnet run)",
       "Bash(timeout 8 dotnet run)",
-      "Bash(cat match.service.ts)"
+      "Bash(cat match.service.ts)",
+      "mcp__exa__web_search_exa",
+      "Bash(npm install:*)",
+      "WebFetch(domain:drarig29.github.io)"
     ],
     "deny": [],
     "ask": []

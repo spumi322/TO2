@@ -195,116 +195,116 @@ namespace Application.Services
         //    return new SeedGroupsResponseDTO(true, "Groups seeded successfully!");
         //}
 
-        public async Task<BracketSeedResponseDTO> SeedBracket(long tournamentId, List<BracketSeedDTO> advancedTeams)
-        {
-            // Get standings and validate bracket hasn't been seeded yet
-            var standings = await _standingService.GetStandingsAsync(tournamentId);
-            var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket);
+        //public async Task<BracketSeedResponseDTO> SeedBracket(long tournamentId, List<BracketSeedDTO> advancedTeams)
+        //{
+        //    // Get standings and validate bracket hasn't been seeded yet
+        //    var standings = await _standingService.GetStandingsAsync(tournamentId);
+        //    var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket);
 
-            if (bracket == null)
-                return new BracketSeedResponseDTO("Bracket standing not found!", false);
+        //    if (bracket == null)
+        //        return new BracketSeedResponseDTO("Bracket standing not found!", false);
 
-            if (bracket.IsSeeded)
-                return new BracketSeedResponseDTO("Bracket is already seeded!", false);
+        //    if (bracket.IsSeeded)
+        //        return new BracketSeedResponseDTO("Bracket is already seeded!", false);
 
-            // Validate we have enough teams
-            if (advancedTeams.Count < 2)
-                return new BracketSeedResponseDTO("Not enough teams to seed the bracket!", false);
+        //    // Validate we have enough teams
+        //    if (advancedTeams.Count < 2)
+        //        return new BracketSeedResponseDTO("Not enough teams to seed the bracket!", false);
 
-            try
-            {
-                var remainingTeams = new List<BracketSeedDTO>(advancedTeams);
-                bool allMatchesGenerated = true;
-                int currentSeed = 1;
+        //    try
+        //    {
+        //        var remainingTeams = new List<BracketSeedDTO>(advancedTeams);
+        //        bool allMatchesGenerated = true;
+        //        int currentSeed = 1;
 
-                while (remainingTeams.Count >= 2)
-                {
-                    // Get highest placed team
-                    var teamADTO = remainingTeams
-                        .OrderBy(t => t.Placement)
-                        .FirstOrDefault();
+        //        while (remainingTeams.Count >= 2)
+        //        {
+        //            // Get highest placed team
+        //            var teamADTO = remainingTeams
+        //                .OrderBy(t => t.Placement)
+        //                .FirstOrDefault();
 
-                    if (teamADTO == null) break;
+        //            if (teamADTO == null) break;
 
-                    // Get lowest placed team from different group
-                    var teamBDTO = remainingTeams
-                        .Where(t => t.GroupId != teamADTO.GroupId)
-                        .OrderByDescending(t => t.Placement)
-                        .FirstOrDefault();
+        //            // Get lowest placed team from different group
+        //            var teamBDTO = remainingTeams
+        //                .Where(t => t.GroupId != teamADTO.GroupId)
+        //                .OrderByDescending(t => t.Placement)
+        //                .FirstOrDefault();
 
-                    if (teamBDTO == null) break;
+        //            if (teamBDTO == null) break;
 
-                    // Remove selected teams from pool
-                    remainingTeams.Remove(teamADTO);
-                    remainingTeams.Remove(teamBDTO);
+        //            // Remove selected teams from pool
+        //            remainingTeams.Remove(teamADTO);
+        //            remainingTeams.Remove(teamBDTO);
 
-                    // Get actual Team entities
-                    var teamA = await _dbContext.Teams.FindAsync(teamADTO.TeamId);
-                    var teamB = await _dbContext.Teams.FindAsync(teamBDTO.TeamId);
+        //            // Get actual Team entities
+        //            var teamA = await _dbContext.Teams.FindAsync(teamADTO.TeamId);
+        //            var teamB = await _dbContext.Teams.FindAsync(teamBDTO.TeamId);
 
-                    if (teamA == null || teamB == null)
-                    {
-                        _logger.LogError("Teams not found: {0}, {1}", teamADTO.TeamId, teamBDTO.TeamId);
-                        allMatchesGenerated = false;
-                        continue;
-                    }
+        //            if (teamA == null || teamB == null)
+        //            {
+        //                _logger.LogError("Teams not found: {0}, {1}", teamADTO.TeamId, teamBDTO.TeamId);
+        //                allMatchesGenerated = false;
+        //                continue;
+        //            }
 
-                    try
-                    {
-                        // Generate match with current seed
-                        await GenerateMatch(
-                            teamA,
-                            teamB,
-                            round: 1,
-                            seed: currentSeed,
-                            standingId: bracket.Id
-                        );
+        //            try
+        //            {
+        //                // Generate match with current seed
+        //                await GenerateMatch(
+        //                    teamA,
+        //                    teamB,
+        //                    round: 1,
+        //                    seed: currentSeed,
+        //                    standingId: bracket.Id
+        //                );
 
-                        currentSeed++;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error generating match for teams {0} and {1}", teamA.Id, teamB.Id);
-                        allMatchesGenerated = false;
-                    }
-                }
+        //                currentSeed++;
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                _logger.LogError(ex, "Error generating match for teams {0} and {1}", teamA.Id, teamB.Id);
+        //                allMatchesGenerated = false;
+        //            }
+        //        }
 
-                // Create BracketEntry records for all advancing teams
-                foreach (var advancedTeam in advancedTeams)
-                {
-                    var team = await _dbContext.Teams.FindAsync(advancedTeam.TeamId);
-                    if (team != null)
-                    {
-                        var bracketEntry = new Bracket(tournamentId, bracket.Id, team);
-                        bracketEntry.Status = TeamStatus.Competing;
-                        bracketEntry.CurrentRound = 1;
+        //        // Create BracketEntry records for all advancing teams
+        //        foreach (var advancedTeam in advancedTeams)
+        //        {
+        //            var team = await _dbContext.Teams.FindAsync(advancedTeam.TeamId);
+        //            if (team != null)
+        //            {
+        //                var bracketEntry = new Bracket(tournamentId, bracket.Id, team);
+        //                bracketEntry.Status = TeamStatus.Competing;
+        //                bracketEntry.CurrentRound = 1;
 
-                        await _bracketRepository.Add(bracketEntry);
-                        _logger.LogInformation($"Created BracketEntry for {team.Name} starting in Round 1");
-                    }
-                }
+        //                await _bracketRepository.Add(bracketEntry);
+        //                _logger.LogInformation($"Created BracketEntry for {team.Name} starting in Round 1");
+        //            }
+        //        }
 
-                if (allMatchesGenerated)
-                {
-                    bracket.IsSeeded = true;
-                    await _standingRepository.Update(bracket);
-                }
+        //        if (allMatchesGenerated)
+        //        {
+        //            bracket.IsSeeded = true;
+        //            await _standingRepository.Update(bracket);
+        //        }
 
-                if (remainingTeams.Any())
-                {
-                    return new BracketSeedResponseDTO(
-                        $"Bracket seeded but {remainingTeams.Count} teams couldn't be paired!",
-                        allMatchesGenerated);
-                }
+        //        if (remainingTeams.Any())
+        //        {
+        //            return new BracketSeedResponseDTO(
+        //                $"Bracket seeded but {remainingTeams.Count} teams couldn't be paired!",
+        //                allMatchesGenerated);
+        //        }
 
-                return new BracketSeedResponseDTO("Bracket seeded successfully!", true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error seeding bracket");
-                return new BracketSeedResponseDTO($"Error seeding bracket: {ex.Message}", false);
-            }
-        }
+        //        return new BracketSeedResponseDTO("Bracket seeded successfully!", true);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error seeding bracket");
+        //        return new BracketSeedResponseDTO($"Error seeding bracket: {ex.Message}", false);
+        //    }
+        //}
 
         public async Task<CheckRoundResultDTO> CheckAndGenerateNextRound(long tournamentId, long standingId, int currentRound)
         {
