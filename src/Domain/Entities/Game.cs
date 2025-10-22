@@ -12,7 +12,7 @@ namespace Domain.Entities
     {
         private Game() { }
 
-        public Game(Match match, long teamAId, long teamBId)
+        public Game(Match match, long? teamAId, long? teamBId)
         {
             MatchId = match.Id;
             TeamAScore = 0;
@@ -25,11 +25,11 @@ namespace Domain.Entities
 
         public long? WinnerId { get; set; }
 
-        public long TeamAId { get; private set; }
+        public long? TeamAId { get; private set; }
 
         public int? TeamAScore { get; set; }
 
-        public long TeamBId { get; private set; }
+        public long? TeamBId { get; private set; }
 
         public int? TeamBScore { get; set; }
 

@@ -17,6 +17,5 @@ namespace Application.Contracts
     {
         Task<List<Match>> GetMatchesAsync(long standingId);
         Task<GenerateMatchDTO> GenerateMatch(Team teamA, Team teamB, int round, int seed, long standingId);
-        Task<CheckRoundResultDTO> CheckAndGenerateNextRound(long tournamentId, long standingId, int currentRound);
     }
 }

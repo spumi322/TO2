@@ -30,8 +30,11 @@ namespace Application.Services
         private readonly IGameService _gameService;
         private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly IGenericRepository<Standing> _standingRepository;
+        private readonly IGenericRepository<Bracket> _bracketRepository;
+        private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
+        private readonly IGenericRepository<Group> _groupRepository;
+        private readonly IGenericRepository<Team> _teamRepository;
         private readonly ITournamentStateMachine _stateMachine;
-        private readonly ITO2DbContext _dbContext;
 
         public OrchestrationService(
             ILogger<OrchestrationService> logger,
@@ -40,8 +43,11 @@ namespace Application.Services
             IGameService gameService,
             IGenericRepository<Tournament> tournamentRepository,
             IGenericRepository<Standing> standingRepository,
-            ITournamentStateMachine stateMachine,
-            ITO2DbContext dbContext
+            IGenericRepository<Bracket> bracketRepository,
+            IGenericRepository<TournamentTeam> tournamentTeamRepository,
+            IGenericRepository<Group> groupRepository,
+            IGenericRepository<Team> teamRepository,
+            ITournamentStateMachine stateMachine
             )
         {
             _logger = logger;
@@ -50,8 +56,11 @@ namespace Application.Services
             _gameService = gameService;
             _tournamentRepository = tournamentRepository;
             _standingRepository = standingRepository;
+            _bracketRepository = bracketRepository;
+            _tournamentTeamRepository = tournamentTeamRepository;
+            _groupRepository = groupRepository;
+            _teamRepository = teamRepository;
             _stateMachine = stateMachine;
-            _dbContext = dbContext;
         }
 
         public async Task<GameProcessResultDTO> ProcessGameResult(SetGameResultDTO gameResult)
@@ -238,10 +247,19 @@ namespace Application.Services
                     return new SeedGroupsResponseDTO(false, "No group standings found for this tournament");
                 }
 
-                var teams = await _dbContext.TournamentTeams
-                    .Where(tt => tt.TournamentId == tournamentId)
-                    .Select(tt => tt.Team)
-                    .ToListAsync();
+                // Get all TournamentTeam records using repository
+                var tournamentTeams = await _tournamentTeamRepository.GetAllByFK("TournamentId", tournamentId);
+
+                // Get Team entities for each TournamentTeam
+                var teams = new List<Team>();
+                foreach (var tt in tournamentTeams)
+                {
+                    var team = await _teamRepository.Get(tt.TeamId);
+                    if (team != null)
+                    {
+                        teams.Add(team);
+                    }
+                }
 
                 if (teams.Count < groupStandings.Count)
                 {
@@ -259,20 +277,22 @@ namespace Application.Services
                     {
                         try
                         {
-                            var existingEntry = await _dbContext.GroupEntries
-                                .FirstOrDefaultAsync(ge => ge.TeamId == team.Id && ge.TournamentId == tournamentId);
+                            // Get all group entries for this tournament and filter in memory
+                            var allGroupEntries = await _groupRepository.GetAllByFK("TournamentId", tournamentId);
+                            var existingEntry = allGroupEntries.FirstOrDefault(ge => ge.TeamId == team.Id);
 
                             if (existingEntry != null)
                             {
                                 existingEntry.StandingId = standing.Id;
                                 existingEntry.Status = TeamStatus.Competing;
+                                await _groupRepository.Update(existingEntry);
                                 _logger.LogInformation($"Updated GroupEntry for team {team.Name} in {standing.Name}");
                             }
                             else
                             {
                                 var groupEntry = new Group(tournamentId, standing.Id, team.Id, team.Name);
 
-                                await _dbContext.GroupEntries.AddAsync(groupEntry);
+                                await _groupRepository.Add(groupEntry);
                                 _logger.LogInformation($"Created GroupEntry for team {team.Name} in {standing.Name}");
                             }
                         }
@@ -326,6 +346,7 @@ namespace Application.Services
                     if (allMatchesGenerated)
                     {
                         standing.IsSeeded = true;
+                        await _standingRepository.Update(standing);
                         _logger.LogInformation($"Marked {standing.Name} as seeded");
                     }
                 }
@@ -336,8 +357,9 @@ namespace Application.Services
                     return new SeedGroupsResponseDTO(false, "Some matches failed to generate");
                 }
 
-                // 6. Save all changes
-                await _dbContext.SaveChangesAsync();
+                // 6. Save all changes using repositories
+                await _groupRepository.Save();
+                await _standingRepository.Save();
                 _logger.LogInformation("✓ Group seeding completed successfully");
 
                 return new SeedGroupsResponseDTO(true, "Groups seeded successfully!");
@@ -397,7 +419,7 @@ namespace Application.Services
 
                 _logger.LogInformation("The tournament is ready to seed the bracket!");
                 //2. Seed Bracket
-                var teams = await _standingService.PrepareTeamsForBracket(tournamentId);
+                var teams = await _standingService.GetTeamsForBracket(tournamentId);
 
                 var result = await SeedBracket(tournamentId, teams);
                 if (!result.Success)
@@ -428,7 +450,7 @@ namespace Application.Services
             }
         }
 
-        public async Task<SeedBracketResponseDTO> SeedBracket(long tournamentId, List<BracketSeedDTO> teams)
+        public async Task<SeedBracketResponseDTO> SeedBracket(long tournamentId, List<Team> teams)
         {
             _logger.LogInformation($"=== Starting bracket seeding for tournament {tournamentId} with {teams?.Count ?? 0} teams ===");
 
@@ -469,8 +491,8 @@ namespace Application.Services
                 int totalRounds = (int)Math.Log2(teamCount);
                 _logger.LogInformation($"Creating bracket with {totalRounds} rounds for {teamCount} teams");
 
-                // 5. Create ALL matches (Round 1 with teams, Round 2+ with TBD)
-                var allMatches = new List<Match>();
+                // 5. Create ALL matches (Round 1 with teams, Round 2+ with TBD) using MatchService
+                _logger.LogInformation($"Generating matches across {totalRounds} rounds");
 
                 for (int round = 1; round <= totalRounds; round++)
                 {
@@ -478,100 +500,58 @@ namespace Application.Services
 
                     for (int seed = 1; seed <= matchesInRound; seed++)
                     {
-                        Match match;
-
                         if (round == 1)
                         {
-                            // Round 1: Use actual teams from seeding
+                            // Round 1: Use actual teams from seeding (already fetched)
                             var pairIndex = seed - 1;
                             var (teamA, teamB) = seededPairs[pairIndex];
 
-                            var teamAEntity = await _dbContext.Teams.FindAsync(teamA.TeamId);
-                            var teamBEntity = await _dbContext.Teams.FindAsync(teamB.TeamId);
-
-                            if (teamAEntity == null || teamBEntity == null)
+                            var result = await _matchService.GenerateMatch(teamA, teamB, round, seed, bracket.Id);
+                            if (!result.Success)
                             {
-                                throw new Exception($"Team not found: {teamA.TeamId} or {teamB.TeamId}");
+                                throw new Exception($"Failed to generate match: {result.Message}");
                             }
 
-                            match = new Match(teamAEntity, teamBEntity, BestOf.Bo3);
-                            match.StandingId = bracket.Id;
-                            match.Round = round;
-                            match.Seed = seed;
-
-                            _logger.LogInformation($"R{round} Match {seed}: {teamA.TeamName} vs {teamB.TeamName}");
+                            _logger.LogInformation($"R{round} Match {seed}: {teamA.Name} vs {teamB.Name}");
                         }
                         else
                         {
-                            // Round 2+: TBD teams (will be filled by match progression)
-                            match = new Match
+                            // Round 2+: TBD teams (null teams)
+                            var result = await _matchService.GenerateMatch(null, null, round, seed, bracket.Id);
+                            if (!result.Success)
                             {
-                                StandingId = bracket.Id,
-                                Round = round,
-                                Seed = seed,
-                                TeamAId = 0, // 0 represents TBD
-                                TeamBId = 0,
-                                BestOf = BestOf.Bo3
-                            };
+                                throw new Exception($"Failed to generate TBD match: {result.Message}");
+                            }
 
                             _logger.LogInformation($"R{round} Match {seed}: TBD vs TBD");
                         }
-
-                        allMatches.Add(match);
                     }
                 }
 
-                await _dbContext.Matches.AddRangeAsync(allMatches);
-                await _dbContext.SaveChangesAsync();
-
-                _logger.LogInformation($"Created {allMatches.Count} matches across {totalRounds} rounds");
+                _logger.LogInformation($"Generated all matches with games across {totalRounds} rounds");
 
                 // 6. Create BracketEntry records for participation tracking
                 var bracketEntries = new List<Bracket>();
 
                 foreach (var team in teams)
                 {
-                    var teamEntity = await _dbContext.Teams.FindAsync(team.TeamId);
-                    if (teamEntity == null)
-                    {
-                        throw new Exception($"Team not found: {team.TeamId}");
-                    }
-
-                    var bracketEntry = new Bracket(tournamentId, bracket.Id, teamEntity);
+                    var bracketEntry = new Bracket(tournamentId, bracket.Id, team);
                     bracketEntry.CurrentRound = 1;
                     bracketEntry.Status = TeamStatus.Competing;
 
                     bracketEntries.Add(bracketEntry);
                 }
 
-                await _dbContext.BracketEntries.AddRangeAsync(bracketEntries);
+                await _bracketRepository.AddRange(bracketEntries);
                 _logger.LogInformation($"Created {bracketEntries.Count} bracket entries");
 
-                // 7. Create Games for Round 1 matches only
-                var round1Matches = allMatches.Where(m => m.Round == 1).ToList();
-
-                foreach (var match in round1Matches)
-                {
-                    var games = new List<Game>();
-                    int gamesNeeded = (int)match.BestOf;
-
-                    for (int i = 0; i < gamesNeeded; i++)
-                    {
-                        var game = new Game(match, match.TeamAId, match.TeamBId);
-                        games.Add(game);
-                    }
-
-                    await _dbContext.Games.AddRangeAsync(games);
-                }
-
-                _logger.LogInformation($"Created games for {round1Matches.Count} Round 1 matches");
-
-                // 8. Mark bracket as seeded
+                // 7. Mark bracket as seeded
                 bracket.IsSeeded = true;
-                _dbContext.Standings.Update(bracket);
+                await _standingRepository.Update(bracket);
 
-                // 9. Save all changes
-                await _dbContext.SaveChangesAsync();
+                // 8. Save all changes
+                await _bracketRepository.Save();
+                await _standingRepository.Save();
 
                 _logger.LogInformation($"✓ Bracket seeded successfully with {teams.Count} teams across {totalRounds} rounds");
                 return new SeedBracketResponseDTO(true,
@@ -617,10 +597,10 @@ namespace Application.Services
         }
 
         // Helper method: Create single elimination pairs
-        private List<(BracketSeedDTO teamA, BracketSeedDTO teamB)> CreateSingleEliminationPairs(
-            List<BracketSeedDTO> teams)
+        private List<(Team teamA, Team teamB)> CreateSingleEliminationPairs(
+            List<Team> teams)
         {
-            var pairs = new List<(BracketSeedDTO, BracketSeedDTO)>();
+            var pairs = new List<(Team, Team)>();
             int teamCount = teams.Count;
 
             // Get seeding order (ensures #1 vs #8, #4 vs #5, etc.)
@@ -632,7 +612,7 @@ namespace Application.Services
                 var teamB = teams[seedingOrder[i + 1]];
                 pairs.Add((teamA, teamB));
 
-                _logger.LogInformation($"Pair created: {teamA.TeamName} (rank {seedingOrder[i] + 1}) vs {teamB.TeamName} (rank {seedingOrder[i + 1] + 1})");
+                _logger.LogInformation($"Pair created: {teamA.Name} (rank {seedingOrder[i] + 1}) vs {teamB.Name} (rank {seedingOrder[i + 1] + 1})");
             }
 
             return pairs;

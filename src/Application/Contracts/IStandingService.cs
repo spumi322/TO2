@@ -22,6 +22,6 @@ namespace Application.Contracts
         /// Checks if all groups are finished. Returns true if all groups finished.
         /// </summary>
         Task<bool> CheckAllGroupsAreFinished(long tournamentId);
-        Task<List<BracketSeedDTO>> PrepareTeamsForBracket(long tournamentId);
+        Task<List<Team>> GetTeamsForBracket(long tournamentId);
     }
 }

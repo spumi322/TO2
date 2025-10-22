@@ -20,19 +20,22 @@ namespace Application.Services
         private readonly IGenericRepository<Standing> _standingRepository;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<Tournament> _tournamentRepository;
-        private readonly ITO2DbContext _dbContext;
+        private readonly IGenericRepository<Group> _groupRepository;
+        private readonly IGenericRepository<Team> _teamRepository;
         private readonly ILogger<StandingService> _logger;
 
         public StandingService(IGenericRepository<Standing> standingRepository,
                                IGenericRepository<Match> matchRepository,
                                IGenericRepository<Tournament> tournamentRepository,
-                               ITO2DbContext tO2DbContext,
+                               IGenericRepository<Group> groupRepository,
+                               IGenericRepository<Team> teamRepository,
                                ILogger<StandingService> logger)
         {
             _standingRepository = standingRepository;
             _matchRepository = matchRepository;
             _tournamentRepository = tournamentRepository;
-            _dbContext = tO2DbContext;
+            _groupRepository = groupRepository;
+            _teamRepository = teamRepository;
             _logger = logger;
         }
 
@@ -108,9 +111,9 @@ namespace Application.Services
             return allGroupsFinished;
         }
 
-        public async Task<List<BracketSeedDTO>> PrepareTeamsForBracket(long tournamentId)
+        public async Task<List<Team>> GetTeamsForBracket(long tournamentId)
         {
-            var tournament = await _tournamentRepository.Get(tournamentId);
+            var advancingTeams = new List<Team>();
             var standings = await GetStandingsAsync(tournamentId);
             var groups = standings.Where(s => s.StandingType == StandingType.Group).ToList();
             var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket);
@@ -126,50 +129,48 @@ namespace Application.Services
 
             _logger.LogInformation($"Teams advancing per group: {teamsAdvancingPerGroup} (Bracket: {bracket.MaxTeams}, Groups: {groups.Count})");
 
-            var advancingTeams = new List<BracketSeedDTO>();
-
             foreach (var group in groups)
             {
-                // Get group entries sorted by Points DESC, then Wins DESC
-                var groupEntries = await _dbContext.GroupEntries
-                    .Where(g => g.StandingId == group.Id)
+                // Get group entries using repository and sort in memory
+                var allGroupEntries = await _groupRepository.GetAllByFK("StandingId", group.Id);
+                var groupEntries = allGroupEntries
                     .OrderByDescending(g => g.Points)
                     .ThenByDescending(g => g.Wins)
                     .ThenBy(g => g.Losses)
-                    .ToListAsync();
+                    .ToList();
 
                 // Top X teams advance
                 var advancing = groupEntries.Take(teamsAdvancingPerGroup).ToList();
                 var eliminated = groupEntries.Skip(teamsAdvancingPerGroup).ToList();
 
-                int placement = 1;
-                foreach (var team in advancing)
+                foreach (var groupEntry in advancing)
                 {
-                    team.Status = TeamStatus.Advanced;
-                    advancingTeams.Add(new BracketSeedDTO
-                    {
-                        TeamId = team.TeamId,
-                        GroupId = group.Id,
-                        Placement = placement++,
-                        TeamName = team.TeamName
-                    });
+                    groupEntry.Status = TeamStatus.Advanced;
+                    await _groupRepository.Update(groupEntry);
 
-                    _logger.LogInformation($"Team {team.TeamName} advanced from {group.Name} (Placement: {placement - 1})");
+                    // Fetch Team entity using repository
+                    var team = await _teamRepository.Get(groupEntry.TeamId);
+
+                    if (team != null)
+                    {
+                        advancingTeams.Add(team);
+                        _logger.LogInformation($"Team {team.Name} advanced from {group.Name}");
+                    }
                 }
 
-                foreach (var team in eliminated)
+                foreach (var groupEntry in eliminated)
                 {
-                    team.Status = TeamStatus.Eliminated;
-                    team.Eliminated = true;
-
-                    _logger.LogInformation($"Team {team.TeamName} eliminated from {group.Name}");
+                    groupEntry.Status = TeamStatus.Eliminated;
+                    groupEntry.Eliminated = true;
+                    await _groupRepository.Update(groupEntry);
+                    _logger.LogInformation($"Team {groupEntry.TeamName} eliminated from {group.Name}");
                 }
             }
 
-            // Changes are tracked by EF Core and will be saved by the caller
+            // Save GroupEntry status changes using repository
+            await _groupRepository.Save();
+
             return advancingTeams;
         }
-
-
     }
 }

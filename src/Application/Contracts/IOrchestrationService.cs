@@ -3,6 +3,7 @@ using Application.DTOs.Match;
 using Application.DTOs.Orchestration;
 using Application.DTOs.Standing;
 using Application.DTOs.Tournament;
+using Domain.AggregateRoots;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 
@@ -18,6 +19,6 @@ namespace Application.Contracts
         Task<StartGroupsResponseDTO> StartGroups(long tournamentId);
         Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId);
         Task<StartBracketResponseDTO> StartBracket(long tournamentId);
-        Task<SeedBracketResponseDTO> SeedBracket(long tournamentId, List<BracketSeedDTO> teams);
+        Task<SeedBracketResponseDTO> SeedBracket(long tournamentId, List<Team> teams);
     }
 }

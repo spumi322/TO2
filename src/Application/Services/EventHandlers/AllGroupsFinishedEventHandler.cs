@@ -39,12 +39,12 @@ namespace Application.Services.EventHandlers
             _logger.LogInformation($"Groups completed: {domainEvent.Groups.Count}");
 
             // Determine which teams advance and which are eliminated
-            var advancingTeams = await _standingService.PrepareTeamsForBracket(tournamentId);
+            var advancingTeams = await _standingService.GetTeamsForBracket(tournamentId);
 
             _logger.LogInformation($"Teams advancing to bracket: {advancingTeams.Count}");
             foreach (var team in advancingTeams)
             {
-                _logger.LogInformation($"  - Team ID {team.TeamId} from Group {team.GroupId} (Placement: {team.Placement})");
+                _logger.LogInformation($"  - {team.Name} (ID: {team.Id})");
             }
 
             // Seed the bracket with advancing teams

@@ -28,9 +28,9 @@ namespace Domain.AggregateRoots
 
         public int? Seed { get; set; }
 
-        public long TeamAId { get; set; }
+        public long? TeamAId { get; set; }
 
-        public long TeamBId { get; set; }
+        public long? TeamBId { get; set; }
 
         public long? WinnerId { get; set; }
 

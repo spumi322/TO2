@@ -46,19 +46,21 @@ namespace Application.Services
             _logger = logger;
         }
 
-        public async Task<GenerateGamesDTO> GenerateGames(long matchId)
+        public async Task<GenerateGamesDTO> GenerateGames(Match match)
         {
-            var existingMatch = await _dbContext.Matches.FindAsync(matchId) ?? throw new Exception("Match not found");
-            var gamesAlreadyGenerated = await _gameRepository.GetAllByFK("MatchId", matchId);
+            if (match == null)
+                throw new ArgumentNullException(nameof(match));
+
+            var gamesAlreadyGenerated = await _gameRepository.GetAllByFK("MatchId", match.Id);
 
             if(gamesAlreadyGenerated.Count > 0)
             {
-                _logger.LogWarning("Attempted to generate games for match {MatchId}, but games already exist.", matchId);
+                _logger.LogWarning("Attempted to generate games for match {MatchId}, but games already exist.", match.Id);
                 throw new Exception("Games already generated for this match");
             }
 
             var games = new List<Game>();
-            var matchesToPlay = existingMatch.BestOf switch
+            var matchesToPlay = match.BestOf switch
             {
                 BestOf.Bo1 => 1,
                 BestOf.Bo3 => 3,
@@ -68,13 +70,13 @@ namespace Application.Services
 
             for (int i = 0; i < matchesToPlay; i++)
             {
-                var game = new Game(existingMatch, existingMatch.TeamAId, existingMatch.TeamBId);
+                var game = new Game(match, match.TeamAId, match.TeamBId);
                 games.Add(game);
             }
 
             await _gameRepository.AddRange(games);
 
-            return new GenerateGamesDTO(true, $"{games} games generated for match {matchId}");
+            return new GenerateGamesDTO(true, $"{games.Count} games generated for match {match.Id}");
         }
 
         public async Task<Game> GetGameAsync(long gameId)
@@ -144,7 +146,7 @@ namespace Application.Services
         public async Task SetGameResult(long gameId,long winnerId, int? teamAScore, int? teamBScore)
         {
             var existingGame = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
-            var match = await _dbContext.Matches.FindAsync(existingGame.MatchId) ?? throw new Exception("Match not found");
+            var match = await _matchRepository.Get(existingGame.MatchId) ?? throw new Exception("Match not found");
 
             if (match.WinnerId.HasValue)
                 throw new Exception("Match already has a winner");
@@ -234,6 +236,7 @@ namespace Application.Services
                 return null;
 
             var loserId = winnerId == match.TeamAId ? match.TeamBId : match.TeamAId;
+            if (loserId is null) throw new Exception("Missing team Id!");
 
             match.WinnerId = winnerId;
             match.LoserId = loserId;
@@ -241,7 +244,7 @@ namespace Application.Services
             await _matchRepository.Update(match);
             await _matchRepository.Save();
 
-            return new MatchWinner(winnerId.Value, loserId);
+            return new MatchWinner(winnerId.Value, loserId.Value);
         }
 
         public async Task<StandingType> UpdateStandingEntries(long standingId, long winnerId, long loserId)

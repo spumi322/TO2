@@ -15,7 +15,8 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:github.com)",
       "Bash(npm start)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(dotnet build:*)"
     ],
     "deny": [],
     "ask": []
