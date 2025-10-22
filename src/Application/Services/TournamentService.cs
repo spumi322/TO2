@@ -21,6 +21,8 @@ namespace Application.Services
     public class TournamentService : ITournamentService
     {
         private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly IGenericRepository<Match> _matchRepository;
+        private readonly IGenericRepository<Bracket> _bracketRepository;
         private readonly ITeamService _teamService;
         private readonly ITO2DbContext _dbContext;
         private readonly IStandingService _standingService;
@@ -30,6 +32,8 @@ namespace Application.Services
         private readonly IOrchestrationService _orchestrationService;
 
         public TournamentService(IGenericRepository<Tournament> tournamentRepository,
+                                 IGenericRepository<Match> matchRepository,
+                                 IGenericRepository<Bracket> bracketRepository,
                                  ITeamService teamService,
                                  ITO2DbContext tO2DbContext,
                                  IStandingService standingService,
@@ -39,6 +43,8 @@ namespace Application.Services
                                  IOrchestrationService orchestrationService)
         {
             _tournamentRepository = tournamentRepository;
+            _matchRepository = matchRepository;
+            _bracketRepository = bracketRepository;
             _teamService = teamService;
             _dbContext = tO2DbContext;
             _standingService = standingService;
@@ -324,6 +330,11 @@ namespace Application.Services
             return new IsNameUniqueResponseDTO(!isUnique);
         }
 
+        /// <summary>
+        /// Manual method to declare champion and finish tournament.
+        /// Kept as override option for edge cases (cancelled mid-bracket, manual corrections).
+        /// Note: Champion is normally declared automatically when final match finishes.
+        /// </summary>
         public async Task DeclareChampion(long tournamentId, long championTeamId)
         {
             var tournament = await _tournamentRepository.Get(tournamentId)
@@ -335,27 +346,10 @@ namespace Application.Services
                 _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.Finished);
                 tournament.Status = TournamentStatus.Finished;
 
-                // Find the bracket standing
-                var bracketStanding = (await _standingService.GetStandingsAsync(tournamentId))
-                    .FirstOrDefault(s => s.StandingType == StandingType.Bracket);
-
-                if (bracketStanding != null)
-                {
-                    // Mark the champion in BracketEntries
-                    var championEntry = await _dbContext.BracketEntries
-                        .FirstOrDefaultAsync(b => b.TeamId == championTeamId && b.StandingId == bracketStanding.Id);
-
-                    if (championEntry != null)
-                    {
-                        championEntry.Status = TeamStatus.Champion;
-                        _logger.LogInformation($"Team {championEntry.TeamName} (ID: {championTeamId}) declared champion of tournament {tournament.Name}");
-                    }
-                }
-
                 await _tournamentRepository.Update(tournament);
                 await _tournamentRepository.Save();
 
-                _logger.LogInformation($"Tournament {tournament.Name} completed. Champion: Team {championTeamId}");
+                _logger.LogInformation($"Tournament {tournament.Name} manually completed. Champion: Team {championTeamId}");
             }
             catch (Exception ex)
             {
@@ -422,30 +416,79 @@ namespace Application.Services
                     return new List<FinalStandingDTO>();
                 }
 
-                var bracketEntries = await _dbContext.BracketEntries
-                    .Where(b => b.StandingId == bracketStanding.Id)
-                    .OrderByDescending(b => b.Status == TeamStatus.Champion ? 1 : 0)
-                    .ThenByDescending(b => b.CurrentRound)
-                    .ThenBy(b => b.Eliminated ? 1 : 0)
-                    .ToListAsync();
+                // Get all bracket matches using repository
+                var allMatches = await _matchRepository.GetAllByFK("StandingId", bracketStanding.Id);
+                if (!allMatches.Any())
+                {
+                    return new List<FinalStandingDTO>();
+                }
 
-                var standings = new List<FinalStandingDTO>();
-                int placement = 1;
+                // Get all bracket entries (for team names)
+                var bracketEntries = await _bracketRepository.GetAllByFK("StandingId", bracketStanding.Id);
+
+                // Calculate total rounds
+                int totalRounds = allMatches.Max(m => m.Round ?? 0);
+
+                // Find the final match (last round, seed 1)
+                var finalMatch = allMatches.FirstOrDefault(m => m.Round == totalRounds && m.Seed == 1);
+                if (finalMatch == null || !finalMatch.WinnerId.HasValue)
+                {
+                    return new List<FinalStandingDTO>();
+                }
+
+                // Build standings by determining elimination round for each team
+                var teamPlacements = new List<(long TeamId, string TeamName, int EliminationRound, TeamStatus Status)>();
 
                 foreach (var entry in bracketEntries)
                 {
+                    // Find the match where this team lost (if any)
+                    var lossMatch = allMatches.FirstOrDefault(m => m.LoserId == entry.TeamId);
+
+                    if (lossMatch == null)
+                    {
+                        // No loss match = Champion
+                        teamPlacements.Add((entry.TeamId, entry.TeamName, totalRounds + 1, TeamStatus.Champion));
+                    }
+                    else
+                    {
+                        // Team was eliminated in the round they lost
+                        int eliminationRound = lossMatch.Round ?? 0;
+                        teamPlacements.Add((entry.TeamId, entry.TeamName, eliminationRound, TeamStatus.Eliminated));
+                    }
+                }
+
+                // Sort by elimination round (higher = better placement)
+                // Then by TeamId for tie-breaking within same round
+                var sortedTeams = teamPlacements
+                    .OrderByDescending(t => t.EliminationRound)
+                    .ThenBy(t => t.TeamId)
+                    .ToList();
+
+                // Assign placements with tied ranks
+                var standings = new List<FinalStandingDTO>();
+                int currentPlacement = 1;
+                int? lastEliminationRound = null;
+                int teamsAtCurrentRank = 0;
+
+                foreach (var team in sortedTeams)
+                {
+                    if (lastEliminationRound.HasValue && team.EliminationRound < lastEliminationRound.Value)
+                    {
+                        // New elimination round = new placement (skip tied ranks)
+                        currentPlacement += teamsAtCurrentRank;
+                        teamsAtCurrentRank = 0;
+                    }
+
                     standings.Add(new FinalStandingDTO(
-                        entry.TeamId,
-                        entry.TeamName,
-                        placement,
-                        entry.Status,
-                        entry.CurrentRound
+                        team.TeamId,
+                        team.TeamName,
+                        currentPlacement,
+                        team.Status,
+                        team.EliminationRound
                     ));
 
-                    placement++;
-
-                    if (placement > 8)
-                        break;
+                    lastEliminationRound = team.EliminationRound;
+                    teamsAtCurrentRank++;
                 }
 
                 return standings;

@@ -14,6 +14,8 @@ namespace Application.DTOs.Orchestration
         long? MatchLoserId = null,
         bool StandingFinished = false,
         bool AllGroupsFinished = false,
+        bool TournamentFinished = false,
+        long? ChampionId = null,
         TournamentStatus? NewTournamentStatus = null,
         string? Message = null
     );

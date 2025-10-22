@@ -31,6 +31,7 @@ namespace Application.Services
         private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly IGenericRepository<Standing> _standingRepository;
         private readonly IGenericRepository<Bracket> _bracketRepository;
+        private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly IGenericRepository<Group> _groupRepository;
         private readonly IGenericRepository<Team> _teamRepository;
@@ -44,6 +45,7 @@ namespace Application.Services
             IGenericRepository<Tournament> tournamentRepository,
             IGenericRepository<Standing> standingRepository,
             IGenericRepository<Bracket> bracketRepository,
+            IGenericRepository<Match> matchRepository,
             IGenericRepository<TournamentTeam> tournamentTeamRepository,
             IGenericRepository<Group> groupRepository,
             IGenericRepository<Team> teamRepository,
@@ -57,6 +59,7 @@ namespace Application.Services
             _tournamentRepository = tournamentRepository;
             _standingRepository = standingRepository;
             _bracketRepository = bracketRepository;
+            _matchRepository = matchRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
             _groupRepository = groupRepository;
             _teamRepository = teamRepository;
@@ -105,7 +108,47 @@ namespace Application.Services
                     matchWinner.LoserId
                 );
 
-                // 4. Check if this match finishing caused the standing to finish
+                // 3a. BRACKET-SPECIFIC: Handle bracket progression
+                if (standingType == StandingType.Bracket)
+                {
+                    _logger.LogInformation("=== BRACKET MATCH FINISHED ===");
+
+                    // Advance winner to next round
+                    await AdvanceWinnerToNextRound(matchId, matchWinner.WinnerId, gameResult.StandingId);
+
+                    // Check if this was the final match
+                    bool isFinal = await IsFinalMatch(matchId, gameResult.StandingId);
+
+                    if (isFinal)
+                    {
+                        // Declare champion and finish tournament
+                        await DeclareChampionAndFinish(gameResult.TournamentId, matchWinner.WinnerId);
+
+                        return new GameProcessResultDTO(
+                            Success: true,
+                            MatchFinished: true,
+                            MatchWinnerId: matchWinner.WinnerId,
+                            MatchLoserId: matchWinner.LoserId,
+                            TournamentFinished: true,
+                            ChampionId: matchWinner.WinnerId,
+                            NewTournamentStatus: TournamentStatus.Finished,
+                            Message: $"🏆 TOURNAMENT FINISHED! Champion: Team {matchWinner.WinnerId}"
+                        );
+                    }
+                    else
+                    {
+                        // Not the final match - winner advanced to next round
+                        return new GameProcessResultDTO(
+                            Success: true,
+                            MatchFinished: true,
+                            MatchWinnerId: matchWinner.WinnerId,
+                            MatchLoserId: matchWinner.LoserId,
+                            Message: $"Match completed. Winner advanced to next round."
+                        );
+                    }
+                }
+
+                // 4. Check if this match finishing caused the standing to finish (GROUP-SPECIFIC)
                 bool standingJustFinished = await _standingService.CheckAndMarkStandingAsFinished(gameResult.StandingId);
 
                 if (!standingJustFinished) 
@@ -666,5 +709,113 @@ namespace Application.Services
         //        return new BracketSeedResponseDTO($"Bracket seeding failed: {ex.Message}", false);
         //    }
         //}
+
+        // ============================================================
+        // BRACKET PROGRESSION METHODS
+        // ============================================================
+
+        /// <summary>
+        /// Advances the match winner to the next round by populating the appropriate team slot.
+        /// </summary>
+        private async Task AdvanceWinnerToNextRound(long finishedMatchId, long winnerId, long standingId)
+        {
+            // 1. Get the finished match
+            var finishedMatch = await _matchRepository.Get(finishedMatchId)
+                ?? throw new Exception($"Match {finishedMatchId} not found");
+
+            if (!finishedMatch.Round.HasValue || !finishedMatch.Seed.HasValue)
+            {
+                throw new Exception($"Match {finishedMatchId} missing Round or Seed information");
+            }
+
+            int currentRound = finishedMatch.Round.Value;
+            int currentSeed = finishedMatch.Seed.Value;
+
+            // 2. Calculate next round match position
+            int nextRound = currentRound + 1;
+            int nextSeed = (int)Math.Ceiling(currentSeed / 2.0);
+
+            _logger.LogInformation($"Match R{currentRound}S{currentSeed} finished. Winner {winnerId} advances to R{nextRound}S{nextSeed}");
+
+            // 3. Find the next round match
+            var allMatches = await _matchRepository.GetAllByFK("StandingId", standingId);
+            var nextMatch = allMatches.FirstOrDefault(m =>
+                m.Round == nextRound &&
+                m.Seed == nextSeed);
+
+            if (nextMatch == null)
+            {
+                _logger.LogInformation($"No next round match found (final match completed)");
+                return; // This was the final match
+            }
+
+            // 4. Determine which team slot (A or B) based on seed parity
+            // Odd seeds (1, 3, 5...) → TeamA
+            // Even seeds (2, 4, 6...) → TeamB
+            if (currentSeed % 2 == 1)
+            {
+                nextMatch.TeamAId = winnerId;
+                _logger.LogInformation($"Set R{nextRound}S{nextSeed} TeamA = {winnerId}");
+            }
+            else
+            {
+                nextMatch.TeamBId = winnerId;
+                _logger.LogInformation($"Set R{nextRound}S{nextSeed} TeamB = {winnerId}");
+            }
+
+            // 5. Save the updated match
+            await _matchRepository.Update(nextMatch);
+            await _matchRepository.Save();
+        }
+
+        /// <summary>
+        /// Checks if the given match is the final match of the bracket.
+        /// </summary>
+        private async Task<bool> IsFinalMatch(long matchId, long standingId)
+        {
+            var match = await _matchRepository.Get(matchId)
+                ?? throw new Exception($"Match {matchId} not found");
+
+            if (!match.Round.HasValue || !match.Seed.HasValue)
+            {
+                return false;
+            }
+
+            // Get all matches for this standing to determine total rounds
+            var allMatches = await _matchRepository.GetAllByFK("StandingId", standingId);
+            int totalRounds = allMatches.Max(m => m.Round ?? 0);
+
+            // Final match is: last round, seed 1
+            bool isFinal = match.Round.Value == totalRounds && match.Seed.Value == 1;
+
+            if (isFinal)
+            {
+                _logger.LogInformation($"Match {matchId} is the FINAL match (R{match.Round}S{match.Seed})");
+            }
+
+            return isFinal;
+        }
+
+        /// <summary>
+        /// Declares the champion and transitions tournament to Finished status.
+        /// </summary>
+        private async Task DeclareChampionAndFinish(long tournamentId, long championId)
+        {
+            _logger.LogInformation($"=== Declaring Champion for Tournament {tournamentId} ===");
+
+            var tournament = await _tournamentRepository.Get(tournamentId)
+                ?? throw new Exception($"Tournament {tournamentId} not found");
+
+            // Validate state transition
+            _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.Finished);
+
+            // Transition to Finished
+            tournament.Status = TournamentStatus.Finished;
+
+            await _tournamentRepository.Update(tournament);
+            await _tournamentRepository.Save();
+
+            _logger.LogInformation($"✓ Tournament {tournament.Name} FINISHED. Champion: Team {championId}");
+        }
     }
 }
