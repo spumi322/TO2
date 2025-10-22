@@ -22,3 +22,6 @@ namespace Application.Contracts
         Task<StandingType> UpdateStandingEntries(long standingId, long winnerId, long loserId);
     }
 }
+
+
+

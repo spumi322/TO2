@@ -7,12 +7,14 @@
 
   <!-- Bracket visualization (library injects HTML here) -->
   <!-- Always present so the library can find it -->
-  <div #bracketContainer class="brackets-viewer"></div>
+  <!-- Use unique ID instead of just class to avoid conflicts with other bracket components -->
+  <!-- Use [attr.id] binding instead of interpolation for better Angular integration -->
+  <div #bracketContainer [attr.id]="'bracket-viewer-' + standingId" class="brackets-viewer"></div>
 
   <!-- Empty state -->
   <div class="empty-state" *ngIf="!isLoading && matches.length === 0">
     <mat-icon class="empty-icon">emoji_events</mat-icon>
-    <p>No bracket matches yet</p>
-    <p class="hint">Start the tournament to generate bracket</p>
+    <p>Bracket not ready yet</p>
+    <p class="hint">Complete group stage and start the bracket to view matches</p>
   </div>
 </div>

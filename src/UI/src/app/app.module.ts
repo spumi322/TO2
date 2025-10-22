@@ -41,9 +41,6 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { BracketTestComponent } from './components/bracket-test/bracket-test.component';
-
-
 
 @NgModule({
   declarations: [
@@ -55,8 +52,7 @@ import { BracketTestComponent } from './components/bracket-test/bracket-test.com
     BracketComponent,
     NavbarComponent,
     CreateTournamentComponent,
-    MatchesComponent,
-    BracketTestComponent,
+    MatchesComponent
   ],
   imports: [
     BrowserModule,

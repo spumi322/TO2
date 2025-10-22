@@ -11,7 +11,11 @@
       "Bash(cat match.service.ts)",
       "mcp__exa__web_search_exa",
       "Bash(npm install:*)",
-      "WebFetch(domain:drarig29.github.io)"
+      "WebFetch(domain:drarig29.github.io)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm start)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []

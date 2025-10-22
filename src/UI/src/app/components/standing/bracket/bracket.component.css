@@ -26,6 +26,8 @@
   border-radius: 8px;
   overflow-x: auto;
   min-height: 400px;
+  /* Fix: brackets-viewer library requires element to be visible in DOM to render */
+  display: block !important;
 }
 
 /* Empty state */

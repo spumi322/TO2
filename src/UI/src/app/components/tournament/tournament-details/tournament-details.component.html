@@ -152,14 +152,18 @@
         </div>
       </mat-tab>
 
-      <!-- Bracket Tab (when tournament has started and bracket exists) -->
-      <mat-tab label="Bracket" *ngIf="!tournament?.isRegistrationOpen && brackets.length > 0">
-        <div class="tab-content">
-          <app-standing-bracket
-            [tournament]="tournament"
-            [standingId]="brackets[0]?.id">
-          </app-standing-bracket>
-        </div>
+      <!-- Bracket Tab (only show when bracket is seeded and in progress or finished) -->
+      <!-- Respects tournament lifecycle: should NOT be visible during GroupsInProgress, GroupsCompleted, or SeedingBracket -->
+      <mat-tab label="Bracket" *ngIf="brackets.length > 0 && (tournamentState?.currentStatus === TournamentStatus.BracketInProgress || tournamentState?.currentStatus === TournamentStatus.Finished)">
+        <ng-template matTabContent>
+          <div class="tab-content">
+            <app-standing-bracket
+              [tournament]="tournament"
+              [standingId]="brackets[0]?.id"
+              [tournamentState]="tournamentState">
+            </app-standing-bracket>
+          </div>
+        </ng-template>
       </mat-tab>
 
       <!-- Results Tab (only if tournament is finished) -->
