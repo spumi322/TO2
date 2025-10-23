@@ -280,9 +280,15 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
               const matchFinishedData: MatchFinishedIds = {
                 winnerId: result.matchWinnerId,
                 loserId: result.matchLoserId,
-                allGroupsFinished: result.allGroupsFinished || false
+                allGroupsFinished: result.allGroupsFinished || false,
+                tournamentFinished: result.tournamentFinished || false
               };
               this.matchFinished.emit(matchFinishedData);
+
+              // Show tournament finish message if applicable
+              if (result.tournamentFinished) {
+                console.log('🏆 TOURNAMENT FINISHED!', result.message);
+              }
             }
 
             // Reload matches and re-render bracket, passing matchId to reset the updating flag

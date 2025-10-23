@@ -19,6 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7A830D06-4
 		..\..\docs\bracket-viewer-implementation-v2.md = ..\..\docs\bracket-viewer-implementation-v2.md
 		bracket_display_fix.md = bracket_display_fix.md
 		bracket_seeding.md = bracket_seeding.md
+		final_results.md = final_results.md
 		..\..\docs\play_tournament_devnote.md = ..\..\docs\play_tournament_devnote.md
 		..\..\docs\todo.md = ..\..\docs\todo.md
 		..\..\docs\todo_flowfix.md = ..\..\docs\todo_flowfix.md

@@ -22,6 +22,7 @@ namespace Application.Services
         private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly IGenericRepository<Group> _groupRepository;
         private readonly IGenericRepository<Team> _teamRepository;
+        private readonly IGameService _gameService;
         private readonly ILogger<StandingService> _logger;
 
         public StandingService(IGenericRepository<Standing> standingRepository,
@@ -29,6 +30,7 @@ namespace Application.Services
                                IGenericRepository<Tournament> tournamentRepository,
                                IGenericRepository<Group> groupRepository,
                                IGenericRepository<Team> teamRepository,
+                               IGameService gameService,
                                ILogger<StandingService> logger)
         {
             _standingRepository = standingRepository;
@@ -36,6 +38,7 @@ namespace Application.Services
             _tournamentRepository = tournamentRepository;
             _groupRepository = groupRepository;
             _teamRepository = teamRepository;
+            _gameService = gameService;
             _logger = logger;
         }
 
@@ -171,6 +174,64 @@ namespace Application.Services
             await _groupRepository.Save();
 
             return advancingTeams;
+        }
+
+
+        /// <summary>
+        /// Advances the match winner to the next round by populating the appropriate team slot.
+        /// </summary>
+        public async Task AdvanceWinnerToNextRound(long finishedMatchId, long winnerId, long standingId)
+        {
+            // 1. Get the finished match
+            var finishedMatch = await _matchRepository.Get(finishedMatchId)
+                ?? throw new Exception($"Match {finishedMatchId} not found");
+
+            if (!finishedMatch.Round.HasValue || !finishedMatch.Seed.HasValue)
+            {
+                throw new Exception($"Match {finishedMatchId} missing Round or Seed information");
+            }
+
+            int currentRound = finishedMatch.Round.Value;
+            int currentSeed = finishedMatch.Seed.Value;
+
+            // 2. Calculate next round match position
+            int nextRound = currentRound + 1;
+            int nextSeed = (int)Math.Ceiling(currentSeed / 2.0);
+
+            _logger.LogInformation($"Match R{currentRound}S{currentSeed} finished. Winner {winnerId} advances to R{nextRound}S{nextSeed}");
+
+            // 3. Find the next round match
+            var allMatches = await _matchRepository.GetAllByFK("StandingId", standingId);
+            var nextMatch = allMatches.FirstOrDefault(m =>
+                m.Round == nextRound &&
+                m.Seed == nextSeed);
+
+            if (nextMatch == null)
+            {
+                _logger.LogInformation($"No next round match found (final match completed)");
+                return; // This was the final match
+            }
+
+            // 4. Determine which team slot (A or B) based on seed parity
+            // Odd seeds (1, 3, 5...) → TeamA
+            // Even seeds (2, 4, 6...) → TeamB
+            if (currentSeed % 2 == 1)
+            {
+                nextMatch.TeamAId = winnerId;
+                _logger.LogInformation($"Set R{nextRound}S{nextSeed} TeamA = {winnerId}");
+            }
+            else
+            {
+                nextMatch.TeamBId = winnerId;
+                _logger.LogInformation($"Set R{nextRound}S{nextSeed} TeamB = {winnerId}");
+            }
+
+            // 5. Update all games in the next match with the new team IDs
+            await _gameService.UpdateGamesTeamIds(nextMatch.Id, nextMatch.TeamAId, nextMatch.TeamBId);
+
+            // 6. Save the updated match
+            await _matchRepository.Update(nextMatch);
+            await _matchRepository.Save();
         }
     }
 }

@@ -56,7 +56,7 @@ export class MatchesComponent implements OnInit {
     return { teamAId, teamAWins, teamBId, teamBWins };
   }
 
-  updateMatchScore(matchId: number, gameWinnerId: number, teamAScore: number, teamBScore: number): void {
+  updateMatchScore(matchId: number, gameWinnerId: number): void {
     const match = this.matches.find(m => m.id === matchId);
     if (!match || match.winnerId) return;
 
@@ -68,8 +68,8 @@ export class MatchesComponent implements OnInit {
         const gameResult = {
           gameId: gameToUpdate.id,
           winnerId: gameWinnerId,
-          teamAScore,
-          teamBScore,
+          teamAScore: undefined,
+          teamBScore: undefined,
           matchId: matchId,
           standingId: match.standingId,
           tournamentId: this.tournamentId

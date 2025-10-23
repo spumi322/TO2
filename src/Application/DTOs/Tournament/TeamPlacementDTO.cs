@@ -2,7 +2,7 @@ using Domain.Enums;
 
 namespace Application.DTOs.Tournament
 {
-    public record FinalStandingDTO(
+    public record TeamPlacementDTO(
         long TeamId,
         string TeamName,
         int Placement,

@@ -24,8 +24,9 @@ namespace Application.Contracts
         Task<IsNameUniqueResponseDTO> CheckNameIsUniqueAsync(string name);
         Task DeclareChampion(long tournamentId, long championTeamId);
         Task<GetTeamResponseDTO?> GetChampion(long tournamentId);
-        Task<List<FinalStandingDTO>> GetFinalStandings(long tournamentId);
+        Task<List<TeamPlacementDTO>> GetFinalResults(long tournamentId);
         Task<TournamentStateDTO> GetTournamentState(long tournamentId);
-        //Task<StartBracketResponseDTO> StartBracket(long tournamentId);
+        Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateFinalPlacements(long standingId);
+        Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements);
     }
 }

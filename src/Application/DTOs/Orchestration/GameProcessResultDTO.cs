@@ -1,4 +1,5 @@
-﻿using Domain.Enums;
+using Application.DTOs.Tournament;
+using Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,8 +16,8 @@ namespace Application.DTOs.Orchestration
         bool StandingFinished = false,
         bool AllGroupsFinished = false,
         bool TournamentFinished = false,
-        long? ChampionId = null,
         TournamentStatus? NewTournamentStatus = null,
+        List<TeamPlacementDTO>? FinalStandings = null,
         string? Message = null
     );
 }

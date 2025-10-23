@@ -23,5 +23,9 @@ namespace Application.Contracts
         /// </summary>
         Task<bool> CheckAllGroupsAreFinished(long tournamentId);
         Task<List<Team>> GetTeamsForBracket(long tournamentId);
+        /// <summary>
+        /// Advances the match winner to the next round by populating the appropriate team slot.
+        /// </summary>
+        Task AdvanceWinnerToNextRound(long finishedMatchId, long winnerId, long standingId);
     }
 }

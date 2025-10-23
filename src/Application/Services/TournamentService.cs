@@ -23,35 +23,35 @@ namespace Application.Services
         private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<Bracket> _bracketRepository;
+        private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly ITeamService _teamService;
         private readonly ITO2DbContext _dbContext;
         private readonly IStandingService _standingService;
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
         private readonly ITournamentStateMachine _stateMachine;
-        private readonly IOrchestrationService _orchestrationService;
 
         public TournamentService(IGenericRepository<Tournament> tournamentRepository,
                                  IGenericRepository<Match> matchRepository,
                                  IGenericRepository<Bracket> bracketRepository,
+                                 IGenericRepository<TournamentTeam> tournamentTeamRepository,
                                  ITeamService teamService,
                                  ITO2DbContext tO2DbContext,
                                  IStandingService standingService,
                                  IMapper mapper,
                                  ILogger<TournamentService> logger,
-                                 ITournamentStateMachine stateMachine,
-                                 IOrchestrationService orchestrationService)
+                                 ITournamentStateMachine stateMachine)
         {
             _tournamentRepository = tournamentRepository;
             _matchRepository = matchRepository;
             _bracketRepository = bracketRepository;
+            _tournamentTeamRepository = tournamentTeamRepository;
             _teamService = teamService;
             _dbContext = tO2DbContext;
             _standingService = standingService;
             _mapper = mapper;
             _logger = logger;
             _stateMachine = stateMachine;
-            _orchestrationService = orchestrationService;
         }
 
         public async Task<TournamentStateDTO> GetTournamentState(long tournamentId)
@@ -96,64 +96,6 @@ namespace Application.Services
             _ => ""
         };
 
-        //public async Task<StartBracketResponseDTO> StartBracket(long tournamentId)
-        //{
-        //    var tournament = await _tournamentRepository.Get(tournamentId)
-        //        ?? throw new Exception("Tournament not found");
-
-        //    try
-        //    {
-        //        // Validate state
-        //        if (tournament.Status != TournamentStatus.GroupsCompleted)
-        //        {
-        //            return new StartBracketResponseDTO(
-        //                Success: false,
-        //                Message: $"Cannot start bracket from {tournament.Status}. Groups must be completed first.",
-        //                TournamentStatus: tournament.Status
-        //            );
-        //        }
-
-        //        // 1. Validate and transition to SeedingBracket
-        //        _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingBracket);
-        //        tournament.Status = TournamentStatus.SeedingBracket;
-        //        await _tournamentRepository.Update(tournament);
-        //        await _tournamentRepository.Save();
-
-        //        // 2. Seed bracket
-        //        var seedResult = await _orchestrationService.SeedBracketIfReady(tournamentId);
-        //        if (!seedResult.Success)
-        //        {
-        //            return new StartBracketResponseDTO(false, seedResult.Message, tournament.Status);
-        //        }
-
-        //        // 3. Validate and transition to BracketInProgress
-        //        _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.BracketInProgress);
-        //        tournament.Status = TournamentStatus.BracketInProgress;
-        //        await _tournamentRepository.Update(tournament);
-        //        await _tournamentRepository.Save();
-
-        //        _logger.LogInformation($"Tournament {tournamentId} bracket started.");
-
-        //        return new StartBracketResponseDTO(
-        //            Success: true,
-        //            Message: "Bracket started successfully!",
-        //            TournamentStatus: tournament.Status
-        //        );
-        //    }
-        //    catch (InvalidOperationException ex)
-        //    {
-        //        _logger.LogWarning($"Invalid state transition: {ex.Message}");
-        //        return new StartBracketResponseDTO(false, ex.Message, tournament.Status);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error starting bracket: {Message}", ex.Message);
-        //        throw;
-        //    }
-        //}
-
-
-
         public async Task<CreateTournamentResponseDTO> CreateTournamentAsync(CreateTournamentRequestDTO request)
         {
             try
@@ -165,7 +107,7 @@ namespace Application.Services
                 await _tournamentRepository.Save();
                 await _standingService.GenerateStanding(tournament.Id, "Main Bracket", StandingType.Bracket, request.TeamsPerBracket);
 
-                if(request.Format is Format.BracketAndGroup)
+                if (request.Format is Format.BracketAndGroup)
                 {
                     for (int i = 0; i < (tournament.MaxTeams / request.TeamsPerGroup); i++)
                     {
@@ -396,14 +338,14 @@ namespace Application.Services
             }
         }
 
-        public async Task<List<FinalStandingDTO>> GetFinalStandings(long tournamentId)
+        public async Task<List<TeamPlacementDTO>> GetFinalResults(long tournamentId)
         {
             var tournament = await _tournamentRepository.Get(tournamentId)
                 ?? throw new Exception("Tournament not found");
 
             if (tournament.Status != TournamentStatus.Finished)
             {
-                return new List<FinalStandingDTO>();
+                return new List<TeamPlacementDTO>();
             }
 
             try
@@ -413,14 +355,14 @@ namespace Application.Services
 
                 if (bracketStanding == null)
                 {
-                    return new List<FinalStandingDTO>();
+                    return new List<TeamPlacementDTO>();
                 }
 
                 // Get all bracket matches using repository
                 var allMatches = await _matchRepository.GetAllByFK("StandingId", bracketStanding.Id);
                 if (!allMatches.Any())
                 {
-                    return new List<FinalStandingDTO>();
+                    return new List<TeamPlacementDTO>();
                 }
 
                 // Get all bracket entries (for team names)
@@ -433,7 +375,7 @@ namespace Application.Services
                 var finalMatch = allMatches.FirstOrDefault(m => m.Round == totalRounds && m.Seed == 1);
                 if (finalMatch == null || !finalMatch.WinnerId.HasValue)
                 {
-                    return new List<FinalStandingDTO>();
+                    return new List<TeamPlacementDTO>();
                 }
 
                 // Build standings by determining elimination round for each team
@@ -465,7 +407,7 @@ namespace Application.Services
                     .ToList();
 
                 // Assign placements with tied ranks
-                var standings = new List<FinalStandingDTO>();
+                var standings = new List<TeamPlacementDTO>();
                 int currentPlacement = 1;
                 int? lastEliminationRound = null;
                 int teamsAtCurrentRank = 0;
@@ -479,7 +421,7 @@ namespace Application.Services
                         teamsAtCurrentRank = 0;
                     }
 
-                    standings.Add(new FinalStandingDTO(
+                    standings.Add(new TeamPlacementDTO(
                         team.TeamId,
                         team.TeamName,
                         currentPlacement,
@@ -499,5 +441,115 @@ namespace Application.Services
                 throw;
             }
         }
+
+        /// <summary>
+        /// Calculates final placements for all teams based on bracket match results.
+        /// Uses single-elimination logic: placement determined by elimination round.
+        /// </summary>
+        public async Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateFinalPlacements(long standingId)
+        {
+            _logger.LogInformation($"=== Calculating final placements for standing {standingId} ===");
+
+            var placements = new List<(long TeamId, int Placement, int? EliminatedInRound)>();
+
+            // Get all matches for this bracket
+            var allMatches = await _matchRepository.GetAllByFK("StandingId", standingId);
+            var matches = allMatches.OrderByDescending(m => m.Round).ThenBy(m => m.Seed).ToList();
+
+            if (!matches.Any())
+            {
+                _logger.LogWarning("No matches found for standing");
+                return placements;
+            }
+
+            // Find max round (final)
+            int maxRound = matches.Max(m => m.Round ?? 0);
+            _logger.LogInformation($"Max round: {maxRound}");
+
+            // Calculate placement for each round, starting from final
+            int currentPlacement = 1;
+
+            for (int round = maxRound; round >= 1; round--)
+            {
+                var roundMatches = matches.Where(m => m.Round == round).OrderBy(m => m.Seed).ToList();
+                int teamsEliminatedThisRound = roundMatches.Count;
+
+                _logger.LogInformation($"Round {round}: {teamsEliminatedThisRound} matches");
+
+                foreach (var match in roundMatches)
+                {
+                    if (round == maxRound && match.Seed == 1)
+                    {
+                        // Final match - special handling
+                        if (match.WinnerId.HasValue)
+                        {
+                            // Champion (1st place)
+                            placements.Add((match.WinnerId.Value, 1, null));
+                            _logger.LogInformation($"  Team {match.WinnerId} = 1st place (Champion)");
+                        }
+
+                        if (match.LoserId.HasValue)
+                        {
+                            // Runner-up (2nd place)
+                            placements.Add((match.LoserId.Value, 2, maxRound));
+                            _logger.LogInformation($"  Team {match.LoserId} = 2nd place (Runner-up, eliminated R{maxRound})");
+                        }
+
+                        currentPlacement = 3; // Next placements start from 3rd
+                    }
+                    else
+                    {
+                        // Non-final matches - losers get placed based on elimination round
+                        if (match.LoserId.HasValue)
+                        {
+                            placements.Add((match.LoserId.Value, currentPlacement, round));
+                            _logger.LogInformation($"  Team {match.LoserId} = {currentPlacement} place (eliminated R{round})");
+                            currentPlacement++;
+                        }
+                    }
+                }
+            }
+
+            _logger.LogInformation($"✓ Calculated {placements.Count} final placements");
+            return placements;
+        }
+
+        /// <summary>
+        /// Persists final results to TournamentTeam table.
+        /// Updates FinalPlacement, EliminatedInRound, and ResultFinalizedAt for all teams.
+        /// </summary>
+        public async Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements)
+        {
+            _logger.LogInformation($"=== Storing final results for tournament {tournamentId} ===");
+
+            var now = DateTime.UtcNow;
+
+            foreach (var placement in placements)
+            {
+                {
+                    // Get TournamentTeam record
+                    var tournamentTeams = await _tournamentTeamRepository.GetAllByFK("TournamentId", tournamentId);
+                    var tournamentTeam = tournamentTeams.FirstOrDefault(tt => tt.TeamId == placement.TeamId);
+
+                    if (tournamentTeam == null)
+                    {
+                        _logger.LogWarning($"TournamentTeam not found for Team {placement.TeamId} in Tournament {tournamentId}");
+                        continue;
+                    }
+
+                    // Update final results
+                    tournamentTeam.FinalPlacement = placement.Placement;
+                    tournamentTeam.EliminatedInRound = placement.EliminatedInRound;
+                    tournamentTeam.ResultFinalizedAt = now;
+
+                    await _tournamentTeamRepository.Update(tournamentTeam);
+                    _logger.LogInformation($"  Team {placement.TeamId}: Placement {placement}, Eliminated Round {placement.EliminatedInRound.ToString() ?? "N/A"}");
+                }
+
+                await _tournamentTeamRepository.Save();
+                _logger.LogInformation($"✓ Stored {placements.Count} final results");
+            }
+        }
     }
 }
+

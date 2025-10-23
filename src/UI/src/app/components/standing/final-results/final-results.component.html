@@ -1,0 +1,84 @@
+<div class="results-container">
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="isLoading">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading final results...</p>
+  </div>
+
+  <!-- Results Content -->
+  <div *ngIf="!isLoading">
+    <h2>Final Standings</h2>
+
+    <!-- Podium Display -->
+    <div class="podium" *ngIf="finalStandings.length >= 3">
+      <!-- 2nd Place -->
+      <div class="podium-place second">
+        <mat-icon class="medal-icon silver">military_tech</mat-icon>
+        <div class="place-number">2nd</div>
+        <div class="team-name">{{ finalStandings[1]?.teamName }}</div>
+        <div class="eliminated-info">Eliminated in Round {{ finalStandings[1]?.eliminatedInRound }}</div>
+      </div>
+
+      <!-- 1st Place (Champion) -->
+      <div class="podium-place first">
+        <mat-icon class="trophy-icon gold">emoji_events</mat-icon>
+        <div class="place-number">1st</div>
+        <div class="team-name">{{ finalStandings[0]?.teamName }}</div>
+        <div class="champion-label">CHAMPION</div>
+      </div>
+
+      <!-- 3rd Place -->
+      <div class="podium-place third">
+        <mat-icon class="medal-icon bronze">military_tech</mat-icon>
+        <div class="place-number">3rd</div>
+        <div class="team-name">{{ finalStandings[2]?.teamName }}</div>
+        <div class="eliminated-info">Eliminated in Round {{ finalStandings[2]?.eliminatedInRound }}</div>
+      </div>
+    </div>
+
+    <!-- Full Rankings Table -->
+    <mat-card class="rankings-card" *ngIf="finalStandings.length > 0">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>leaderboard</mat-icon>
+        <mat-card-title>Complete Rankings</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <table class="rankings-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Team</th>
+              <th>Status</th>
+              <th>Final Round</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let standing of finalStandings" [class.champion-row]="standing.placement === 1">
+              <td class="rank-cell">
+                <span class="rank-badge" [class.gold]="standing.placement === 1" [class.silver]="standing.placement === 2" [class.bronze]="standing.placement === 3">
+                  {{ standing.placement }}
+                </span>
+              </td>
+              <td class="team-cell">{{ standing.teamName }}</td>
+              <td class="status-cell">
+                <span class="status-badge" [ngClass]="{
+                  'champion': standing.status === 4,
+                  'eliminated': standing.status === 3
+                }">
+                  {{ standing.status === 4 ? 'Champion' : 'Eliminated' }}
+                </span>
+              </td>
+              <td class="round-cell">Round {{ standing.eliminatedInRound }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="finalStandings.length === 0">
+      <mat-icon class="empty-icon">emoji_events</mat-icon>
+      <p>No results available yet</p>
+    </div>
+  </div>
+</div>

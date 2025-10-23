@@ -41,6 +41,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { FinalResultsComponent } from './components/standing/final-results/final-results.component';
 
 @NgModule({
   declarations: [
@@ -52,7 +53,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     BracketComponent,
     NavbarComponent,
     CreateTournamentComponent,
-    MatchesComponent
+    MatchesComponent,
+    FinalResultsComponent
   ],
   imports: [
     BrowserModule,

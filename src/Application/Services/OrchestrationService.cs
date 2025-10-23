@@ -11,6 +11,7 @@ using Domain.StateMachine;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading.Tasks;
@@ -36,6 +37,7 @@ namespace Application.Services
         private readonly IGenericRepository<Group> _groupRepository;
         private readonly IGenericRepository<Team> _teamRepository;
         private readonly ITournamentStateMachine _stateMachine;
+        private readonly ITournamentService _tournamentService;
 
         public OrchestrationService(
             ILogger<OrchestrationService> logger,
@@ -49,7 +51,8 @@ namespace Application.Services
             IGenericRepository<TournamentTeam> tournamentTeamRepository,
             IGenericRepository<Group> groupRepository,
             IGenericRepository<Team> teamRepository,
-            ITournamentStateMachine stateMachine
+            ITournamentStateMachine stateMachine,
+            ITournamentService tournamentService
             )
         {
             _logger = logger;
@@ -64,6 +67,7 @@ namespace Application.Services
             _groupRepository = groupRepository;
             _teamRepository = teamRepository;
             _stateMachine = stateMachine;
+            _tournamentService = tournamentService;
         }
 
         public async Task<GameProcessResultDTO> ProcessGameResult(SetGameResultDTO gameResult)
@@ -73,6 +77,8 @@ namespace Application.Services
 
             try
             {
+                var tournament = await _tournamentRepository.Get(gameResult.TournamentId)
+                    ?? throw new Exception($"Tournament with id: {gameResult.TournamentId} was not found!");
                 var matchId = gameResult.MatchId;
                 // 1. Set game result (writes score into Game table)
                 await _gameService.SetGameResult(
@@ -111,18 +117,26 @@ namespace Application.Services
                 // 3a. BRACKET-SPECIFIC: Handle bracket progression
                 if (standingType == StandingType.Bracket)
                 {
-                    _logger.LogInformation("=== BRACKET MATCH FINISHED ===");
-
-                    // Advance winner to next round
-                    await AdvanceWinnerToNextRound(matchId, matchWinner.WinnerId, gameResult.StandingId);
 
                     // Check if this was the final match
                     bool isFinal = await IsFinalMatch(matchId, gameResult.StandingId);
 
                     if (isFinal)
                     {
-                        // Declare champion and finish tournament
-                        await DeclareChampionAndFinish(gameResult.TournamentId, matchWinner.WinnerId);
+                        // Validate state transition
+                        _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.Finished);
+
+                        // Transition to Finished
+                        tournament.Status = TournamentStatus.Finished;
+
+                        await _tournamentRepository.Update(tournament);
+                        await _tournamentRepository.Save();
+
+                        _logger.LogInformation($"✓ Tournament {tournament.Name} FINISHED.");
+
+                        var placements = await _tournamentService.CalculateFinalPlacements(gameResult.StandingId);
+                        await _tournamentService.SetFinalResults(tournament.Id, placements);
+                        var finalResult = await _tournamentService.GetFinalResults(tournament.Id);
 
                         return new GameProcessResultDTO(
                             Success: true,
@@ -130,14 +144,16 @@ namespace Application.Services
                             MatchWinnerId: matchWinner.WinnerId,
                             MatchLoserId: matchWinner.LoserId,
                             TournamentFinished: true,
-                            ChampionId: matchWinner.WinnerId,
                             NewTournamentStatus: TournamentStatus.Finished,
-                            Message: $"🏆 TOURNAMENT FINISHED! Champion: Team {matchWinner.WinnerId}"
+                            FinalStandings: finalResult,
+                            Message: $"TOURNAMENT FINISHED! Champion: Team {matchWinner.WinnerId}"
                         );
                     }
                     else
                     {
                         // Not the final match - winner advanced to next round
+                        await AdvanceWinnerToNextRound(matchId, matchWinner.WinnerId, gameResult.StandingId);
+
                         return new GameProcessResultDTO(
                             Success: true,
                             MatchFinished: true,
@@ -182,8 +198,6 @@ namespace Application.Services
                     gameResult.TournamentId);
 
                 // 6. All groups finished - validate and transition tournament status
-                var tournament = await _tournamentRepository.Get(gameResult.TournamentId)
-                    ?? throw new Exception($"Tournament with id: {gameResult.TournamentId} was not found!");
 
                 _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.GroupsCompleted);
                 tournament.Status = TournamentStatus.GroupsCompleted;

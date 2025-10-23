@@ -113,7 +113,7 @@ namespace TO2.Controllers
         [HttpGet("{id}/final-standings")]
         public async Task<IActionResult> GetFinalStandings(long id)
         {
-            return Ok(await _tournamentService.GetFinalStandings(id));
+            return Ok(await _tournamentService.GetFinalResults(id));
         }
 
         /// <summary>

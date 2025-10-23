@@ -57,3 +57,9 @@ I see - GetAllByFK() does NOT include navigation properties (line 42-47). So whe
   });
 
 
+1. Dismantle DeclareChampionAndFinish(), move the method body into the orchestration method(its basically state management, which belongs here).
+2.Remove ChampionId from the DTO and from the frontend too.
+3. AdvanceWinnerToNextRound() should be a standingService
+method, move it to there.
+4. We are going to make a new method, that collects the final result and we are going to push to the frontend when tournament is finished.
+5. Use this final result object, to display final result component and update overview tab. 

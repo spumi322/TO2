@@ -14,6 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TournamentStatusLabel } from '../tournament-status-label/tournament-status-label';
 import { FinalStanding } from '../../../models/final-standing';
 import { MatchService } from '../../../services/match/match.service';
+import { MatchFinishedIds } from '../../../models/matchresult';
 
 @Component({
   selector: 'app-tournament-details',
@@ -41,6 +42,11 @@ export class TournamentDetailsComponent implements OnInit {
   // Champion and Final Standings
   champion: Team | null = null;
   finalStandings: FinalStanding[] = [];
+
+  // Computed property for top 4 standings
+  get topFourStandings(): FinalStanding[] {
+    return this.finalStandings.slice(0, 4);
+  }
 
   // Forms
   bulkAddForm!: FormGroup;
@@ -444,6 +450,10 @@ export class TournamentDetailsComponent implements OnInit {
     if (!this.tournamentId) return;
 
     this.isReloading = true;
+
+    // Also reload tournament state to keep it in sync
+    this.loadTournamentState();
+
     this.tournament$ = this.tournamentService.getTournamentWithTeams(this.tournamentId).pipe(
       tap(tournament => {
         if (tournament) {
@@ -484,8 +494,26 @@ export class TournamentDetailsComponent implements OnInit {
     this.reloadTournamentData();
   }
 
-  onBracketMatchFinished(result: any): void {
-    // Reload tournament data to get latest bracket status
+  onBracketMatchFinished(result: MatchFinishedIds): void {
+    console.log('Bracket match finished:', result);
+
+    // Check if tournament finished
+    if (result.tournamentFinished) {
+      console.log('🏆 TOURNAMENT FINISHED! Champion:', result.winnerId);
+
+      // Reload both tournament data AND state
+      this.loadTournamentState();
+      this.reloadTournamentData();
+
+      // Show success message
+      const championTeam = this.tournament?.teams?.find(t => t.id === result.winnerId);
+      const championName = championTeam?.name || `Team ${result.winnerId}`;
+      this.showSuccess(`🏆 Tournament Complete! Champion: ${championName}`);
+
+      return;
+    }
+
+    // Regular match completion - reload data to update bracket
     this.reloadTournamentData();
   }
 
@@ -545,5 +573,31 @@ export class TournamentDetailsComponent implements OnInit {
 
   getTeamsPerBracket(): number | null {
     return this.brackets.length > 0 ? this.brackets[0].maxTeams : null;
+  }
+
+  getRankClass(placement: number): string {
+    if (placement === 1) return 'gold';
+    if (placement === 2) return 'silver';
+    if (placement === 3) return 'bronze';
+    return '';
+  }
+
+  getResultsTabIndex(): number {
+    // Results tab is after Overview (0), Group Stage (if exists), and Bracket (if exists)
+    let tabIndex = 1; // Start after Overview
+
+    // Check if Group Stage tab exists
+    if (!this.tournament?.isRegistrationOpen && this.tournament?.format === Format.BracketAndGroups) {
+      tabIndex++;
+    }
+
+    // Check if Bracket tab exists
+    if (this.brackets.length > 0 &&
+        (this.tournamentState?.currentStatus === TournamentStatus.BracketInProgress ||
+         this.tournamentState?.currentStatus === TournamentStatus.Finished)) {
+      tabIndex++;
+    }
+
+    return tabIndex;
   }
 }

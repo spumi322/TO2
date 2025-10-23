@@ -1,4 +1,4 @@
-﻿using Domain.AggregateRoots;
+using Domain.AggregateRoots;
 using Domain.Common;
 using System;
 using System.Collections.Generic;
@@ -23,5 +23,10 @@ namespace Domain.Entities
 
         public long TeamId { get; private set; }
         public Team Team { get; private set; }
+
+        // Final results (populated when tournament finishes)
+        public int? FinalPlacement { get; set; }
+        public int? EliminatedInRound { get; set; }
+        public DateTime? ResultFinalizedAt { get; set; }
     }
 }

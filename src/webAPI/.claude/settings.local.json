@@ -18,7 +18,9 @@
       "Bash(cat:*)",
       "Bash(dotnet build:*)",
       "Bash(npx tsc:*)",
-      "Bash(xargs ls:*)"
+      "Bash(xargs ls:*)",
+      "Bash(ng generate:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
