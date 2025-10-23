@@ -65,3 +65,31 @@
   --text-color: #e0e0e0;
   --background-color: #1a1a1a;
 }
+
+/* Clickable participant styling */
+::ng-deep .brackets-viewer .clickable-participant {
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  border-radius: 4px;
+  user-select: none;
+}
+
+::ng-deep .brackets-viewer .clickable-participant:hover {
+  background-color: rgba(33, 150, 243, 0.15) !important;
+  transform: scale(1.02);
+}
+
+::ng-deep .brackets-viewer .clickable-participant:active {
+  transform: scale(0.98);
+}
+
+/* Visual feedback for updating state */
+::ng-deep .brackets-viewer .match.updating {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Winner highlighting */
+::ng-deep .brackets-viewer .participant.winner {
+  font-weight: bold;
+  background-color: rgba(76, 175, 80, 0.2);
+}

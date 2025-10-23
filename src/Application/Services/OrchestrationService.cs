@@ -763,7 +763,10 @@ namespace Application.Services
                 _logger.LogInformation($"Set R{nextRound}S{nextSeed} TeamB = {winnerId}");
             }
 
-            // 5. Save the updated match
+            // 5. Update all games in the next match with the new team IDs
+            await _gameService.UpdateGamesTeamIds(nextMatch.Id, nextMatch.TeamAId, nextMatch.TeamBId);
+
+            // 6. Save the updated match
             await _matchRepository.Update(nextMatch);
             await _matchRepository.Save();
         }

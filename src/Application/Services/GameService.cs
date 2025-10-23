@@ -360,5 +360,21 @@ namespace Application.Services
         //    }
         //}
 
+        public async Task UpdateGamesTeamIds(long matchId, long? teamAId, long? teamBId)
+        {
+            var games = await _gameRepository.GetAllByFK("MatchId", matchId);
+
+            foreach (var game in games)
+            {
+                game.TeamAId = teamAId;
+                game.TeamBId = teamBId;
+                await _gameRepository.Update(game);
+            }
+
+            await _gameRepository.Save();
+
+            _logger.LogInformation($"Updated {games.Count()} games for match {matchId} with TeamA={teamAId}, TeamB={teamBId}");
+        }
+
     }
 }

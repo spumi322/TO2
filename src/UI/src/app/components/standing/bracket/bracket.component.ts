@@ -1,10 +1,11 @@
-import { Component, Input, OnInit, OnChanges, AfterViewInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, AfterViewInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { Tournament, TournamentStateDTO, TournamentStatus } from '../../../models/tournament';
 import { MatchService } from '../../../services/match/match.service';
 import { BracketAdapterService } from '../../../services/bracket-adapter.service';
 import { Match } from '../../../models/match';
+import { Team } from '../../../models/team';
 import { forkJoin } from 'rxjs';
-import { MatchResult } from '../../../models/matchresult';
+import { MatchResult, MatchFinishedIds } from '../../../models/matchresult';
 import { Game } from '../../../models/game';
 
 @Component({
@@ -16,10 +17,13 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() tournament!: Tournament;
   @Input() standingId?: number;
   @Input() tournamentState?: TournamentStateDTO | null;
+  @Input() teams: Team[] = [];
+  @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
   @ViewChild('bracketContainer', { static: false }) bracketContainer?: ElementRef;
 
   matches: Match[] = [];
   isLoading = true;
+  isUpdating: { [key: number]: boolean } = {};
   private viewInitialized = false;
 
   constructor(
@@ -47,7 +51,7 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
     }
   }
 
-  loadMatches() {
+  loadMatches(resetUpdatingFlag: number | null = null) {
     if (!this.standingId || !this.tournament) {
       this.isLoading = false;
       return;
@@ -58,18 +62,24 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
     this.matchService.getMatchesByStandingId(this.standingId).subscribe({
       next: (matches) => {
         this.matches = matches;
-        this.loadAllMatchScores();
+        this.loadAllMatchScores(resetUpdatingFlag);
       },
       error: (err) => {
         console.error('Error loading matches:', err);
         this.isLoading = false;
+        if (resetUpdatingFlag !== null) {
+          this.isUpdating[resetUpdatingFlag] = false;
+        }
       }
     });
   }
 
-  loadAllMatchScores(): void {
+  loadAllMatchScores(resetUpdatingFlag: number | null = null): void {
     if (this.matches.length === 0) {
       this.isLoading = false;
+      if (resetUpdatingFlag !== null) {
+        this.isUpdating[resetUpdatingFlag] = false;
+      }
       return;
     }
 
@@ -85,6 +95,11 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
         });
         this.isLoading = false;
 
+        // Reset the updating flag after reload completes
+        if (resetUpdatingFlag !== null) {
+          this.isUpdating[resetUpdatingFlag] = false;
+        }
+
         if (this.viewInitialized) {
           this.renderBracket();
         }
@@ -92,6 +107,9 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
       error: (err) => {
         console.error('Error loading match games:', err);
         this.isLoading = false;
+        if (resetUpdatingFlag !== null) {
+          this.isUpdating[resetUpdatingFlag] = false;
+        }
       }
     });
   }
@@ -157,8 +175,129 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
         selector: selector,
         clear: true
       });
+
+      // Add click handlers after rendering completes
+      await new Promise(resolve => setTimeout(resolve, 100));
+      this.addClickHandlersToParticipants();
     } catch (error) {
       console.error('Error rendering bracket:', error);
     }
+  }
+
+  private addClickHandlersToParticipants(): void {
+    if (!this.bracketContainer?.nativeElement || !this.standingId) {
+      return;
+    }
+
+    const isTournamentFinished = this.tournamentState?.currentStatus === TournamentStatus.Finished;
+    const containerElement = this.bracketContainer.nativeElement;
+    const participantElements = containerElement.querySelectorAll('.participant');
+
+    participantElements.forEach((element: Element) => {
+      const htmlElement = element as HTMLElement;
+      const participantId = htmlElement.getAttribute('data-participant-id');
+      const matchElement = htmlElement.closest('.match');
+
+      if (!matchElement || !participantId) {
+        return;
+      }
+
+      const matchId = matchElement.getAttribute('data-match-id');
+      if (!matchId) {
+        return;
+      }
+
+      const match = this.matches.find(m => m.id === parseInt(matchId));
+      if (!match || match.winnerId || isTournamentFinished) {
+        // Match already has winner or tournament is finished - don't add click handler
+        htmlElement.style.cursor = 'default';
+        return;
+      }
+
+      // Add clickable styling
+      htmlElement.style.cursor = 'pointer';
+      htmlElement.classList.add('clickable-participant');
+
+      // Add click handler
+      htmlElement.onclick = (event) => {
+        event.stopPropagation();
+
+        const teamId = parseInt(participantId);
+        if (!this.isUpdating[match.id]) {
+          this.scoreGameForTeam(match.id, teamId);
+        }
+      };
+
+      // Add hover effect
+      htmlElement.onmouseenter = () => {
+        if (!this.isUpdating[match.id]) {
+          htmlElement.style.backgroundColor = 'rgba(33, 150, 243, 0.1)';
+        }
+      };
+      htmlElement.onmouseleave = () => {
+        htmlElement.style.backgroundColor = '';
+      };
+    });
+  }
+
+  private scoreGameForTeam(matchId: number, teamId: number): void {
+    const match = this.matches.find(m => m.id === matchId);
+    if (!match || match.winnerId || !this.tournament) {
+      return;
+    }
+
+    this.isUpdating[matchId] = true;
+
+    // Find the first unfinished game in this match
+    this.matchService.getAllGamesByMatch(matchId).subscribe({
+      next: (games) => {
+        const gameToUpdate = games.find(game => !game.winnerId);
+
+        if (!gameToUpdate) {
+          console.warn('No unfinished game found for match', matchId);
+          this.isUpdating[matchId] = false;
+          return;
+        }
+
+        const gameResult = {
+          gameId: gameToUpdate.id,
+          winnerId: teamId,
+          teamAScore: undefined,
+          teamBScore: undefined,
+          matchId: matchId,
+          standingId: match.standingId,
+          tournamentId: this.tournament.id
+        };
+
+        this.matchService.setGameResult(gameResult).subscribe({
+          next: (result) => {
+            // Check if match finished
+            if (result.matchFinished && result.matchWinnerId && result.matchLoserId) {
+              match.winnerId = result.matchWinnerId;
+              match.loserId = result.matchLoserId;
+
+              // Emit event to parent component
+              const matchFinishedData: MatchFinishedIds = {
+                winnerId: result.matchWinnerId,
+                loserId: result.matchLoserId,
+                allGroupsFinished: result.allGroupsFinished || false
+              };
+              this.matchFinished.emit(matchFinishedData);
+            }
+
+            // Reload matches and re-render bracket, passing matchId to reset the updating flag
+            this.loadMatches(matchId);
+          },
+          error: (err) => {
+            console.error('Error scoring game:', err);
+            this.isUpdating[matchId] = false;
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error loading games:', err);
+        this.isUpdating[matchId] = false;
+      }
+    });
   }
 }

@@ -160,7 +160,9 @@
             <app-standing-bracket
               [tournament]="tournament"
               [standingId]="brackets[0]?.id"
-              [tournamentState]="tournamentState">
+              [tournamentState]="tournamentState"
+              [teams]="tournament.teams"
+              (matchFinished)="onBracketMatchFinished($event)">
             </app-standing-bracket>
           </div>
         </ng-template>

@@ -25,11 +25,11 @@ namespace Domain.Entities
 
         public long? WinnerId { get; set; }
 
-        public long? TeamAId { get; private set; }
+        public long? TeamAId { get; set; }
 
         public int? TeamAScore { get; set; }
 
-        public long? TeamBId { get; private set; }
+        public long? TeamBId { get; set; }
 
         public int? TeamBScore { get; set; }
 
