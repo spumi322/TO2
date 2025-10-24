@@ -101,14 +101,6 @@ namespace TO2.Controllers
             return Ok(await _tournamentService.CheckNameIsUniqueAsync(name));
         }
 
-        // GET: api/tournaments/5/champion
-        [HttpGet("{id}/champion")]
-        public async Task<IActionResult> GetChampion(long id)
-        {
-            var champion = await _tournamentService.GetChampion(id);
-            return champion != null ? Ok(champion) : NotFound();
-        }
-
         // GET: api/tournaments/5/final-standings
         [HttpGet("{id}/final-standings")]
         public async Task<IActionResult> GetFinalStandings(long id)

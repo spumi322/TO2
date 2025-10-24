@@ -40,7 +40,7 @@ namespace Domain.Enums
         /// <summary> Active state - Users can score bracket matches</summary>
         BracketInProgress = 6,
 
-        /// <summary> Terminal state - Champion declared, tournament complete</summary>
+        /// <summary> Terminal state - Final results declared, tournament complete</summary>
         Finished = 7,
 
         /// <summary>  Terminal state - Tournament cancelled/archived</summary>
