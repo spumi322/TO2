@@ -1,5 +1,9 @@
 using Application.Common;
 using Application.Contracts;
+using Application.Pipelines.GameResult;
+using Application.Pipelines.GameResult.Contracts;
+using Application.Pipelines.GameResult.Steps;
+using Application.Pipelines.GameResult.Strategies;
 using Application.Services;
 // STEP 1 FIX: Removed unused using statements for domain events
 //using Application.Services.EventHandlers;
@@ -42,6 +46,22 @@ namespace TO2
             // STEP 2: Lifecycle Service - Replaces domain event handlers
             builder.Services.AddScoped<IOrchestrationService, OrchestrationService>();
             builder.Services.AddScoped<Func<IOrchestrationService>>(sp => () => sp.GetRequiredService<IOrchestrationService>());
+
+            // Game Result Pipeline - SOLID refactoring of ProcessGameResult
+            builder.Services.AddScoped<GameResultPipeline>();
+            // Pipeline Steps (registered in execution order)
+            builder.Services.AddScoped<IGameResultPipelineStep, ScoreGameStep>();
+            builder.Services.AddScoped<IGameResultPipelineStep, CheckMatchCompletionStep>();
+            builder.Services.AddScoped<IGameResultPipelineStep, UpdateStandingStatsStep>();
+            builder.Services.AddScoped<IGameResultPipelineStep, HandleStandingCompletionStep>();
+            builder.Services.AddScoped<IGameResultPipelineStep, ProgressBracketStep>();
+            builder.Services.AddScoped<IGameResultPipelineStep, TransitionTournamentStateStep>();
+            builder.Services.AddScoped<IGameResultPipelineStep, CalculateFinalPlacementsStep>();
+            builder.Services.AddScoped<IGameResultPipelineStep, BuildResponseStep>();
+            // Standing Stats Strategies
+            builder.Services.AddScoped<IStandingStatsStrategy, GroupStatsStrategy>();
+            builder.Services.AddScoped<IStandingStatsStrategy, BracketStatsStrategy>();
+
             // STEP 1: Domain Event Handlers Disabled - Replaced by TournamentLifecycleService
             //builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
             //builder.Services.AddScoped<IDomainEventHandler<StandingFinishedEvent>, StandingFinishedEventHandler>();

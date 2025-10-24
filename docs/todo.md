@@ -63,3 +63,26 @@ I see - GetAllByFK() does NOT include navigation properties (line 42-47). So whe
 method, move it to there.
 4. We are going to make a new method, that collects the final result and we are going to push to the frontend when tournament is finished.
 5. Use this final result object, to display final result component and update overview tab. 
+
+
+Revisit:
+UpdateStandingStatsStep (brackentries)
+HandleStandingCompletition(maybe strategy here?)
+TransitionTournamentStateStep ???????????????
+BuildResponseStep???
+
+1. Remove brackentries
+2. Rethink HandleStandingCompletion
+
+
+1. BracketEntries table will be removed. Relevant application removed/replaced.
+2. Remove IStandingStatStrategy and connected strategies.
+3. Rework HandleStandingCompletion and ProgressBracket into a strategy instead.
+4. Adjust TransitionTournamentStateStep.
+5. Invetigate BuildResponseStep and how it populates GameProcessResultDTO.
+6. Check DI container 
+7. Fix orchestrationService calling the pipeline.
+8. Fix controller 
+9. Test
+
+

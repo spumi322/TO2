@@ -51,7 +51,7 @@ namespace TO2.Controllers
         [HttpPut("{gameId}/result")]
         public async Task<IActionResult> SetGameResult(SetGameResultDTO request)
         {
-            var response = await _orchestrationService.ProcessGameResult(request);
+            var response = await _orchestrationService.LEGACY_ProcessGameResult(request);
 
             return response is not null ? Ok(response) : NoContent();
         }

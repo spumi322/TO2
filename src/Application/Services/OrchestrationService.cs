@@ -70,7 +70,7 @@ namespace Application.Services
             _tournamentService = tournamentService;
         }
 
-        public async Task<GameProcessResultDTO> ProcessGameResult(SetGameResultDTO gameResult)
+        public async Task<GameProcessResultDTO> LEGACY_ProcessGameResult(SetGameResultDTO gameResult)
         {
             _logger.LogInformation("Processing game result for GameId: {GameId}, WinnerId: {WinnerId}",
                 gameResult.gameId, gameResult.WinnerId);
