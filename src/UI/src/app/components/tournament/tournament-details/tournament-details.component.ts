@@ -12,7 +12,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TournamentStatusLabel } from '../tournament-status-label/tournament-status-label';
-import { FinalStanding } from '../../../models/final-standing';
 import { MatchService } from '../../../services/match/match.service';
 import { MatchFinishedIds } from '../../../models/matchresult';
 
@@ -38,15 +37,6 @@ export class TournamentDetailsComponent implements OnInit {
   // Team management
   allTeams: Team[] = [];
   teamToRemove: Team | null = null;
-
-  // Champion and Final Standings
-  champion: Team | null = null;
-  finalStandings: FinalStanding[] = [];
-
-  // Computed property for top 4 standings
-  get topFourStandings(): FinalStanding[] {
-    return this.finalStandings.slice(0, 4);
-  }
 
   // Forms
   bulkAddForm!: FormGroup;
@@ -168,11 +158,6 @@ export class TournamentDetailsComponent implements OnInit {
 
         // Load bracket matches if in bracket stage
         this.loadBracketMatches();
-
-        // Load champion and final standings if tournament is finished
-        if (this.tournament?.status === TournamentStatus.Finished) {
-          this.loadChampionAndStandings();
-        }
       },
       error: (error) => {
         console.error('Error loading standings', error);
@@ -206,28 +191,6 @@ export class TournamentDetailsComponent implements OnInit {
       },
       complete: () => {
         this.isReloading = false;
-      }
-    });
-  }
-
-  loadChampionAndStandings(): void {
-    if (!this.tournamentId) return;
-
-    this.tournamentService.getChampion(this.tournamentId).subscribe({
-      next: (champion) => {
-        this.champion = champion;
-      },
-      error: (error) => {
-        console.error('Error loading champion', error);
-      }
-    });
-
-    this.tournamentService.getFinalStandings(this.tournamentId).subscribe({
-      next: (standings) => {
-        this.finalStandings = standings;
-      },
-      error: (error) => {
-        console.error('Error loading final standings', error);
       }
     });
   }
@@ -499,16 +462,16 @@ export class TournamentDetailsComponent implements OnInit {
 
     // Check if tournament finished
     if (result.tournamentFinished) {
-      console.log('🏆 TOURNAMENT FINISHED! Champion:', result.winnerId);
+      console.log('TOURNAMENT FINISHED! Winner:', result.winnerId);
 
       // Reload both tournament data AND state
       this.loadTournamentState();
       this.reloadTournamentData();
 
       // Show success message
-      const championTeam = this.tournament?.teams?.find(t => t.id === result.winnerId);
-      const championName = championTeam?.name || `Team ${result.winnerId}`;
-      this.showSuccess(`🏆 Tournament Complete! Champion: ${championName}`);
+      const champTeam = this.tournament?.teams?.find(t => t.id === result.winnerId);
+      const champName = champTeam?.name || `Team ${result.winnerId}`;
+      this.showSuccess(`Tournament Complete! Champion: ${champName}`);
 
       return;
     }
@@ -580,24 +543,5 @@ export class TournamentDetailsComponent implements OnInit {
     if (placement === 2) return 'silver';
     if (placement === 3) return 'bronze';
     return '';
-  }
-
-  getResultsTabIndex(): number {
-    // Results tab is after Overview (0), Group Stage (if exists), and Bracket (if exists)
-    let tabIndex = 1; // Start after Overview
-
-    // Check if Group Stage tab exists
-    if (!this.tournament?.isRegistrationOpen && this.tournament?.format === Format.BracketAndGroups) {
-      tabIndex++;
-    }
-
-    // Check if Bracket tab exists
-    if (this.brackets.length > 0 &&
-        (this.tournamentState?.currentStatus === TournamentStatus.BracketInProgress ||
-         this.tournamentState?.currentStatus === TournamentStatus.Finished)) {
-      tabIndex++;
-    }
-
-    return tabIndex;
   }
 }

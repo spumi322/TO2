@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { StartBracketResponse, StartGroupsResponse, Tournament, TournamentStateDTO } from '../../models/tournament';
 import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { Team } from '../../models/team';
-import { FinalStanding } from '../../models/final-standing';
 
 @Injectable({
   providedIn: 'root'
@@ -82,20 +81,6 @@ export class TournamentService {
 
   checkTournamentNameUnique(name: string): Observable<boolean> {
     return this.http.get<boolean>(`${this.apiUrl}/check-unique/${name}`)
-  }
-
-  // GET /api/tournaments/{id}/champion
-  getChampion(tournamentId: number): Observable<Team | null> {
-    return this.http.get<Team>(`${this.apiUrl}/${tournamentId}/champion`).pipe(
-      catchError(() => of(null))
-    );
-  }
-
-  // GET /api/tournaments/{id}/final-standings
-  getFinalStandings(tournamentId: number): Observable<FinalStanding[]> {
-    return this.http.get<FinalStanding[]>(`${this.apiUrl}/${tournamentId}/final-standings`).pipe(
-      catchError(() => of([]))
-    );
   }
 
   startGroups(tournamentId: number): Observable<StartGroupsResponse> {
