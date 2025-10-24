@@ -1,3 +1,5 @@
+import { FinalStanding } from './final-standing';
+
 export interface MatchResult {
   teamAId: number;
   teamAWins: number;
@@ -14,4 +16,5 @@ export interface MatchFinishedIds {
   loserId: number;
   allGroupsFinished?: boolean;
   tournamentFinished?: boolean;
+  finalStandings?: FinalStanding[];
 }

@@ -281,7 +281,8 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
                 winnerId: result.matchWinnerId,
                 loserId: result.matchLoserId,
                 allGroupsFinished: result.allGroupsFinished || false,
-                tournamentFinished: result.tournamentFinished || false
+                tournamentFinished: result.tournamentFinished || false,
+                finalStandings: result.finalStandings
               };
               this.matchFinished.emit(matchFinishedData);
 

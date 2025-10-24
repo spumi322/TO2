@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { StartBracketResponse, StartGroupsResponse, Tournament, TournamentStateDTO } from '../../models/tournament';
 import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { Team } from '../../models/team';
+import { FinalStanding } from '../../models/final-standing';
 
 @Injectable({
   providedIn: 'root'
@@ -100,6 +101,13 @@ export class TournamentService {
     return this.http.post<StartBracketResponse>(
       `${this.apiUrl}/${tournamentId}/start-bracket`,
       {}
+    );
+  }
+
+  // GET /api/tournaments/{id}/final-standings
+  getFinalStandings(tournamentId: number): Observable<FinalStanding[]> {
+    return this.http.get<FinalStanding[]>(`${this.apiUrl}/${tournamentId}/final-standings`).pipe(
+      catchError(() => of([]))
     );
   }
 }

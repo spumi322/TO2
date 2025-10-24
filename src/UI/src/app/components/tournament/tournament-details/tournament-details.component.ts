@@ -14,6 +14,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TournamentStatusLabel } from '../tournament-status-label/tournament-status-label';
 import { MatchService } from '../../../services/match/match.service';
 import { MatchFinishedIds } from '../../../models/matchresult';
+import { FinalStanding } from '../../../models/final-standing';
 
 @Component({
   selector: 'app-tournament-details',
@@ -37,6 +38,9 @@ export class TournamentDetailsComponent implements OnInit {
   // Team management
   allTeams: Team[] = [];
   teamToRemove: Team | null = null;
+
+  // Final Results
+  finalStandings: FinalStanding[] = [];
 
   // Forms
   bulkAddForm!: FormGroup;
@@ -158,9 +162,28 @@ export class TournamentDetailsComponent implements OnInit {
 
         // Load bracket matches if in bracket stage
         this.loadBracketMatches();
+
+        // Load final standings if tournament is finished
+        if (this.tournamentState?.currentStatus === TournamentStatus.Finished) {
+          this.loadFinalStandings();
+        }
       },
       error: (error) => {
         console.error('Error loading standings', error);
+      }
+    });
+  }
+
+  loadFinalStandings(): void {
+    if (!this.tournamentId) return;
+
+    this.tournamentService.getFinalStandings(this.tournamentId).subscribe({
+      next: (standings) => {
+        this.finalStandings = standings;
+        console.log('Final standings loaded:', this.finalStandings);
+      },
+      error: (error) => {
+        console.error('Error loading final standings', error);
       }
     });
   }
@@ -464,6 +487,12 @@ export class TournamentDetailsComponent implements OnInit {
     if (result.tournamentFinished) {
       console.log('TOURNAMENT FINISHED! Winner:', result.winnerId);
 
+      // Store final standings
+      if (result.finalStandings) {
+        this.finalStandings = result.finalStandings;
+        console.log('Final standings received:', this.finalStandings);
+      }
+
       // Reload both tournament data AND state
       this.loadTournamentState();
       this.reloadTournamentData();
@@ -543,5 +572,54 @@ export class TournamentDetailsComponent implements OnInit {
     if (placement === 2) return 'silver';
     if (placement === 3) return 'bronze';
     return '';
+  }
+
+  // Get top 4 standings for Overview tab display
+  get topFourStandings(): FinalStanding[] {
+    return this.finalStandings.slice(0, 4);
+  }
+
+  // Group final standings by placement tiers (1st, 2nd, 3-4th, 5-8th, etc.)
+  groupPlacementsByTier(): { label: string, teams: FinalStanding[] }[] {
+    if (!this.finalStandings || this.finalStandings.length === 0) {
+      return [];
+    }
+
+    const tiers: { label: string, teams: FinalStanding[] }[] = [];
+    const grouped = new Map<string, FinalStanding[]>();
+
+    // Group by placement value
+    this.finalStandings.forEach(standing => {
+      let tierLabel = '';
+      const p = standing.placement;
+
+      if (p === 1) {
+        tierLabel = '1st Place';
+      } else if (p === 2) {
+        tierLabel = '2nd Place';
+      } else if (p >= 3 && p <= 4) {
+        tierLabel = '3rd-4th Place';
+      } else if (p >= 5 && p <= 8) {
+        tierLabel = '5th-8th Place';
+      } else if (p >= 9 && p <= 16) {
+        tierLabel = '9th-16th Place';
+      } else if (p >= 17 && p <= 32) {
+        tierLabel = '17th-32nd Place';
+      } else {
+        tierLabel = `${p}th Place`;
+      }
+
+      if (!grouped.has(tierLabel)) {
+        grouped.set(tierLabel, []);
+      }
+      grouped.get(tierLabel)!.push(standing);
+    });
+
+    // Convert to array and sort by placement
+    grouped.forEach((teams, label) => {
+      tiers.push({ label, teams });
+    });
+
+    return tiers;
   }
 }

@@ -71,7 +71,7 @@
 }
 
 /* Cards Styling */
-.info-card, .teams-card, .registered-teams-card {
+.info-card, .teams-card, .registered-teams-card, .top-4-card {
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
@@ -306,6 +306,255 @@ mat-progress-bar {
 .error-snackbar {
   background: #f44336;
   color: white;
+}
+
+/* Top 4 Results Card (Overview Tab) */
+.top-4-card .trophy-avatar {
+  color: #ffd700;
+}
+
+.top-4-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.top-4-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.top-4-item:hover {
+  background-color: #f0f0f0;
+}
+
+.placement-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.95rem;
+  background-color: #e0e0e0;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.placement-badge.gold {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #795548;
+  box-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
+}
+
+.placement-badge.silver {
+  background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+  color: #424242;
+  box-shadow: 0 2px 6px rgba(192, 192, 192, 0.3);
+}
+
+.placement-badge.bronze {
+  background: linear-gradient(135deg, #cd7f32, #e8a877);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(205, 127, 50, 0.3);
+}
+
+.top-4-team-info {
+  flex: 1;
+}
+
+.top-4-team-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.top-4-team-detail {
+  font-size: 0.85rem;
+  color: #757575;
+}
+
+.top-4-team-detail.champion-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ff8f00;
+  font-weight: 600;
+}
+
+.top-4-team-detail.champion-label mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Results Tab Styling */
+.results-tab-content {
+  padding: 8px 0;
+}
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.results-header .trophy-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #ffd700;
+}
+
+.results-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Placement Tiers */
+.placement-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.tier-card {
+  border-radius: 4px;
+  overflow: hidden;
+  border-left: 3px solid #e0e0e0;
+}
+
+.tier-card.tier-first {
+  border-left-color: #ffd700;
+}
+
+.tier-card.tier-first mat-card-header {
+  background-color: #fffbf0;
+}
+
+.tier-card.tier-second {
+  border-left-color: #c0c0c0;
+}
+
+.tier-card.tier-second mat-card-header {
+  background-color: #f8f8f8;
+}
+
+.tier-card.tier-third {
+  border-left-color: #cd7f32;
+}
+
+.tier-card.tier-third mat-card-header {
+  background-color: #fff8f0;
+}
+
+.tier-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.tier-label h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #555;
+}
+
+.tier-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.tier-icon.gold {
+  color: #ffa000;
+}
+
+.tier-icon.silver {
+  color: #757575;
+}
+
+.tier-icon.bronze {
+  color: #8d6e63;
+}
+
+/* Tier Teams */
+.tier-teams {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.team-result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  background-color: #fafafa;
+  border-radius: 3px;
+}
+
+.team-result:hover {
+  background-color: #f0f0f0;
+}
+
+.team-result .team-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #1976d2;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.team-details {
+  flex: 1;
+}
+
+.team-details .team-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.team-eliminated {
+  font-size: 0.75rem;
+  color: #999;
+}
+
+.team-champion {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #ff8f00;
+}
+
+.team-champion mat-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
 }
 
 /* Media Queries */
