@@ -16,16 +16,16 @@ export class TeamService {
     return this.http.get<Team[]>(`${this.apiUrl}/all`);
   }
 
-  getTeamsWithStatsByStandingId(standingId: number): Observable<Team[]> {
-    return this.http.get<Team[]>(`${this.apiUrl}/${standingId}/teams-with-stats`);
-  }
-
   addTeamToTournament(tournamentId: number, teamId: number): Observable<any> {
     const request = {
       TournamentId: tournamentId,
       TeamId: teamId
     };
     return this.http.post(`${this.apiUrl}/tournamentId/teamId`, request);
+  }
+
+  removeTeamFromTournament(teamId: number, tournamentId: number) {
+    return this.http.delete(`${this.apiUrl}/${teamId}/${tournamentId}`);
   }
 
   // POST /api/teams

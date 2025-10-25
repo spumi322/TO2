@@ -19,13 +19,6 @@ namespace TO2.Controllers
             _workFlowService = workFlowService;
         }
 
-        //// GET match by id
-        //[HttpGet("match/{id}")]
-        //public async Task<IActionResult> GetMatch(long id)
-        //{
-        //    return Ok(await _matchService.GetMatchAsync(id));
-        //}
-
         // GET matches by standingId
         [HttpGet("all/{standingId}")]
         public async Task<IActionResult> GetMatches(long standingId)

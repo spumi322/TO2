@@ -39,7 +39,7 @@ namespace Application.Pipelines.GameResult.Steps
             await _standingService.SetFinalResults(tournamentId, placements);
 
             // Get final results for response
-            var finalStandings = await _standingService.GetFinalResults(tournamentId);
+            var finalStandings = await _standingService.GetFinalResultsAsync(tournamentId);
 
             // Store in context
             context.FinalStandings = finalStandings;

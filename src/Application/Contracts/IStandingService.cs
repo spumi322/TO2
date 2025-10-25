@@ -28,8 +28,7 @@ namespace Application.Contracts
         /// <summary>
         /// Advances the match winner to the next round by populating the appropriate team slot.
         /// </summary>
-        Task AdvanceWinnerToNextRound(long finishedMatchId, long winnerId, long standingId);
-        Task<List<TeamPlacementDTO>> GetFinalResults(long tournamentId);
+        Task<List<TeamPlacementDTO>> GetFinalResultsAsync(long tournamentId);
         Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateFinalPlacements(long standingId);
         Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements);
     }

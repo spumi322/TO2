@@ -26,7 +26,6 @@ export class CreateTournamentComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeForm();
-    this.setupNameValidation();
   }
 
   initializeForm(): void {
@@ -44,24 +43,6 @@ export class CreateTournamentComponent implements OnInit {
       teamsPerGroup: [''],
       teamsPerBracket: ['']
     });
-  }
-
-  setupNameValidation(): void {
-    this.form.get('name')?.valueChanges
-      .pipe(
-        debounceTime(500),
-        switchMap(name => {
-          if (!name || name.length < 4) {
-            return of(null);
-          }
-          return this.tournamentService.checkTournamentNameUnique(name).pipe(
-            map(isUnique => isUnique ? null : { notUnique: true })
-          );
-        })
-      )
-      .subscribe(result => {
-        this.form.get('name')?.setErrors(result);
-      });
   }
 
   onFormatChange(): void {

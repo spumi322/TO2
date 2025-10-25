@@ -15,8 +15,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata.Ecma335;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Group = Domain.Entities.Group;
+using Match = Domain.AggregateRoots.Match;
 
 namespace Application.Services
 {
@@ -29,33 +31,39 @@ namespace Application.Services
         private readonly ILogger<OrchestrationService> _logger;
         private readonly IStandingService _standingService;
         private readonly IMatchService _matchService;
+        private readonly IGameService _gameService;
         private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly IGenericRepository<Standing> _standingRepository;
         private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly IGenericRepository<Group> _groupRepository;
         private readonly IGenericRepository<Team> _teamRepository;
+        private readonly IGenericRepository<Match> _matchRepository;
         private readonly ITournamentStateMachine _stateMachine;
 
         public OrchestrationService(
             ILogger<OrchestrationService> logger,
             IStandingService standingService,
             IMatchService matchService,
+            IGameService gameService,
             IGenericRepository<Tournament> tournamentRepository,
             IGenericRepository<Standing> standingRepository,
             IGenericRepository<TournamentTeam> tournamentTeamRepository,
             IGenericRepository<Group> groupRepository,
             IGenericRepository<Team> teamRepository,
+            IGenericRepository<Match> matchRepository,
             ITournamentStateMachine stateMachine
             )
         {
             _logger = logger;
             _standingService = standingService;
             _matchService = matchService;
+            _gameService = gameService;
             _tournamentRepository = tournamentRepository;
             _standingRepository = standingRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
             _groupRepository = groupRepository;
             _teamRepository = teamRepository;
+            _matchRepository = matchRepository;
             _stateMachine = stateMachine;
         }
 
@@ -199,7 +207,7 @@ namespace Application.Services
                         {
                             try
                             {
-                                var result = await _matchService.GenerateMatch(
+                                var match = await _matchService.GenerateMatch(
                                     teamsInGroup[i],
                                     teamsInGroup[j],
                                     round: i + 1,
@@ -207,9 +215,11 @@ namespace Application.Services
                                     standingId: standing.Id
                                 );
 
-                                if (!result.Success)
+                                var game = await _gameService.GenerateGames(match);
+
+                                if (!game.Success)
                                 {
-                                    _logger.LogError($"Failed to generate match: {result.Message}");
+                                    _logger.LogError($"Failed to generate match: {game.Message}");
                                     allMatchesGenerated = false;
                                 }
                                 else
@@ -389,21 +399,25 @@ namespace Application.Services
                             var pairIndex = seed - 1;
                             var (teamA, teamB) = seededPairs[pairIndex];
 
-                            var result = await _matchService.GenerateMatch(teamA, teamB, round, seed, bracket.Id);
-                            if (!result.Success)
+                            var match = await _matchService.GenerateMatch(teamA, teamB, round, seed, bracket.Id);
+                            var gameResponse = await _gameService.GenerateGames(match);
+                            if (!gameResponse.Success)
                             {
-                                throw new Exception($"Failed to generate match: {result.Message}");
+                                throw new Exception($"Failed to generate match: {gameResponse.Message}");
                             }
 
                             _logger.LogInformation($"R{round} Match {seed}: {teamA.Name} vs {teamB.Name}");
+
+
                         }
                         else
                         {
                             // Round 2+: TBD teams (null teams)
-                            var result = await _matchService.GenerateMatch(null, null, round, seed, bracket.Id);
-                            if (!result.Success)
+                            var match = await _matchService.GenerateMatch(null, null, round, seed, bracket.Id);
+                            var gameResponse = await _gameService.GenerateGames(match);
+                            if (!gameResponse.Success)
                             {
-                                throw new Exception($"Failed to generate TBD match: {result.Message}");
+                                throw new Exception($"Failed to generate match: {gameResponse.Message}");
                             }
 
                             _logger.LogInformation($"R{round} Match {seed}: TBD vs TBD");

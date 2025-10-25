@@ -12,6 +12,7 @@ namespace Application.Contracts
     {
         Task<CreateTeamResponseDTO> CreateTeamAsync(CreateTeamRequestDTO request);
         Task<AddTeamToTournamentResponseDTO> AddTeamToTournamentAsync(AddTeamToTournamentRequestDTO request);
+        Task RemoveTeamFromTournamentAsync(long teamId, long tournamentId);
         Task<List<GetAllTeamsResponseDTO>> GetAllTeamsAsync();
         Task<List<GetTeamWithStatsResponseDTO>> GetTeamsWithStatsAsync(long standingId);
         Task<GetTeamResponseDTO> GetTeamAsync(long teamId);

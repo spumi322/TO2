@@ -349,7 +349,7 @@ export class TournamentDetailsComponent implements OnInit {
   removeTeam(team: Team): void {
     if (!this.tournamentId) return;
 
-    this.tournamentService.removeTeam(team.id, this.tournamentId).subscribe({
+    this.teamService.removeTeamFromTournament(team.id, this.tournamentId).subscribe({
       next: () => {
         this.reloadTournamentData();
         this.showSuccess(`Removed ${team.name} from tournament`);
@@ -371,14 +371,6 @@ export class TournamentDetailsComponent implements OnInit {
 
     this.isReloading = true;
     this.tournamentService.startTournament(this.tournamentId).pipe(
-      switchMap(() => this.generateGroupMatches()),
-      switchMap((standingIds: number[]) => {
-        const generateGamesRequests = standingIds.map(standingId =>
-          this.standingService.generateGames(standingId)
-        );
-
-        return forkJoin(generateGamesRequests.length ? generateGamesRequests : [of(null)]);
-      }),
       catchError(error => {
         this.showError('Error starting tournament');
         console.error('Error in tournament starting process:', error);
@@ -419,17 +411,6 @@ export class TournamentDetailsComponent implements OnInit {
         this.isReloading = false;
       }
     });
-  }
-
-  generateGroupMatches(): Observable<number[]> {
-    if (!this.tournamentId) return of([]);
-
-    return this.standingService.generateGroupMatches(this.tournamentId).pipe(
-      catchError(error => {
-        console.error('Error generating group matches:', error);
-        return of([]);
-      })
-    );
   }
 
   reloadTournamentData(): void {

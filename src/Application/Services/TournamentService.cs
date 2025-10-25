@@ -54,7 +54,7 @@ namespace Application.Services
             _stateMachine = stateMachine;
         }
 
-        public async Task<TournamentStateDTO> GetTournamentState(long tournamentId)
+        public async Task<TournamentStateDTO> GetTournamentStateAsync(long tournamentId)
         {
             var tournament = await _tournamentRepository.Get(tournamentId)
                 ?? throw new Exception("Tournament not found");
@@ -208,34 +208,6 @@ namespace Application.Services
             return _mapper.Map<List<GetTeamResponseDTO>>(teams);
         }
 
-        public async Task RemoveTeamFromTournamentAsync(long teamId, long tournamentId)
-        {
-            var existingTeam = await _teamService.GetTeamAsync(teamId) ?? throw new Exception("Team not found");
-            var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
-
-            // Check if registration is still open
-            if (!existingTournament.IsRegistrationOpen)
-                throw new Exception("Cannot remove teams after tournament has started");
-
-            try
-            {
-                // Remove from TournamentTeams table
-                var tournamentTeam = await _dbContext.TournamentTeams
-                    .FirstOrDefaultAsync(tt => tt.TeamId == teamId && tt.TournamentId == tournamentId);
-
-                if (tournamentTeam == null)
-                    throw new Exception("Team is not registered in this tournament");
-
-                _dbContext.TournamentTeams.Remove(tournamentTeam);
-                await _dbContext.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error removing team from tournament: {Message}", ex.Message);
-                throw;
-            }
-        }
-
         public async Task<StartTournamentDTO> StartTournament(long tournamentId)
         {
             var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
@@ -264,14 +236,6 @@ namespace Application.Services
                 return new StartTournamentDTO("Tournament already started", false);
             }
         }
-
-        public async Task<IsNameUniqueResponseDTO> CheckNameIsUniqueAsync(string name)
-        {
-            var isUnique = (await _tournamentRepository.GetAll()).Any(t => t.Name == name);
-
-            return new IsNameUniqueResponseDTO(!isUnique);
-        }
-
     }
 }
 

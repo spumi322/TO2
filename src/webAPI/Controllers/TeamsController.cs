@@ -23,11 +23,11 @@ namespace TO2.Controllers
             return Ok(await _teamService.GetAllTeamsAsync());
         }
 
-        // GET: api/Teams/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(long id)
+        // GET: api/5/teams-with-stats
+        [HttpGet("{standingId}/teams-with-stats")]
+        public async Task<IActionResult> GetTeamsWithStats(long standingId)
         {
-            return Ok(await _teamService.GetTeamAsync(id));
+            return Ok(await _teamService.GetTeamsWithStatsAsync(standingId));
         }
 
         // POST: api/Teams
@@ -44,27 +44,13 @@ namespace TO2.Controllers
             return Ok(await _teamService.AddTeamToTournamentAsync(request));
         }
 
-        // PUT: api/Teams/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(long id, [FromBody] UpdateTeamRequestDTO request)
+        // DELETE: api/Tournament/5/5
+        [HttpDelete("{teamId}/{tournamentId}")]
+        public async Task<IActionResult> RemoveTeamFromTournament(long teamId, long tournamentId)
         {
-            return Ok(await _teamService.UpdateTeamAsync(id, request));
-        }
-
-        // DELETE: api/Teams/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(long id)
-        {
-            await _teamService.DeleteTeamAsync(id);
+            await _teamService.RemoveTeamFromTournamentAsync(teamId, tournamentId);
 
             return NoContent();
-        }
-
-        // GET: api/5/teams-with-stats
-        [HttpGet("{standingId}/teams-with-stats")]
-        public async Task<IActionResult> GetTeamsWithStats(long standingId)
-        {
-            return Ok(await _teamService.GetTeamsWithStatsAsync(standingId));
         }
     }
 }

@@ -65,23 +65,9 @@ export class TournamentService {
     );
   }
 
-  // POST /api/tournaments/{teamId}/{tournamentId}
-  addTeam(teamId: number, tournamentId: number) {
-    return this.http.post(`${this.apiUrl}/${teamId}/${tournamentId}`, {});
-  }
-
-  // DELETE /api/tournaments/{teamId}/{tournamentId}
-  removeTeam(teamId: number, tournamentId: number) {
-    return this.http.delete(`${this.apiUrl}/${teamId}/${tournamentId}`);
-  }
-
   // PUT /api/tournaments/{tournamentId}/start
   startTournament(tournamentId: number) {
     return this.http.put(`${this.apiUrl}/${tournamentId}/start`, {});
-  }
-
-  checkTournamentNameUnique(name: string): Observable<boolean> {
-    return this.http.get<boolean>(`${this.apiUrl}/check-unique/${name}`)
   }
 
   startGroups(tournamentId: number): Observable<StartGroupsResponse> {
