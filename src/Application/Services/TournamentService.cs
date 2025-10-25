@@ -22,7 +22,7 @@ namespace Application.Services
     {
         private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly IGenericRepository<Match> _matchRepository;
-        private readonly IGenericRepository<Bracket> _bracketRepository;
+        private readonly IGenericRepository<Team> _teamRepository;
         private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly ITeamService _teamService;
         private readonly ITO2DbContext _dbContext;
@@ -33,7 +33,7 @@ namespace Application.Services
 
         public TournamentService(IGenericRepository<Tournament> tournamentRepository,
                                  IGenericRepository<Match> matchRepository,
-                                 IGenericRepository<Bracket> bracketRepository,
+                                 IGenericRepository<Team> teamRepository,
                                  IGenericRepository<TournamentTeam> tournamentTeamRepository,
                                  ITeamService teamService,
                                  ITO2DbContext tO2DbContext,
@@ -44,7 +44,7 @@ namespace Application.Services
         {
             _tournamentRepository = tournamentRepository;
             _matchRepository = matchRepository;
-            _bracketRepository = bracketRepository;
+            _teamRepository = teamRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
             _teamService = teamService;
             _dbContext = tO2DbContext;
@@ -299,8 +299,18 @@ namespace Application.Services
                     return new List<TeamPlacementDTO>();
                 }
 
-                // Get all bracket entries (for team names)
-                var bracketEntries = await _bracketRepository.GetAllByFK("StandingId", bracketStanding.Id);
+                // Extract unique team IDs from matches
+                var teamIds = allMatches
+                    .SelectMany(m => new[] { m.TeamAId, m.TeamBId })
+                    .Where(id => id.HasValue)
+                    .Select(id => id.Value)
+                    .Distinct()
+                    .ToHashSet();
+
+                // Get all teams from repository and filter to bracket participants
+                var allTeams = await _teamRepository.GetAll();
+                var bracketTeams = allTeams.Where(t => teamIds.Contains(t.Id)).ToList();
+                var teamNameLookup = bracketTeams.ToDictionary(t => t.Id, t => t.Name);
 
                 // Calculate total rounds
                 int totalRounds = allMatches.Max(m => m.Round ?? 0);
@@ -315,21 +325,23 @@ namespace Application.Services
                 // Build standings by determining elimination round for each team
                 var teamPlacements = new List<(long TeamId, string TeamName, int EliminationRound, TeamStatus Status)>();
 
-                foreach (var entry in bracketEntries)
+                foreach (var teamId in teamIds)
                 {
                     // Find the match where this team lost (if any)
-                    var lossMatch = allMatches.FirstOrDefault(m => m.LoserId == entry.TeamId);
+                    var lossMatch = allMatches.FirstOrDefault(m => m.LoserId == teamId);
+
+                    var teamName = teamNameLookup.ContainsKey(teamId) ? teamNameLookup[teamId] : "Unknown Team";
 
                     if (lossMatch == null)
                     {
                         // No loss match = Champion
-                        teamPlacements.Add((entry.TeamId, entry.TeamName, totalRounds + 1, TeamStatus.Champion));
+                        teamPlacements.Add((teamId, teamName, totalRounds + 1, TeamStatus.Champion));
                     }
                     else
                     {
                         // Team was eliminated in the round they lost
                         int eliminationRound = lossMatch.Round ?? 0;
-                        teamPlacements.Add((entry.TeamId, entry.TeamName, eliminationRound, TeamStatus.Eliminated));
+                        teamPlacements.Add((teamId, teamName, eliminationRound, TeamStatus.Eliminated));
                     }
                 }
 

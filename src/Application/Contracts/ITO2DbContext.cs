@@ -18,7 +18,6 @@ namespace Application.Contracts
         DbSet<Standing> Standings { get; }
         DbSet<Game> Games { get; }
         DbSet<Group> GroupEntries { get; }
-        DbSet<Bracket> BracketEntries { get; }
         DbSet<TournamentTeam> TournamentTeams { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

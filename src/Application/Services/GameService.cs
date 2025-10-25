@@ -24,7 +24,6 @@ namespace Application.Services
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<Standing> _standingrepository;
         private readonly IGenericRepository<Group> _groupRepository;
-        private readonly IGenericRepository<Bracket> _bracketRepository;
         private readonly ITO2DbContext _dbContext;
         private readonly ILogger<GameService> _logger;
 
@@ -33,7 +32,6 @@ namespace Application.Services
                            IGenericRepository<Match> matchRepository,
                            IGenericRepository<Standing> standingRepository,
                            IGenericRepository<Group> groupRepository,
-                           IGenericRepository<Bracket> bracketRepository,
                            ITO2DbContext dbContext,
                            ILogger<GameService> logger)
         {
@@ -41,7 +39,6 @@ namespace Application.Services
             _matchRepository = matchRepository;
             _standingrepository = standingRepository;
             _groupRepository = groupRepository;
-            _bracketRepository = bracketRepository;
             _dbContext = dbContext;
             _logger = logger;
         }
@@ -247,61 +244,61 @@ namespace Application.Services
             return new MatchWinner(winnerId.Value, loserId.Value);
         }
 
-        public async Task<StandingType> UpdateStandingEntries(long standingId, long winnerId, long loserId)
-        {
-            var standing = await _standingrepository.Get(standingId) ?? throw new Exception("Standing not found");
+        //public async Task<StandingType> UpdateStandingEntries(long standingId, long winnerId, long loserId)
+        //{
+        //    var standing = await _standingrepository.Get(standingId) ?? throw new Exception("Standing not found");
 
-            switch (standing.StandingType)
-            {
-                case StandingType.Group:
-                    {
-                        // Load group entries using repository
-                        var groupEntries = await _groupRepository.GetAllByFK("StandingId", standingId);
+        //    switch (standing.StandingType)
+        //    {
+        //        case StandingType.Group:
+        //            {
+        //                // Load group entries using repository
+        //                var groupEntries = await _groupRepository.GetAllByFK("StandingId", standingId);
 
-                        var winner = groupEntries.FirstOrDefault(tp => tp.TeamId == winnerId);
-                        var loser = groupEntries.FirstOrDefault(tp => tp.TeamId == loserId);
+        //                var winner = groupEntries.FirstOrDefault(tp => tp.TeamId == winnerId);
+        //                var loser = groupEntries.FirstOrDefault(tp => tp.TeamId == loserId);
 
-                        if (winner == null || loser == null)
-                            throw new Exception("Teams not found in group standings");
+        //                if (winner == null || loser == null)
+        //                    throw new Exception("Teams not found in group standings");
 
-                        winner.Wins += 1;
-                        winner.Points += 3;
-                        loser.Losses += 1;
+        //                winner.Wins += 1;
+        //                winner.Points += 3;
+        //                loser.Losses += 1;
 
-                        await _groupRepository.Update(winner);
-                        await _groupRepository.Update(loser);
-                        await _groupRepository.Save();
+        //                await _groupRepository.Update(winner);
+        //                await _groupRepository.Update(loser);
+        //                await _groupRepository.Save();
 
-                        break;
-                    }
+        //                break;
+        //            }
 
-                case StandingType.Bracket:
-                    {
-                        var bracketEntries = await _bracketRepository.GetAllByFK("StandingId", standingId);
+        //        case StandingType.Bracket:
+        //            {
+        //                var bracketEntries = await _bracketRepository.GetAllByFK("StandingId", standingId);
 
-                        var winner = bracketEntries.FirstOrDefault(b => b.TeamId == winnerId);
-                        var loser = bracketEntries.FirstOrDefault(b => b.TeamId == loserId);
+        //                var winner = bracketEntries.FirstOrDefault(b => b.TeamId == winnerId);
+        //                var loser = bracketEntries.FirstOrDefault(b => b.TeamId == loserId);
 
-                        if (winner == null || loser == null)
-                            throw new Exception("Teams not found in bracket standings");
+        //                if (winner == null || loser == null)
+        //                    throw new Exception("Teams not found in bracket standings");
 
-                        winner.Status = TeamStatus.Advanced;
-                        loser.Status = TeamStatus.Eliminated;
-                        loser.Eliminated = true;
+        //                winner.Status = TeamStatus.Advanced;
+        //                loser.Status = TeamStatus.Eliminated;
+        //                loser.Eliminated = true;
 
-                        await _bracketRepository.Update(winner);
-                        await _bracketRepository.Update(loser);
-                        await _bracketRepository.Save();
+        //                await _bracketRepository.Update(winner);
+        //                await _bracketRepository.Update(loser);
+        //                await _bracketRepository.Save();
 
-                        break;
-                    }
+        //                break;
+        //            }
 
-                default:
-                    throw new Exception("Unsupported standing type");
-            }
+        //        default:
+        //            throw new Exception("Unsupported standing type");
+        //    }
 
-            return standing.StandingType;
-        }
+        //    return standing.StandingType;
+        //}
 
 
         //public async Task UpdateStandingAfterMatch(Match match)

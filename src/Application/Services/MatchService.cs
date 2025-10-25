@@ -22,7 +22,6 @@ namespace Application.Services
         private readonly IStandingService _standingService;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<Standing> _standingRepository;
-        private readonly IGenericRepository<Bracket> _bracketRepository;
         private readonly ITO2DbContext _dbContext;
         private readonly IMapper _mapper;
         private readonly ILogger<MatchService> _logger;
@@ -31,7 +30,6 @@ namespace Application.Services
         public MatchService(IStandingService standingService,
                             IGenericRepository<Match> matchRepository,
                             IGenericRepository<Standing> standingRepository,
-                            IGenericRepository<Bracket> bracketRepository,
                             ITO2DbContext tO2DbContext,
                             IMapper mapper,
                             ILogger<MatchService> logger,
@@ -40,7 +38,6 @@ namespace Application.Services
             _standingService = standingService;
             _matchRepository = matchRepository;
             _standingRepository = standingRepository;
-            _bracketRepository = bracketRepository;
             _dbContext = tO2DbContext;
             _mapper = mapper;
             _logger = logger;

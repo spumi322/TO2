@@ -31,7 +31,6 @@ namespace Application.Services
         private readonly IGameService _gameService;
         private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly IGenericRepository<Standing> _standingRepository;
-        private readonly IGenericRepository<Bracket> _bracketRepository;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly IGenericRepository<Group> _groupRepository;
@@ -46,7 +45,6 @@ namespace Application.Services
             IGameService gameService,
             IGenericRepository<Tournament> tournamentRepository,
             IGenericRepository<Standing> standingRepository,
-            IGenericRepository<Bracket> bracketRepository,
             IGenericRepository<Match> matchRepository,
             IGenericRepository<TournamentTeam> tournamentTeamRepository,
             IGenericRepository<Group> groupRepository,
@@ -61,7 +59,6 @@ namespace Application.Services
             _gameService = gameService;
             _tournamentRepository = tournamentRepository;
             _standingRepository = standingRepository;
-            _bracketRepository = bracketRepository;
             _matchRepository = matchRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
             _groupRepository = groupRepository;
@@ -587,27 +584,11 @@ namespace Application.Services
 
                 _logger.LogInformation($"Generated all matches with games across {totalRounds} rounds");
 
-                // 6. Create BracketEntry records for participation tracking
-                var bracketEntries = new List<Bracket>();
-
-                foreach (var team in teams)
-                {
-                    var bracketEntry = new Bracket(tournamentId, bracket.Id, team);
-                    bracketEntry.CurrentRound = 1;
-                    bracketEntry.Status = TeamStatus.Competing;
-
-                    bracketEntries.Add(bracketEntry);
-                }
-
-                await _bracketRepository.AddRange(bracketEntries);
-                _logger.LogInformation($"Created {bracketEntries.Count} bracket entries");
-
-                // 7. Mark bracket as seeded
+                // 6. Mark bracket as seeded
                 bracket.IsSeeded = true;
                 await _standingRepository.Update(bracket);
 
-                // 8. Save all changes
-                await _bracketRepository.Save();
+                // 7. Save all changes
                 await _standingRepository.Save();
 
                 _logger.LogInformation($"✓ Bracket seeded successfully with {teams.Count} teams across {totalRounds} rounds");

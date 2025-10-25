@@ -38,7 +38,6 @@ namespace Infrastructure.Persistence
         public DbSet<Standing> Standings { get; set; }
         public DbSet<Game> Games { get; set; }
         public DbSet<Group> GroupEntries { get; set; }
-        public DbSet<Bracket> BracketEntries { get; set; }
         public DbSet<TournamentTeam> TournamentTeams { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -62,6 +61,7 @@ namespace Infrastructure.Persistence
             modelBuilder.Ignore<EntityBase>();
             modelBuilder.Ignore<ValueObjectBase>();
             modelBuilder.Ignore<Prize>();
+            modelBuilder.Ignore<Bracket>();
 
             base.OnModelCreating(modelBuilder);
 
