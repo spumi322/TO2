@@ -45,22 +45,21 @@ namespace TO2
             builder.Services.AddScoped<Func<IGameService>>(sp => () => sp.GetRequiredService<IGameService>());
             // STEP 2: Lifecycle Service - Replaces domain event handlers
             builder.Services.AddScoped<IOrchestrationService, OrchestrationService>();
+            builder.Services.AddScoped<IWorkFlowService, WorkFlowService>();
             builder.Services.AddScoped<Func<IOrchestrationService>>(sp => () => sp.GetRequiredService<IOrchestrationService>());
 
             // Game Result Pipeline - SOLID refactoring of ProcessGameResult
-            builder.Services.AddScoped<GameResultPipeline>();
+            builder.Services.AddScoped<IGameResultPipeline, GameResultPipeline>();
             // Pipeline Steps (registered in execution order)
             builder.Services.AddScoped<IGameResultPipelineStep, ScoreGameStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, CheckMatchCompletionStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, UpdateStandingStatsStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, HandleStandingCompletionStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, ProgressBracketStep>();
+            builder.Services.AddScoped<IGameResultPipelineStep, HandleStandingProgressStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, TransitionTournamentStateStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, CalculateFinalPlacementsStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, BuildResponseStep>();
-            // Standing Stats Strategies
-            builder.Services.AddScoped<IStandingStatsStrategy, GroupStatsStrategy>();
-            builder.Services.AddScoped<IStandingStatsStrategy, BracketStatsStrategy>();
+            // Standing Progress Strategies
+            builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
+            builder.Services.AddScoped<IStandingProgressStrategy, BracketProgressStrategy>();
 
             // STEP 1: Domain Event Handlers Disabled - Replaced by TournamentLifecycleService
             //builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();

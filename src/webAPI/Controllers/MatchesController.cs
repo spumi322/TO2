@@ -10,13 +10,13 @@ namespace TO2.Controllers
     {
         private readonly IMatchService _matchService;
         private readonly IGameService _gameService;
-        private readonly IOrchestrationService _orchestrationService;
+        private readonly IWorkFlowService _workFlowService;
 
-        public MatchesController(IMatchService matchService, IGameService gameService, IOrchestrationService orchestrationService)
+        public MatchesController(IMatchService matchService, IGameService gameService, IWorkFlowService workFlowService)
         {
             _matchService = matchService;
             _gameService = gameService;
-            _orchestrationService = orchestrationService;
+            _workFlowService = workFlowService;
         }
 
         //// GET match by id
@@ -51,7 +51,7 @@ namespace TO2.Controllers
         [HttpPut("{gameId}/result")]
         public async Task<IActionResult> SetGameResult(SetGameResultDTO request)
         {
-            var response = await _orchestrationService.LEGACY_ProcessGameResult(request);
+            var response = await _workFlowService.ProcessGameResult(request);
 
             return response is not null ? Ok(response) : NoContent();
         }

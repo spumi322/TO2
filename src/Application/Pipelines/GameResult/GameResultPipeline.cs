@@ -14,7 +14,7 @@ namespace Application.Pipelines.GameResult
     /// Pipeline executor that orchestrates the game result processing workflow.
     /// Runs all steps in sequence and returns the final result.
     /// </summary>
-    public class GameResultPipeline
+    public class GameResultPipeline : IGameResultPipeline
     {
         private readonly ILogger<GameResultPipeline> _logger;
         private readonly IGenericRepository<Tournament> _tournamentRepository;

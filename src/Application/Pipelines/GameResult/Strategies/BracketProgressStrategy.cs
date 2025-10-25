@@ -1,70 +1,63 @@
-using Application.Contracts;
-using Application.Pipelines.Common;
+﻿using Application.Contracts;
 using Application.Pipelines.GameResult.Contracts;
 using Domain.AggregateRoots;
-using Domain.Entities;
 using Domain.Enums;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Application.Pipelines.GameResult.Steps
+namespace Application.Pipelines.GameResult.Strategies
 {
     /// <summary>
-    /// Step 5: Handles bracket progression (bracket-only logic).
-    /// Advances winner to next round or marks tournament as finished if final match.
-    /// Skips execution for Group standings.
+    /// Strategy for progressing bracket standings.
+    /// Handles winner advancement to next round or tournament completion if final match.
     /// </summary>
-    public class ProgressBracketStep : PipeLineBase<ProgressBracketStep>
+    public class BracketProgressStrategy : IStandingProgressStrategy
     {
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGameService _gameService;
+        private readonly ILogger<BracketProgressStrategy> _logger;
 
-        public ProgressBracketStep(
-            ILogger<ProgressBracketStep> logger,
+        public StandingType StandingType => StandingType.Bracket;
+
+        public BracketProgressStrategy(
             IGenericRepository<Match> matchRepository,
-            IGameService gameService) : base(logger)
+            IGameService gameService,
+            ILogger<BracketProgressStrategy> logger)
         {
             _matchRepository = matchRepository;
             _gameService = gameService;
+            _logger = logger;
         }
 
-        protected override async Task<bool> ExecuteStepAsync(GameResultContext context)
+        public async Task<StandingProgressResult> ProgressStandingAsync(long tournamentId, long standingId, long matchId, long winnerId)
         {
-            // Only execute for Bracket standings
-            if (context.StandingType != StandingType.Bracket)
-            {
-                return true; // Skip this step for groups
-            }
-
-            var matchId = context.GameResult.MatchId;
-            var standingId = context.GameResult.StandingId;
-            var winnerId = context.MatchWinnerId!.Value;
-
             // Check if this was the final match
             var isFinal = await IsFinalMatch(matchId, standingId);
 
             if (isFinal)
             {
-                // Tournament finished - mark for state transition
-                context.TournamentFinished = true;
-                context.NewTournamentStatus = TournamentStatus.Finished;
+                // Tournament finished - return result to trigger state transition
+                _logger.LogInformation("Final match completed. Tournament will be marked as finished.");
 
-                Logger.LogInformation("Final match completed. Tournament will be marked as finished.");
-
-                // Continue to TransitionTournamentStateStep and CalculateFinalPlacementsStep
-                return true;
+                return new StandingProgressResult(
+                    shouldContinuePipeline: true,
+                    message: "Tournament finished!",
+                    tournamentFinished: true,
+                    newTournamentStatus: TournamentStatus.Finished
+                );
             }
             else
             {
                 // Not the final match - advance winner to next round
                 await AdvanceWinnerToNextRound(matchId, winnerId, standingId);
 
-                context.Message = "Match completed. Winner advanced to next round.";
-
                 // Stop pipeline (match processed successfully, no more work needed)
-                return false;
+                return new StandingProgressResult(
+                    shouldContinuePipeline: false,
+                    message: "Match completed. Winner advanced to next round."
+                );
             }
         }
 
@@ -90,7 +83,7 @@ namespace Application.Pipelines.GameResult.Steps
 
             if (isFinal)
             {
-                Logger.LogInformation("Match {MatchId} is the FINAL match (R{Round}S{Seed})",
+                _logger.LogInformation("Match {MatchId} is the FINAL match (R{Round}S{Seed})",
                     matchId, match.Round, match.Seed);
             }
 
@@ -117,7 +110,7 @@ namespace Application.Pipelines.GameResult.Steps
             int nextRound = currentRound + 1;
             int nextSeed = (int)Math.Ceiling(currentSeed / 2.0);
 
-            Logger.LogInformation("Match R{CurrentRound}S{CurrentSeed} finished. Winner {WinnerId} advances to R{NextRound}S{NextSeed}",
+            _logger.LogInformation("Match R{CurrentRound}S{CurrentSeed} finished. Winner {WinnerId} advances to R{NextRound}S{NextSeed}",
                 currentRound, currentSeed, winnerId, nextRound, nextSeed);
 
             // Find the next round match
@@ -128,7 +121,7 @@ namespace Application.Pipelines.GameResult.Steps
 
             if (nextMatch == null)
             {
-                Logger.LogInformation("No next round match found (final match completed)");
+                _logger.LogInformation("No next round match found (final match completed)");
                 return;
             }
 
@@ -138,13 +131,13 @@ namespace Application.Pipelines.GameResult.Steps
             if (currentSeed % 2 == 1)
             {
                 nextMatch.TeamAId = winnerId;
-                Logger.LogInformation("Set R{NextRound}S{NextSeed} TeamA = {WinnerId}",
+                _logger.LogInformation("Set R{NextRound}S{NextSeed} TeamA = {WinnerId}",
                     nextRound, nextSeed, winnerId);
             }
             else
             {
                 nextMatch.TeamBId = winnerId;
-                Logger.LogInformation("Set R{NextRound}S{NextSeed} TeamB = {WinnerId}",
+                _logger.LogInformation("Set R{NextRound}S{NextSeed} TeamB = {WinnerId}",
                     nextRound, nextSeed, winnerId);
             }
 
@@ -155,7 +148,7 @@ namespace Application.Pipelines.GameResult.Steps
             await _matchRepository.Update(nextMatch);
             await _matchRepository.Save();
 
-            Logger.LogInformation("Winner advanced to next round successfully");
+            _logger.LogInformation("Winner advanced to next round successfully");
         }
     }
 }

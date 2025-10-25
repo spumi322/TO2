@@ -4,6 +4,7 @@ using Application.DTOs.Match;
 using Application.DTOs.Orchestration;
 using Application.DTOs.Standing;
 using Application.DTOs.Tournament;
+using Application.Pipelines.GameResult.Contracts;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -28,206 +29,34 @@ namespace Application.Services
         private readonly ILogger<OrchestrationService> _logger;
         private readonly IStandingService _standingService;
         private readonly IMatchService _matchService;
-        private readonly IGameService _gameService;
         private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly IGenericRepository<Standing> _standingRepository;
-        private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly IGenericRepository<Group> _groupRepository;
         private readonly IGenericRepository<Team> _teamRepository;
         private readonly ITournamentStateMachine _stateMachine;
-        private readonly ITournamentService _tournamentService;
 
         public OrchestrationService(
             ILogger<OrchestrationService> logger,
             IStandingService standingService,
             IMatchService matchService,
-            IGameService gameService,
             IGenericRepository<Tournament> tournamentRepository,
             IGenericRepository<Standing> standingRepository,
-            IGenericRepository<Match> matchRepository,
             IGenericRepository<TournamentTeam> tournamentTeamRepository,
             IGenericRepository<Group> groupRepository,
             IGenericRepository<Team> teamRepository,
-            ITournamentStateMachine stateMachine,
-            ITournamentService tournamentService
+            ITournamentStateMachine stateMachine
             )
         {
             _logger = logger;
             _standingService = standingService;
             _matchService = matchService;
-            _gameService = gameService;
             _tournamentRepository = tournamentRepository;
             _standingRepository = standingRepository;
-            _matchRepository = matchRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
             _groupRepository = groupRepository;
             _teamRepository = teamRepository;
             _stateMachine = stateMachine;
-            _tournamentService = tournamentService;
-        }
-
-        public async Task<GameProcessResultDTO> LEGACY_ProcessGameResult(SetGameResultDTO gameResult)
-        {
-            _logger.LogInformation("Processing game result for GameId: {GameId}, WinnerId: {WinnerId}",
-                gameResult.gameId, gameResult.WinnerId);
-
-            try
-            {
-                var tournament = await _tournamentRepository.Get(gameResult.TournamentId)
-                    ?? throw new Exception($"Tournament with id: {gameResult.TournamentId} was not found!");
-                var matchId = gameResult.MatchId;
-                // 1. Set game result (writes score into Game table)
-                await _gameService.SetGameResult(
-                    gameResult.gameId,
-                    gameResult.WinnerId,
-                    gameResult.TeamAScore,
-                    gameResult.TeamBScore
-                );
-
-                _logger.LogInformation("Game result set for GameId: {GameId}, MatchId: {MatchId}",
-                    gameResult.gameId, matchId);
-                // 2. Check if match has a winner (counts wins per team)
-                var matchWinner = await _gameService.SetMatchWinner(matchId);
-                // If no winner yet, game was scored but match not finished
-                if (matchWinner is null)
-                {
-                    _logger.LogInformation("Match {MatchId} still in progress (no winner yet)", matchId);
-                    return new GameProcessResultDTO(
-                        Success: true,
-                        MatchFinished: false,
-                        Message: "Game result recorded. Match still in progress."
-                    );
-                }
-
-                _logger.LogInformation("Match {MatchId} finished. Winner: {WinnerId}, Loser: {LoserId}",
-                    matchId, matchWinner.WinnerId, matchWinner.LoserId);
-
-                // 3. Match finished - update standing entries (Group or Bracket tables)
-                // Note: UpdateStandingEntries now handles its own Save() via repository pattern
-                var standingType = await _gameService.UpdateStandingEntries(
-                    gameResult.StandingId,
-                    matchWinner.WinnerId,
-                    matchWinner.LoserId
-                );
-
-                // 3a. BRACKET-SPECIFIC: Handle bracket progression
-                if (standingType == StandingType.Bracket)
-                {
-
-                    // Check if this was the final match
-                    bool isFinal = await IsFinalMatch(matchId, gameResult.StandingId);
-
-                    if (isFinal)
-                    {
-                        // Validate state transition
-                        _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.Finished);
-
-                        // Transition to Finished
-                        tournament.Status = TournamentStatus.Finished;
-
-                        await _tournamentRepository.Update(tournament);
-                        await _tournamentRepository.Save();
-
-                        _logger.LogInformation($"✓ Tournament {tournament.Name} FINISHED.");
-
-                        var placements = await _tournamentService.CalculateFinalPlacements(gameResult.StandingId);
-                        await _tournamentService.SetFinalResults(tournament.Id, placements);
-                        var finalResult = await _tournamentService.GetFinalResults(tournament.Id);
-
-                        return new GameProcessResultDTO(
-                            Success: true,
-                            MatchFinished: true,
-                            MatchWinnerId: matchWinner.WinnerId,
-                            MatchLoserId: matchWinner.LoserId,
-                            TournamentFinished: true,
-                            NewTournamentStatus: TournamentStatus.Finished,
-                            FinalStandings: finalResult,
-                            Message: $"TOURNAMENT FINISHED! Champion: Team {matchWinner.WinnerId}"
-                        );
-                    }
-                    else
-                    {
-                        // Not the final match - winner advanced to next round
-                        await AdvanceWinnerToNextRound(matchId, matchWinner.WinnerId, gameResult.StandingId);
-
-                        return new GameProcessResultDTO(
-                            Success: true,
-                            MatchFinished: true,
-                            MatchWinnerId: matchWinner.WinnerId,
-                            MatchLoserId: matchWinner.LoserId,
-                            Message: $"Match completed. Winner advanced to next round."
-                        );
-                    }
-                }
-
-                // 4. Check if this match finishing caused the standing to finish (GROUP-SPECIFIC)
-                bool standingJustFinished = await _standingService.CheckAndMarkStandingAsFinished(gameResult.StandingId);
-
-                if (!standingJustFinished) 
-                    return new GameProcessResultDTO(
-                        Success: true,
-                        MatchFinished: true,
-                        MatchWinnerId: matchWinner.WinnerId,
-                        MatchLoserId: matchWinner.LoserId,
-                        Message: "Match completed."
-                    );
-
-                _logger.LogInformation("Standing finished for TournamentId: {TournamentId}",
-                    gameResult.TournamentId);
-
-                // 5. Check if ALL groups are finished (triggers transition to GroupsCompleted)
-                bool allGroupsFinished = await _standingService.CheckAllGroupsAreFinished(gameResult.TournamentId);
-
-                if (!allGroupsFinished)
-                {
-                    return new GameProcessResultDTO(
-                        Success: true,
-                        MatchFinished: true,
-                        MatchWinnerId: matchWinner.WinnerId,
-                        MatchLoserId: matchWinner.LoserId,
-                        StandingFinished: true,
-                        Message: "Match completed and standing finished. Other groups still in progress."
-                    );
-                }
-
-                _logger.LogInformation("All groups finished for TournamentId: {TournamentId}. Transitioning to GroupsCompleted.",
-                    gameResult.TournamentId);
-
-                // 6. All groups finished - validate and transition tournament status
-
-                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.GroupsCompleted);
-                tournament.Status = TournamentStatus.GroupsCompleted;
-
-                await _tournamentRepository.Update(tournament);
-                await _tournamentRepository.Save();
-
-                _logger.LogInformation("Tournament {TournamentId} transitioned to GroupsCompleted status",
-                    gameResult.TournamentId);
-
-                // 7. Return full result with state transition information
-                return new GameProcessResultDTO(
-                    Success: true,
-                    MatchFinished: true,
-                    MatchWinnerId: matchWinner.WinnerId,
-                    MatchLoserId: matchWinner.LoserId,
-                    StandingFinished: true,
-                    AllGroupsFinished: true,
-                    NewTournamentStatus: TournamentStatus.GroupsCompleted,
-                    Message: "All groups finished! Tournament transitioned to GroupsCompleted status. Admin can now seed bracket."
-                );
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error processing game result for GameId: {GameId}. Error: {Message}",
-                    gameResult.gameId, ex.Message);
-
-                return new GameProcessResultDTO(
-                    Success: false,
-                    MatchFinished: false,
-                    Message: $"Failed to process game result: {ex.Message}"
-                );
-            }
         }
 
         public async Task<StartGroupsResponseDTO> StartGroups(long tournamentId)
@@ -656,89 +485,5 @@ namespace Application.Services
             return pairs;
         }
 
-        /// <summary>
-        /// Advances the match winner to the next round by populating the appropriate team slot.
-        /// </summary>
-        private async Task AdvanceWinnerToNextRound(long finishedMatchId, long winnerId, long standingId)
-        {
-            // 1. Get the finished match
-            var finishedMatch = await _matchRepository.Get(finishedMatchId)
-                ?? throw new Exception($"Match {finishedMatchId} not found");
-
-            if (!finishedMatch.Round.HasValue || !finishedMatch.Seed.HasValue)
-            {
-                throw new Exception($"Match {finishedMatchId} missing Round or Seed information");
-            }
-
-            int currentRound = finishedMatch.Round.Value;
-            int currentSeed = finishedMatch.Seed.Value;
-
-            // 2. Calculate next round match position
-            int nextRound = currentRound + 1;
-            int nextSeed = (int)Math.Ceiling(currentSeed / 2.0);
-
-            _logger.LogInformation($"Match R{currentRound}S{currentSeed} finished. Winner {winnerId} advances to R{nextRound}S{nextSeed}");
-
-            // 3. Find the next round match
-            var allMatches = await _matchRepository.GetAllByFK("StandingId", standingId);
-            var nextMatch = allMatches.FirstOrDefault(m =>
-                m.Round == nextRound &&
-                m.Seed == nextSeed);
-
-            if (nextMatch == null)
-            {
-                _logger.LogInformation($"No next round match found (final match completed)");
-                return; // This was the final match
-            }
-
-            // 4. Determine which team slot (A or B) based on seed parity
-            // Odd seeds (1, 3, 5...) → TeamA
-            // Even seeds (2, 4, 6...) → TeamB
-            if (currentSeed % 2 == 1)
-            {
-                nextMatch.TeamAId = winnerId;
-                _logger.LogInformation($"Set R{nextRound}S{nextSeed} TeamA = {winnerId}");
-            }
-            else
-            {
-                nextMatch.TeamBId = winnerId;
-                _logger.LogInformation($"Set R{nextRound}S{nextSeed} TeamB = {winnerId}");
-            }
-
-            // 5. Update all games in the next match with the new team IDs
-            await _gameService.UpdateGamesTeamIds(nextMatch.Id, nextMatch.TeamAId, nextMatch.TeamBId);
-
-            // 6. Save the updated match
-            await _matchRepository.Update(nextMatch);
-            await _matchRepository.Save();
-        }
-
-        /// <summary>
-        /// Checks if the given match is the final match of the bracket.
-        /// </summary>
-        private async Task<bool> IsFinalMatch(long matchId, long standingId)
-        {
-            var match = await _matchRepository.Get(matchId)
-                ?? throw new Exception($"Match {matchId} not found");
-
-            if (!match.Round.HasValue || !match.Seed.HasValue)
-            {
-                return false;
-            }
-
-            // Get all matches for this standing to determine total rounds
-            var allMatches = await _matchRepository.GetAllByFK("StandingId", standingId);
-            int totalRounds = allMatches.Max(m => m.Round ?? 0);
-
-            // Final match is: last round, seed 1
-            bool isFinal = match.Round.Value == totalRounds && match.Seed.Value == 1;
-
-            if (isFinal)
-            {
-                _logger.LogInformation($"Match {matchId} is the FINAL match (R{match.Round}S{match.Seed})");
-            }
-
-            return isFinal;
-        }
     }
 }

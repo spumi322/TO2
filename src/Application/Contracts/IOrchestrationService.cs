@@ -15,7 +15,6 @@ namespace Application.Contracts
     /// </summary>
     public interface IOrchestrationService
     {
-        Task<GameProcessResultDTO> LEGACY_ProcessGameResult(SetGameResultDTO gameResult);
         Task<StartGroupsResponseDTO> StartGroups(long tournamentId);
         Task<SeedGroupsResponseDTO> SeedGroups(long tournamentId);
         Task<StartBracketResponseDTO> StartBracket(long tournamentId);

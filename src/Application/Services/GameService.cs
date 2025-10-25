@@ -2,6 +2,9 @@
 using Application.Contracts;
 using Application.DTOs.Game;
 using Application.DTOs.Match;
+using Application.DTOs.Orchestration;
+using Application.Pipelines.GameResult;
+using Application.Pipelines.GameResult.Contracts;
 using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -22,24 +25,16 @@ namespace Application.Services
     {
         private readonly IGenericRepository<Game> _gameRepository;
         private readonly IGenericRepository<Match> _matchRepository;
-        private readonly IGenericRepository<Standing> _standingrepository;
-        private readonly IGenericRepository<Group> _groupRepository;
-        private readonly ITO2DbContext _dbContext;
         private readonly ILogger<GameService> _logger;
 
 
         public GameService(IGenericRepository<Game> gameRepository,
                            IGenericRepository<Match> matchRepository,
-                           IGenericRepository<Standing> standingRepository,
-                           IGenericRepository<Group> groupRepository,
-                           ITO2DbContext dbContext,
+                           IGameResultPipeline pipeline,
                            ILogger<GameService> logger)
         {
             _gameRepository = gameRepository;
             _matchRepository = matchRepository;
-            _standingrepository = standingRepository;
-            _groupRepository = groupRepository;
-            _dbContext = dbContext;
             _logger = logger;
         }
 

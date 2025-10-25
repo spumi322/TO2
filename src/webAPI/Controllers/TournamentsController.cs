@@ -14,12 +14,15 @@ namespace TO2.Controllers
         private readonly ITournamentService _tournamentService;
         private readonly ITeamService _teamService;
         private readonly IOrchestrationService _orchestrationService;
+        private readonly IStandingService _standingService;
 
-        public TournamentsController(ITournamentService tournamentService, ITeamService teamService, IOrchestrationService orchestrationService)
+        public TournamentsController(ITournamentService tournamentService, ITeamService teamService, IOrchestrationService orchestrationService, IStandingService standingService)
         {
             _tournamentService = tournamentService;
             _teamService = teamService;
             _orchestrationService = orchestrationService;
+            _standingService = standingService;
+
         }
 
         // GET: api/Tournaments
@@ -105,7 +108,7 @@ namespace TO2.Controllers
         [HttpGet("{id}/final-standings")]
         public async Task<IActionResult> GetFinalStandings(long id)
         {
-            return Ok(await _tournamentService.GetFinalResults(id));
+            return Ok(await _standingService.GetFinalResults(id));
         }
 
         /// <summary>
