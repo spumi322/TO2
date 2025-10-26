@@ -53,6 +53,7 @@ namespace TO2
             // Pipeline Steps (registered in execution order)
             builder.Services.AddScoped<IGameResultPipelineStep, ScoreGameStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, CheckMatchCompletionStep>();
+            builder.Services.AddScoped<IGameResultPipelineStep, UpdateGroupStatsStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, HandleStandingProgressStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, TransitionTournamentStateStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, CalculateFinalPlacementsStep>();

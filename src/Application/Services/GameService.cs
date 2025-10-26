@@ -159,6 +159,5 @@ namespace Application.Services
 
             _logger.LogInformation($"Updated {games.Count()} games for match {matchId} with TeamA={teamAId}, TeamB={teamBId}");
         }
-
     }
 }
