@@ -1,21 +1,4 @@
-﻿using Domain.AggregateRoots;
-using Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics.Metrics;
-using System.IO;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Reflection.Metadata;
-using System.Runtime.Intrinsics.X86;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace Domain.Enums
+﻿namespace Domain.Enums
 {
     /// <summary>
     /// Explicit state machine for tournament lifecycle.

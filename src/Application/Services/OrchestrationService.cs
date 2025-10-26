@@ -1,22 +1,11 @@
 using Application.Contracts;
-using Application.DTOs.Game;
-using Application.DTOs.Match;
-using Application.DTOs.Orchestration;
 using Application.DTOs.Standing;
 using Application.DTOs.Tournament;
-using Application.Pipelines.GameResult.Contracts;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.StateMachine;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Group = Domain.Entities.Group;
 using Match = Domain.AggregateRoots.Match;
 
@@ -306,7 +295,7 @@ namespace Application.Services
 
                 _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingBracket);
                 tournament.Status = TournamentStatus.SeedingBracket;
-                
+
                 await _tournamentRepository.Update(tournament);
                 await _tournamentRepository.Save();
 

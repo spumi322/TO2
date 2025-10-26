@@ -5,7 +5,6 @@ using Domain.AggregateRoots;
 using Domain.Enums;
 using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace Application.Pipelines.GameResult.Steps
 {

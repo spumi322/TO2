@@ -1,16 +1,10 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Team;
-using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -43,7 +37,7 @@ namespace Application.Services
             try
             {
                 var team = _mapper.Map<Team>(request);
-                               
+
                 await _teamRepository.Add(team);
                 await _teamRepository.Save();
 

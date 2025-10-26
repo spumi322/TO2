@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Application.Pipelines.GameResult.Contracts
+﻿namespace Application.Pipelines.GameResult.Contracts
 {
     /// <summary>
     /// Interface for a single step in the game result processing pipeline.

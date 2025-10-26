@@ -4,10 +4,6 @@ using Application.Pipelines.GameResult.Contracts;
 using Application.Pipelines.GameResult.Strategies;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Application.Pipelines.GameResult.Steps
 {

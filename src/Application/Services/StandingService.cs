@@ -1,18 +1,9 @@
 ﻿using Application.Contracts;
-using Application.DTOs.Standing;
-using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using Domain.AggregateRoots;
-//using Domain.DomainEvents; // STEP 1 FIX: No longer needed
 using Domain.Entities;
 using Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {

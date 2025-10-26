@@ -288,7 +288,7 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
 
               // Show tournament finish message if applicable
               if (result.tournamentFinished) {
-                console.log('🏆 TOURNAMENT FINISHED!', result.message);
+                // Tournament finished - match refresh will show updated state
               }
             }
 

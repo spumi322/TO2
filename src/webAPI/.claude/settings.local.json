@@ -20,7 +20,9 @@
       "Bash(npx tsc:*)",
       "Bash(xargs ls:*)",
       "Bash(ng generate:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(find:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []

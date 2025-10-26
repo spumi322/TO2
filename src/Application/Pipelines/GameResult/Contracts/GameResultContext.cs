@@ -2,7 +2,6 @@
 using Application.DTOs.Tournament;
 using Domain.AggregateRoots;
 using Domain.Enums;
-using System.Collections.Generic;
 
 namespace Application.Pipelines.GameResult.Contracts
 {

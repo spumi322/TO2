@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.DTOs.Standing
+﻿namespace Application.DTOs.Standing
 {
     public record SeedBracketResponseDTO(bool Success, string Response);
 }

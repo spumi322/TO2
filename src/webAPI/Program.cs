@@ -5,11 +5,6 @@ using Application.Pipelines.GameResult.Contracts;
 using Application.Pipelines.GameResult.Steps;
 using Application.Pipelines.GameResult.Strategies;
 using Application.Services;
-// STEP 1 FIX: Removed unused using statements for domain events
-//using Application.Services.EventHandlers;
-//using Application.Services.EventHandling;
-using Domain.AggregateRoots;
-//using Domain.DomainEvents;
 using Domain.StateMachine;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -62,10 +57,6 @@ namespace TO2
             builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
             builder.Services.AddScoped<IStandingProgressStrategy, BracketProgressStrategy>();
 
-            // STEP 1: Domain Event Handlers Disabled - Replaced by TournamentLifecycleService
-            //builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-            //builder.Services.AddScoped<IDomainEventHandler<StandingFinishedEvent>, StandingFinishedEventHandler>();
-            //builder.Services.AddScoped<IDomainEventHandler<AllGroupsFinishedEvent>, AllGroupsFinishedEventHandler>();
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddFluentValidation().AddValidatorsFromAssemblyContaining<IAssemblyMarker>();

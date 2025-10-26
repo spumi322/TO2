@@ -1,19 +1,7 @@
 ﻿using Application.Contracts;
-using Application.DTOs.Match;
-using Application.DTOs.Standing;
-using Application.DTOs.Team;
-using AutoMapper;
 using Domain.AggregateRoots;
-using Domain.Common;
-using Domain.Entities;
 using Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -79,7 +67,7 @@ namespace Application.Services
             await _matchRepository.Save();
 
             return match;
-                
+
         }
     }
 }

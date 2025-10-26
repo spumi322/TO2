@@ -1,6 +1,4 @@
 ﻿using Application.Contracts;
-using Domain.AggregateRoots;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TO2.Controllers

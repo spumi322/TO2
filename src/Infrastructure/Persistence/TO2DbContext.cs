@@ -1,6 +1,3 @@
-﻿// STEP 1 FIX: Removed unused using statements for domain events
-//using Application.Contracts;
-//using Application.Services.EventHandling;
 using Application.Contracts;
 using Domain.AggregateRoots;
 using Domain.Common;
@@ -8,18 +5,12 @@ using Domain.Entities;
 using Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistence
 {
     public class TO2DbContext : DbContext, ITO2DbContext
     {
         private readonly IConfiguration _configuration;
-        // STEP 1 FIX: Removed _eventDispatcher dependency - no longer needed without domain events
 
         public TO2DbContext()
         {
@@ -61,7 +52,6 @@ namespace Infrastructure.Persistence
             modelBuilder.Ignore<EntityBase>();
             modelBuilder.Ignore<ValueObjectBase>();
             modelBuilder.Ignore<Prize>();
-            modelBuilder.Ignore<Bracket>();
 
             base.OnModelCreating(modelBuilder);
 
@@ -95,30 +85,9 @@ namespace Infrastructure.Persistence
         {
             AddTimestamps();
 
-            // STEP 1: Domain Events Disabled - Moving to explicit state machine via TournamentLifecycleService
-            //var domainEntities = ChangeTracker.Entries<EntityBase>()
-            //    .Where(x => x.Entity.DomainEvents.Any())
-            //    .Select(x => x.Entity)
-            //    .ToList();
-
-            //foreach (var entity in domainEntities)
-            //{
-            //    foreach (var domainEvent in entity.DomainEvents)
-            //    {
-            //        _eventDispatcher.QueueEvent(domainEvent);
-            //    }
-            //}
-
             int result = await base.SaveChangesAsync(cancellationToken);
 
-            //await _eventDispatcher.DispatchQueuedEvents();
-
-            //foreach (var entity in domainEntities)
-            //{
-            //    entity.ClearEvents();
-            //}
-
-            // Save again if there are changes (no longer from event handlers, but keep for safety)
+            // Save again if there are changes
             if (ChangeTracker.HasChanges())
             {
                 AddTimestamps();

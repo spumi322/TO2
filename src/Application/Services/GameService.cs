@@ -2,22 +2,10 @@
 using Application.Contracts;
 using Application.DTOs.Game;
 using Application.DTOs.Match;
-using Application.DTOs.Orchestration;
-using Application.Pipelines.GameResult;
-using Application.Pipelines.GameResult.Contracts;
-using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Services
 {
@@ -44,7 +32,7 @@ namespace Application.Services
 
             var gamesAlreadyGenerated = await _gameRepository.GetAllByFK("MatchId", match.Id);
 
-            if(gamesAlreadyGenerated.Count > 0)
+            if (gamesAlreadyGenerated.Count > 0)
             {
                 _logger.LogWarning("Attempted to generate games for match {MatchId}, but games already exist.", match.Id);
                 throw new Exception("Games already generated for this match");
@@ -85,7 +73,7 @@ namespace Application.Services
             return games.ToList();
         }
 
-        public async Task SetGameResult(long gameId,long winnerId, int? teamAScore, int? teamBScore)
+        public async Task SetGameResult(long gameId, long winnerId, int? teamAScore, int? teamBScore)
         {
             var existingGame = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
             var match = await _matchRepository.Get(existingGame.MatchId) ?? throw new Exception("Match not found");

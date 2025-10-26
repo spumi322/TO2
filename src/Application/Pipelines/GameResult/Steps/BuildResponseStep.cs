@@ -1,7 +1,6 @@
 using Application.Pipelines.Common;
 using Application.Pipelines.GameResult.Contracts;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace Application.Pipelines.GameResult.Steps
 {

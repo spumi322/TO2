@@ -1,6 +1,5 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Tournament;
-using Application.Services;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;

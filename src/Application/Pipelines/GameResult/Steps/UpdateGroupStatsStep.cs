@@ -2,13 +2,7 @@
 using Application.Pipelines.Common;
 using Application.Pipelines.GameResult.Contracts;
 using Domain.Entities;
-using Domain.Enums;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Application.Pipelines.GameResult.Steps
 {

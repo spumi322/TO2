@@ -1,11 +1,6 @@
-using Application.DTOs.Game;
-using Application.DTOs.Match;
-using Application.DTOs.Orchestration;
 using Application.DTOs.Standing;
 using Application.DTOs.Tournament;
 using Domain.AggregateRoots;
-using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace Application.Contracts
 {

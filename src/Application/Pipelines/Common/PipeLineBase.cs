@@ -1,7 +1,5 @@
 ﻿using Application.Pipelines.GameResult.Contracts;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 
 namespace Application.Pipelines.Common
 {

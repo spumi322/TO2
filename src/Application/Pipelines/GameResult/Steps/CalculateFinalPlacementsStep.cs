@@ -2,7 +2,6 @@ using Application.Contracts;
 using Application.Pipelines.Common;
 using Application.Pipelines.GameResult.Contracts;
 using Microsoft.Extensions.Logging;
-using System.Threading.Tasks;
 
 namespace Application.Pipelines.GameResult.Steps
 {
@@ -12,7 +11,7 @@ namespace Application.Pipelines.GameResult.Steps
     /// </summary>
     public class CalculateFinalPlacementsStep : PipeLineBase<CalculateFinalPlacementsStep>
     {
-        private readonly IStandingService _standingService ;
+        private readonly IStandingService _standingService;
 
         public CalculateFinalPlacementsStep(
             ILogger<CalculateFinalPlacementsStep> logger,

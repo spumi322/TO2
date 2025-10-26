@@ -1,6 +1,5 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Team;
-using Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TO2.Controllers

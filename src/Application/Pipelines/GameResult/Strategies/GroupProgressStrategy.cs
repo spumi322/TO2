@@ -2,8 +2,6 @@
 using Application.Pipelines.GameResult.Contracts;
 using Domain.Enums;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 
 namespace Application.Pipelines.GameResult.Strategies
 {

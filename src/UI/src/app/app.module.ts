@@ -4,7 +4,6 @@ import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TournamentListComponent } from './components/tournament/tournament-list/tournament-list.component';
-import { FilterByStatusPipe } from './pipes/filter-by-status.pipe';
 import { TournamentDetailsComponent } from './components/tournament/tournament-details/tournament-details.component';
 import { GroupComponent } from './components/standing/group/group.component';
 import { BracketComponent } from './components/standing/bracket/bracket.component';
@@ -46,7 +45,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   declarations: [
     AppComponent,
     TournamentListComponent,
-    FilterByStatusPipe,
     TournamentDetailsComponent,
     GroupComponent,
     BracketComponent,
@@ -69,7 +67,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     DropdownModule,
     DialogModule,
     FormsModule,
-    ReactiveFormsModule,
     ListboxModule,
     TableModule,
     // Angular Material Modules

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.DTOs.Match
+﻿namespace Application.DTOs.Match
 {
     /// <summary>
     /// Enhanced DTO that includes tournament lifecycle state information.

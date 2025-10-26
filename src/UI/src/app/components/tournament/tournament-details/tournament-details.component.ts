@@ -180,7 +180,6 @@ export class TournamentDetailsComponent implements OnInit {
     this.tournamentService.getFinalStandings(this.tournamentId).subscribe({
       next: (standings) => {
         this.finalStandings = standings;
-        console.log('Final standings loaded:', this.finalStandings);
       },
       error: (error) => {
         console.error('Error loading final standings', error);
@@ -440,13 +439,10 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   onGroupMatchFinished(result: any): void {
-    console.log('Group match finished:', result);
-
     if (!this.tournamentId) return;
 
     // Check if all groups are now finished
     if (result.allGroupsFinished) {
-      console.log('All groups completed! Tournament status: GroupsCompleted');
       this.showSuccess('All groups completed! You can now start the bracket.');
 
       // Reload tournament state to show updated status and Start Bracket button
@@ -457,21 +453,15 @@ export class TournamentDetailsComponent implements OnInit {
 
 
     // Normal case: just a regular match completion, reload data
-    console.log('Regular match completion, reloading tournament data...');
     this.reloadTournamentData();
   }
 
   onBracketMatchFinished(result: MatchFinishedIds): void {
-    console.log('Bracket match finished:', result);
-
     // Check if tournament finished
     if (result.tournamentFinished) {
-      console.log('TOURNAMENT FINISHED! Winner:', result.winnerId);
-
       // Store final standings
       if (result.finalStandings) {
         this.finalStandings = result.finalStandings;
-        console.log('Final standings received:', this.finalStandings);
       }
 
       // Reload both tournament data AND state
