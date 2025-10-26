@@ -1,0 +1,40 @@
+<div class="results-content" *ngIf="finalStandings.length > 0">
+  <div class="results-header">
+    <mat-icon class="trophy-icon">emoji_events</mat-icon>
+    <h2>Final Results</h2>
+  </div>
+
+  <!-- Placement Tiers -->
+  <div class="placement-tiers">
+    <mat-card *ngFor="let tier of groupPlacementsByTier()" class="tier-card" [ngClass]="{
+      'tier-first': tier.label === '1st Place',
+      'tier-second': tier.label === '2nd Place',
+      'tier-third': tier.label.startsWith('3rd')
+    }">
+      <mat-card-header>
+        <div class="tier-label">
+          <mat-icon *ngIf="tier.label === '1st Place'" class="tier-icon gold">emoji_events</mat-icon>
+          <mat-icon *ngIf="tier.label === '2nd Place'" class="tier-icon silver">military_tech</mat-icon>
+          <mat-icon *ngIf="tier.label.startsWith('3rd')" class="tier-icon bronze">military_tech</mat-icon>
+          <h3>{{ tier.label }}</h3>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="tier-teams">
+          <div *ngFor="let standing of tier.teams" class="team-result">
+            <div class="team-avatar">{{ standing.teamName.charAt(0) }}</div>
+            <div class="team-details">
+              <div class="team-name">{{ standing.teamName }}</div>
+              <div class="team-eliminated" *ngIf="standing.status !== 4">
+                Eliminated in Round {{ standing.eliminatedInRound }}
+              </div>
+              <div class="team-champion" *ngIf="standing.status === 4">
+                <mat-icon>emoji_events</mat-icon> Champion
+              </div>
+            </div>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

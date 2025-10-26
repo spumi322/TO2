@@ -5,6 +5,13 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { TournamentListComponent } from './components/tournament/tournament-list/tournament-list.component';
 import { TournamentDetailsComponent } from './components/tournament/tournament-details/tournament-details.component';
+import { TournamentHeaderComponent } from './components/tournament/tournament-header/tournament-header.component';
+import { TournamentStateBannerComponent } from './components/tournament/tournament-state-banner/tournament-state-banner.component';
+import { TournamentInfoCardComponent } from './components/tournament/tournament-info-card/tournament-info-card.component';
+import { TeamManagementCardComponent } from './components/tournament/team-management-card/team-management-card.component';
+import { RegisteredTeamsListComponent } from './components/tournament/registered-teams-list/registered-teams-list.component';
+import { TopResultsCardComponent } from './components/tournament/top-results-card/top-results-card.component';
+import { FinalStandingsDisplayComponent } from './components/tournament/final-standings-display/final-standings-display.component';
 import { GroupComponent } from './components/standing/group/group.component';
 import { BracketComponent } from './components/standing/bracket/bracket.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
@@ -46,6 +53,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     AppComponent,
     TournamentListComponent,
     TournamentDetailsComponent,
+    TournamentHeaderComponent,
+    TournamentStateBannerComponent,
+    TournamentInfoCardComponent,
+    TeamManagementCardComponent,
+    RegisteredTeamsListComponent,
+    TopResultsCardComponent,
+    FinalStandingsDisplayComponent,
     GroupComponent,
     BracketComponent,
     NavbarComponent,

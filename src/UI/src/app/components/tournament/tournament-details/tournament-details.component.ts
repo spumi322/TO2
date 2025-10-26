@@ -8,10 +8,8 @@ import { Standing, StandingType } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
 import { Team } from '../../../models/team';
 import { TeamService } from '../../../services/team/team.service';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { TournamentStatusLabel } from '../tournament-status-label/tournament-status-label';
 import { MatchService } from '../../../services/match/match.service';
 import { MatchFinishedIds } from '../../../models/matchresult';
 import { FinalStanding } from '../../../models/final-standing';
@@ -42,8 +40,6 @@ export class TournamentDetailsComponent implements OnInit {
   // Final Results
   finalStandings: FinalStanding[] = [];
 
-  // Forms
-  bulkAddForm!: FormGroup;
 
   // UI state
   isReloading = false;
@@ -62,7 +58,6 @@ export class TournamentDetailsComponent implements OnInit {
     private matchService: MatchService,
     private route: ActivatedRoute,
     private router: Router,
-    private fb: FormBuilder,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) { }
@@ -75,9 +70,7 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   initForms(): void {
-    this.bulkAddForm = this.fb.group({
-      teamNames: ['', Validators.required]
-    });
+    // Form initialization moved to team-management-card component
   }
 
   loadBracketMatches(): void {
@@ -228,23 +221,10 @@ export class TournamentDetailsComponent implements OnInit {
     });
   }
 
-  addBulkTeams(): void {
-    if (this.bulkAddForm.invalid || !this.tournamentId || !this.tournament) return;
+  addBulkTeams(teamNames: string[]): void {
+    if (!this.tournamentId || !this.tournament) return;
 
-    const teamNamesInput = this.bulkAddForm.get('teamNames')?.value;
-    if (!teamNamesInput) return;
-
-    const teamNames = teamNamesInput
-      .split(',')
-      .map((name: string) => name.trim())
-      .filter((name: string) => name.length > 0);
-
-    if (!teamNames.length) {
-      this.showError('No valid team names provided');
-      return;
-    }
-
-    // Check if we'll exceed max capacity
+    // Validation moved to team-management-card component, but we still validate capacity here
     const remainingSlots = this.tournament.maxTeams - (this.tournament.teams?.length || 0);
     if (teamNames.length > remainingSlots) {
       this.showError(`Can only add ${remainingSlots} more teams. You're trying to add ${teamNames.length}.`);
@@ -307,7 +287,6 @@ export class TournamentDetailsComponent implements OnInit {
       toArray(),
       finalize(() => {
         this.isAddingTeams = false;
-        this.bulkAddForm.reset();
       })
     ).subscribe({
       next: (results) => {
@@ -480,42 +459,9 @@ export class TournamentDetailsComponent implements OnInit {
     this.reloadTournamentData();
   }
 
-  // UI Helper Methods
-  getFormatLabel(format: Format): string {
-    switch (format) {
-      case Format.BracketOnly:
-        return 'Bracket Only';
-      case Format.BracketAndGroups:
-        return 'Group Stage + Bracket';
-      default:
-        return 'Unknown Format';
-    }
-  }
+  // UI Helper Methods - moved to sub-components
 
-  getStatusClass(status: TournamentStatus): string {
-    switch (status) {
-      case TournamentStatus.Setup:
-        return 'status-setup';
-      case TournamentStatus.SeedingGroups:
-      case TournamentStatus.SeedingBracket:
-        return 'status-seeding';
-      case TournamentStatus.GroupsInProgress:
-      case TournamentStatus.GroupsCompleted:
-      case TournamentStatus.BracketInProgress:
-        return 'status-ongoing';
-      case TournamentStatus.Finished:
-        return 'status-finished';
-      case TournamentStatus.Cancelled:
-        return 'status-cancelled';
-      default:
-        return '';
-    }
-  }
-
-  getStatusLabel(status: TournamentStatus): string {
-    return TournamentStatusLabel.getLabel(status);
-  }
-
+  // Notification methods
   showSuccess(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
@@ -528,69 +474,5 @@ export class TournamentDetailsComponent implements OnInit {
       duration: 5000,
       panelClass: ['error-snackbar']
     });
-  }
-
-  getTeamsPerGroup(): number | null {
-    return this.groups.length > 0 ? this.groups[0].maxTeams : null;
-  }
-
-  getTeamsPerBracket(): number | null {
-    return this.brackets.length > 0 ? this.brackets[0].maxTeams : null;
-  }
-
-  getRankClass(placement: number): string {
-    if (placement === 1) return 'gold';
-    if (placement === 2) return 'silver';
-    if (placement === 3) return 'bronze';
-    return '';
-  }
-
-  // Get top 4 standings for Overview tab display
-  get topFourStandings(): FinalStanding[] {
-    return this.finalStandings.slice(0, 4);
-  }
-
-  // Group final standings by placement tiers (1st, 2nd, 3-4th, 5-8th, etc.)
-  groupPlacementsByTier(): { label: string, teams: FinalStanding[] }[] {
-    if (!this.finalStandings || this.finalStandings.length === 0) {
-      return [];
-    }
-
-    const tiers: { label: string, teams: FinalStanding[] }[] = [];
-    const grouped = new Map<string, FinalStanding[]>();
-
-    // Group by placement value
-    this.finalStandings.forEach(standing => {
-      let tierLabel = '';
-      const p = standing.placement;
-
-      if (p === 1) {
-        tierLabel = '1st Place';
-      } else if (p === 2) {
-        tierLabel = '2nd Place';
-      } else if (p >= 3 && p <= 4) {
-        tierLabel = '3rd-4th Place';
-      } else if (p >= 5 && p <= 8) {
-        tierLabel = '5th-8th Place';
-      } else if (p >= 9 && p <= 16) {
-        tierLabel = '9th-16th Place';
-      } else if (p >= 17 && p <= 32) {
-        tierLabel = '17th-32nd Place';
-      } else {
-        tierLabel = `${p}th Place`;
-      }
-
-      if (!grouped.has(tierLabel)) {
-        grouped.set(tierLabel, []);
-      }
-      grouped.get(tierLabel)!.push(standing);
-    });
-
-    // Convert to array and sort by placement
-    grouped.forEach((teams, label) => {
-      tiers.push({ label, teams });
-    });
-
-    return tiers;
   }
 }

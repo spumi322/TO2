@@ -1,0 +1,29 @@
+<div class="tournament-header" *ngIf="tournament">
+  <div class="header-content">
+    <div class="tournament-badge" [ngClass]="getStatusClass(tournament.status)">
+      {{ getStatusLabel(tournament.status) }}
+    </div>
+    <h1>{{ tournament?.name }}</h1>
+    <p class="format-label">{{ getFormatLabel(tournament.format) }}</p>
+  </div>
+  <div class="tournament-actions">
+    <!-- Start Groups button (for BracketAndGroups format in Setup state) -->
+    <button *ngIf="tournament?.isRegistrationOpen && tournamentState?.currentStatus === TournamentStatus.Setup && tournament?.format === Format.BracketAndGroups"
+            mat-raised-button color="primary" (click)="onStartGroups()"
+            [disabled]="!tournament || (tournament?.teams?.length || 0) < 2 || isReloading">
+      <mat-icon>play_arrow</mat-icon> Start Groups
+    </button>
+    <!-- Start Tournament button (for BracketOnly format in Setup state) -->
+    <button *ngIf="tournament?.isRegistrationOpen && tournamentState?.currentStatus === TournamentStatus.Setup && tournament?.format === Format.BracketOnly"
+            mat-raised-button color="primary" (click)="onStartTournament()"
+            [disabled]="!tournament || (tournament?.teams?.length || 0) < 2 || isReloading">
+      <mat-icon>play_arrow</mat-icon> Start Tournament
+    </button>
+    <!-- Start Bracket Button (only in GroupsCompleted state) -->
+    <button *ngIf="tournamentState?.currentStatus === TournamentStatus.GroupsCompleted"
+            mat-raised-button color="accent" (click)="onStartBracket()"
+            [disabled]="isReloading">
+      <mat-icon>play_arrow</mat-icon> Start Bracket
+    </button>
+  </div>
+</div>

@@ -1,0 +1,102 @@
+.top-4-card {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.trophy-avatar {
+  color: #ffd700;
+}
+
+mat-card-header {
+  background-color: #f5f8fa;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+mat-card-content {
+  padding: 20px;
+}
+
+.top-4-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.top-4-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+}
+
+.top-4-item:hover {
+  background-color: #f0f0f0;
+}
+
+.placement-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.95rem;
+  background-color: #e0e0e0;
+  color: #555;
+  flex-shrink: 0;
+}
+
+.placement-badge.gold {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #795548;
+  box-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
+}
+
+.placement-badge.silver {
+  background: linear-gradient(135deg, #c0c0c0, #e8e8e8);
+  color: #424242;
+  box-shadow: 0 2px 6px rgba(192, 192, 192, 0.3);
+}
+
+.placement-badge.bronze {
+  background: linear-gradient(135deg, #cd7f32, #e8a877);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(205, 127, 50, 0.3);
+}
+
+.top-4-team-info {
+  flex: 1;
+}
+
+.top-4-team-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.top-4-team-detail {
+  font-size: 0.85rem;
+  color: #757575;
+}
+
+.top-4-team-detail.champion-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #ff8f00;
+  font-weight: 600;
+}
+
+.top-4-team-detail.champion-label mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}

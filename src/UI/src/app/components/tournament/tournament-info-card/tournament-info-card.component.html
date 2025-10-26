@@ -1,0 +1,28 @@
+<mat-card class="info-card" *ngIf="tournament">
+  <mat-card-header>
+    <mat-icon mat-card-avatar>info</mat-icon>
+    <mat-card-title>Tournament Details</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <p *ngIf="tournament?.description">{{ tournament?.description }}</p>
+    <p *ngIf="!tournament?.description" class="muted-text">No description provided</p>
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="label">Format</span>
+        <span class="value">{{ getFormatLabel(tournament.format) }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Max Teams</span>
+        <span class="value">{{ tournament?.maxTeams }}</span>
+      </div>
+      <div class="info-item" *ngIf="tournament?.format === Format.BracketAndGroups">
+        <span class="label">Teams per Group</span>
+        <span class="value">{{ getTeamsPerGroup() || '-' }}</span>
+      </div>
+      <div class="info-item" *ngIf="tournament?.format === Format.BracketOnly || tournament?.format === Format.BracketAndGroups">
+        <span class="label">Teams per Bracket</span>
+        <span class="value">{{ getTeamsPerBracket() || '-' }}</span>
+      </div>
+    </div>
+  </mat-card-content>
+</mat-card>

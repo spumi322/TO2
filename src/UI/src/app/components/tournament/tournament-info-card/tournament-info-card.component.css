@@ -1,0 +1,46 @@
+.info-card {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+mat-card-header {
+  background-color: #f5f8fa;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+mat-card-content {
+  padding: 20px;
+}
+
+.muted-text {
+  color: #757575;
+  font-style: italic;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-item .label {
+  font-size: 0.8rem;
+  color: #757575;
+  margin-bottom: 4px;
+}
+
+.info-item .value {
+  font-size: 1.1rem;
+  font-weight: 500;
+}

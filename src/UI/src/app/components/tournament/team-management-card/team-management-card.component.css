@@ -1,0 +1,38 @@
+.teams-card {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+mat-card-header {
+  background-color: #f5f8fa;
+  padding: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+mat-card-content {
+  padding: 20px;
+}
+
+mat-progress-bar {
+  margin: 16px 0;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bulk-add-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 16px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.full-width {
+  width: 100%;
+}

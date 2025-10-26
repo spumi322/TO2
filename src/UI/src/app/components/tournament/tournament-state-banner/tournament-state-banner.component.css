@@ -1,0 +1,52 @@
+.state-banner {
+  margin-bottom: 24px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.state-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.state-icon {
+  font-size: 32px;
+  width: 32px;
+  height: 32px;
+  color: #1976d2;
+}
+
+.state-text {
+  flex: 1;
+}
+
+.state-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.state-text p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* State-specific styling */
+.state-banner.state-0,
+.state-banner.state-1,
+.state-banner.state-2 {
+  background-color: #e3f2fd;
+}
+
+.state-banner.state-3,
+.state-banner.state-4,
+.state-banner.state-5 {
+  background-color: #e8f5e9;
+}
+
+.state-banner.state-6 {
+  background-color: #f5f5f5;
+}

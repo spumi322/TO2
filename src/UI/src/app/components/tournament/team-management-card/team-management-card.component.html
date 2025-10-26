@@ -1,0 +1,25 @@
+<mat-card class="teams-card" *ngIf="tournament">
+  <mat-card-header>
+    <mat-icon mat-card-avatar>groups</mat-icon>
+    <mat-card-title>Team Management</mat-card-title>
+    <mat-card-subtitle>{{ tournament?.teams?.length || 0 }}/{{ tournament?.maxTeams }} teams registered</mat-card-subtitle>
+  </mat-card-header>
+  <mat-card-content>
+    <mat-progress-bar mode="determinate" [value]="getProgressPercentage()"></mat-progress-bar>
+
+    <!-- Bulk Add Form -->
+    <form [formGroup]="bulkAddForm" (ngSubmit)="onSubmit()" class="bulk-add-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Team Names (comma separated)</mat-label>
+        <textarea matInput formControlName="teamNames" rows="3"></textarea>
+        <mat-hint>Enter multiple team names separated by commas</mat-hint>
+        <mat-error *ngIf="bulkAddForm.get('teamNames')?.hasError('required')">Team names are required</mat-error>
+      </mat-form-field>
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="bulkAddForm.invalid || isAddingTeams">
+          <mat-icon>add_circle</mat-icon> Add Teams
+        </button>
+      </div>
+    </form>
+  </mat-card-content>
+</mat-card>

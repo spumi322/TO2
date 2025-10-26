@@ -1,0 +1,73 @@
+.tournament-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #1976d2, #64b5f6);
+  border-radius: 12px;
+  padding: 24px;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.header-content h1 {
+  margin: 0 0 8px 0;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.format-label {
+  margin: 0;
+  font-size: 1rem;
+  opacity: 0.8;
+}
+
+.tournament-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-upcoming,
+.status-setup {
+  background-color: #e3f2fd;
+  color: #0288d1;
+}
+
+.status-seeding,
+.status-ongoing {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-finished {
+  background-color: #f5f5f5;
+  color: #757575;
+}
+
+.status-cancelled {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.tournament-actions {
+  display: flex;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .tournament-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tournament-actions {
+    margin-top: 16px;
+    align-self: flex-end;
+  }
+}

@@ -86,3 +86,11 @@ BuildResponseStep???
 9. Test
 
 
+0. Manage Tournaments
+1. Create Tournament
+2. Add/Remove teams
+3. Start Groups
+4. Play Groups
+5. Start Bracket
+6. Play Bracket
+7. Results

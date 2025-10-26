@@ -1,48 +1,19 @@
 <div class="tournament-details-container" *ngIf="tournament$ | async as tournament">
   <!-- Tournament Header -->
-  <div class="tournament-header">
-    <div class="header-content">
-      <div class="tournament-badge" [ngClass]="getStatusClass(tournament.status)">
-        {{ getStatusLabel(tournament.status) }}
-      </div>
-      <h1>{{ tournament?.name }}</h1>
-      <p class="format-label">{{ getFormatLabel(tournament.format) }}</p>
-    </div>
-    <div class="tournament-actions">
-      <!-- Start Groups button (for BracketAndGroups format in Setup state) -->
-      <button *ngIf="tournament?.isRegistrationOpen && tournamentState?.currentStatus === TournamentStatus.Setup && tournament?.format === Format.BracketAndGroups"
-              mat-raised-button color="primary" (click)="onStartGroups()"
-              [disabled]="!tournament || (tournament?.teams?.length || 0) < 2 || isReloading">
-        <mat-icon>play_arrow</mat-icon> Start Groups
-      </button>
-      <!-- Start Tournament button (for BracketOnly format in Setup state) -->
-      <button *ngIf="tournament?.isRegistrationOpen && tournamentState?.currentStatus === TournamentStatus.Setup && tournament?.format === Format.BracketOnly"
-              mat-raised-button color="primary" (click)="startTournament()"
-              [disabled]="!tournament || (tournament?.teams?.length || 0) < 2 || isReloading">
-        <mat-icon>play_arrow</mat-icon> Start Tournament
-      </button>
-      <!-- Start Bracket Button (only in GroupsCompleted state) -->
-      <button *ngIf="tournamentState?.currentStatus === TournamentStatus.GroupsCompleted"
-              mat-raised-button color="accent" (click)="onStartBracket()"
-              [disabled]="isReloading">
-        <mat-icon>play_arrow</mat-icon> Start Bracket
-      </button>
-    </div>
-  </div>
+  <app-tournament-header
+    [tournament]="tournament"
+    [tournamentState]="tournamentState"
+    [isReloading]="isReloading"
+    (startGroups)="onStartGroups()"
+    (startTournament)="startTournament()"
+    (startBracket)="onStartBracket()">
+  </app-tournament-header>
 
   <!-- Tournament State Banner -->
-  <mat-card class="state-banner" *ngIf="tournamentState && !tournament?.isRegistrationOpen" [ngClass]="'state-' + tournamentState?.currentStatus">
-    <mat-card-content>
-      <div class="state-content">
-        <mat-icon class="state-icon">{{ tournamentState?.isTransitionState ? 'autorenew' : 'info' }}</mat-icon>
-        <div class="state-text">
-          <h3>{{ tournamentState?.statusDisplayName }}</h3>
-          <p>{{ tournamentState?.statusDescription }}</p>
-        </div>
-        <mat-spinner *ngIf="tournamentState?.isTransitionState" diameter="40"></mat-spinner>
-      </div>
-    </mat-card-content>
-  </mat-card>
+  <app-tournament-state-banner
+    [tournamentState]="tournamentState"
+    [isRegistrationOpen]="tournament?.isRegistrationOpen || false">
+  </app-tournament-state-banner>
 
   <!-- Main Content Area -->
   <div class="tournament-content">
@@ -52,112 +23,36 @@
         <div class="tab-content">
           <div class="overview-grid">
             <!-- Tournament Info -->
-            <mat-card class="info-card">
-              <mat-card-header>
-                <mat-icon mat-card-avatar>info</mat-icon>
-                <mat-card-title>Tournament Details</mat-card-title>
-              </mat-card-header>
-              <mat-card-content>
-                <p *ngIf="tournament?.description">{{ tournament?.description }}</p>
-                <p *ngIf="!tournament?.description" class="muted-text">No description provided</p>
-                <div class="info-grid">
-                  <div class="info-item">
-                    <span class="label">Format</span>
-                    <span class="value">{{ getFormatLabel(tournament.format) }}</span>
-                  </div>
-                  <div class="info-item">
-                    <span class="label">Max Teams</span>
-                    <span class="value">{{ tournament?.maxTeams }}</span>
-                  </div>
-                  <div class="info-item" *ngIf="tournament?.format === Format.BracketAndGroups">
-                    <span class="label">Teams per Group</span>
-                    <span class="value">{{ getTeamsPerGroup() || '-' }}</span>
-                  </div>
-                  <div class="info-item" *ngIf="tournament?.format === Format.BracketOnly || tournament?.format === Format.BracketAndGroups">
-                    <span class="label">Teams per Bracket</span>
-                    <span class="value">{{ getTeamsPerBracket() || '-' }}</span>
-                  </div>
-                </div>
-              </mat-card-content>
-            </mat-card>
-            <!-- Team Management -->
-            <mat-card class="teams-card" *ngIf="tournament?.isRegistrationOpen">
-              <mat-card-header>
-                <mat-icon mat-card-avatar>groups</mat-icon>
-                <mat-card-title>Team Management</mat-card-title>
-                <mat-card-subtitle>{{ tournament?.teams?.length || 0 }}/{{ tournament?.maxTeams }} teams registered</mat-card-subtitle>
-              </mat-card-header>
-              <mat-card-content>
-                <mat-progress-bar mode="determinate" [value]="((tournament?.teams?.length || 0) / (tournament?.maxTeams || 1)) * 100"></mat-progress-bar>
+            <app-tournament-info-card
+              [tournament]="tournament"
+              [groups]="groups"
+              [brackets]="brackets">
+            </app-tournament-info-card>
 
-                <!-- Bulk Add Form -->
-                <form [formGroup]="bulkAddForm" (ngSubmit)="addBulkTeams()" class="bulk-add-form">
-                  <mat-form-field appearance="outline" class="full-width">
-                    <mat-label>Team Names (comma separated)</mat-label>
-                    <textarea matInput formControlName="teamNames"  rows="3"></textarea>
-                    <mat-hint>Enter multiple team names separated by commas</mat-hint>
-                    <mat-error *ngIf="bulkAddForm.get('teamNames')?.hasError('required')">Team names are required</mat-error>
-                  </mat-form-field>
-                  <div class="form-actions">
-                    <button mat-raised-button color="primary" type="submit" [disabled]="bulkAddForm.invalid || isAddingTeams">
-                      <mat-icon>add_circle</mat-icon> Add Teams
-                    </button>
-                  </div>
-                </form>
-              </mat-card-content>
-            </mat-card>
+            <!-- Team Management -->
+            <app-team-management-card
+              *ngIf="tournament?.isRegistrationOpen"
+              [tournament]="tournament"
+              [isAddingTeams]="isAddingTeams"
+              (addTeams)="addBulkTeams($event)">
+            </app-team-management-card>
+
             <!-- Top 4 Results -->
-            <mat-card class="top-4-card" *ngIf="tournamentState?.currentStatus === TournamentStatus.Finished && finalStandings.length > 0">
-              <mat-card-header>
-                <mat-icon mat-card-avatar class="trophy-avatar">emoji_events</mat-icon>
-                <mat-card-title>Top 4 Results</mat-card-title>
-                <mat-card-subtitle>Final Standings</mat-card-subtitle>
-              </mat-card-header>
-              <mat-card-content>
-                <div class="top-4-list">
-                  <div *ngFor="let standing of topFourStandings" class="top-4-item">
-                    <span class="placement-badge" [ngClass]="getRankClass(standing.placement)">
-                      {{ standing.placement }}
-                    </span>
-                    <div class="top-4-team-info">
-                      <div class="top-4-team-name">{{ standing.teamName }}</div>
-                      <div class="top-4-team-detail" *ngIf="standing.status !== 4">
-                        Round {{ standing.eliminatedInRound }}
-                      </div>
-                      <div class="top-4-team-detail champion-label" *ngIf="standing.status === 4">
-                        <mat-icon>emoji_events</mat-icon> Champion
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </mat-card-content>
-            </mat-card>
+            <app-top-results-card
+              *ngIf="tournamentState?.currentStatus === TournamentStatus.Finished && finalStandings.length > 0"
+              [finalStandings]="finalStandings">
+            </app-top-results-card>
           </div>
+
           <!-- Registered Teams -->
-          <mat-card class="registered-teams-card">
-            <mat-card-header>
-              <mat-icon mat-card-avatar>people</mat-icon>
-              <mat-card-title>Registered Teams</mat-card-title>
-            </mat-card-header>
-            <mat-card-content>
-              <div *ngIf="!(tournament?.teams?.length)" class="empty-state">
-                <mat-icon class="empty-icon">sports_esports</mat-icon>
-                <p>No teams have been registered yet</p>
-                <p *ngIf="tournament?.isRegistrationOpen" class="muted-text">Add teams using the form above</p>
-              </div>
-              <div *ngIf="tournament?.teams?.length" class="teams-grid">
-                <div *ngFor="let team of tournament?.teams" class="team-card">
-                  <div class="team-avatar">{{ team?.name?.charAt(0) }}</div>
-                  <div class="team-name">{{ team?.name }}</div>
-                  <button *ngIf="tournament?.isRegistrationOpen" mat-icon-button color="warn" (click)="confirmRemoveTeam(team)">
-                    <mat-icon>delete</mat-icon>
-                  </button>
-                </div>
-              </div>
-            </mat-card-content>
-          </mat-card>
+          <app-registered-teams-list
+            [teams]="tournament?.teams || []"
+            [isRegistrationOpen]="tournament?.isRegistrationOpen || false"
+            (removeTeam)="confirmRemoveTeam($event)">
+          </app-registered-teams-list>
         </div>
       </mat-tab>
+
       <!-- Group Stage Tab (only if format is BracketAndGroups and tournament has started) -->
       <mat-tab label="Group Stage" *ngIf="!tournament?.isRegistrationOpen && tournament?.format === Format.BracketAndGroups">
         <div class="tab-content">
@@ -169,7 +64,6 @@
       </mat-tab>
 
       <!-- Bracket Tab (only show when bracket is seeded and in progress or finished) -->
-      <!-- Respects tournament lifecycle: should NOT be visible during GroupsInProgress, GroupsCompleted, or SeedingBracket -->
       <mat-tab label="Bracket" *ngIf="brackets.length > 0 && (tournamentState?.currentStatus === TournamentStatus.BracketInProgress || tournamentState?.currentStatus === TournamentStatus.Finished)">
         <ng-template matTabContent>
           <div class="tab-content">
@@ -188,55 +82,22 @@
       <mat-tab label="Results" *ngIf="tournamentState?.currentStatus === TournamentStatus.Finished && finalStandings.length > 0">
         <ng-template matTabContent>
           <div class="tab-content results-tab-content">
-            <div class="results-header">
-              <mat-icon class="trophy-icon">emoji_events</mat-icon>
-              <h2>Final Results</h2>
-            </div>
-
-            <!-- Placement Tiers -->
-            <div class="placement-tiers">
-              <mat-card *ngFor="let tier of groupPlacementsByTier()" class="tier-card" [ngClass]="{
-                'tier-first': tier.label === '1st Place',
-                'tier-second': tier.label === '2nd Place',
-                'tier-third': tier.label.startsWith('3rd')
-              }">
-                <mat-card-header>
-                  <div class="tier-label">
-                    <mat-icon *ngIf="tier.label === '1st Place'" class="tier-icon gold">emoji_events</mat-icon>
-                    <mat-icon *ngIf="tier.label === '2nd Place'" class="tier-icon silver">military_tech</mat-icon>
-                    <mat-icon *ngIf="tier.label.startsWith('3rd')" class="tier-icon bronze">military_tech</mat-icon>
-                    <h3>{{ tier.label }}</h3>
-                  </div>
-                </mat-card-header>
-                <mat-card-content>
-                  <div class="tier-teams">
-                    <div *ngFor="let standing of tier.teams" class="team-result">
-                      <div class="team-avatar">{{ standing.teamName.charAt(0) }}</div>
-                      <div class="team-details">
-                        <div class="team-name">{{ standing.teamName }}</div>
-                        <div class="team-eliminated" *ngIf="standing.status !== 4">
-                          Eliminated in Round {{ standing.eliminatedInRound }}
-                        </div>
-                        <div class="team-champion" *ngIf="standing.status === 4">
-                          <mat-icon>emoji_events</mat-icon> Champion
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </mat-card-content>
-              </mat-card>
-            </div>
+            <app-final-standings-display
+              [finalStandings]="finalStandings">
+            </app-final-standings-display>
           </div>
         </ng-template>
       </mat-tab>
     </mat-tab-group>
   </div>
 </div>
+
 <!-- Loading Indicator -->
 <div class="loading-container" *ngIf="isReloading">
   <mat-spinner></mat-spinner>
   <p>Loading tournament data...</p>
 </div>
+
 <!-- Confirmation Dialog Template -->
 <ng-template #confirmDialog>
   <h2 mat-dialog-title>Confirm Removal</h2>
@@ -248,6 +109,7 @@
     <button mat-raised-button color="warn" [mat-dialog-close]="true">Remove</button>
   </mat-dialog-actions>
 </ng-template>
+
 <!-- Error Messages -->
 <div *ngIf="errorMessage" class="error-container">
   <mat-icon>error</mat-icon>

@@ -1,0 +1,12 @@
+<mat-card class="state-banner" *ngIf="tournamentState && !isRegistrationOpen" [ngClass]="'state-' + tournamentState?.currentStatus">
+  <mat-card-content>
+    <div class="state-content">
+      <mat-icon class="state-icon">{{ tournamentState?.isTransitionState ? 'autorenew' : 'info' }}</mat-icon>
+      <div class="state-text">
+        <h3>{{ tournamentState?.statusDisplayName }}</h3>
+        <p>{{ tournamentState?.statusDescription }}</p>
+      </div>
+      <mat-spinner *ngIf="tournamentState?.isTransitionState" diameter="40"></mat-spinner>
+    </div>
+  </mat-card-content>
+</mat-card>
