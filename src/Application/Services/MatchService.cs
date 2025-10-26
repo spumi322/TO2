@@ -68,7 +68,6 @@ namespace Application.Services
             }
 
             await _matchRepository.Add(match);
-            await _unitOfWork.SaveChangesAsync();
 
             return match;
 

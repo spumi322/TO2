@@ -58,7 +58,6 @@ namespace Application.Services
             }
 
             await _gameRepository.AddRange(games);
-            await _unitOfWork.SaveChangesAsync();
 
             return new GenerateGamesDTO(true, $"{games.Count} games generated for match {match.Id}");
         }

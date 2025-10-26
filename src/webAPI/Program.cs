@@ -4,6 +4,8 @@ using Application.Pipelines.GameResult;
 using Application.Pipelines.GameResult.Contracts;
 using Application.Pipelines.GameResult.Steps;
 using Application.Pipelines.GameResult.Strategies;
+using Application.Pipelines.StartGroups;
+using Application.Pipelines.StartGroups.Contracts;
 using Application.Services;
 using Domain.StateMachine;
 using FluentValidation;
@@ -57,6 +59,17 @@ namespace TO2
             // Standing Progress Strategies
             builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
             builder.Services.AddScoped<IStandingProgressStrategy, BracketProgressStrategy>();
+            // Start Groups Pipeline - Tournament group stage initialization
+            builder.Services.AddScoped<IStartGroupsPipeline, StartGroupsPipeline>();
+            // Pipeline Steps (registered in execution order)
+            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.ValidateAndTransitionToSeedingGroupsStep>();
+            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.ValidateStandingsNotSeededStep>();
+            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.DistributeTeamsIntoGroupsStep>();
+            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.CreateGroupEntriesStep>();
+            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.GenerateRoundRobinMatchesStep>();
+            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.MarkStandingsAsSeededStep>();
+            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.TransitionToGroupsInProgressStep>();
+            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.BuildResponseStep>();
 
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));

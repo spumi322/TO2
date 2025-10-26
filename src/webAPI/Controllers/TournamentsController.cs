@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Tournament;
+using Application.Pipelines.StartGroups.Contracts;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -12,14 +13,17 @@ namespace TO2.Controllers
     {
         private readonly ITournamentService _tournamentService;
         private readonly IOrchestrationService _orchestrationService;
+        private readonly IStartGroupsPipeline _startGroupsPipeline;
         private readonly IStandingService _standingService;
 
         public TournamentsController(
             ITournamentService tournamentService,
             IOrchestrationService orchestrationService,
-            IStandingService standingService)
+            IStandingService standingService,
+            IStartGroupsPipeline startGroupsPipeline)
         {
             _tournamentService = tournamentService;
+            _startGroupsPipeline = startGroupsPipeline;
             _orchestrationService = orchestrationService;
             _standingService = standingService;
         }
@@ -77,7 +81,7 @@ namespace TO2.Controllers
         [HttpPost("{id}/start-groups")]
         public async Task<IActionResult> StartGroups(long id)
         {
-            var result = await _orchestrationService.StartGroups(id);
+            var result = await _startGroupsPipeline.ExecuteAsync(id);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
