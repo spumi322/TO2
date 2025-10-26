@@ -13,28 +13,10 @@ namespace Domain.Common
         public string CreatedBy { get; set; }
         public string LastModifiedBy { get; set; }
 
-        private readonly List<DomainEvent> _domainEvents = new();
-        public IReadOnlyCollection<DomainEvent> DomainEvents => _domainEvents.AsReadOnly();
-
         protected EntityBase()
         {
             CreatedDate = DateTime.UtcNow;
             LastModifiedDate = CreatedDate;
-        }
-
-        public void AddDomainEvent(DomainEvent domainEvent)
-        {
-            _domainEvents.Add(domainEvent);
-        }
-
-        public void RemoveDomainEvent(DomainEvent domainEvent)
-        {
-            _domainEvents.Remove(domainEvent);
-        }
-
-        public void ClearEvents()
-        {
-            _domainEvents.Clear();
         }
 
         public override bool Equals(object? obj)
