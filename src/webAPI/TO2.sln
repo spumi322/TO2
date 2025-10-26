@@ -13,18 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "..\Infras
 EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "UI", "..\UI\UI.esproj", "{93F8BB7E-FE9F-44CE-91A0-A7B97894F961}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{7A830D06-4A04-4467-83C1-C28B36AF2CCE}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
-		..\..\docs\backend-service-methods-reference.md = ..\..\docs\backend-service-methods-reference.md
-		..\..\docs\bracket-viewer-implementation-v2.md = ..\..\docs\bracket-viewer-implementation-v2.md
-		bracket_display_fix.md = bracket_display_fix.md
-		bracket_seeding.md = bracket_seeding.md
-		final_results.md = final_results.md
-		..\..\docs\play_tournament_devnote.md = ..\..\docs\play_tournament_devnote.md
-		..\..\docs\refactoring-orchestration-service.md = ..\..\docs\refactoring-orchestration-service.md
-		..\..\docs\todo.md = ..\..\docs\todo.md
-		..\..\docs\todo_flowfix.md = ..\..\docs\todo_flowfix.md
-		..\..\docs\tournament-state-machine-implementation-v3.md = ..\..\docs\tournament-state-machine-implementation-v3.md
+		..\..\docs\to2_analysis.md = ..\..\docs\to2_analysis.md
 	EndProjectSection
 EndProject
 Global

@@ -15,37 +15,29 @@ namespace Application.Services
     public class TournamentService : ITournamentService
     {
         private readonly IGenericRepository<Tournament> _tournamentRepository;
-        private readonly IGenericRepository<Match> _matchRepository;
-        private readonly IGenericRepository<Team> _teamRepository;
-        private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
-        private readonly ITeamService _teamService;
         private readonly ITO2DbContext _dbContext;
         private readonly IStandingService _standingService;
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
         private readonly ITournamentStateMachine _stateMachine;
 
+        private readonly IUnitOfWork _unitOfWork;
+
         public TournamentService(IGenericRepository<Tournament> tournamentRepository,
-                                 IGenericRepository<Match> matchRepository,
-                                 IGenericRepository<Team> teamRepository,
-                                 IGenericRepository<TournamentTeam> tournamentTeamRepository,
-                                 ITeamService teamService,
                                  ITO2DbContext tO2DbContext,
                                  IStandingService standingService,
                                  IMapper mapper,
                                  ILogger<TournamentService> logger,
-                                 ITournamentStateMachine stateMachine)
+                                 ITournamentStateMachine stateMachine,
+                                 IUnitOfWork unitOfWork)
         {
             _tournamentRepository = tournamentRepository;
-            _matchRepository = matchRepository;
-            _teamRepository = teamRepository;
-            _tournamentTeamRepository = tournamentTeamRepository;
-            _teamService = teamService;
             _dbContext = tO2DbContext;
             _standingService = standingService;
             _mapper = mapper;
             _logger = logger;
             _stateMachine = stateMachine;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<TournamentStateDTO> GetTournamentStateAsync(long tournamentId)
@@ -98,7 +90,7 @@ namespace Application.Services
                 tournament.IsRegistrationOpen = true;
 
                 await _tournamentRepository.Add(tournament);
-                await _tournamentRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
                 await _standingService.GenerateStanding(tournament.Id, "Main Bracket", StandingType.Bracket, request.TeamsPerBracket);
 
                 if (request.Format is Format.BracketAndGroup)
@@ -141,7 +133,7 @@ namespace Application.Services
                 _mapper.Map(request, existingTournament);
 
                 await _tournamentRepository.Update(existingTournament);
-                await _tournamentRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
 
                 return _mapper.Map<UpdateTournamentResponseDTO>(existingTournament);
             }
@@ -163,7 +155,7 @@ namespace Application.Services
                 existingTournament.Status = TournamentStatus.Cancelled;
 
                 await _tournamentRepository.Update(existingTournament);
-                await _tournamentRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -183,7 +175,7 @@ namespace Application.Services
                 existingTournament.Status = status;
 
                 await _tournamentRepository.Update(existingTournament);
-                await _tournamentRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -212,7 +204,7 @@ namespace Application.Services
                 {
                     existingTournament.IsRegistrationOpen = false;
                     await _tournamentRepository.Update(existingTournament);
-                    await _tournamentRepository.Save();
+                    await _unitOfWork.SaveChangesAsync();
 
                     return new StartTournamentDTO("Tournament succesfully started", true);
                 }

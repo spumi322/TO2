@@ -16,13 +16,17 @@ namespace Application.Services
         private readonly ILogger<GameService> _logger;
 
 
+        private readonly IUnitOfWork _unitOfWork;
+
         public GameService(IGenericRepository<Game> gameRepository,
                            IGenericRepository<Match> matchRepository,
-                           ILogger<GameService> logger)
+                           ILogger<GameService> logger,
+                                 IUnitOfWork unitOfWork)
         {
             _gameRepository = gameRepository;
             _matchRepository = matchRepository;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<GenerateGamesDTO> GenerateGames(Match match)
@@ -54,7 +58,7 @@ namespace Application.Services
             }
 
             await _gameRepository.AddRange(games);
-            await _gameRepository.Save();
+            await _unitOfWork.SaveChangesAsync();
 
             return new GenerateGamesDTO(true, $"{games.Count} games generated for match {match.Id}");
         }
@@ -94,7 +98,6 @@ namespace Application.Services
             existingGame.WinnerId = winnerId;
 
             await _gameRepository.Update(existingGame);
-            await _gameRepository.Save();
         }
 
         public async Task<MatchWinner?> SetMatchWinner(long matchId)
@@ -127,7 +130,6 @@ namespace Application.Services
             match.LoserId = loserId;
 
             await _matchRepository.Update(match);
-            await _matchRepository.Save();
 
             return new MatchWinner(winnerId.Value, loserId.Value);
         }
@@ -142,8 +144,6 @@ namespace Application.Services
                 game.TeamBId = teamBId;
                 await _gameRepository.Update(game);
             }
-
-            await _gameRepository.Save();
 
             _logger.LogInformation($"Updated {games.Count()} games for match {matchId} with TeamA={teamAId}, TeamB={teamBId}");
         }

@@ -22,7 +22,8 @@
       "Bash(ng generate:*)",
       "Bash(git checkout:*)",
       "Bash(find:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(__NEW_LINE__ sed -i '/^[[:space:]]*_logger = logger;$/a\\            _unitOfWork = unitOfWork;' BracketProgressStrategy.cs)"
     ],
     "deny": [],
     "ask": []

@@ -10,6 +10,5 @@
         Task Update(T entity);
         Task Delete(object id);
         Task<bool> Exists(object id);
-        Task Save();
     }
 }

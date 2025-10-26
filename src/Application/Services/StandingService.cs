@@ -17,13 +17,16 @@ namespace Application.Services
         private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly ILogger<StandingService> _logger;
 
+        private readonly IUnitOfWork _unitOfWork;
+
         public StandingService(IGenericRepository<Standing> standingRepository,
                                IGenericRepository<Match> matchRepository,
                                IGenericRepository<Tournament> tournamentRepository,
                                IGenericRepository<Group> groupRepository,
                                IGenericRepository<Team> teamRepository,
                                IGenericRepository<TournamentTeam> tournamentTeamRepository,
-                               ILogger<StandingService> logger)
+                               ILogger<StandingService> logger,
+                                 IUnitOfWork unitOfWork)
         {
             _standingRepository = standingRepository;
             _matchRepository = matchRepository;
@@ -32,6 +35,7 @@ namespace Application.Services
             _teamRepository = teamRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task GenerateStanding(long tournamentId, string name, StandingType type, int? teamsPerStanding)
@@ -42,7 +46,7 @@ namespace Application.Services
                 standing.TournamentId = tournamentId;
 
                 await _standingRepository.Add(standing);
-                await _standingRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -90,7 +94,6 @@ namespace Application.Services
 
             standing.IsFinished = true;
             await _standingRepository.Update(standing);
-            await _standingRepository.Save();
         }
 
         public async Task<bool> CheckAllGroupsAreFinished(long tournamentId)
@@ -170,7 +173,7 @@ namespace Application.Services
             }
 
             // Save GroupEntry status changes using repository
-            await _groupRepository.Save();
+            await _unitOfWork.SaveChangesAsync();
 
             return advancingTeams;
         }
@@ -387,7 +390,6 @@ namespace Application.Services
                     _logger.LogInformation($"  Team {placement.TeamId}: Placement {placement}, Eliminated Round {placement.EliminatedInRound.ToString() ?? "N/A"}");
                 }
 
-                await _tournamentTeamRepository.Save();
                 _logger.LogInformation($"✓ Stored {placements.Count} final results");
             }
         }

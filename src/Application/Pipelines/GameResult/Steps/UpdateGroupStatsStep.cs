@@ -8,13 +8,16 @@ namespace Application.Pipelines.GameResult.Steps
 {
     public class UpdateGroupStatsStep : PipeLineBase<UpdateGroupStatsStep>
     {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<Group> _groupRepository;
 
         public UpdateGroupStatsStep(
             ILogger<UpdateGroupStatsStep> logger,
+            IUnitOfWork unitOfWork,
             IGenericRepository<Group> groupRepository) : base(logger)
         {
             _groupRepository = groupRepository;
+            _unitOfWork = unitOfWork;
         }
 
         protected override async Task<bool> ExecuteStepAsync(GameResultContext context)
@@ -32,7 +35,6 @@ namespace Application.Pipelines.GameResult.Steps
 
                 await _groupRepository.Update(winner);
                 await _groupRepository.Update(loser);
-                await _groupRepository.Save();
 
                 Logger.LogInformation("Wins and points handed out for {winnerId}. Lose recorded for {loserId}. Group stats updated.", winner.Id, loser.Id);
 

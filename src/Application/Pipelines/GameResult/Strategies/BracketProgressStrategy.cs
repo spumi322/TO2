@@ -12,6 +12,7 @@ namespace Application.Pipelines.GameResult.Strategies
     /// </summary>
     public class BracketProgressStrategy : IStandingProgressStrategy
     {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly IGameService _gameService;
         private readonly ILogger<BracketProgressStrategy> _logger;
@@ -20,12 +21,14 @@ namespace Application.Pipelines.GameResult.Strategies
 
         public BracketProgressStrategy(
             IGenericRepository<Match> matchRepository,
+            IUnitOfWork unitOfWork,
             IGameService gameService,
             ILogger<BracketProgressStrategy> logger)
         {
             _matchRepository = matchRepository;
             _gameService = gameService;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<StandingProgressResult> ProgressStandingAsync(long tournamentId, long standingId, long matchId, long winnerId)
@@ -143,7 +146,6 @@ namespace Application.Pipelines.GameResult.Strategies
 
             // Save the updated match
             await _matchRepository.Update(nextMatch);
-            await _matchRepository.Save();
 
             _logger.LogInformation("Winner advanced to next round successfully");
         }

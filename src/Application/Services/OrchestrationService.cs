@@ -29,6 +29,8 @@ namespace Application.Services
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly ITournamentStateMachine _stateMachine;
 
+        private readonly IUnitOfWork _unitOfWork;
+
         public OrchestrationService(
             ILogger<OrchestrationService> logger,
             IStandingService standingService,
@@ -41,7 +43,8 @@ namespace Application.Services
             IGenericRepository<Team> teamRepository,
             IGenericRepository<Match> matchRepository,
             ITournamentStateMachine stateMachine
-            )
+            ,
+                                 IUnitOfWork unitOfWork)
         {
             _logger = logger;
             _standingService = standingService;
@@ -54,6 +57,7 @@ namespace Application.Services
             _teamRepository = teamRepository;
             _matchRepository = matchRepository;
             _stateMachine = stateMachine;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<StartGroupsResponseDTO> StartGroups(long tournamentId)
@@ -67,7 +71,7 @@ namespace Application.Services
                 tournament.Status = TournamentStatus.SeedingGroups;
                 tournament.IsRegistrationOpen = false; // Close registration when starting groups
                 await _tournamentRepository.Update(tournament);
-                await _tournamentRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
 
                 // 2. Seed groups
                 var result = await SeedGroups(tournamentId);
@@ -80,7 +84,7 @@ namespace Application.Services
                 _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.GroupsInProgress);
                 tournament.Status = TournamentStatus.GroupsInProgress;
                 await _tournamentRepository.Update(tournament);
-                await _tournamentRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation($"Tournament {tournament.Id} group stage started successfully.");
 
@@ -240,8 +244,7 @@ namespace Application.Services
                 }
 
                 // 6. Save all changes using repositories
-                await _groupRepository.Save();
-                await _standingRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
                 _logger.LogInformation("✓ Group seeding completed successfully");
 
                 return new SeedGroupsResponseDTO(true, "Groups seeded successfully!");
@@ -297,7 +300,7 @@ namespace Application.Services
                 tournament.Status = TournamentStatus.SeedingBracket;
 
                 await _tournamentRepository.Update(tournament);
-                await _tournamentRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation("The tournament is ready to seed the bracket!");
                 //2. Seed Bracket
@@ -313,7 +316,7 @@ namespace Application.Services
                 tournament.Status = TournamentStatus.BracketInProgress;
 
                 await _tournamentRepository.Update(tournament);
-                await _tournamentRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation($"Tournament {tournament.Id} bracket started successfully.");
 
@@ -421,7 +424,7 @@ namespace Application.Services
                 await _standingRepository.Update(bracket);
 
                 // 7. Save all changes
-                await _standingRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
 
                 _logger.LogInformation($"✓ Bracket seeded successfully with {teams.Count} teams across {totalRounds} rounds");
                 return new SeedBracketResponseDTO(true,

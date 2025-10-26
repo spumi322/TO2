@@ -17,12 +17,15 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<TeamService> _logger;
 
+        private readonly IUnitOfWork _unitOfWork;
+
         public TeamService(IGenericRepository<Team> teamRepository,
                            IGenericRepository<Tournament> tournamentRepository,
                            IGenericRepository<TournamentTeam> tournamentTeamRepository,
                            ITO2DbContext dbContext,
                            IMapper mapper,
-                           ILogger<TeamService> logger)
+                           ILogger<TeamService> logger,
+                                 IUnitOfWork unitOfWork)
         {
             _teamRepository = teamRepository;
             _tournamentRepository = tournamentRepository;
@@ -30,6 +33,7 @@ namespace Application.Services
             _dbContext = dbContext;
             _mapper = mapper;
             _logger = logger;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<CreateTeamResponseDTO> CreateTeamAsync(CreateTeamRequestDTO request)
@@ -39,7 +43,7 @@ namespace Application.Services
                 var team = _mapper.Map<Team>(request);
 
                 await _teamRepository.Add(team);
-                await _teamRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
 
                 return new CreateTeamResponseDTO(team.Id);
             }
@@ -82,7 +86,7 @@ namespace Application.Services
                 _mapper.Map(request, existingTeam);
 
                 await _teamRepository.Update(existingTeam);
-                await _teamRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
 
                 return _mapper.Map<UpdateTeamResponseDTO>(existingTeam);
             }
@@ -98,7 +102,7 @@ namespace Application.Services
             try
             {
                 await _teamRepository.Delete(teamId);
-                await _teamRepository.Save();
+                await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)
             {
@@ -146,7 +150,7 @@ namespace Application.Services
             var tournamentTeam = new TournamentTeam(request.TournamentId, request.TeamId);
 
             await _tournamentTeamRepository.Add(tournamentTeam);
-            await _tournamentTeamRepository.Save();
+            await _unitOfWork.SaveChangesAsync();
 
             return new AddTeamToTournamentResponseDTO(request.TournamentId, request.TeamId);
         }
@@ -169,7 +173,7 @@ namespace Application.Services
                     throw new Exception("Team is not registered in this tournament");
 
                 _dbContext.TournamentTeams.Remove(tournamentTeam);
-                await _dbContext.SaveChangesAsync();
+                await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)
             {

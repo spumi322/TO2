@@ -14,16 +14,19 @@ namespace Application.Pipelines.GameResult.Steps
     /// </summary>
     public class TransitionTournamentStateStep : PipeLineBase<TransitionTournamentStateStep>
     {
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
 
         public TransitionTournamentStateStep(
             ILogger<TransitionTournamentStateStep> logger,
             IGenericRepository<Tournament> tournamentRepository,
+            IUnitOfWork unitOfWork,
             ITournamentStateMachine stateMachine) : base(logger)
         {
             _tournamentRepository = tournamentRepository;
             _stateMachine = stateMachine;
+            _unitOfWork = unitOfWork;
         }
 
         protected override async Task<bool> ExecuteStepAsync(GameResultContext context)
@@ -58,7 +61,6 @@ namespace Application.Pipelines.GameResult.Steps
 
             // Save tournament state
             await _tournamentRepository.Update(tournament);
-            await _tournamentRepository.Save();
 
             // Continue to next step
             return true;

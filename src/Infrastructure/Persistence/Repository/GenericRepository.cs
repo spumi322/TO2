@@ -62,10 +62,5 @@ namespace Infrastructure.Persistence.Repository
             var entity = await Get(id);
             return entity is not null;
         }
-
-        public async Task Save()
-        {
-            await _dbContext.SaveChangesAsync();
-        }
     }
 }

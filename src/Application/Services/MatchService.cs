@@ -11,13 +11,17 @@ namespace Application.Services
         private readonly ILogger<MatchService> _logger;
         private readonly Func<IGameService> _gameServiceFactory;
 
+        private readonly IUnitOfWork _unitOfWork;
+
         public MatchService(IGenericRepository<Match> matchRepository,
                             ILogger<MatchService> logger,
-                            Func<IGameService> gameServiceFactory)
+                            Func<IGameService> gameServiceFactory,
+                                 IUnitOfWork unitOfWork)
         {
             _matchRepository = matchRepository;
             _logger = logger;
             _gameServiceFactory = gameServiceFactory;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<Match>> GetMatchesAsync(long standingId)
@@ -64,7 +68,7 @@ namespace Application.Services
             }
 
             await _matchRepository.Add(match);
-            await _matchRepository.Save();
+            await _unitOfWork.SaveChangesAsync();
 
             return match;
 

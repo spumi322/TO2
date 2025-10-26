@@ -29,6 +29,7 @@ namespace TO2
             // UoW, Repos
             builder.Services.AddScoped<ITO2DbContext, TO2DbContext>();
             builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             // Domain Services
             builder.Services.AddScoped<ITournamentStateMachine, TournamentStateMachine>();
             // Application Services

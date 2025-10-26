@@ -9,26 +9,30 @@ namespace Application.Pipelines.GameResult
 {
     /// <summary>
     /// Pipeline executor that orchestrates the game result processing workflow.
-    /// Runs all steps in sequence and returns the final result.
+    /// Runs all steps in sequence within a single transaction and returns the final result.
     /// </summary>
     public class GameResultPipeline : IGameResultPipeline
     {
         private readonly ILogger<GameResultPipeline> _logger;
         private readonly IGenericRepository<Tournament> _tournamentRepository;
         private readonly IEnumerable<IGameResultPipelineStep> _steps;
+        private readonly IUnitOfWork _unitOfWork;
 
         public GameResultPipeline(
             ILogger<GameResultPipeline> logger,
             IGenericRepository<Tournament> tournamentRepository,
-            IEnumerable<IGameResultPipelineStep> steps)
+            IEnumerable<IGameResultPipelineStep> steps,
+            IUnitOfWork unitOfWork)
         {
             _logger = logger;
             _tournamentRepository = tournamentRepository;
             _steps = steps;
+            _unitOfWork = unitOfWork;
         }
 
         /// <summary>
         /// Executes the pipeline for processing a game result.
+        /// All changes are committed as a single atomic transaction.
         /// </summary>
         /// <param name="gameResult">The game result input data</param>
         /// <returns>The processed result DTO</returns>
@@ -48,38 +52,54 @@ namespace Application.Pipelines.GameResult
                 context.Tournament = await _tournamentRepository.Get(gameResult.TournamentId)
                     ?? throw new Exception($"Tournament with id: {gameResult.TournamentId} was not found!");
 
-                // Execute all steps in sequence
-                foreach (var step in _steps)
+                // Begin transaction - all changes will be atomic
+                await _unitOfWork.BeginTransactionAsync();
+
+                try
                 {
-                    var shouldContinue = await step.ExecuteAsync(context);
-
-                    if (!shouldContinue || !context.Success)
+                    // Execute all steps in sequence
+                    foreach (var step in _steps)
                     {
-                        _logger.LogInformation("Pipeline stopped at step: {StepName}", step.GetType().Name);
-                        break;
+                        var shouldContinue = await step.ExecuteAsync(context);
+
+                        if (!shouldContinue || !context.Success)
+                        {
+                            _logger.LogInformation("Pipeline stopped at step: {StepName}", step.GetType().Name);
+                            break;
+                        }
                     }
+
+                    // Commit transaction - saves all changes atomically
+                    await _unitOfWork.CommitTransactionAsync();
+
+                    // Return the result (BuildResponseStep should have populated this)
+                    var result = new GameProcessResultDTO(
+                        Success: context.Success,
+                        MatchFinished: context.MatchFinished,
+                        MatchWinnerId: context.MatchWinnerId,
+                        MatchLoserId: context.MatchLoserId,
+                        StandingFinished: context.StandingFinished,
+                        AllGroupsFinished: context.AllGroupsFinished,
+                        TournamentFinished: context.TournamentFinished,
+                        NewTournamentStatus: context.NewTournamentStatus,
+                        FinalStandings: context.FinalStandings,
+                        Message: context.Message
+                    );
+
+                    _logger.LogInformation("Pipeline completed successfully. Success: {Success}", result.Success);
+                    return result;
                 }
-
-                // Return the result (BuildResponseStep should have populated this)
-                var result = new GameProcessResultDTO(
-                    Success: context.Success,
-                    MatchFinished: context.MatchFinished,
-                    MatchWinnerId: context.MatchWinnerId,
-                    MatchLoserId: context.MatchLoserId,
-                    StandingFinished: context.StandingFinished,
-                    AllGroupsFinished: context.AllGroupsFinished,
-                    TournamentFinished: context.TournamentFinished,
-                    NewTournamentStatus: context.NewTournamentStatus,
-                    FinalStandings: context.FinalStandings,
-                    Message: context.Message
-                );
-
-                _logger.LogInformation("Pipeline completed. Success: {Success}", result.Success);
-                return result;
+                catch (Exception ex)
+                {
+                    // Rollback transaction on any failure
+                    await _unitOfWork.RollbackTransactionAsync();
+                    _logger.LogError(ex, "Pipeline execution failed, changes rolled back: {Message}", ex.Message);
+                    throw;
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Pipeline execution failed: {Message}", ex.Message);
+                _logger.LogError(ex, "Pipeline failed: {Message}", ex.Message);
                 return new GameProcessResultDTO(
                     Success: false,
                     MatchFinished: false,
