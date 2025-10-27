@@ -172,9 +172,6 @@ namespace Application.Services
                 }
             }
 
-            // Save GroupEntry status changes using repository
-            await _unitOfWork.SaveChangesAsync();
-
             return advancingTeams;
         }
 

@@ -8,5 +8,6 @@ namespace Application.Contracts
     {
         Task<GameProcessResultDTO> ProcessGameResult(SetGameResultDTO result);
         Task<StartGroupsResponseDTO> StartGroups(long tournamentId);
+        Task<StartBracketResponseDTO> StartBracket(long tournamentId);
     }
 }

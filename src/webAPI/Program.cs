@@ -6,6 +6,8 @@ using Application.Pipelines.GameResult.Steps;
 using Application.Pipelines.GameResult.Strategies;
 using Application.Pipelines.StartGroups;
 using Application.Pipelines.StartGroups.Contracts;
+using Application.Pipelines.StartBracket;
+using Application.Pipelines.StartBracket.Contracts;
 using Application.Services;
 using Domain.StateMachine;
 using FluentValidation;
@@ -59,6 +61,7 @@ namespace TO2
             // Standing Progress Strategies
             builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
             builder.Services.AddScoped<IStandingProgressStrategy, BracketProgressStrategy>();
+
             // Start Groups Pipeline - Tournament group stage initialization
             builder.Services.AddScoped<IStartGroupsPipeline, StartGroupsPipeline>();
             // Pipeline Steps (registered in execution order)
@@ -70,6 +73,19 @@ namespace TO2
             builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.MarkStandingsAsSeededStep>();
             builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.TransitionToGroupsInProgressStep>();
             builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.BuildResponseStep>();
+
+            // Start Bracket Pipeline - Tournament bracket stage initialization
+            builder.Services.AddScoped<IStartBracketPipeline, StartBracketPipeline>();
+            // Pipeline Steps (registered in execution order)
+            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateAndTransitionToSeedingBracketStep>();
+            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateBracketNotSeededStep>();
+            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.GetAdvancedTeamsStep>();
+            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateTeamCountStep>();
+            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.CalculateBracketStructureStep>();
+            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.GenerateBracketMatchesStep>();
+            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.MarkBracketAsSeededStep>();
+            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.TransitionToBracketInProgressStep>();
+            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.BuildResponseStep>();
 
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));

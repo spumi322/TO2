@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Tournament;
 using Application.Pipelines.StartGroups.Contracts;
+using Application.Pipelines.StartBracket.Contracts;
 using Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
@@ -15,17 +16,20 @@ namespace TO2.Controllers
         private readonly IOrchestrationService _orchestrationService;
         private readonly IStandingService _standingService;
         private readonly IWorkFlowService _workFlowService;
+        private readonly IStartBracketPipeline _startBracketPipeline;
 
         public TournamentsController(
             ITournamentService tournamentService,
             IOrchestrationService orchestrationService,
             IStandingService standingService,
-            IWorkFlowService workFlowService)
+            IWorkFlowService workFlowService,
+            IStartBracketPipeline startBracketPipeline)
         {
             _tournamentService = tournamentService;
             _orchestrationService = orchestrationService;
             _standingService = standingService;
             _workFlowService = workFlowService;
+            _startBracketPipeline = startBracketPipeline;
         }
 
         // GET: api/Tournaments
@@ -89,7 +93,7 @@ namespace TO2.Controllers
         [HttpPost("{id}/start-bracket")]
         public async Task<IActionResult> StartBracket(long id)
         {
-            var result = await _orchestrationService.StartBracket(id);
+            var result = await _workFlowService.StartBracket(id);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
