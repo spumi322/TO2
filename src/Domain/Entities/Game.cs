@@ -9,6 +9,7 @@ namespace Domain.Entities
 
         public Game(Match match, long? teamAId, long? teamBId)
         {
+            Match = match;
             MatchId = match.Id;
             TeamAScore = 0;
             TeamBScore = 0;
@@ -17,6 +18,8 @@ namespace Domain.Entities
         }
 
         public long MatchId { get; private set; }
+
+        public Match Match { get; set; }
 
         public long? WinnerId { get; set; }
 

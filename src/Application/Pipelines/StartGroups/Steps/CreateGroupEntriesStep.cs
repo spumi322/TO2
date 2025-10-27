@@ -44,13 +44,11 @@ namespace Application.Pipelines.StartGroups.Steps
 
                         if (existingEntry != null)
                         {
-                            // Update existing entry
-                            existingEntry.StandingId = standing.Id;
-                            existingEntry.Status = TeamStatus.Competing;
-                            await _groupRepository.Update(existingEntry);
-                            entriesUpdated++;
-                            _logger.LogInformation("Updated GroupEntry for team {TeamName} in {StandingName}",
+                            context.Success = false;
+                            context.Message = $"Group entry already exists on tournament: {existingEntry.TournamentId}, team: {existingEntry.TeamId}";
+                            _logger.LogInformation("GroupEntry for team {TeamName} in {StandingName} already exists",
                                 team.Name, standing.Name);
+                            return false;
                         }
                         else
                         {

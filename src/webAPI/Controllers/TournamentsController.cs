@@ -13,19 +13,19 @@ namespace TO2.Controllers
     {
         private readonly ITournamentService _tournamentService;
         private readonly IOrchestrationService _orchestrationService;
-        private readonly IStartGroupsPipeline _startGroupsPipeline;
         private readonly IStandingService _standingService;
+        private readonly IWorkFlowService _workFlowService;
 
         public TournamentsController(
             ITournamentService tournamentService,
             IOrchestrationService orchestrationService,
             IStandingService standingService,
-            IStartGroupsPipeline startGroupsPipeline)
+            IWorkFlowService workFlowService)
         {
             _tournamentService = tournamentService;
-            _startGroupsPipeline = startGroupsPipeline;
             _orchestrationService = orchestrationService;
             _standingService = standingService;
+            _workFlowService = workFlowService;
         }
 
         // GET: api/Tournaments
@@ -81,7 +81,7 @@ namespace TO2.Controllers
         [HttpPost("{id}/start-groups")]
         public async Task<IActionResult> StartGroups(long id)
         {
-            var result = await _startGroupsPipeline.ExecuteAsync(id);
+            var result = await _workFlowService.StartGroups(id);
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
