@@ -9,18 +9,15 @@ namespace Application.Services
     {
         private readonly IGenericRepository<Match> _matchRepository;
         private readonly ILogger<MatchService> _logger;
-        private readonly Func<IGameService> _gameServiceFactory;
 
         private readonly IUnitOfWork _unitOfWork;
 
         public MatchService(IGenericRepository<Match> matchRepository,
                             ILogger<MatchService> logger,
-                            Func<IGameService> gameServiceFactory,
                                  IUnitOfWork unitOfWork)
         {
             _matchRepository = matchRepository;
             _logger = logger;
-            _gameServiceFactory = gameServiceFactory;
             _unitOfWork = unitOfWork;
         }
 
@@ -41,13 +38,10 @@ namespace Application.Services
 
         public async Task<Match> GenerateMatch(Team? teamA, Team? teamB, int round, int seed, long standingId)
         {
-            var gameService = _gameServiceFactory();
-
             Match match;
 
             if (teamA != null && teamB != null)
             {
-                // Real teams: use constructor
                 match = new Match(teamA, teamB, BestOf.Bo3);
                 match.Round = round;
                 match.Seed = seed;
@@ -55,7 +49,6 @@ namespace Application.Services
             }
             else
             {
-                // TBD teams: use object initialization
                 match = new Match
                 {
                     StandingId = standingId,

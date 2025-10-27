@@ -13,23 +13,17 @@ namespace TO2.Controllers
     public class TournamentsController : ControllerBase
     {
         private readonly ITournamentService _tournamentService;
-        private readonly IOrchestrationService _orchestrationService;
         private readonly IStandingService _standingService;
         private readonly IWorkFlowService _workFlowService;
-        private readonly IStartBracketPipeline _startBracketPipeline;
 
         public TournamentsController(
             ITournamentService tournamentService,
-            IOrchestrationService orchestrationService,
             IStandingService standingService,
-            IWorkFlowService workFlowService,
-            IStartBracketPipeline startBracketPipeline)
+            IWorkFlowService workFlowService)
         {
             _tournamentService = tournamentService;
-            _orchestrationService = orchestrationService;
             _standingService = standingService;
             _workFlowService = workFlowService;
-            _startBracketPipeline = startBracketPipeline;
         }
 
         // GET: api/Tournaments

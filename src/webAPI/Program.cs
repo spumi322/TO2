@@ -42,11 +42,8 @@ namespace TO2
             builder.Services.AddScoped<ITeamService, TeamService>();
             builder.Services.AddScoped<IMatchService, MatchService>();
             builder.Services.AddScoped<IGameService, GameService>();
-            builder.Services.AddScoped<Func<IGameService>>(sp => () => sp.GetRequiredService<IGameService>());
             // STEP 2: Lifecycle Service - Replaces domain event handlers
-            builder.Services.AddScoped<IOrchestrationService, OrchestrationService>();
             builder.Services.AddScoped<IWorkFlowService, WorkFlowService>();
-            builder.Services.AddScoped<Func<IOrchestrationService>>(sp => () => sp.GetRequiredService<IOrchestrationService>());
 
             // Game Result Pipeline - SOLID refactoring of ProcessGameResult
             builder.Services.AddScoped<IGameResultPipeline, GameResultPipeline>();
