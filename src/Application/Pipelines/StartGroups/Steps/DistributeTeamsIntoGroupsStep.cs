@@ -13,13 +13,13 @@ namespace Application.Pipelines.StartGroups.Steps
     public class DistributeTeamsIntoGroupsStep : IStartGroupsPipelineStep
     {
         private readonly ILogger<DistributeTeamsIntoGroupsStep> _logger;
-        private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
-        private readonly IGenericRepository<Team> _teamRepository;
+        private readonly IRepository<TournamentTeam> _tournamentTeamRepository;
+        private readonly IRepository<Team> _teamRepository;
 
         public DistributeTeamsIntoGroupsStep(
             ILogger<DistributeTeamsIntoGroupsStep> logger,
-            IGenericRepository<TournamentTeam> tournamentTeamRepository,
-            IGenericRepository<Team> teamRepository)
+            IRepository<TournamentTeam> tournamentTeamRepository,
+            IRepository<Team> teamRepository)
         {
             _logger = logger;
             _tournamentTeamRepository = tournamentTeamRepository;
@@ -32,13 +32,13 @@ namespace Application.Pipelines.StartGroups.Steps
                 context.TournamentId);
 
             // Get all TournamentTeam records
-            var tournamentTeams = await _tournamentTeamRepository.GetAllByFK("TournamentId", context.TournamentId);
+            var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(tt => tt.TournamentId == context.TournamentId);
 
             // Get Team entities for each TournamentTeam
             var teams = new List<Team>();
             foreach (var tt in tournamentTeams)
             {
-                var team = await _teamRepository.Get(tt.TeamId);
+                var team = await _teamRepository.GetByIdAsync(tt.TeamId);
                 if (team != null)
                 {
                     teams.Add(team);

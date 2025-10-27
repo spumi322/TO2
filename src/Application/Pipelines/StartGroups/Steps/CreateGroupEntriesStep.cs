@@ -12,11 +12,11 @@ namespace Application.Pipelines.StartGroups.Steps
     public class CreateGroupEntriesStep : IStartGroupsPipelineStep
     {
         private readonly ILogger<CreateGroupEntriesStep> _logger;
-        private readonly IGenericRepository<Group> _groupRepository;
+        private readonly IRepository<Group> _groupRepository;
 
         public CreateGroupEntriesStep(
             ILogger<CreateGroupEntriesStep> logger,
-            IGenericRepository<Group> groupRepository)
+            IRepository<Group> groupRepository)
         {
             _logger = logger;
             _groupRepository = groupRepository;
@@ -31,7 +31,7 @@ namespace Application.Pipelines.StartGroups.Steps
             int entriesUpdated = 0;
 
             // Get all existing group entries for this tournament once
-            var allGroupEntries = await _groupRepository.GetAllByFK("TournamentId", context.TournamentId);
+            var allGroupEntries = await _groupRepository.FindAllAsync(ge => ge.TournamentId == context.TournamentId);
 
             foreach (var (standing, teamsInGroup) in context.GroupAssignments)
             {
@@ -54,7 +54,7 @@ namespace Application.Pipelines.StartGroups.Steps
                         {
                             // Create new entry
                             var groupEntry = new Group(context.TournamentId, standing.Id, team.Id, team.Name);
-                            await _groupRepository.Add(groupEntry);
+                            await _groupRepository.AddAsync(groupEntry);
                             entriesCreated++;
                             _logger.LogInformation("Created GroupEntry for team {TeamName} in {StandingName}",
                                 team.Name, standing.Name);

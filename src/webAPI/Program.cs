@@ -16,6 +16,7 @@ using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repository;
 using Infrastructure.Profiles;
 using Microsoft.EntityFrameworkCore;
+using Application.Contracts.Repositories;
 
 namespace TO2
 {
@@ -32,8 +33,12 @@ namespace TO2
             });
             // UoW, Repos
             builder.Services.AddScoped<ITO2DbContext, TO2DbContext>();
-            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
+            builder.Services.AddScoped<IGroupRepository, GroupRepository>();
+            builder.Services.AddScoped<ITournamentTeamRepository, TournamentTeamRepository>();
+
             // Domain Services
             builder.Services.AddScoped<ITournamentStateMachine, TournamentStateMachine>();
             // Application Services

@@ -14,11 +14,11 @@ namespace Application.Pipelines.GameResult.Steps
     /// </summary>
     public class HandleStandingProgressStep : PipeLineBase<HandleStandingProgressStep>
     {
-        private readonly IGenericRepository<Standing> _standingRepository;
+        private readonly IRepository<Standing> _standingRepository;
         private readonly IEnumerable<IStandingProgressStrategy> _strategies;
 
         public HandleStandingProgressStep(
-            IGenericRepository<Standing> standingRepository,
+            IRepository<Standing> standingRepository,
             ILogger<HandleStandingProgressStep> logger,
             IEnumerable<IStandingProgressStrategy> strategies) : base(logger)
         {
@@ -34,7 +34,7 @@ namespace Application.Pipelines.GameResult.Steps
             var winnerId = context.MatchWinnerId!.Value;
 
             // Get standing to determine type
-            var standing = await _standingRepository.Get(standingId)
+            var standing = await _standingRepository.GetByIdAsync(standingId)
                 ?? throw new Exception($"Standing {standingId} not found");
 
             context.StandingType = standing.StandingType;

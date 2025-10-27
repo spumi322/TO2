@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Repositories;
 using Application.DTOs.Team;
 using AutoMapper;
 using Domain.AggregateRoots;
@@ -10,19 +11,17 @@ namespace Application.Services
 {
     public class TeamService : ITeamService
     {
-        private readonly IGenericRepository<Team> _teamRepository;
-        private readonly IGenericRepository<Tournament> _tournamentRepository;
-        private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
-        private readonly ITO2DbContext _dbContext;
+        private readonly IRepository<Team> _teamRepository;
+        private readonly IRepository<Tournament> _tournamentRepository;
+        private readonly ITournamentTeamRepository _tournamentTeamRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<TeamService> _logger;
 
         private readonly IUnitOfWork _unitOfWork;
 
-        public TeamService(IGenericRepository<Team> teamRepository,
-                           IGenericRepository<Tournament> tournamentRepository,
-                           IGenericRepository<TournamentTeam> tournamentTeamRepository,
-                           ITO2DbContext dbContext,
+        public TeamService(IRepository<Team> teamRepository,
+                           IRepository<Tournament> tournamentRepository,
+                           ITournamentTeamRepository tournamentTeamRepository,
                            IMapper mapper,
                            ILogger<TeamService> logger,
                                  IUnitOfWork unitOfWork)
@@ -30,7 +29,6 @@ namespace Application.Services
             _teamRepository = teamRepository;
             _tournamentRepository = tournamentRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
-            _dbContext = dbContext;
             _mapper = mapper;
             _logger = logger;
             _unitOfWork = unitOfWork;
@@ -42,7 +40,7 @@ namespace Application.Services
             {
                 var team = _mapper.Map<Team>(request);
 
-                await _teamRepository.Add(team);
+                await _teamRepository.AddAsync(team);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new CreateTeamResponseDTO(team.Id);
@@ -56,36 +54,27 @@ namespace Application.Services
 
         public async Task<List<GetAllTeamsResponseDTO>> GetAllTeamsAsync()
         {
-            var teams = await _teamRepository.GetAll();
+            var teams = await _teamRepository.GetAllAsync();
 
             return _mapper.Map<List<GetAllTeamsResponseDTO>>(teams);
         }
 
-        public async Task<List<GetTeamWithStatsResponseDTO>> GetTeamsWithStatsAsync(long standingId)
-        {
-            var participants = await _dbContext.GroupEntries
-                .Where(tp => tp.StandingId == standingId)
-                .ToListAsync();
-
-            return _mapper.Map<List<GetTeamWithStatsResponseDTO>>(participants) ?? throw new Exception("Participants not found");
-        }
-
         public async Task<GetTeamResponseDTO> GetTeamAsync(long teamId)
         {
-            var existingTeam = await _teamRepository.Get(teamId);
+            var existingTeam = await _teamRepository.GetByIdAsync(teamId);
 
             return _mapper.Map<GetTeamResponseDTO>(existingTeam) ?? throw new Exception("Team not found");
         }
 
         public async Task<UpdateTeamResponseDTO> UpdateTeamAsync(long id, UpdateTeamRequestDTO request)
         {
-            var existingTeam = await _teamRepository.Get(id) ?? throw new Exception("Team not found");
+            var existingTeam = await _teamRepository.GetByIdAsync(id) ?? throw new Exception("Team not found");
 
             try
             {
                 _mapper.Map(request, existingTeam);
 
-                await _teamRepository.Update(existingTeam);
+                await _teamRepository.UpdateAsync(existingTeam);
                 await _unitOfWork.SaveChangesAsync();
 
                 return _mapper.Map<UpdateTeamResponseDTO>(existingTeam);
@@ -101,7 +90,7 @@ namespace Application.Services
         {
             try
             {
-                await _teamRepository.Delete(teamId);
+                await _teamRepository.DeleteAsync(teamId);
                 await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -114,34 +103,22 @@ namespace Application.Services
         public async Task<AddTeamToTournamentResponseDTO> AddTeamToTournamentAsync(AddTeamToTournamentRequestDTO request)
         {
             // Validate that both team and tournament exist
-            var team = await _teamRepository.Get(request.TeamId)
+            var team = await _teamRepository.GetByIdAsync(request.TeamId)
                 ?? throw new Exception("Team not found");
-            var tournament = await _tournamentRepository.Get(request.TournamentId)
+            var tournament = await _tournamentRepository.GetByIdAsync(request.TournamentId)
                 ?? throw new Exception("Tournament not found");
 
             // Check registration open
             if (!tournament.IsRegistrationOpen)
                 throw new Exception("Tournament registration is closed");
 
-            // Check if team already in tournament
-            var existingEntry = await _dbContext.TournamentTeams
-                .Where(tt => tt.TournamentId == request.TournamentId && tt.TeamId == request.TeamId)
-                .FirstOrDefaultAsync();
+            if (await _tournamentTeamRepository.ExistsInTournamentAsync(request.TeamId, request.TournamentId))
+                throw new Exception("Team is already in the tournament!");
 
-            if (existingEntry != null) throw new Exception("Team is already in the tournament!");
-
-            // Check unique team name constraint
-            var sameNameTeamExists = await _dbContext.TournamentTeams
-                .Where(tt => tt.TournamentId == request.TournamentId)
-                .Join(_dbContext.Teams, tt => tt.TeamId, t => t.Id, (tt, t) => t)
-                .AnyAsync(t => t.Name.ToLower() == team.Name.ToLower());
-
-            if (sameNameTeamExists)
+            if (await _tournamentTeamRepository.HasTeamWithNameAsync(request.TournamentId, team.Name))
                 throw new Exception($"A team with the name '{team.Name}' is already registered in this tournament");
 
-            // Check capacity
-            var currentParticipantsCount = await _dbContext.TournamentTeams
-                .CountAsync(tt => tt.TournamentId == request.TournamentId);
+            var currentParticipantsCount = await _tournamentTeamRepository.GetCountByTournamentAsync(request.TournamentId);
 
             if (currentParticipantsCount >= tournament.MaxTeams)
                 throw new Exception("Tournament is at maximum capacity");
@@ -149,7 +126,7 @@ namespace Application.Services
             // Create and save
             var tournamentTeam = new TournamentTeam(request.TournamentId, request.TeamId);
 
-            await _tournamentTeamRepository.Add(tournamentTeam);
+            await _tournamentTeamRepository.AddAsync(tournamentTeam);
             await _unitOfWork.SaveChangesAsync();
 
             return new AddTeamToTournamentResponseDTO(request.TournamentId, request.TeamId);
@@ -157,7 +134,7 @@ namespace Application.Services
 
         public async Task RemoveTeamFromTournamentAsync(long teamId, long tournamentId)
         {
-            var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
+            var existingTournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new Exception("Tournament not found");
 
             // Check if registration is still open
             if (!existingTournament.IsRegistrationOpen)
@@ -165,14 +142,10 @@ namespace Application.Services
 
             try
             {
-                // Remove from TournamentTeams table
-                var tournamentTeam = await _dbContext.TournamentTeams
-                    .FirstOrDefaultAsync(tt => tt.TeamId == teamId && tt.TournamentId == tournamentId);
+                var tournamentTeam = await _tournamentTeamRepository.GetByTeamAndTournamentAsync(teamId, tournamentId)
+                    ?? throw new Exception("Team is not registered in this tournament");
 
-                if (tournamentTeam == null)
-                    throw new Exception("Team is not registered in this tournament");
-
-                _dbContext.TournamentTeams.Remove(tournamentTeam);
+                await _tournamentTeamRepository.DeleteAsync(tournamentTeam);
                 await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)

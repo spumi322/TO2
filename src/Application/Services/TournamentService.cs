@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Repositories;
 using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using AutoMapper;
@@ -14,8 +15,7 @@ namespace Application.Services
 {
     public class TournamentService : ITournamentService
     {
-        private readonly IGenericRepository<Tournament> _tournamentRepository;
-        private readonly ITO2DbContext _dbContext;
+        private readonly ITournamentRepository _tournamentRepository;
         private readonly IStandingService _standingService;
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
@@ -23,8 +23,7 @@ namespace Application.Services
 
         private readonly IUnitOfWork _unitOfWork;
 
-        public TournamentService(IGenericRepository<Tournament> tournamentRepository,
-                                 ITO2DbContext tO2DbContext,
+        public TournamentService(ITournamentRepository tournamentRepository,
                                  IStandingService standingService,
                                  IMapper mapper,
                                  ILogger<TournamentService> logger,
@@ -32,7 +31,6 @@ namespace Application.Services
                                  IUnitOfWork unitOfWork)
         {
             _tournamentRepository = tournamentRepository;
-            _dbContext = tO2DbContext;
             _standingService = standingService;
             _mapper = mapper;
             _logger = logger;
@@ -42,7 +40,7 @@ namespace Application.Services
 
         public async Task<TournamentStateDTO> GetTournamentStateAsync(long tournamentId)
         {
-            var tournament = await _tournamentRepository.Get(tournamentId)
+            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
                 ?? throw new Exception("Tournament not found");
 
             return new TournamentStateDTO(
@@ -89,7 +87,7 @@ namespace Application.Services
                 var tournament = _mapper.Map<Tournament>(request);
                 tournament.IsRegistrationOpen = true;
 
-                await _tournamentRepository.Add(tournament);
+                await _tournamentRepository.AddAsync(tournament);
                 await _unitOfWork.SaveChangesAsync();
                 await _standingService.GenerateStanding(tournament.Id, "Main Bracket", StandingType.Bracket, request.TeamsPerBracket);
 
@@ -112,27 +110,27 @@ namespace Application.Services
 
         public async Task<GetTournamentResponseDTO> GetTournamentAsync(long id)
         {
-            var existingTournament = await _tournamentRepository.Get(id);
+            var existingTournament = await _tournamentRepository.GetByIdAsync(id);
 
             return _mapper.Map<GetTournamentResponseDTO>(existingTournament) ?? throw new Exception("Tournament not found");
         }
 
         public async Task<List<GetAllTournamentsResponseDTO>> GetAllTournamentsAsync()
         {
-            var tournaments = await _tournamentRepository.GetAll();
+            var tournaments = await _tournamentRepository.GetAllAsync();
 
             return _mapper.Map<List<GetAllTournamentsResponseDTO>>(tournaments);
         }
 
         public async Task<UpdateTournamentResponseDTO> UpdateTournamentAsync(long id, UpdateTournamentRequestDTO request)
         {
-            var existingTournament = await _tournamentRepository.Get(id) ?? throw new Exception("Tournament not found");
+            var existingTournament = await _tournamentRepository.GetByIdAsync(id) ?? throw new Exception("Tournament not found");
 
             try
             {
                 _mapper.Map(request, existingTournament);
 
-                await _tournamentRepository.Update(existingTournament);
+                await _tournamentRepository.UpdateAsync(existingTournament);
                 await _unitOfWork.SaveChangesAsync();
 
                 return _mapper.Map<UpdateTournamentResponseDTO>(existingTournament);
@@ -146,7 +144,7 @@ namespace Application.Services
 
         public async Task SoftDeleteTournamentAsync(long id)
         {
-            var existingTournament = await _tournamentRepository.Get(id) ?? throw new Exception("Tournament not found");
+            var existingTournament = await _tournamentRepository.GetByIdAsync(id) ?? throw new Exception("Tournament not found");
 
             try
             {
@@ -154,7 +152,7 @@ namespace Application.Services
                 _stateMachine.ValidateTransition(existingTournament.Status, TournamentStatus.Cancelled);
                 existingTournament.Status = TournamentStatus.Cancelled;
 
-                await _tournamentRepository.Update(existingTournament);
+                await _tournamentRepository.UpdateAsync(existingTournament);
                 await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -166,7 +164,7 @@ namespace Application.Services
 
         public async Task SetTournamentStatusAsync(long id, TournamentStatus status)
         {
-            var existingTournament = await _tournamentRepository.Get(id) ?? throw new Exception("Tournament not found");
+            var existingTournament = await _tournamentRepository.GetByIdAsync(id) ?? throw new Exception("Tournament not found");
 
             try
             {
@@ -174,7 +172,7 @@ namespace Application.Services
                 _stateMachine.ValidateTransition(existingTournament.Status, status);
                 existingTournament.Status = status;
 
-                await _tournamentRepository.Update(existingTournament);
+                await _tournamentRepository.UpdateAsync(existingTournament);
                 await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -186,24 +184,22 @@ namespace Application.Services
 
         public async Task<List<GetTeamResponseDTO>> GetTeamsByTournamentAsync(long tournamentId)
         {
-            var teams = await _dbContext.TournamentTeams
-                .Where(tt => tt.TournamentId == tournamentId)
-                .Select(tt => tt.Team)
-                .ToListAsync();
+            var tournament = await _tournamentRepository.GetWithTeamsAsync(tournamentId);
+            var teams = tournament?.TournamentTeams.Select(tt => tt.Team).ToList() ?? new();
 
             return _mapper.Map<List<GetTeamResponseDTO>>(teams);
         }
 
         public async Task<StartTournamentDTO> StartTournament(long tournamentId)
         {
-            var existingTournament = await _tournamentRepository.Get(tournamentId) ?? throw new Exception("Tournament not found");
+            var existingTournament = await _tournamentRepository.GetByIdAsync(tournamentId) ?? throw new Exception("Tournament not found");
 
             if (existingTournament.IsRegistrationOpen)
             {
                 try
                 {
                     existingTournament.IsRegistrationOpen = false;
-                    await _tournamentRepository.Update(existingTournament);
+                    await _tournamentRepository.UpdateAsync(existingTournament);
                     await _unitOfWork.SaveChangesAsync();
 
                     return new StartTournamentDTO("Tournament succesfully started", true);

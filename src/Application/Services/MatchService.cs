@@ -7,25 +7,21 @@ namespace Application.Services
 {
     public class MatchService : IMatchService
     {
-        private readonly IGenericRepository<Match> _matchRepository;
+        private readonly IRepository<Match> _matchRepository;
         private readonly ILogger<MatchService> _logger;
 
-        private readonly IUnitOfWork _unitOfWork;
-
-        public MatchService(IGenericRepository<Match> matchRepository,
-                            ILogger<MatchService> logger,
-                                 IUnitOfWork unitOfWork)
+        public MatchService(IRepository<Match> matchRepository,
+                            ILogger<MatchService> logger)
         {
             _matchRepository = matchRepository;
             _logger = logger;
-            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<Match>> GetMatchesAsync(long standingId)
         {
             try
             {
-                var matches = await _matchRepository.GetAllByFK("StandingId", standingId);
+                var matches = await _matchRepository.FindAllAsync(m => m.StandingId == standingId);
 
                 return matches.ToList();
             }
@@ -60,7 +56,7 @@ namespace Application.Services
                 };
             }
 
-            await _matchRepository.Add(match);
+            await _matchRepository.AddAsync(match);
 
             return match;
 

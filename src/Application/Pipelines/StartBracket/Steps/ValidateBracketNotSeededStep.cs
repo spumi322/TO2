@@ -13,11 +13,11 @@ namespace Application.Pipelines.StartBracket.Steps
     public class ValidateBracketNotSeededStep : IStartBracketPipelineStep
     {
         private readonly ILogger<ValidateBracketNotSeededStep> _logger;
-        private readonly IGenericRepository<Standing> _standingRepository;
+        private readonly IRepository<Standing> _standingRepository;
 
         public ValidateBracketNotSeededStep(
             ILogger<ValidateBracketNotSeededStep> logger,
-            IGenericRepository<Standing> standingRepository)
+            IRepository<Standing> standingRepository)
         {
             _logger = logger;
             _standingRepository = standingRepository;
@@ -29,7 +29,7 @@ namespace Application.Pipelines.StartBracket.Steps
                 context.TournamentId);
 
             // Get all standings
-            var standings = await _standingRepository.GetAllByFK("TournamentId", context.TournamentId);
+            var standings = await _standingRepository.FindAllAsync(s => s.TournamentId == context.TournamentId);
             var bracketStandings = standings.Where(s => s.StandingType == StandingType.Bracket).ToList();
 
             if (bracketStandings.Count == 0)

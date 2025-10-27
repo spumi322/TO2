@@ -9,12 +9,12 @@ namespace Application.Pipelines.GameResult.Steps
     public class UpdateGroupStatsStep : PipeLineBase<UpdateGroupStatsStep>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IGenericRepository<Group> _groupRepository;
+        private readonly IRepository<Group> _groupRepository;
 
         public UpdateGroupStatsStep(
             ILogger<UpdateGroupStatsStep> logger,
             IUnitOfWork unitOfWork,
-            IGenericRepository<Group> groupRepository) : base(logger)
+            IRepository<Group> groupRepository) : base(logger)
         {
             _groupRepository = groupRepository;
             _unitOfWork = unitOfWork;
@@ -22,7 +22,7 @@ namespace Application.Pipelines.GameResult.Steps
 
         protected override async Task<bool> ExecuteStepAsync(GameResultContext context)
         {
-            var groupEntries = await _groupRepository.GetAllByFK("TournamentId", context.Tournament.Id);
+            var groupEntries = await _groupRepository.FindAllAsync(ge => ge.TournamentId == context.Tournament.Id);
 
             if (groupEntries.Any())
             {
@@ -33,8 +33,8 @@ namespace Application.Pipelines.GameResult.Steps
                 winner.Points += 3;
                 loser.Losses++;
 
-                await _groupRepository.Update(winner);
-                await _groupRepository.Update(loser);
+                await _groupRepository.UpdateAsync(winner);
+                await _groupRepository.UpdateAsync(loser);
 
                 Logger.LogInformation("Wins and points handed out for {winnerId}. Lose recorded for {loserId}. Group stats updated.", winner.Id, loser.Id);
 

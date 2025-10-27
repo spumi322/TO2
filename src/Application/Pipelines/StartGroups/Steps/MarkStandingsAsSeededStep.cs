@@ -11,11 +11,11 @@ namespace Application.Pipelines.StartGroups.Steps
     public class MarkStandingsAsSeededStep : IStartGroupsPipelineStep
     {
         private readonly ILogger<MarkStandingsAsSeededStep> _logger;
-        private readonly IGenericRepository<Standing> _standingRepository;
+        private readonly IRepository<Standing> _standingRepository;
 
         public MarkStandingsAsSeededStep(
             ILogger<MarkStandingsAsSeededStep> logger,
-            IGenericRepository<Standing> standingRepository)
+            IRepository<Standing> standingRepository)
         {
             _logger = logger;
             _standingRepository = standingRepository;
@@ -29,7 +29,7 @@ namespace Application.Pipelines.StartGroups.Steps
             foreach (var standing in context.GroupStandings)
             {
                 standing.IsSeeded = true;
-                await _standingRepository.Update(standing);
+                await _standingRepository.UpdateAsync(standing);
                 _logger.LogInformation("Marked {StandingName} as seeded", standing.Name);
             }
 

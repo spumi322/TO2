@@ -13,12 +13,12 @@ namespace Application.Pipelines.StartGroups.Steps
     public class TransitionToGroupsInProgressStep : IStartGroupsPipelineStep
     {
         private readonly ILogger<TransitionToGroupsInProgressStep> _logger;
-        private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
 
         public TransitionToGroupsInProgressStep(
             ILogger<TransitionToGroupsInProgressStep> logger,
-            IGenericRepository<Tournament> tournamentRepository,
+            IRepository<Tournament> tournamentRepository,
             ITournamentStateMachine stateMachine)
         {
             _logger = logger;
@@ -37,7 +37,7 @@ namespace Application.Pipelines.StartGroups.Steps
                 _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.GroupsInProgress);
                 context.Tournament.Status = TournamentStatus.GroupsInProgress;
 
-                await _tournamentRepository.Update(context.Tournament);
+                await _tournamentRepository.UpdateAsync(context.Tournament);
 
                 // Store in context
                 context.NewStatus = TournamentStatus.GroupsInProgress;

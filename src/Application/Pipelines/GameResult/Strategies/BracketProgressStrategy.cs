@@ -13,14 +13,14 @@ namespace Application.Pipelines.GameResult.Strategies
     public class BracketProgressStrategy : IStandingProgressStrategy
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IGenericRepository<Match> _matchRepository;
+        private readonly IRepository<Match> _matchRepository;
         private readonly IGameService _gameService;
         private readonly ILogger<BracketProgressStrategy> _logger;
 
         public StandingType StandingType => StandingType.Bracket;
 
         public BracketProgressStrategy(
-            IGenericRepository<Match> matchRepository,
+            IRepository<Match> matchRepository,
             IUnitOfWork unitOfWork,
             IGameService gameService,
             ILogger<BracketProgressStrategy> logger)
@@ -66,7 +66,7 @@ namespace Application.Pipelines.GameResult.Strategies
         /// </summary>
         private async Task<bool> IsFinalMatch(long matchId, long standingId)
         {
-            var match = await _matchRepository.Get(matchId)
+            var match = await _matchRepository.GetByIdAsync(matchId)
                 ?? throw new Exception($"Match {matchId} not found");
 
             if (!match.Round.HasValue || !match.Seed.HasValue)
@@ -75,7 +75,7 @@ namespace Application.Pipelines.GameResult.Strategies
             }
 
             // Get all matches for this standing to determine total rounds
-            var allMatches = await _matchRepository.GetAllByFK("StandingId", standingId);
+            var allMatches = await _matchRepository.FindAllAsync(m => m.StandingId == standingId);
             int totalRounds = allMatches.Max(m => m.Round ?? 0);
 
             // Final match is: last round, seed 1
@@ -95,7 +95,7 @@ namespace Application.Pipelines.GameResult.Strategies
         /// </summary>
         private async Task AdvanceWinnerToNextRound(long finishedMatchId, long winnerId, long standingId)
         {
-            var finishedMatch = await _matchRepository.Get(finishedMatchId)
+            var finishedMatch = await _matchRepository.GetByIdAsync(finishedMatchId)
                 ?? throw new Exception($"Match {finishedMatchId} not found");
 
             if (!finishedMatch.Round.HasValue || !finishedMatch.Seed.HasValue)
@@ -114,7 +114,7 @@ namespace Application.Pipelines.GameResult.Strategies
                 currentRound, currentSeed, winnerId, nextRound, nextSeed);
 
             // Find the next round match
-            var allMatches = await _matchRepository.GetAllByFK("StandingId", standingId);
+            var allMatches = await _matchRepository.FindAllAsync(m => m.StandingId == standingId);
             var nextMatch = allMatches.FirstOrDefault(m =>
                 m.Round == nextRound &&
                 m.Seed == nextSeed);
@@ -145,7 +145,7 @@ namespace Application.Pipelines.GameResult.Strategies
             await _gameService.UpdateGamesTeamIds(nextMatch.Id, nextMatch.TeamAId, nextMatch.TeamBId);
 
             // Save the updated match
-            await _matchRepository.Update(nextMatch);
+            await _matchRepository.UpdateAsync(nextMatch);
 
             _logger.LogInformation("Winner advanced to next round successfully");
         }

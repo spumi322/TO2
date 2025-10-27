@@ -13,12 +13,12 @@ namespace Application.Pipelines.StartBracket.Steps
     public class TransitionToBracketInProgressStep : IStartBracketPipelineStep
     {
         private readonly ILogger<TransitionToBracketInProgressStep> _logger;
-        private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
 
         public TransitionToBracketInProgressStep(
             ILogger<TransitionToBracketInProgressStep> logger,
-            IGenericRepository<Tournament> tournamentRepository,
+            IRepository<Tournament> tournamentRepository,
             ITournamentStateMachine stateMachine)
         {
             _logger = logger;
@@ -37,7 +37,7 @@ namespace Application.Pipelines.StartBracket.Steps
                 _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.BracketInProgress);
                 context.Tournament.Status = TournamentStatus.BracketInProgress;
 
-                await _tournamentRepository.Update(context.Tournament);
+                await _tournamentRepository.UpdateAsync(context.Tournament);
 
                 // Store in context
                 context.NewStatus = TournamentStatus.BracketInProgress;

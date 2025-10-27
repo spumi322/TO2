@@ -11,22 +11,17 @@ namespace Application.Services
 {
     public class GameService : IGameService
     {
-        private readonly IGenericRepository<Game> _gameRepository;
-        private readonly IGenericRepository<Match> _matchRepository;
+        private readonly IRepository<Game> _gameRepository;
+        private readonly IRepository<Match> _matchRepository;
         private readonly ILogger<GameService> _logger;
 
-
-        private readonly IUnitOfWork _unitOfWork;
-
-        public GameService(IGenericRepository<Game> gameRepository,
-                           IGenericRepository<Match> matchRepository,
-                           ILogger<GameService> logger,
-                                 IUnitOfWork unitOfWork)
+        public GameService(IRepository<Game> gameRepository,
+                           IRepository<Match> matchRepository,
+                           ILogger<GameService> logger)
         {
             _gameRepository = gameRepository;
             _matchRepository = matchRepository;
             _logger = logger;
-            _unitOfWork = unitOfWork;
         }
 
         public async Task<GenerateGamesDTO> GenerateGames(Match match)
@@ -34,7 +29,7 @@ namespace Application.Services
             if (match == null)
                 throw new ArgumentNullException(nameof(match));
 
-            var gamesAlreadyGenerated = await _gameRepository.GetAllByFK("MatchId", match.Id);
+            var gamesAlreadyGenerated = await _gameRepository.FindAllAsync(g => g.MatchId == match.Id);
 
             if (gamesAlreadyGenerated.Count > 0)
             {
@@ -57,29 +52,29 @@ namespace Application.Services
                 games.Add(game);
             }
 
-            await _gameRepository.AddRange(games);
+            await _gameRepository.AddRangeAsync(games);
 
             return new GenerateGamesDTO(true, $"{games.Count} games generated for match {match.Id}");
         }
 
         public async Task<Game> GetGameAsync(long gameId)
         {
-            var game = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
+            var game = await _gameRepository.GetByIdAsync(gameId) ?? throw new Exception("Game not found");
 
             return game;
         }
 
         public async Task<List<Game>> GetAllGamesByMatch(long matchId)
         {
-            var games = await _gameRepository.GetAllByFK("MatchId", matchId) ?? throw new Exception($"Games for {matchId} was not found");
+            var games = await _gameRepository.FindAllAsync(g => g.MatchId == matchId) ?? throw new Exception($"Games for {matchId} was not found");
 
             return games.ToList();
         }
 
         public async Task SetGameResult(long gameId, long winnerId, int? teamAScore, int? teamBScore)
         {
-            var existingGame = await _gameRepository.Get(gameId) ?? throw new Exception("Game not found");
-            var match = await _matchRepository.Get(existingGame.MatchId) ?? throw new Exception("Match not found");
+            var existingGame = await _gameRepository.GetByIdAsync(gameId) ?? throw new Exception("Game not found");
+            var match = await _matchRepository.GetByIdAsync(existingGame.MatchId) ?? throw new Exception("Match not found");
 
             if (match.WinnerId.HasValue)
                 throw new Exception("Match already has a winner");
@@ -96,13 +91,13 @@ namespace Application.Services
 
             existingGame.WinnerId = winnerId;
 
-            await _gameRepository.Update(existingGame);
+            await _gameRepository.UpdateAsync(existingGame);
         }
 
         public async Task<MatchWinner?> SetMatchWinner(long matchId)
         {
-            var match = await _matchRepository.Get(matchId) ?? throw new Exception("Match not found");
-            var games = await _gameRepository.GetAllByFK("MatchId", matchId);
+            var match = await _matchRepository.GetByIdAsync(matchId) ?? throw new Exception("Match not found");
+            var games = await _gameRepository.FindAllAsync(g => g.MatchId == matchId);
 
             var gamesToWin = match.BestOf switch
             {
@@ -128,20 +123,20 @@ namespace Application.Services
             match.WinnerId = winnerId;
             match.LoserId = loserId;
 
-            await _matchRepository.Update(match);
+            await _matchRepository.UpdateAsync(match);
 
             return new MatchWinner(winnerId.Value, loserId.Value);
         }
 
         public async Task UpdateGamesTeamIds(long matchId, long? teamAId, long? teamBId)
         {
-            var games = await _gameRepository.GetAllByFK("MatchId", matchId);
+            var games = await _gameRepository.FindAllAsync(g => g.MatchId == matchId);
 
             foreach (var game in games)
             {
                 game.TeamAId = teamAId;
                 game.TeamBId = teamBId;
-                await _gameRepository.Update(game);
+                await _gameRepository.UpdateAsync(game);
             }
 
             _logger.LogInformation($"Updated {games.Count()} games for match {matchId} with TeamA={teamAId}, TeamB={teamBId}");

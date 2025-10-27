@@ -14,12 +14,12 @@ namespace Application.Pipelines.StartBracket.Steps
     public class ValidateAndTransitionToSeedingBracketStep : IStartBracketPipelineStep
     {
         private readonly ILogger<ValidateAndTransitionToSeedingBracketStep> _logger;
-        private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
 
         public ValidateAndTransitionToSeedingBracketStep(
             ILogger<ValidateAndTransitionToSeedingBracketStep> logger,
-            IGenericRepository<Tournament> tournamentRepository,
+            IRepository<Tournament> tournamentRepository,
             ITournamentStateMachine stateMachine)
         {
             _logger = logger;
@@ -33,7 +33,7 @@ namespace Application.Pipelines.StartBracket.Steps
                 context.TournamentId);
 
             // Load tournament
-            var tournament = await _tournamentRepository.Get(context.TournamentId);
+            var tournament = await _tournamentRepository.GetByIdAsync(context.TournamentId);
             if (tournament == null)
             {
                 context.Success = false;
@@ -48,7 +48,7 @@ namespace Application.Pipelines.StartBracket.Steps
                 _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingBracket);
                 tournament.Status = TournamentStatus.SeedingBracket;
 
-                await _tournamentRepository.Update(tournament);
+                await _tournamentRepository.UpdateAsync(tournament);
 
                 // Store in context
                 context.Tournament = tournament;

@@ -1,5 +1,7 @@
 ﻿using Application.Contracts;
+using Application.DTOs.Team;
 using Application.DTOs.Tournament;
+using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -9,24 +11,26 @@ namespace Application.Services
 {
     public class StandingService : IStandingService
     {
-        private readonly IGenericRepository<Standing> _standingRepository;
-        private readonly IGenericRepository<Match> _matchRepository;
-        private readonly IGenericRepository<Tournament> _tournamentRepository;
-        private readonly IGenericRepository<Group> _groupRepository;
-        private readonly IGenericRepository<Team> _teamRepository;
-        private readonly IGenericRepository<TournamentTeam> _tournamentTeamRepository;
+        private readonly IRepository<Standing> _standingRepository;
+        private readonly IRepository<Match> _matchRepository;
+        private readonly IRepository<Tournament> _tournamentRepository;
+        private readonly IRepository<Group> _groupRepository;
+        private readonly IRepository<Team> _teamRepository;
+        private readonly IRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly ILogger<StandingService> _logger;
+        private readonly IMapper _mapper;
 
         private readonly IUnitOfWork _unitOfWork;
 
-        public StandingService(IGenericRepository<Standing> standingRepository,
-                               IGenericRepository<Match> matchRepository,
-                               IGenericRepository<Tournament> tournamentRepository,
-                               IGenericRepository<Group> groupRepository,
-                               IGenericRepository<Team> teamRepository,
-                               IGenericRepository<TournamentTeam> tournamentTeamRepository,
+        public StandingService(IRepository<Standing> standingRepository,
+                               IRepository<Match> matchRepository,
+                               IRepository<Tournament> tournamentRepository,
+                               IRepository<Group> groupRepository,
+                               IRepository<Team> teamRepository,
+                               IRepository<TournamentTeam> tournamentTeamRepository,
                                ILogger<StandingService> logger,
-                                 IUnitOfWork unitOfWork)
+                               IMapper mapper,
+                               IUnitOfWork unitOfWork)
         {
             _standingRepository = standingRepository;
             _matchRepository = matchRepository;
@@ -35,6 +39,7 @@ namespace Application.Services
             _teamRepository = teamRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
             _logger = logger;
+            _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
 
@@ -45,7 +50,7 @@ namespace Application.Services
                 var standing = new Standing(name, teamsPerStanding, type);
                 standing.TournamentId = tournamentId;
 
-                await _standingRepository.Add(standing);
+                await _standingRepository.AddAsync(standing);
                 await _unitOfWork.SaveChangesAsync();
             }
             catch (Exception ex)
@@ -60,7 +65,7 @@ namespace Application.Services
         {
             try
             {
-                var standings = await _standingRepository.GetAllByFK("TournamentId", tournamentId);
+                var standings = await _standingRepository.FindAllAsync(s => s.TournamentId == tournamentId);
 
                 return standings.ToList();
             }
@@ -73,9 +78,9 @@ namespace Application.Services
 
         public async Task<bool> IsGroupFinished(long standingId)
         {
-            var standing = await _standingRepository.Get(standingId)
+            var standing = await _standingRepository.GetByIdAsync(standingId)
                 ?? throw new Exception($"Standing with Id: {standingId} was not found!");
-            var matches = await _matchRepository.GetAllByFK("StandingId", standingId)
+            var matches = await _matchRepository.FindAllAsync(m => m.StandingId ==  standingId)
                 ?? throw new Exception($"Matches for the standing Id : {standingId} were not found!");
             bool standingFinished = false;
 
@@ -89,16 +94,16 @@ namespace Application.Services
 
         public async Task MarkGroupAsFinished(long standingId)
         {
-            var standing = await _standingRepository.Get(standingId)
+            var standing = await _standingRepository.GetByIdAsync(standingId)
                 ?? throw new Exception($"Standing with Id: {standingId} was not found!");
 
             standing.IsFinished = true;
-            await _standingRepository.Update(standing);
+            await _standingRepository.UpdateAsync(standing);
         }
 
         public async Task<bool> CheckAllGroupsAreFinished(long tournamentId)
         {
-            var allStandings = await _standingRepository.GetAllByFK("TournamentId", tournamentId)
+            var allStandings = await _standingRepository.FindAllAsync(s => s.TournamentId ==  tournamentId)
                 ?? throw new Exception($"Standings with tournamentId: {tournamentId} was not found!");
             var allGroups = allStandings.Where(s => s.StandingType == StandingType.Group);
 
@@ -106,7 +111,7 @@ namespace Application.Services
 
             if (allGroupsFinished)
             {
-                _logger.LogInformation($"✓ ALL GROUPS FINISHED for tournament {tournamentId}!");
+                _logger.LogInformation($"ALL GROUPS FINISHED for tournament {tournamentId}!");
             }
             else
             {
@@ -116,6 +121,7 @@ namespace Application.Services
             return allGroupsFinished;
         }
 
+        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ MARK FOR REFACTOR
         public async Task<List<Team>> GetTeamsForBracket(long tournamentId)
         {
             var advancingTeams = new List<Team>();
@@ -137,7 +143,7 @@ namespace Application.Services
             foreach (var group in groups)
             {
                 // Get group entries using repository and sort in memory
-                var allGroupEntries = await _groupRepository.GetAllByFK("StandingId", group.Id);
+                var allGroupEntries = await _groupRepository.FindAllAsync(ge => ge.StandingId == group.Id);
                 var groupEntries = allGroupEntries
                     .OrderByDescending(g => g.Points)
                     .ThenByDescending(g => g.Wins)
@@ -151,10 +157,10 @@ namespace Application.Services
                 foreach (var groupEntry in advancing)
                 {
                     groupEntry.Status = TeamStatus.Advanced;
-                    await _groupRepository.Update(groupEntry);
+                    await _groupRepository.UpdateAsync(groupEntry);
 
                     // Fetch Team entity using repository
-                    var team = await _teamRepository.Get(groupEntry.TeamId);
+                    var team = await _teamRepository.GetByIdAsync(groupEntry.TeamId);
 
                     if (team != null)
                     {
@@ -167,7 +173,7 @@ namespace Application.Services
                 {
                     groupEntry.Status = TeamStatus.Eliminated;
                     groupEntry.Eliminated = true;
-                    await _groupRepository.Update(groupEntry);
+                    await _groupRepository.UpdateAsync(groupEntry);
                     _logger.LogInformation($"Team {groupEntry.TeamName} eliminated from {group.Name}");
                 }
             }
@@ -177,7 +183,7 @@ namespace Application.Services
 
         public async Task<List<TeamPlacementDTO>> GetFinalResultsAsync(long tournamentId)
         {
-            var tournament = await _tournamentRepository.Get(tournamentId)
+            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
                 ?? throw new Exception("Tournament not found");
 
             if (tournament.Status != TournamentStatus.Finished)
@@ -196,7 +202,7 @@ namespace Application.Services
                 }
 
                 // Get all bracket matches using repository
-                var allMatches = await _matchRepository.GetAllByFK("StandingId", bracketStanding.Id);
+                var allMatches = await _matchRepository.FindAllAsync(m => m.StandingId == bracketStanding.Id);
                 if (!allMatches.Any())
                 {
                     return new List<TeamPlacementDTO>();
@@ -211,7 +217,7 @@ namespace Application.Services
                     .ToHashSet();
 
                 // Get all teams from repository and filter to bracket participants
-                var allTeams = await _teamRepository.GetAll();
+                var allTeams = await _teamRepository.GetAllAsync();
                 var bracketTeams = allTeams.Where(t => teamIds.Contains(t.Id)).ToList();
                 var teamNameLookup = bracketTeams.ToDictionary(t => t.Id, t => t.Name);
 
@@ -298,7 +304,7 @@ namespace Application.Services
             var placements = new List<(long TeamId, int Placement, int? EliminatedInRound)>();
 
             // Get all matches for this bracket
-            var allMatches = await _matchRepository.GetAllByFK("StandingId", standingId);
+            var allMatches = await _matchRepository.FindAllAsync(m => m.StandingId == standingId);
             var matches = allMatches.OrderByDescending(m => m.Round).ThenBy(m => m.Seed).ToList();
 
             if (!matches.Any())
@@ -355,7 +361,7 @@ namespace Application.Services
                 }
             }
 
-            _logger.LogInformation($"✓ Calculated {placements.Count} final placements");
+            _logger.LogInformation($"Calculated {placements.Count} final placements");
             return placements;
         }
 
@@ -365,11 +371,12 @@ namespace Application.Services
 
             var now = DateTime.UtcNow;
 
+            var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(tt => tt.TournamentId == tournamentId);
+
             foreach (var placement in placements)
             {
                 {
                     // Get TournamentTeam record
-                    var tournamentTeams = await _tournamentTeamRepository.GetAllByFK("TournamentId", tournamentId);
                     var tournamentTeam = tournamentTeams.FirstOrDefault(tt => tt.TeamId == placement.TeamId);
 
                     if (tournamentTeam == null)
@@ -383,12 +390,19 @@ namespace Application.Services
                     tournamentTeam.EliminatedInRound = placement.EliminatedInRound;
                     tournamentTeam.ResultFinalizedAt = now;
 
-                    await _tournamentTeamRepository.Update(tournamentTeam);
+                    await _tournamentTeamRepository.UpdateAsync(tournamentTeam);
                     _logger.LogInformation($"  Team {placement.TeamId}: Placement {placement}, Eliminated Round {placement.EliminatedInRound.ToString() ?? "N/A"}");
                 }
 
                 _logger.LogInformation($"✓ Stored {placements.Count} final results");
             }
+        }
+
+        public async Task<List<GetTeamWithStatsResponseDTO>> GetTeamsWithStatsAsync(long standingId)
+        {
+            var participants = await _groupRepository.FindAllAsync(p => p.StandingId == standingId);
+
+            return _mapper.Map<List<GetTeamWithStatsResponseDTO>>(participants) ?? throw new Exception("Participants not found");
         }
     }
 }

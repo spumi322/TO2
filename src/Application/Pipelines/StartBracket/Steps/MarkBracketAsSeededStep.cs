@@ -11,11 +11,11 @@ namespace Application.Pipelines.StartBracket.Steps
     public class MarkBracketAsSeededStep : IStartBracketPipelineStep
     {
         private readonly ILogger<MarkBracketAsSeededStep> _logger;
-        private readonly IGenericRepository<Standing> _standingRepository;
+        private readonly IRepository<Standing> _standingRepository;
 
         public MarkBracketAsSeededStep(
             ILogger<MarkBracketAsSeededStep> logger,
-            IGenericRepository<Standing> standingRepository)
+            IRepository<Standing> standingRepository)
         {
             _logger = logger;
             _standingRepository = standingRepository;
@@ -27,7 +27,7 @@ namespace Application.Pipelines.StartBracket.Steps
                 context.TournamentId);
 
             context.BracketStanding.IsSeeded = true;
-            await _standingRepository.Update(context.BracketStanding);
+            await _standingRepository.UpdateAsync(context.BracketStanding);
 
             _logger.LogInformation("Marked bracket '{BracketName}' as seeded for tournament {TournamentId}",
                 context.BracketStanding.Name, context.TournamentId);

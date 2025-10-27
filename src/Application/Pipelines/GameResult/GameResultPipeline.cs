@@ -14,13 +14,13 @@ namespace Application.Pipelines.GameResult
     public class GameResultPipeline : IGameResultPipeline
     {
         private readonly ILogger<GameResultPipeline> _logger;
-        private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly IRepository<Tournament> _tournamentRepository;
         private readonly IEnumerable<IGameResultPipelineStep> _steps;
         private readonly IUnitOfWork _unitOfWork;
 
         public GameResultPipeline(
             ILogger<GameResultPipeline> logger,
-            IGenericRepository<Tournament> tournamentRepository,
+            IRepository<Tournament> tournamentRepository,
             IEnumerable<IGameResultPipelineStep> steps,
             IUnitOfWork unitOfWork)
         {
@@ -49,7 +49,7 @@ namespace Application.Pipelines.GameResult
                 };
 
                 // Load tournament (required for all steps)
-                context.Tournament = await _tournamentRepository.Get(gameResult.TournamentId)
+                context.Tournament = await _tournamentRepository.GetByIdAsync(gameResult.TournamentId)
                     ?? throw new Exception($"Tournament with id: {gameResult.TournamentId} was not found!");
 
                 // Begin transaction - all changes will be atomic

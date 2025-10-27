@@ -9,10 +9,13 @@ namespace TO2.Controllers
     public class TeamsController : ControllerBase
     {
         private readonly ITeamService _teamService;
+        private readonly IStandingService _standingService;
 
-        public TeamsController(ITeamService teamService)
+        public TeamsController(ITeamService teamService,
+                               IStandingService standingService)
         {
             _teamService = teamService;
+            _standingService = standingService;
         }
 
         // GET: api/Teams
@@ -26,7 +29,7 @@ namespace TO2.Controllers
         [HttpGet("{standingId}/teams-with-stats")]
         public async Task<IActionResult> GetTeamsWithStats(long standingId)
         {
-            return Ok(await _teamService.GetTeamsWithStatsAsync(standingId));
+            return Ok(await _standingService.GetTeamsWithStatsAsync(standingId));
         }
 
         // POST: api/Teams

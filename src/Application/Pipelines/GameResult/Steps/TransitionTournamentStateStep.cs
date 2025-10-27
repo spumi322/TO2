@@ -15,12 +15,12 @@ namespace Application.Pipelines.GameResult.Steps
     public class TransitionTournamentStateStep : PipeLineBase<TransitionTournamentStateStep>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
 
         public TransitionTournamentStateStep(
             ILogger<TransitionTournamentStateStep> logger,
-            IGenericRepository<Tournament> tournamentRepository,
+            IRepository<Tournament> tournamentRepository,
             IUnitOfWork unitOfWork,
             ITournamentStateMachine stateMachine) : base(logger)
         {
@@ -60,7 +60,7 @@ namespace Application.Pipelines.GameResult.Steps
             }
 
             // Save tournament state
-            await _tournamentRepository.Update(tournament);
+            await _tournamentRepository.UpdateAsync(tournament);
 
             // Continue to next step
             return true;

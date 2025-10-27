@@ -14,12 +14,12 @@ namespace Application.Pipelines.StartGroups.Steps
     public class ValidateAndTransitionToSeedingGroupsStep : IStartGroupsPipelineStep
     {
         private readonly ILogger<ValidateAndTransitionToSeedingGroupsStep> _logger;
-        private readonly IGenericRepository<Tournament> _tournamentRepository;
+        private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
 
         public ValidateAndTransitionToSeedingGroupsStep(
             ILogger<ValidateAndTransitionToSeedingGroupsStep> logger,
-            IGenericRepository<Tournament> tournamentRepository,
+            IRepository<Tournament> tournamentRepository,
             ITournamentStateMachine stateMachine)
         {
             _logger = logger;
@@ -33,7 +33,7 @@ namespace Application.Pipelines.StartGroups.Steps
                 context.TournamentId);
 
             // Load tournament
-            var tournament = await _tournamentRepository.Get(context.TournamentId);
+            var tournament = await _tournamentRepository.GetByIdAsync(context.TournamentId);
             if (tournament == null)
             {
                 context.Success = false;
@@ -49,7 +49,7 @@ namespace Application.Pipelines.StartGroups.Steps
                 tournament.Status = TournamentStatus.SeedingGroups;
                 tournament.IsRegistrationOpen = false; // Close registration when starting groups
 
-                await _tournamentRepository.Update(tournament);
+                await _tournamentRepository.UpdateAsync(tournament);
 
                 // Store in context
                 context.Tournament = tournament;

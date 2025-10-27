@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Tournament;
+﻿using Application.DTOs.Team;
+using Application.DTOs.Tournament;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -25,5 +26,7 @@ namespace Application.Contracts
         Task<List<TeamPlacementDTO>> GetFinalResultsAsync(long tournamentId);
         Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateFinalPlacements(long standingId);
         Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements);
+        Task<List<GetTeamWithStatsResponseDTO>> GetTeamsWithStatsAsync(long standingId);
+
     }
 }
