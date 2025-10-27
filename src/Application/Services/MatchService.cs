@@ -1,6 +1,7 @@
 ﻿using Application.Contracts;
 using Domain.AggregateRoots;
 using Domain.Enums;
+using Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Services
@@ -19,17 +20,9 @@ namespace Application.Services
 
         public async Task<List<Match>> GetMatchesAsync(long standingId)
         {
-            try
-            {
-                var matches = await _matchRepository.FindAllAsync(m => m.StandingId == standingId);
+            var matches = await _matchRepository.FindAllAsync(m => m.StandingId == standingId);
 
-                return matches.ToList();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting matches: {Message}", ex.Message);
-                throw;
-            }
+            return matches.ToList();
         }
 
         public async Task<Match> GenerateMatch(Team? teamA, Team? teamB, int round, int seed, long standingId)

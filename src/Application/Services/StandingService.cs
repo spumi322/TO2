@@ -5,6 +5,7 @@ using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
+using Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Services
@@ -45,43 +46,25 @@ namespace Application.Services
 
         public async Task GenerateStanding(long tournamentId, string name, StandingType type, int? teamsPerStanding)
         {
-            try
-            {
-                var standing = new Standing(name, teamsPerStanding, type);
-                standing.TournamentId = tournamentId;
+            var standing = new Standing(name, teamsPerStanding, type);
+            standing.TournamentId = tournamentId;
 
-                await _standingRepository.AddAsync(standing);
-                await _unitOfWork.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error saving standing: {Message}", ex.Message);
-
-                throw;
-            }
+            await _standingRepository.AddAsync(standing);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<List<Standing>> GetStandingsAsync(long tournamentId)
         {
-            try
-            {
-                var standings = await _standingRepository.FindAllAsync(s => s.TournamentId == tournamentId);
+            var standings = await _standingRepository.FindAllAsync(s => s.TournamentId == tournamentId);
 
-                return standings.ToList();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting standings: {Message}", ex.Message);
-                throw;
-            }
+            return standings.ToList();
         }
 
         public async Task<bool> IsGroupFinished(long standingId)
         {
             var standing = await _standingRepository.GetByIdAsync(standingId)
-                ?? throw new Exception($"Standing with Id: {standingId} was not found!");
-            var matches = await _matchRepository.FindAllAsync(m => m.StandingId ==  standingId)
-                ?? throw new Exception($"Matches for the standing Id : {standingId} were not found!");
+                ?? throw new NotFoundException("Standing", standingId);
+            var matches = await _matchRepository.FindAllAsync(m => m.StandingId ==  standingId);
             bool standingFinished = false;
 
             if (matches.All(m => m.WinnerId is not null && m.LoserId is not null))
@@ -95,7 +78,7 @@ namespace Application.Services
         public async Task MarkGroupAsFinished(long standingId)
         {
             var standing = await _standingRepository.GetByIdAsync(standingId)
-                ?? throw new Exception($"Standing with Id: {standingId} was not found!");
+                ?? throw new NotFoundException("Standing", standingId);
 
             standing.IsFinished = true;
             await _standingRepository.UpdateAsync(standing);
@@ -103,8 +86,7 @@ namespace Application.Services
 
         public async Task<bool> CheckAllGroupsAreFinished(long tournamentId)
         {
-            var allStandings = await _standingRepository.FindAllAsync(s => s.TournamentId ==  tournamentId)
-                ?? throw new Exception($"Standings with tournamentId: {tournamentId} was not found!");
+            var allStandings = await _standingRepository.FindAllAsync(s => s.TournamentId ==  tournamentId);
             var allGroups = allStandings.Where(s => s.StandingType == StandingType.Group);
 
             bool allGroupsFinished = allGroups.Any() && allGroups.All(ag => ag.IsFinished);
@@ -127,13 +109,11 @@ namespace Application.Services
             var advancingTeams = new List<Team>();
             var standings = await GetStandingsAsync(tournamentId);
             var groups = standings.Where(s => s.StandingType == StandingType.Group).ToList();
-            var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket);
-
-            if (bracket == null)
-                throw new Exception("Bracket standing not found");
+            var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket)
+                ?? throw new NotFoundException("Bracket standing not found");
 
             if (groups.Count == 0)
-                throw new Exception("No groups found");
+                throw new NotFoundException("No groups found");
 
             // Calculate how many teams advance per group
             int teamsAdvancingPerGroup = bracket.MaxTeams / groups.Count;
@@ -184,117 +164,109 @@ namespace Application.Services
         public async Task<List<TeamPlacementDTO>> GetFinalResultsAsync(long tournamentId)
         {
             var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
-                ?? throw new Exception("Tournament not found");
+                ?? throw new NotFoundException("Tournament", tournamentId);
 
             if (tournament.Status != TournamentStatus.Finished)
             {
                 return new List<TeamPlacementDTO>();
             }
 
-            try
+            var bracketStanding = (await GetStandingsAsync(tournamentId))
+                .FirstOrDefault(s => s.StandingType == StandingType.Bracket);
+
+            if (bracketStanding == null)
             {
-                var bracketStanding = (await GetStandingsAsync(tournamentId))
-                    .FirstOrDefault(s => s.StandingType == StandingType.Bracket);
-
-                if (bracketStanding == null)
-                {
-                    return new List<TeamPlacementDTO>();
-                }
-
-                // Get all bracket matches using repository
-                var allMatches = await _matchRepository.FindAllAsync(m => m.StandingId == bracketStanding.Id);
-                if (!allMatches.Any())
-                {
-                    return new List<TeamPlacementDTO>();
-                }
-
-                // Extract unique team IDs from matches
-                var teamIds = allMatches
-                    .SelectMany(m => new[] { m.TeamAId, m.TeamBId })
-                    .Where(id => id.HasValue)
-                    .Select(id => id.Value)
-                    .Distinct()
-                    .ToHashSet();
-
-                // Get all teams from repository and filter to bracket participants
-                var allTeams = await _teamRepository.GetAllAsync();
-                var bracketTeams = allTeams.Where(t => teamIds.Contains(t.Id)).ToList();
-                var teamNameLookup = bracketTeams.ToDictionary(t => t.Id, t => t.Name);
-
-                // Calculate total rounds
-                int totalRounds = allMatches.Max(m => m.Round ?? 0);
-
-                // Find the final match (last round, seed 1)
-                var finalMatch = allMatches.FirstOrDefault(m => m.Round == totalRounds && m.Seed == 1);
-                if (finalMatch == null || !finalMatch.WinnerId.HasValue)
-                {
-                    return new List<TeamPlacementDTO>();
-                }
-
-                // Build standings by determining elimination round for each team
-                var teamPlacements = new List<(long TeamId, string TeamName, int EliminationRound, TeamStatus Status)>();
-
-                foreach (var teamId in teamIds)
-                {
-                    // Find the match where this team lost (if any)
-                    var lossMatch = allMatches.FirstOrDefault(m => m.LoserId == teamId);
-
-                    var teamName = teamNameLookup.ContainsKey(teamId) ? teamNameLookup[teamId] : "Unknown Team";
-
-                    if (lossMatch == null)
-                    {
-                        // No loss match = Champion
-                        teamPlacements.Add((teamId, teamName, totalRounds + 1, TeamStatus.Champion));
-                    }
-                    else
-                    {
-                        // Team was eliminated in the round they lost
-                        int eliminationRound = lossMatch.Round ?? 0;
-                        teamPlacements.Add((teamId, teamName, eliminationRound, TeamStatus.Eliminated));
-                    }
-                }
-
-                // Sort by elimination round (higher = better placement)
-                // Then by TeamId for tie-breaking within same round
-                var sortedTeams = teamPlacements
-                    .OrderByDescending(t => t.EliminationRound)
-                    .ThenBy(t => t.TeamId)
-                    .ToList();
-
-                // Assign placements with tied ranks
-                var standings = new List<TeamPlacementDTO>();
-                int currentPlacement = 1;
-                int? lastEliminationRound = null;
-                int teamsAtCurrentRank = 0;
-
-                foreach (var team in sortedTeams)
-                {
-                    if (lastEliminationRound.HasValue && team.EliminationRound < lastEliminationRound.Value)
-                    {
-                        // New elimination round = new placement (skip tied ranks)
-                        currentPlacement += teamsAtCurrentRank;
-                        teamsAtCurrentRank = 0;
-                    }
-
-                    standings.Add(new TeamPlacementDTO(
-                        team.TeamId,
-                        team.TeamName,
-                        currentPlacement,
-                        team.Status,
-                        team.EliminationRound
-                    ));
-
-                    lastEliminationRound = team.EliminationRound;
-                    teamsAtCurrentRank++;
-                }
-
-                return standings;
+                return new List<TeamPlacementDTO>();
             }
-            catch (Exception ex)
+
+            // Get all bracket matches using repository
+            var allMatches = await _matchRepository.FindAllAsync(m => m.StandingId == bracketStanding.Id);
+            if (!allMatches.Any())
             {
-                _logger.LogError(ex, "Error getting final standings: {Message}", ex.Message);
-                throw;
+                return new List<TeamPlacementDTO>();
             }
+
+            // Extract unique team IDs from matches
+            var teamIds = allMatches
+                .SelectMany(m => new[] { m.TeamAId, m.TeamBId })
+                .Where(id => id.HasValue)
+                .Select(id => id.Value)
+                .Distinct()
+                .ToHashSet();
+
+            // Get all teams from repository and filter to bracket participants
+            var allTeams = await _teamRepository.GetAllAsync();
+            var bracketTeams = allTeams.Where(t => teamIds.Contains(t.Id)).ToList();
+            var teamNameLookup = bracketTeams.ToDictionary(t => t.Id, t => t.Name);
+
+            // Calculate total rounds
+            int totalRounds = allMatches.Max(m => m.Round ?? 0);
+
+            // Find the final match (last round, seed 1)
+            var finalMatch = allMatches.FirstOrDefault(m => m.Round == totalRounds && m.Seed == 1);
+            if (finalMatch == null || !finalMatch.WinnerId.HasValue)
+            {
+                return new List<TeamPlacementDTO>();
+            }
+
+            // Build standings by determining elimination round for each team
+            var teamPlacements = new List<(long TeamId, string TeamName, int EliminationRound, TeamStatus Status)>();
+
+            foreach (var teamId in teamIds)
+            {
+                // Find the match where this team lost (if any)
+                var lossMatch = allMatches.FirstOrDefault(m => m.LoserId == teamId);
+
+                var teamName = teamNameLookup.ContainsKey(teamId) ? teamNameLookup[teamId] : "Unknown Team";
+
+                if (lossMatch == null)
+                {
+                    // No loss match = Champion
+                    teamPlacements.Add((teamId, teamName, totalRounds + 1, TeamStatus.Champion));
+                }
+                else
+                {
+                    // Team was eliminated in the round they lost
+                    int eliminationRound = lossMatch.Round ?? 0;
+                    teamPlacements.Add((teamId, teamName, eliminationRound, TeamStatus.Eliminated));
+                }
+            }
+
+            // Sort by elimination round (higher = better placement)
+            // Then by TeamId for tie-breaking within same round
+            var sortedTeams = teamPlacements
+                .OrderByDescending(t => t.EliminationRound)
+                .ThenBy(t => t.TeamId)
+                .ToList();
+
+            // Assign placements with tied ranks
+            var standings = new List<TeamPlacementDTO>();
+            int currentPlacement = 1;
+            int? lastEliminationRound = null;
+            int teamsAtCurrentRank = 0;
+
+            foreach (var team in sortedTeams)
+            {
+                if (lastEliminationRound.HasValue && team.EliminationRound < lastEliminationRound.Value)
+                {
+                    // New elimination round = new placement (skip tied ranks)
+                    currentPlacement += teamsAtCurrentRank;
+                    teamsAtCurrentRank = 0;
+                }
+
+                standings.Add(new TeamPlacementDTO(
+                    team.TeamId,
+                    team.TeamName,
+                    currentPlacement,
+                    team.Status,
+                    team.EliminationRound
+                ));
+
+                lastEliminationRound = team.EliminationRound;
+                teamsAtCurrentRank++;
+            }
+
+            return standings;
         }
 
         public async Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateFinalPlacements(long standingId)
@@ -402,7 +374,7 @@ namespace Application.Services
         {
             var participants = await _groupRepository.FindAllAsync(p => p.StandingId == standingId);
 
-            return _mapper.Map<List<GetTeamWithStatsResponseDTO>>(participants) ?? throw new Exception("Participants not found");
+            return _mapper.Map<List<GetTeamWithStatsResponseDTO>>(participants);
         }
     }
 }

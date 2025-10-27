@@ -17,6 +17,7 @@ using Infrastructure.Persistence.Repository;
 using Infrastructure.Profiles;
 using Microsoft.EntityFrameworkCore;
 using Application.Contracts.Repositories;
+using webAPI.Middleware;
 
 namespace TO2
 {
@@ -92,6 +93,9 @@ namespace TO2
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddFluentValidation().AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
+            // Exception Handling
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
             // API & Middleware
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddControllers();
@@ -108,6 +112,7 @@ namespace TO2
 
             var app = builder.Build();
 
+            app.UseExceptionHandler();
             app.UseCors();
 
             if (app.Environment.IsDevelopment())

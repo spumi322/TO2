@@ -1,6 +1,7 @@
 using Application.Contracts;
 using Application.DTOs.Tournament;
 using Application.Pipelines.StartBracket.Contracts;
+using Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Pipelines.StartBracket
@@ -35,62 +36,49 @@ namespace Application.Pipelines.StartBracket
         {
             _logger.LogInformation("Starting bracket pipeline for tournament {TournamentId}", tournamentId);
 
+            // Initialize context
+            var context = new StartBracketContext
+            {
+                TournamentId = tournamentId
+            };
+
+            // Begin transaction - all changes will be atomic
+            await _unitOfWork.BeginTransactionAsync();
+
             try
             {
-                // Initialize context
-                var context = new StartBracketContext
+                // Execute all steps in sequence
+                foreach (var step in _steps)
                 {
-                    TournamentId = tournamentId
-                };
+                    var shouldContinue = await step.ExecuteAsync(context);
 
-                // Begin transaction - all changes will be atomic
-                await _unitOfWork.BeginTransactionAsync();
-
-                try
-                {
-                    // Execute all steps in sequence
-                    foreach (var step in _steps)
+                    if (!shouldContinue || !context.Success)
                     {
-                        var shouldContinue = await step.ExecuteAsync(context);
-
-                        if (!shouldContinue || !context.Success)
-                        {
-                            _logger.LogInformation("Pipeline stopped at step: {StepName}", step.GetType().Name);
-                            break;
-                        }
+                        _logger.LogInformation("Pipeline stopped at step: {StepName}", step.GetType().Name);
+                        break;
                     }
-
-                    // Commit transaction - saves all changes atomically
-                    await _unitOfWork.CommitTransactionAsync();
-
-                    // Return the result
-                    var result = new StartBracketResponseDTO(
-                        context.Success,
-                        context.Message,
-                        context.NewStatus
-                    );
-
-                    _logger.LogInformation("Pipeline completed successfully for tournament {TournamentId}. Success: {Success}",
-                        tournamentId, result.Success);
-                    return result;
                 }
-                catch (Exception ex)
-                {
-                    // Rollback transaction on any failure
-                    await _unitOfWork.RollbackTransactionAsync();
-                    _logger.LogError(ex, "Pipeline execution failed, changes rolled back: {Message}", ex.Message);
-                    throw;
-                }
+
+                // Commit transaction - saves all changes atomically
+                await _unitOfWork.CommitTransactionAsync();
+
+                // Return the result
+                var result = new StartBracketResponseDTO(
+                    context.Success,
+                    context.Message,
+                    context.NewStatus
+                );
+
+                _logger.LogInformation("Pipeline completed successfully for tournament {TournamentId}. Success: {Success}",
+                    tournamentId, result.Success);
+                return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Pipeline failed for tournament {TournamentId}: {Message}",
-                    tournamentId, ex.Message);
-                return new StartBracketResponseDTO(
-                    false,
-                    $"Pipeline failed: {ex.Message}",
-                    default
-                );
+                // Rollback transaction on any failure
+                await _unitOfWork.RollbackTransactionAsync();
+                _logger.LogError(ex, "Pipeline execution failed, changes rolled back: {Message}", ex.Message);
+                throw; // Let middleware handle the exception
             }
         }
     }

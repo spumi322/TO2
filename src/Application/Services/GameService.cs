@@ -5,6 +5,7 @@ using Application.DTOs.Match;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
+using Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Services
@@ -34,7 +35,7 @@ namespace Application.Services
             if (gamesAlreadyGenerated.Count > 0)
             {
                 _logger.LogWarning("Attempted to generate games for match {MatchId}, but games already exist.", match.Id);
-                throw new Exception("Games already generated for this match");
+                throw new ConflictException("Games already generated for this match");
             }
 
             var games = new List<Game>();
@@ -59,25 +60,28 @@ namespace Application.Services
 
         public async Task<Game> GetGameAsync(long gameId)
         {
-            var game = await _gameRepository.GetByIdAsync(gameId) ?? throw new Exception("Game not found");
+            var game = await _gameRepository.GetByIdAsync(gameId)
+                ?? throw new NotFoundException("Game", gameId);
 
             return game;
         }
 
         public async Task<List<Game>> GetAllGamesByMatch(long matchId)
         {
-            var games = await _gameRepository.FindAllAsync(g => g.MatchId == matchId) ?? throw new Exception($"Games for {matchId} was not found");
+            var games = await _gameRepository.FindAllAsync(g => g.MatchId == matchId);
 
             return games.ToList();
         }
 
         public async Task SetGameResult(long gameId, long winnerId, int? teamAScore, int? teamBScore)
         {
-            var existingGame = await _gameRepository.GetByIdAsync(gameId) ?? throw new Exception("Game not found");
-            var match = await _matchRepository.GetByIdAsync(existingGame.MatchId) ?? throw new Exception("Match not found");
+            var existingGame = await _gameRepository.GetByIdAsync(gameId)
+                ?? throw new NotFoundException("Game", gameId);
+            var match = await _matchRepository.GetByIdAsync(existingGame.MatchId)
+                ?? throw new NotFoundException("Match", existingGame.MatchId);
 
             if (match.WinnerId.HasValue)
-                throw new Exception("Match already has a winner");
+                throw new ConflictException("Match already has a winner");
 
             var teamAId = existingGame.TeamAId;
             var teamBId = existingGame.TeamBId;
@@ -96,7 +100,8 @@ namespace Application.Services
 
         public async Task<MatchWinner?> SetMatchWinner(long matchId)
         {
-            var match = await _matchRepository.GetByIdAsync(matchId) ?? throw new Exception("Match not found");
+            var match = await _matchRepository.GetByIdAsync(matchId)
+                ?? throw new NotFoundException("Match", matchId);
             var games = await _gameRepository.FindAllAsync(g => g.MatchId == matchId);
 
             var gamesToWin = match.BestOf switch
@@ -118,7 +123,8 @@ namespace Application.Services
                 return null;
 
             var loserId = winnerId == match.TeamAId ? match.TeamBId : match.TeamAId;
-            if (loserId is null) throw new Exception("Missing team Id!");
+            if (loserId is null)
+                throw new ValidationException("Missing team Id!");
 
             match.WinnerId = winnerId;
             match.LoserId = loserId;
