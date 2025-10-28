@@ -30,7 +30,7 @@ namespace TO2
             // DbContext
             builder.Services.AddDbContext<TO2DbContext>(options =>
             {
-                options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
             // UoW, Repos
             builder.Services.AddScoped<ITO2DbContext, TO2DbContext>();

@@ -40,7 +40,7 @@ namespace Infrastructure.Persistence
                 var connectionString = _configuration.GetConnectionString("DefaultConnection");
                 if (!string.IsNullOrEmpty(connectionString))
                 {
-                    optionsBuilder.UseSqlite(connectionString);
+                    optionsBuilder.UseNpgsql(connectionString);
                 }
             }
         }

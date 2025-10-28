@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:17
+    container_name: to2-postgres
+    environment:
+      POSTGRES_DB: TO2Database
+      POSTGRES_USER: to2user
+      POSTGRES_PASSWORD: to2password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
