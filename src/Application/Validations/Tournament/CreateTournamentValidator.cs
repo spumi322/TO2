@@ -29,10 +29,10 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
             .WithMessage("Teams per bracket must be between 4 and 32.");
 
         RuleFor(x => x.TeamsPerGroup)
-            .NotEmpty()
-            .InclusiveBetween(2, 16)
-            .When(x => x.Format == Format.BracketAndGroup)
-            .WithMessage("For BracketAndGroup format, teams per group must be between 2 and 16.");
+            .NotNull().WithMessage("TeamsPerGroup is required")
+            .GreaterThan(0).WithMessage("TeamsPerGroup must be greater than 0")
+            .InclusiveBetween(2, 16).WithMessage("Teams per group must be between 2 and 16")
+            .When(x => x.Format == Format.BracketAndGroup);
 
         RuleFor(x => x.TeamsPerGroup)
             .Null()
@@ -46,7 +46,7 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
 
         RuleFor(x => x)
             .Must(x => x.MaxTeams % (x.TeamsPerGroup ?? 1) == 0)
-            .When(x => x.Format == Format.BracketAndGroup)
+            .When(x => x.Format == Format.BracketAndGroup && x.TeamsPerGroup.HasValue && x.TeamsPerGroup.Value > 0)
             .WithMessage("For BracketAndGroup format, MaxTeams must be divisible by TeamsPerGroup.");
     }
 }
