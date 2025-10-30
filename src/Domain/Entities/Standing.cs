@@ -20,6 +20,9 @@ namespace Domain.Entities
         public long TournamentId { get; set; }
         public Tournament Tournament { get; set; }
 
+        public long TenantId { get; set; }
+        public Tenant Tenant { get; set; } = null!;
+
         public string Name { get; set; }
 
         public int MaxTeams { get; set; }

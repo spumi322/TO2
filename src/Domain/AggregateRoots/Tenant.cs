@@ -1,4 +1,5 @@
 ﻿using Domain.Common;
+using Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,7 +11,7 @@ namespace Domain.AggregateRoots
 {
     public class Tenant : AggregateRootBase
     {
-        private readonly List<User> => _users = new ();
+        private readonly List<User> _users = new ();
 
         private Tenant() { }
 

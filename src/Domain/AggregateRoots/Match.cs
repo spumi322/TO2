@@ -19,6 +19,9 @@ namespace Domain.AggregateRoots
 
         public long StandingId { get; set; }
 
+        public long TenantId { get; set; }
+        public Tenant Tenant { get; set; } = null!;
+
         public int? Round { get; set; }
 
         public int? Seed { get; set; }
