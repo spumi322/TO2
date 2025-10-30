@@ -14,10 +14,7 @@ namespace Domain.Entities
     {
         private readonly List<RefreshToken> _refreshTokens = new();
 
-        private User() { }
-
-        [Required]
-        public string Name { get; set; }
+        public User() { }
 
         public long TenantId { get; set; }
 

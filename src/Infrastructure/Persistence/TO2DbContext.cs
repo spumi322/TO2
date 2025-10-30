@@ -70,7 +70,7 @@ namespace Infrastructure.Persistence
 
             modelBuilder.Entity<User>(entity =>
             {
-                entity.Property(u => u.Name).IsRequired().HasMaxLength(100);
+                entity.Property(u => u.UserName).IsRequired().HasMaxLength(100);
             });
 
             modelBuilder.Entity<RefreshToken>(entity =>

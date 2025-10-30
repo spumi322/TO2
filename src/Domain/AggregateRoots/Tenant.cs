@@ -13,7 +13,7 @@ namespace Domain.AggregateRoots
     {
         private readonly List<User> _users = new ();
 
-        private Tenant() { }
+        public Tenant() { }
 
         [Required]
         public string Name { get; set; }
