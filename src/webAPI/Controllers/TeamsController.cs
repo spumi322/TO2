@@ -1,9 +1,11 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Team;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TO2.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/teams")]
     public class TeamsController : ControllerBase

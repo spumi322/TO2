@@ -1,9 +1,11 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Game;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TO2.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/matches")]
     public class MatchesController : ControllerBase

@@ -1,0 +1,150 @@
+### Variables
+@baseUrl = http://localhost:5161/api
+@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJ1c2VyQUBjb21wYW55LWEuY29tIiwibmFtZSI6InVzZXJBIiwidGVuYW50SWQiOiIxIiwidGVuYW50TmFtZSI6IkNvbXBhbnkgQSIsImp0aSI6ImY3MjcyMDhiLWMwNGYtNDU5Yi1hYjdlLWYyYzhjOWJiNDQ3ZSIsImV4cCI6MTc2MTg1MTAxMiwiaXNzIjoiVE8yLUFQSSIsImF1ZCI6IlRPMi1DbGllbnQifQ.homCykIUEtAkEwDVbqftVthcX0xy6fAH461ck21PZ3E
+@refreshToken = nyNg40FchEfAibLLFI0TvmExmknD63OlGt9GebFHGTMlOA3jKaOqnZ/Q1PLaGQ6YA3I5iLhHBcFZNrBCGorH7Q==
+### Health Check
+GET {{baseUrl}}/auth/me HTTP/1.1
+
+###############################################
+# TENANT A - User Registration & Auth
+###############################################
+
+### 1. Register User A (Tenant A)
+POST {{baseUrl}}/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "userName": "userA",
+  "email": "userA@company-a.com",
+  "password": "Test123",
+  "tenantName": "Company A"
+}
+
+### 2. Login User A
+# @name loginUserA
+POST {{baseUrl}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "userA@company-a.com",
+  "password": "Test123"
+}
+
+### 3. Get Current User Info (User A)
+# Copy accessToken from login response above
+GET {{baseUrl}}/auth/me HTTP/1.1
+Authorization: Bearer {{accessToken}}
+
+### 4. Refresh Token (User A)
+POST {{baseUrl}}/auth/refresh HTTP/1.1
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### 5. Revoke Token (Logout User A)
+POST {{baseUrl}}/auth/revoke HTTP/1.1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+###############################################
+# TENANT B - User Registration & Auth
+###############################################
+
+### 6. Register User B (Tenant B)
+POST {{baseUrl}}/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "userName": "userB",
+  "email": "userB@company-b.com",
+  "password": "Test123",
+  "tenantName": "Company B"
+}
+
+### 7. Login User B
+# @name loginUserB
+POST {{baseUrl}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "userB@company-b.com",
+  "password": "Test123"
+}
+
+### 8. Get Current User Info (User B)
+GET {{baseUrl}}/auth/me HTTP/1.1
+Authorization: Bearer {{accessToken}}
+
+###############################################
+# TENANT ISOLATION TEST - Tournaments
+###############################################
+
+### 9. Create Tournament as User A
+POST {{baseUrl}}/tournaments HTTP/1.1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Tournament A",
+  "description": "Created by User A",
+  "maxTeams": 8,
+  "format": 1,
+  "teamsPerBracket": 8
+}
+
+### 10. Get All Tournaments as User A
+# Should see only Tenant A tournaments
+GET {{baseUrl}}/tournaments/all HTTP/1.1
+Authorization: Bearer {{accessToken}}
+
+### 11. Switch to User B - Get All Tournaments
+# Should see only Tenant B tournaments (empty if none created)
+GET {{baseUrl}}/tournaments/all HTTP/1.1
+Authorization: Bearer {{accessToken}}
+
+### 12. Create Team as User B
+POST {{baseUrl}}/teams HTTP/1.1
+Authorization: Bearer {{accessToken}}
+Content-Type: application/json
+
+{
+  "name": "Team B1"
+}
+
+### 13. Get All Teams as User B
+# Should see only Tenant B teams
+GET {{baseUrl}}/teams/all HTTP/1.1
+Authorization: Bearer {{accessToken}}
+
+###############################################
+# ERROR SCENARIOS
+###############################################
+
+### 14. Try to access without token (should fail 401)
+GET {{baseUrl}}/tournaments/all HTTP/1.1
+
+### 15. Try to login with wrong password
+POST {{baseUrl}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "email": "userA@company-a.com",
+  "password": "WrongPassword"
+}
+
+### 16. Try to register duplicate email
+POST {{baseUrl}}/auth/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "userName": "duplicate",
+  "email": "userA@company-a.com",
+  "password": "Test123",
+  "tenantName": "Company C"
+}

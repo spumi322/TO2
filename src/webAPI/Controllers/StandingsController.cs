@@ -1,8 +1,10 @@
 ﻿using Application.Contracts;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TO2.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/standings")]
     public class StandingsController : ControllerBase

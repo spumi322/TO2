@@ -1,13 +1,15 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Tournament;
-using Application.Pipelines.StartGroups.Contracts;
 using Application.Pipelines.StartBracket.Contracts;
+using Application.Pipelines.StartGroups.Contracts;
 using Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
 namespace TO2.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/tournaments")]
     public class TournamentsController : ControllerBase

@@ -38,7 +38,18 @@ public class TenantSaveChangesInterceptor : SaveChangesInterceptor
     {
         if (context == null) return;
 
-        var tenantId = _tenantService.GetCurrentTenantId();
+        // Try to get tenant ID, but don't fail if not available (e.g., during registration)
+        long? tenantId = null;
+        try
+        {
+            tenantId = _tenantService.GetCurrentTenantId();
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // No tenant context available (e.g., during user registration)
+            // Skip auto-setting TenantId - entities should manage it themselves
+            return;
+        }
 
         var entries = context.ChangeTracker.Entries()
             .Where(e => e.State == EntityState.Added &&
