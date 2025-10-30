@@ -1,3 +1,9 @@
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthInterceptor } from './interceptors/auth.interceptor';
+import { LoginComponent } from './components/auth/login/login.component';
+import { RegisterComponent } from './components/auth/register/register.component';
+import { PasswordModule } from 'primeng/password';
+import { MessageModule } from 'primeng/message';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
@@ -64,7 +70,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     BracketComponent,
     NavbarComponent,
     CreateTournamentComponent,
-    MatchesComponent
+    MatchesComponent,
+    LoginComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,
@@ -83,6 +91,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     FormsModule,
     ListboxModule,
     TableModule,
+    PasswordModule,
+    MessageModule,
     // Angular Material Modules
     MatCardModule,
     MatStepperModule,
@@ -103,7 +113,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
   ],
   providers: [
-    provideAnimationsAsync()
+    provideAnimationsAsync(),
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthInterceptor,
+      multi: true
+    }
   ],
   bootstrap: [AppComponent]
 })

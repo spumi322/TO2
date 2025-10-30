@@ -1,0 +1,102 @@
+<div class="register-container">
+  <div class="register-card">
+    <div class="register-header">
+      <h2>Create Your Account</h2>
+      <p>Start managing your tournaments with TO2</p>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="register-form">
+      <div class="field">
+        <label for="userName">Username</label>
+        <input
+          pInputText
+          id="userName"
+          type="text"
+          [(ngModel)]="userName"
+          name="userName"
+          placeholder="Choose a username"
+          [disabled]="isLoading"
+          required
+          autocomplete="username"
+        />
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <input
+          pInputText
+          id="email"
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="Enter your email"
+          [disabled]="isLoading"
+          required
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <p-password
+          [(ngModel)]="password"
+          name="password"
+          [toggleMask]="true"
+          [feedback]="true"
+          placeholder="Create a password"
+          [disabled]="isLoading"
+          inputId="password"
+          styleClass="w-full"
+          [inputStyle]="{'width': '100%'}"
+          promptLabel="Choose a password"
+          weakLabel="Too simple"
+          mediumLabel="Average"
+          strongLabel="Strong"
+        ></p-password>
+      </div>
+
+      <div class="field">
+        <label for="tenantName">Organization Name</label>
+        <input
+          pInputText
+          id="tenantName"
+          type="text"
+          [(ngModel)]="tenantName"
+          name="tenantName"
+          placeholder="Your company or organization name"
+          [disabled]="isLoading"
+          required
+        />
+      </div>
+
+      <p-message
+        *ngIf="errorMessage"
+        severity="danger"
+        [text]="errorMessage"
+        styleClass="w-full"
+      ></p-message>
+
+      <p-message
+        *ngIf="successMessage"
+        severity="success"
+        [text]="successMessage"
+        styleClass="w-full"
+      ></p-message>
+
+      <p-button
+        type="submit"
+        label="Create Account"
+        icon="pi pi-user-plus"
+        [loading]="isLoading"
+        styleClass="w-full"
+      ></p-button>
+    </form>
+
+    <div class="register-footer">
+      <p>
+        Already have an account?
+        <a (click)="goToLogin()" class="login-link">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>

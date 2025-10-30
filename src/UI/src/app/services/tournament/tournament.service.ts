@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { StartBracketResponse, StartGroupsResponse, Tournament, TournamentStateDTO } from '../../models/tournament';
 import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { Team } from '../../models/team';
@@ -9,7 +10,7 @@ import { FinalStanding } from '../../models/final-standing';
   providedIn: 'root'
 })
 export class TournamentService {
-  private apiUrl = 'http://localhost:5161/api/tournaments';
+  private apiUrl = `${environment.apiUrl}/tournaments`;
 
   constructor(private http: HttpClient) { }
 

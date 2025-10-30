@@ -87,7 +87,10 @@ namespace Application.Services
             }
             catch
             {
-                await _unitOfWork.RollbackTransactionAsync();
+                if (_unitOfWork.HasActiveTransaction)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                }
                 throw;
             }
         }

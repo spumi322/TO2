@@ -6,23 +6,54 @@
     </div>
   </ng-template>
 
-  <!-- End facet: Contains the Create and Sign In buttons -->
+  <!-- End facet: Contains buttons based on auth state -->
   <ng-template pTemplate="end">
     <div class="navbar-right">
-      <button pButton
-              type="button"
-              label="Create Tournament"
-              icon="pi pi-plus"
-              class="create-btn"
-              (click)="goToCreateTournament($event)">
-      </button>
-      <button pButton
-              type="button"
-              label="Sign In"
-              icon="pi pi-user"
-              class="signin-btn"
-              (click)="goToSignIn($event)">
-      </button>
+      <!-- Authenticated User View -->
+      <ng-container *ngIf="isAuthenticated && currentUser">
+        <button pButton
+                type="button"
+                label="Create Tournament"
+                icon="pi pi-plus"
+                class="create-btn"
+                (click)="goToCreateTournament($event)">
+        </button>
+        
+        <div class="user-info">
+          <span class="user-name">
+            <i class="pi pi-user"></i>
+            {{ currentUser.userName }}
+          </span>
+          <span class="tenant-name">{{ currentUser.tenantName }}</span>
+        </div>
+        
+        <button pButton
+                type="button"
+                label="Logout"
+                icon="pi pi-sign-out"
+                class="logout-btn"
+                (click)="logout($event)">
+        </button>
+      </ng-container>
+
+      <!-- Guest User View -->
+      <ng-container *ngIf="!isAuthenticated">
+        <button pButton
+                type="button"
+                label="Sign In"
+                icon="pi pi-sign-in"
+                class="signin-btn"
+                (click)="goToLogin($event)">
+        </button>
+        <button pButton
+                type="button"
+                label="Register"
+                icon="pi pi-user-plus"
+                class="register-btn"
+                severity="success"
+                (click)="goToRegister($event)">
+        </button>
+      </ng-container>
     </div>
   </ng-template>
 </p-menubar>

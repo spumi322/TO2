@@ -78,3 +78,60 @@ body {
     padding-top: 80px; /* Increase if navbar height increases on smaller screens */
   }
 }
+
+/* User info styling */
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding: 0 15px;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.user-name {
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tenant-name {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.logout-btn {
+  background-color: transparent;
+  border: 1px solid #ffffff;
+  color: #fff;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.logout-btn:hover {
+  background-color: rgba(255, 0, 0, 0.2);
+}
+
+.register-btn {
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+/* Responsive for user info */
+@media (max-width: 768px) {
+  .user-info {
+    padding: 0 10px;
+  }
+
+  .user-name {
+    font-size: 0.85rem;
+  }
+
+  .tenant-name {
+    font-size: 0.7rem;
+  }
+}

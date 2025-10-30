@@ -7,12 +7,13 @@ import { Game } from '../../models/game';
 import { Time } from '@angular/common';
 import { MatchFinishedIds, MatchResult } from '../../models/matchresult';
 import { GameResult, GameProcessResult } from '../../models/gameresult';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MatchService {
-  private apiUrl = 'http://localhost:5161/api/matches';
+  private apiUrl = `${environment.apiUrl}/matches`;
   public matchUpdated = new BehaviorSubject<Match | null>(null);
 
   matchUpdated$ = this.matchUpdated.asObservable();

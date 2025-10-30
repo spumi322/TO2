@@ -1,3 +1,4 @@
+using Application.Contracts;
 using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.Sqlite;
@@ -15,12 +16,19 @@ namespace Tests.Helpers
         private readonly SqliteConnection _connection;
         private readonly DbContextOptions<TO2DbContext> _options;
         private readonly IConfiguration _configuration;
+        private readonly ITenantService _tenantService;
 
         public TestDbContextFactory()
         {
             // Create a mock configuration (TO2DbContext needs it but doesn't use it in tests)
             var mockConfiguration = new Mock<IConfiguration>();
             _configuration = mockConfiguration.Object;
+
+            // Create a mock tenant service for tests
+            var mockTenantService = new Mock<ITenantService>();
+            mockTenantService.Setup(x => x.GetCurrentTenantId()).Returns(1L);
+            mockTenantService.Setup(x => x.GetCurrentUserName()).Returns("TestUser");
+            _tenantService = mockTenantService.Object;
 
             // Create SQLite in-memory connection
             _connection = new SqliteConnection("DataSource=:memory:");
@@ -41,7 +49,7 @@ namespace Tests.Helpers
         /// </summary>
         public TO2DbContext CreateContext()
         {
-            return new TO2DbContext(_options, _configuration);
+            return new TO2DbContext(_options, _configuration, _tenantService);
         }
 
         public void Dispose()
