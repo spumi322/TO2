@@ -25,7 +25,10 @@
       "Bash(rm:*)",
       "Bash(__NEW_LINE__ sed -i '/^[[:space:]]*_logger = logger;$/a\\            _unitOfWork = unitOfWork;' BracketProgressStrategy.cs)",
       "Bash(dotnet restore:*)",
-      "Bash(dotnet test:*)"
+      "Bash(dotnet test:*)",
+      "Bash(test -d src:*)",
+      "Bash(git log:*)",
+      "Bash(md5sum:*)"
     ],
     "deny": [],
     "ask": []

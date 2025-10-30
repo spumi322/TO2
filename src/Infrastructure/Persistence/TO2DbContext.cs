@@ -13,15 +13,20 @@ namespace Infrastructure.Persistence
     public class TO2DbContext : IdentityDbContext<User, IdentityRole<long>, long>, ITO2DbContext
     {
         private readonly IConfiguration _configuration;
+        private readonly ITenantService? _tenantService;
 
         public TO2DbContext()
         {
         }
 
-        public TO2DbContext(DbContextOptions<TO2DbContext> options, IConfiguration configuration)
+        public TO2DbContext(
+            DbContextOptions<TO2DbContext> options,
+            IConfiguration configuration,
+            ITenantService tenantService)
             : base(options)
         {
             _configuration = configuration;
+            _tenantService = tenantService;
         }
 
         public DbSet<Tournament> Tournaments { get; set; }
@@ -117,48 +122,17 @@ namespace Infrastructure.Persistence
 
         }
 
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            AddTimestamps();
-
-            int result = await base.SaveChangesAsync(cancellationToken);
-
-            // Save again if there are changes
-            if (ChangeTracker.HasChanges())
-            {
-                AddTimestamps();
-                result = await base.SaveChangesAsync(cancellationToken);
-            }
-
-            return result;
-        }
-
-        private void AddTimestamps()
-        {
-            var userName = "PlaceHolder";
-
-            var entries = ChangeTracker.Entries()
-                .Where(x => x.Entity is EntityBase && (x.State == EntityState.Added || x.State == EntityState.Modified));
-
-            foreach (var entityEntry in entries)
-            {
-                var entity = (EntityBase)entityEntry.Entity;
-
-                if (entityEntry.State == EntityState.Added)
-                {
-                    entity.CreatedDate = DateTime.UtcNow;
-                    entity.CreatedBy = userName;
-                }
-
-                entity.LastModifiedDate = DateTime.UtcNow;
-                entity.LastModifiedBy = userName;
-            }
-        }
-
+        /// <summary>
+        /// Gets the current tenant ID for query filters.
+        /// Note: TenantId is now auto-set on new entities by TenantSaveChangesInterceptor,
+        /// and audit fields are set by AuditInterceptor.
+        /// </summary>
         private long GetCurrentTenantId()
         {
-            // TODO: Will be replaced with actual tenant resolution from HttpContext
-            return 0; // Returns 0 for now (will filter nothing during development)
+            if (_tenantService == null)
+                throw new InvalidOperationException("TenantService is not available");
+
+            return _tenantService.GetCurrentTenantId();
         }
     }
 }
