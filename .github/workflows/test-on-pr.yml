@@ -19,12 +19,12 @@ jobs:
     
     - name: Restore dependencies
       run: dotnet restore
-      working-directory: ./src
+      working-directory: ./src/webAPI
     
     - name: Build
       run: dotnet build --no-restore --configuration Release
-      working-directory: ./src
+      working-directory: ./src/webAPI
     
     - name: Run tests
       run: dotnet test --no-build --configuration Release --verbosity normal
-      working-directory: ./src
+      working-directory: ./src/webAPI
