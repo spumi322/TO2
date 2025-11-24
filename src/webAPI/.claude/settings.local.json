@@ -28,7 +28,8 @@
       "Bash(dotnet test:*)",
       "Bash(test -d src:*)",
       "Bash(git log:*)",
-      "Bash(md5sum:*)"
+      "Bash(md5sum:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

@@ -126,11 +126,15 @@ namespace TO2
             builder.Services.AddSwaggerGen();
             builder.Services.AddCors(options =>
             {
-                options.AddDefaultPolicy(builder =>
+                options.AddPolicy("AllowFrontend", policy =>
                 {
-                    builder.WithOrigins("https://127.0.0.1:4200", "https://localhost:4200")
-                        .AllowAnyMethod()
-                        .AllowAnyHeader();
+                    var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
+                        ?? new[] { "http://localhost:4200" };
+
+                    policy.WithOrigins(allowedOrigins)
+                          .AllowAnyMethod()
+                          .AllowAnyHeader()
+                          .AllowCredentials();
                 });
             });
 
@@ -177,7 +181,7 @@ namespace TO2
             var app = builder.Build();
 
             app.UseExceptionHandler();
-            app.UseCors();
+            app.UseCors("AllowFrontend");
 
             app.UseAuthentication();
             app.UseAuthorization();
