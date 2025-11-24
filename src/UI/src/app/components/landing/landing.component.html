@@ -1,0 +1,175 @@
+<div class="landing-page">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Tournament Management for Your Organization</h1>
+      <p class="hero-subtitle">
+        Organize professional tournaments with automated brackets, group stages, and real-time tracking.
+        Built for organizations that demand reliability and data security.
+      </p>
+      <button mat-raised-button color="primary" class="cta-button" (click)="scrollToSignUp()">
+        Get Started Free
+      </button>
+      <p class="hero-note">No credit card required • Setup in minutes</p>
+    </div>
+  </section>
+
+  <!-- Key Features Section -->
+  <section class="features-section">
+    <div class="container">
+      <h2 class="section-title">Everything You Need to Run Professional Tournaments</h2>
+
+      <div class="features-grid">
+        <mat-card class="feature-card" *ngFor="let feature of features">
+          <mat-card-content>
+            <mat-icon class="feature-icon">{{feature.icon}}</mat-icon>
+            <h3 class="feature-title">{{feature.title}}</h3>
+            <p class="feature-description">{{feature.description}}</p>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works-section">
+    <div class="container">
+      <h2 class="section-title">How It Works</h2>
+      <p class="section-subtitle">Get your tournament running in three simple steps</p>
+
+      <div class="steps-container">
+        <div class="step-card" *ngFor="let step of steps; let i = index">
+          <div class="step-number">{{step.number}}</div>
+          <h3 class="step-title">{{step.title}}</h3>
+          <p class="step-description">{{step.description}}</p>
+          <mat-icon class="step-arrow" *ngIf="i < steps.length - 1">arrow_forward</mat-icon>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo/Screenshot Section -->
+  <section class="demo-section">
+    <div class="container">
+      <h2 class="section-title">See It In Action</h2>
+      <p class="section-subtitle">Visualize your tournament brackets in real-time</p>
+
+      <mat-card class="demo-card">
+        <mat-card-content>
+          <div class="demo-placeholder">
+            <mat-icon class="demo-icon">view_module</mat-icon>
+            <h3>Interactive Bracket Visualization</h3>
+            <p>
+              Our bracket system automatically generates and updates tournament trees as matches are completed.
+              Support for single/double elimination, group stages, and custom formats.
+            </p>
+            <div class="demo-features">
+              <div class="demo-feature-item">
+                <mat-icon>check_circle</mat-icon>
+                <span>Real-time updates</span>
+              </div>
+              <div class="demo-feature-item">
+                <mat-icon>check_circle</mat-icon>
+                <span>Multiple formats</span>
+              </div>
+              <div class="demo-feature-item">
+                <mat-icon>check_circle</mat-icon>
+                <span>Automatic seeding</span>
+              </div>
+              <div class="demo-feature-item">
+                <mat-icon>check_circle</mat-icon>
+                <span>Export results</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+
+  <!-- Sign Up Section -->
+  <section class="signup-section" id="signup-section">
+    <div class="container">
+      <mat-card class="signup-card">
+        <mat-card-header>
+          <mat-card-title>Create Your Organization</mat-card-title>
+          <mat-card-subtitle>Start organizing tournaments in minutes</mat-card-subtitle>
+        </mat-card-header>
+
+        <mat-card-content>
+          <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()" class="signup-form">
+            <!-- Error Message -->
+            <div class="error-message" *ngIf="errorMessage">
+              <mat-icon>error</mat-icon>
+              <span>{{ errorMessage }}</span>
+            </div>
+
+            <!-- User Name -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>User Name</mat-label>
+              <input matInput formControlName="userName" placeholder="John Doe" />
+              <mat-icon matPrefix>person</mat-icon>
+              <mat-error *ngIf="signUpForm.get('userName')?.invalid && signUpForm.get('userName')?.touched">
+                {{ getErrorMessage('userName') }}
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Organization Name -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Organization Name</mat-label>
+              <input matInput formControlName="organizationName" placeholder="Acme Esports League" />
+              <mat-icon matPrefix>business</mat-icon>
+              <mat-error *ngIf="signUpForm.get('organizationName')?.invalid && signUpForm.get('organizationName')?.touched">
+                {{ getErrorMessage('organizationName') }}
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Email -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput type="email" formControlName="email" placeholder="john@example.com" />
+              <mat-icon matPrefix>email</mat-icon>
+              <mat-error *ngIf="signUpForm.get('email')?.invalid && signUpForm.get('email')?.touched">
+                {{ getErrorMessage('email') }}
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Password -->
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Password</mat-label>
+              <input matInput type="password" formControlName="password" placeholder="At least 6 characters" />
+              <mat-icon matPrefix>lock</mat-icon>
+              <mat-error *ngIf="signUpForm.get('password')?.invalid && signUpForm.get('password')?.touched">
+                {{ getErrorMessage('password') }}
+              </mat-error>
+            </mat-form-field>
+
+            <!-- Submit Button -->
+            <button
+              mat-raised-button
+              color="primary"
+              type="submit"
+              class="submit-button"
+              [disabled]="isLoading"
+            >
+              <mat-spinner *ngIf="isLoading" diameter="20"></mat-spinner>
+              <span *ngIf="!isLoading">Create Account</span>
+            </button>
+
+            <p class="login-link">
+              Already have an account?
+              <a routerLink="/login" class="link">Sign in here</a>
+            </p>
+          </form>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2024 TO2 Tournament Organizer. All rights reserved.</p>
+    </div>
+  </footer>
+</div>
