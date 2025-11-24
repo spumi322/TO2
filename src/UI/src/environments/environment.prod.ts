@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: '/api'  // In production, use relative URL (assuming frontend and API are on same domain)
+  apiUrl: 'https://your-backend-app.onrender.com/api'  // We'll update this URL later
 };
