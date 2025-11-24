@@ -1,0 +1,21 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-backend:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger Render Deploy
+      run: |
+        curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
+  
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger Vercel Deploy
+      run: |
+        echo "Vercel auto-deploys on push to main"
+        echo "No manual trigger needed"
