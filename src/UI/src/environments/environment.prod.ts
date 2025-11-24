@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://your-backend-app.onrender.com/api'  // We'll update this URL later
+  apiUrl: 'https://to2-spsd.onrender.com/api'
 };
