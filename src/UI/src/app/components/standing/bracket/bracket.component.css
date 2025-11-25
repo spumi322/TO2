@@ -1,3 +1,7 @@
+/* ========================================
+   Bracket Component - Tactical Green Theme
+   ======================================== */
+
 .bracket-container {
   padding: 20px;
   min-height: 400px;
@@ -14,18 +18,20 @@
 }
 
 .loading-state p {
-  color: #666;
+  color: var(--text-muted);
   margin: 0;
   font-size: 14px;
 }
 
 /* Bracket viewer container */
 .brackets-viewer {
-  background: #1a1a1a;
-  padding: 20px;
-  border-radius: 8px;
+  background: var(--bg-dark);
+  padding: 24px;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
   overflow-x: auto;
   min-height: 400px;
+  box-shadow: var(--shadow-card);
   /* Fix: brackets-viewer library requires element to be visible in DOM to render */
   display: block !important;
 }
@@ -37,7 +43,7 @@
   align-items: center;
   justify-content: center;
   padding: 60px;
-  color: #666;
+  color: var(--text-muted);
   text-align: center;
 }
 
@@ -45,37 +51,41 @@
   font-size: 64px;
   width: 64px;
   height: 64px;
-  color: #bdbdbd;
+  color: var(--text-muted);
+  opacity: 0.5;
   margin-bottom: 16px;
 }
 
 .empty-state p {
   margin: 8px 0;
   font-size: 16px;
+  color: var(--text-muted);
 }
 
 .empty-state .hint {
   font-size: 14px;
-  color: #999;
+  color: var(--text-muted);
+  opacity: 0.7;
 }
 
 /* Custom theme overrides for brackets-viewer */
 :root {
-  --primary-color: #1976d2;
-  --text-color: #e0e0e0;
-  --background-color: #1a1a1a;
+  --primary-color: #00d936;
+  --text-color: #e8eaf0;
+  --background-color: #0a0e1a;
 }
 
 /* Clickable participant styling */
 ::ng-deep .brackets-viewer .clickable-participant {
-  transition: background-color 0.2s ease, transform 0.1s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
   border-radius: 4px;
   user-select: none;
 }
 
 ::ng-deep .brackets-viewer .clickable-participant:hover {
-  background-color: rgba(33, 150, 243, 0.15) !important;
+  background-color: rgba(0, 217, 54, 0.15) !important;
   transform: scale(1.02);
+  box-shadow: 0 0 12px rgba(0, 217, 54, 0.3);
 }
 
 ::ng-deep .brackets-viewer .clickable-participant:active {
@@ -90,6 +100,19 @@
 
 /* Winner highlighting */
 ::ng-deep .brackets-viewer .participant.winner {
-  font-weight: bold;
-  background-color: rgba(76, 175, 80, 0.2);
+  font-weight: 700;
+  background-color: rgba(0, 217, 54, 0.2);
+  border-left: 4px solid var(--primary-color);
+}
+
+/* Match container styling */
+::ng-deep .brackets-viewer .match {
+  border: var(--border-width) solid var(--border-color);
+  background-color: var(--bg-card);
+  border-radius: 4px;
+}
+
+::ng-deep .brackets-viewer .participant {
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
 }

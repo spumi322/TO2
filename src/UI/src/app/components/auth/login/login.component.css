@@ -1,18 +1,23 @@
+/* ========================================
+   Login Component - Tactical Green Theme
+   ======================================== */
+
 .login-container {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: calc(100vh - 80px);
-  padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 3rem;
+  background-color: var(--bg-dark);
 }
 
 .login-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-card);
   width: 100%;
-  max-width: 450px;
+  max-width: 500px;
   padding: 3rem 2.5rem;
 }
 
@@ -24,13 +29,13 @@
 .login-header h2 {
   margin: 0 0 0.5rem 0;
   font-size: 1.75rem;
-  color: #333;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 .login-header p {
   margin: 0;
-  color: #666;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -48,35 +53,47 @@
 
 .field label {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
   font-size: 0.9rem;
 }
 
 .field input[type="email"] {
   width: 100%;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 10px;
+}
+
+.field input[type="email"]:focus {
+  border-color: var(--primary-color);
+  outline: none;
 }
 
 .login-footer {
   margin-top: 2rem;
   text-align: center;
   padding-top: 1.5rem;
-  border-top: 1px solid #eee;
+  border-top: var(--border-width) solid var(--border-color);
 }
 
 .login-footer p {
   margin: 0;
-  color: #666;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
 .register-link {
-  color: #667eea;
+  color: var(--primary-color);
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
+  transition: opacity 0.2s ease;
 }
 
 .register-link:hover {
+  opacity: 0.8;
   text-decoration: underline;
 }
 
@@ -86,8 +103,28 @@
 
 ::ng-deep .p-password input {
   width: 100%;
+  background-color: var(--bg-dark) !important;
+  color: var(--text-primary) !important;
+  border: var(--border-width) solid var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+::ng-deep .p-password input:focus {
+  border-color: var(--primary-color) !important;
 }
 
 ::ng-deep .p-button {
   margin-top: 0.5rem;
+}
+
+/* Desktop optimized - responsive adjustments */
+@media (max-width: 900px) {
+  .login-container {
+    padding: 2rem;
+  }
+
+  .login-card {
+    max-width: 450px;
+    padding: 2.5rem 2rem;
+  }
 }

@@ -1,77 +1,99 @@
+/* ========================================
+   Group Component - Tactical Green Theme
+   ======================================== */
+
 .group-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 24px;
   padding: 20px;
 }
 
 .group-card {
-  background: var(--card-color);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.group-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-primary);
+  border-color: var(--primary-color);
 }
 
 .group-header {
   background: var(--primary-color);
-  color: var(--primary-color-text);
+  color: var(--text-dark);
   padding: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-weight: bold;
+  font-weight: 700;
   font-size: 1.2rem;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
 .status-badge {
-  padding: 5px 12px;
-  border-radius: 20px;
+  padding: 6px 12px;
+  border-radius: var(--border-radius);
   font-size: 12px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  border: 2px solid;
 }
 
 .status-badge.finished {
-  background: #d4edda;
-  color: #155724;
+  background: rgba(0, 217, 54, 0.2);
+  color: var(--success-color);
+  border-color: var(--success-color);
 }
 
 .status-badge.active {
-  background: #fff3cd;
-  color: #856404;
+  background: rgba(255, 170, 0, 0.2);
+  color: var(--warning-color);
+  border-color: var(--warning-color);
 }
 
 .group-standings {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
-  background: var(--card-color);
-  color: var(--primary-color-text);
-  border-radius: 10px;
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
 
-  .group-standings th {
-    background: var(--table-header-bg);
-    padding: 12px;
-    text-align: center;
-    font-weight: bold;
-    text-transform: uppercase;
-  }
+.group-standings th {
+  background: var(--bg-dark);
+  padding: 12px 8px;
+  text-align: center;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  border-bottom: var(--border-width) solid var(--border-color);
+}
 
-  .group-standings td {
-    padding: 12px;
-    text-align: center;
-    border-bottom: 1px solid var(--border-color);
-  }
+.group-standings td {
+  padding: 12px 8px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
 
-  .group-standings tbody tr:last-child td {
-    border-bottom: none;
-  }
+.group-standings tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.group-standings tbody tr:hover {
+  background-color: var(--bg-card-hover);
+}
 
 .team-info {
   display: flex;
@@ -80,47 +102,60 @@
   gap: 10px;
 }
 
-
 .team-rank {
-  font-weight: bold;
-  color: #ffd700; 
+  font-weight: 700;
+  color: var(--primary-color);
+  font-size: 1.1rem;
 }
 
 .team-name {
-  font-weight: normal;
+  font-weight: 600;
   font-size: 1rem;
-  color: var(--primary-color-text);
+  color: var(--text-primary);
 }
 
 .team-advanced {
-  background-color: #d4edda !important;
+  background-color: rgba(0, 217, 54, 0.15) !important;
 }
 
 .team-eliminated {
-  background-color: #f8d7da !important;
+  background-color: rgba(255, 68, 68, 0.1) !important;
   opacity: 0.7;
 }
 
 .badge-advanced {
-  background: #28a745;
-  color: white;
-  padding: 2px 8px;
-  border-radius: 10px;
+  background: var(--success-color);
+  color: var(--text-dark);
+  padding: 3px 10px;
+  border-radius: var(--border-radius);
   font-size: 10px;
   margin-left: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .badge-eliminated {
-  background: #dc3545;
+  background: var(--error-color);
   color: white;
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 3px 10px;
+  border-radius: var(--border-radius);
   font-size: 10px;
   margin-left: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
-@media (max-width: 768px) {
+/* Desktop optimized */
+@media (max-width: 1200px) {
+  .group-container {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+}
+
+@media (max-width: 900px) {
   .group-container {
     grid-template-columns: 1fr;
+    padding: 16px;
   }
 }

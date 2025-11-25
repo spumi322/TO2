@@ -1,3 +1,7 @@
+/* ========================================
+   Final Standings Display - Tactical Green Theme
+   ======================================== */
+
 .results-content {
   padding: 8px 0;
 }
@@ -6,127 +10,137 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
 .results-header .trophy-icon {
-  font-size: 20px;
-  width: 20px;
-  height: 20px;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
   color: #ffd700;
 }
 
 .results-header h2 {
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #333;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
-/* Placement Tiers */
+/* Placement Tiers - Desktop optimized */
 .placement-tiers {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  max-width: 600px;
+  gap: 12px;
+  max-width: 700px;
   margin: 0 auto;
 }
 
 .tier-card {
-  border-radius: 4px;
+  border-radius: var(--border-radius);
   overflow: hidden;
-  border-left: 3px solid #e0e0e0;
+  border-left: 4px solid var(--border-color);
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-card);
 }
 
 .tier-card.tier-first {
-  border-left-color: #ffd700;
+  border-left: 4px solid #ffd700;
 }
 
 .tier-card.tier-first mat-card-header {
-  background-color: #fffbf0;
+  background-color: rgba(255, 215, 0, 0.1);
 }
 
 .tier-card.tier-second {
-  border-left-color: #c0c0c0;
+  border-left: 4px solid #c0c0c0;
 }
 
 .tier-card.tier-second mat-card-header {
-  background-color: #f8f8f8;
+  background-color: rgba(192, 192, 192, 0.1);
 }
 
 .tier-card.tier-third {
-  border-left-color: #cd7f32;
+  border-left: 4px solid #cd7f32;
 }
 
 .tier-card.tier-third mat-card-header {
-  background-color: #fff8f0;
+  background-color: rgba(205, 127, 50, 0.1);
 }
 
 .tier-label {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   width: 100%;
 }
 
 .tier-label h3 {
   margin: 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #555;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .tier-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
 }
 
 .tier-icon.gold {
-  color: #ffa000;
+  color: #ffd700;
 }
 
 .tier-icon.silver {
-  color: #757575;
+  color: #c0c0c0;
 }
 
 .tier-icon.bronze {
-  color: #8d6e63;
+  color: #cd7f32;
 }
 
 /* Tier Teams */
 .tier-teams {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .team-result {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  background-color: #fafafa;
-  border-radius: 3px;
+  gap: 10px;
+  padding: 10px 12px;
+  background-color: var(--bg-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease;
 }
 
 .team-result:hover {
-  background-color: #f0f0f0;
+  background-color: var(--bg-card-hover);
+  border-color: var(--primary-color);
+  box-shadow: 0 0 10px rgba(0, 217, 54, 0.2);
 }
 
 .team-result .team-avatar {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background-color: #1976d2;
-  color: white;
+  background-color: var(--primary-color);
+  color: var(--text-dark);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
-  font-size: 0.75rem;
+  font-weight: 700;
+  font-size: 0.9rem;
   flex-shrink: 0;
+  border: var(--border-width) solid var(--primary-color);
 }
 
 .team-details {
@@ -134,27 +148,49 @@
 }
 
 .team-details .team-name {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .team-eliminated {
-  font-size: 0.75rem;
-  color: #999;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
 .team-champion {
   display: flex;
   align-items: center;
-  gap: 3px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #ff8f00;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-top: 2px;
 }
 
 .team-champion mat-icon {
-  font-size: 14px;
-  width: 14px;
-  height: 14px;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--primary-color);
+}
+
+/* Desktop optimized - responsive adjustments */
+@media (max-width: 900px) {
+  .placement-tiers {
+    max-width: 100%;
+  }
+
+  .results-header h2 {
+    font-size: 1.15rem;
+  }
+
+  .tier-label h3 {
+    font-size: 0.9rem;
+  }
+
+  .team-result {
+    padding: 8px 10px;
+  }
 }

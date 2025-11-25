@@ -1,21 +1,28 @@
+/* ========================================
+   Tournament State Banner - Tactical Green Theme
+   ======================================== */
+
 .state-banner {
   margin-bottom: 24px;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   overflow: hidden;
+  border: var(--border-width) solid var(--border-color);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-card);
 }
 
 .state-content {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 8px 0;
+  padding: 12px 16px;
 }
 
 .state-icon {
   font-size: 32px;
   width: 32px;
   height: 32px;
-  color: #1976d2;
+  color: var(--primary-color);
 }
 
 .state-text {
@@ -24,29 +31,70 @@
 
 .state-text h3 {
   margin: 0 0 4px 0;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .state-text p {
   margin: 0;
   font-size: 0.9rem;
-  color: #666;
+  color: var(--text-muted);
 }
 
-/* State-specific styling */
+/* State-specific styling with tactical green theme */
 .state-banner.state-0,
 .state-banner.state-1,
 .state-banner.state-2 {
-  background-color: #e3f2fd;
+  background-color: rgba(0, 217, 54, 0.05);
+  border-color: var(--primary-color);
+}
+
+.state-banner.state-0 .state-icon,
+.state-banner.state-1 .state-icon,
+.state-banner.state-2 .state-icon {
+  color: var(--primary-color);
 }
 
 .state-banner.state-3,
 .state-banner.state-4,
 .state-banner.state-5 {
-  background-color: #e8f5e9;
+  background-color: rgba(0, 217, 54, 0.1);
+  border-color: var(--success-color);
+}
+
+.state-banner.state-3 .state-icon,
+.state-banner.state-4 .state-icon,
+.state-banner.state-5 .state-icon {
+  color: var(--success-color);
 }
 
 .state-banner.state-6 {
-  background-color: #f5f5f5;
+  background-color: var(--bg-dark);
+  border-color: var(--border-color);
+}
+
+.state-banner.state-6 .state-icon {
+  color: var(--text-muted);
+}
+
+/* Desktop optimized */
+@media (max-width: 900px) {
+  .state-content {
+    padding: 10px 14px;
+  }
+
+  .state-icon {
+    font-size: 28px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .state-text h3 {
+    font-size: 1.05rem;
+  }
+
+  .state-text p {
+    font-size: 0.85rem;
+  }
 }
