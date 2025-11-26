@@ -11,11 +11,12 @@ export class AppComponent {
   showNavbar = true;
 
   constructor(private router: Router) {
-    // Hide navbar on landing page
+    // Hide navbar on landing, login, and register pages
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe((event: any) => {
-        this.showNavbar = event.url !== '/';
+        const noNavbarRoutes = ['/', '/login', '/register'];
+        this.showNavbar = !noNavbarRoutes.includes(event.url);
       });
   }
 }
