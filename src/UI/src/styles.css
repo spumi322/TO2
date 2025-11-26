@@ -226,11 +226,15 @@ mat-card:hover {
 }
 
 .mat-mdc-text-field-wrapper {
-  background-color: var(--bg-card) !important;
+  background-color: var(--bg-dark) !important;
   border-radius: var(--border-radius) !important;
 }
 
 .mat-mdc-form-field .mat-mdc-input-element {
+  color: var(--text-primary) !important;
+}
+
+.mat-mdc-form-field .mat-mdc-select {
   color: var(--text-primary) !important;
 }
 
@@ -242,13 +246,63 @@ mat-card:hover {
   background-color: transparent !important;
 }
 
+/* Outline appearance styling */
+.mdc-notched-outline__leading,
+.mdc-notched-outline__notch,
+.mdc-notched-outline__trailing {
+  border-color: var(--border-color) !important;
+  border-width: var(--border-width) !important;
+}
+
+.mat-mdc-form-field:hover .mdc-notched-outline__leading,
+.mat-mdc-form-field:hover .mdc-notched-outline__notch,
+.mat-mdc-form-field:hover .mdc-notched-outline__trailing {
+  border-color: var(--primary-color) !important;
+}
+
 /* Input focus state */
 .mat-mdc-form-field.mat-focused .mat-mdc-form-field-label {
   color: var(--primary-color) !important;
 }
 
-.mat-mdc-form-field.mat-focused .mdc-notched-outline__notch {
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__notch,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing {
   border-color: var(--primary-color) !important;
+  border-width: 2px !important;
+}
+
+/* Hint and error text */
+.mat-mdc-form-field-hint {
+  color: var(--text-muted) !important;
+}
+
+.mat-mdc-form-field-error {
+  color: var(--error-color) !important;
+}
+
+/* Select dropdown panel */
+.mat-mdc-select-panel {
+  background-color: var(--bg-card) !important;
+  border: var(--border-width) solid var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+.mat-mdc-option {
+  color: var(--text-primary) !important;
+}
+
+.mat-mdc-option:hover {
+  background-color: var(--bg-card-hover) !important;
+}
+
+.mat-mdc-option.mat-mdc-option-active {
+  background-color: rgba(0, 217, 54, 0.1) !important;
+}
+
+.mat-mdc-option.mdc-list-item--selected {
+  background-color: rgba(0, 217, 54, 0.2) !important;
+  color: var(--text-primary) !important;
 }
 
 /* Tab styling */
