@@ -1,7 +1,8 @@
 # Tournament Format Configuration - Changes Summary
 
 ## Overview
-Implemented a centralized, single source of truth for tournament format configurations. All format-specific validations, rules, and business logic now use the `TournamentFormatConfiguration` service instead of scattered hardcoded values.
+Implemented a centralized, single source of truth for tournament format configurations. All format-specific validations, rules,
+and business logic now use the `TournamentFormatConfiguration` service instead of scattered hardcoded values.
 
 ## Key Changes
 

@@ -25,6 +25,22 @@ namespace Domain.StateMachine
         IEnumerable<TournamentStatus> GetAllowedTransitions(TournamentStatus currentState);
 
         /// <summary>
+        /// Checks if a state transition is valid according to format-specific rules.
+        /// </summary>
+        bool IsTransitionValid(TournamentStatus currentState, TournamentStatus nextState, Format format);
+
+        /// <summary>
+        /// Validates a state transition using format-specific rules and throws InvalidOperationException if invalid.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Thrown when transition is not allowed for the format</exception>
+        void ValidateTransition(TournamentStatus currentState, TournamentStatus nextState, Format format);
+
+        /// <summary>
+        /// Gets all valid transition states from the current state for a specific format.
+        /// </summary>
+        IEnumerable<TournamentStatus> GetAllowedTransitions(TournamentStatus currentState, Format format);
+
+        /// <summary>
         /// Checks if the status is a transition state (SeedingGroups, SeedingBracket).
         /// </summary>
         bool IsTransitionState(TournamentStatus status);

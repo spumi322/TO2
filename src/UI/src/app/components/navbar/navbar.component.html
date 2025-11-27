@@ -1,59 +1,152 @@
-<p-menubar class="navbar" [model]="items">
-  <!-- Start facet: Always visible on the left -->
-  <ng-template pTemplate="start">
-    <div class="navbar-left">
-      <a routerLink="/tournaments" class="home-link">My Tournaments</a>
-    </div>
-  </ng-template>
+<!-- tournament-list.component.html - Angular Material -->
+<div class="tournament-container">
 
-  <!-- End facet: Contains buttons based on auth state -->
-  <ng-template pTemplate="end">
-    <div class="navbar-right">
-      <!-- Authenticated User View -->
-      <ng-container *ngIf="isAuthenticated && currentUser">
-        <button pButton
-                type="button"
-                label="Create Tournament"
-                icon="pi pi-plus"
-                class="create-btn"
-                (click)="goToCreateTournament($event)">
-        </button>
-        
-        <div class="user-info">
-          <span class="user-name">
-            <i class="pi pi-user"></i>
-            {{ currentUser.userName }}
-          </span>
-          <span class="tenant-name">{{ currentUser.tenantName }}</span>
-        </div>
-        
-        <button pButton
-                type="button"
-                label="Logout"
-                icon="pi pi-sign-out"
-                class="logout-btn"
-                (click)="logout($event)">
-        </button>
-      </ng-container>
+  <ng-container *ngIf="groupedTournaments$ | async as tournaments">
 
-      <!-- Guest User View -->
-      <ng-container *ngIf="!isAuthenticated">
-        <button pButton
-                type="button"
-                label="Sign In"
-                icon="pi pi-sign-in"
-                class="signin-btn"
-                (click)="goToLogin($event)">
-        </button>
-        <button pButton
-                type="button"
-                label="Register"
-                icon="pi pi-user-plus"
-                class="register-btn"
-                severity="success"
-                (click)="goToRegister($event)">
-        </button>
-      </ng-container>
+    <!-- Upcoming Section -->
+    <section *ngIf="tournaments.upcoming.length">
+      <h2>Upcoming Tournaments</h2>
+
+      <div class="card-grid">
+        <mat-card *ngFor="let t of tournaments.upcoming"
+                  class="tournament-card"
+                  (click)="goToDetails(t.id)">
+
+          <mat-card-header>
+            <mat-icon mat-card-avatar>emoji_events</mat-icon>
+            <mat-card-title>{{ t.name }}</mat-card-title>
+            <mat-card-subtitle>{{ t.teams.length }}/{{ t.maxTeams }} teams</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <p>{{ t.description }}</p>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <button mat-stroked-button color="primary" (click)="action(t, $event)">
+              {{ getActionLabel(t) }}
+            </button>
+          </mat-card-actions>
+
+        </mat-card>
+      </div>
+    </section>
+
+    <!-- Ongoing Section -->
+    <section *ngIf="tournaments.ongoing.length">
+      <h2>Ongoing Tournaments</h2>
+
+      <div class="card-grid">
+        <mat-card *ngFor="let t of tournaments.ongoing"
+                  class="tournament-card"
+                  (click)="goToDetails(t.id)">
+
+          <mat-card-header>
+            <mat-icon mat-card-avatar color="accent">play_circle</mat-icon>
+            <mat-card-title>{{ t.name }}</mat-card-title>
+            <mat-card-subtitle>{{ t.teams.length }}/{{ t.maxTeams }} teams</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <p>{{ t.description }}</p>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <button mat-flat-button color="accent" (click)="action(t, $event)">
+              {{ getActionLabel(t) }}
+            </button>
+          </mat-card-actions>
+
+        </mat-card>
+      </div>
+    </section>
+
+    <!-- Finished Section -->
+    <section *ngIf="tournaments.finished.length">
+      <h2>Finished Tournaments</h2>
+
+      <div class="card-grid">
+        <mat-card *ngFor="let t of tournaments.finished"
+                  class="tournament-card"
+                  (click)="goToDetails(t.id)">
+
+          <mat-card-header>
+            <mat-icon mat-card-avatar>check_circle</mat-icon>
+            <mat-card-title>{{ t.name }}</mat-card-title>
+            <mat-card-subtitle>{{ t.teams.length }} teams</mat-card-subtitle>
+          </mat-card-header>
+
+          <mat-card-content>
+            <p>{{ t.description }}</p>
+          </mat-card-content>
+
+          <mat-card-actions align="end">
+            <button mat-button (click)="action(t, $event)">
+              {{ getActionLabel(t) }}
+            </button>
+          </mat-card-actions>
+
+        </mat-card>
+      </div>
+    </section>
+
+    <!-- Empty State -->
+    <div *ngIf="!tournaments.upcoming.length && !tournaments.ongoing.length && !tournaments.finished.length"
+         class="empty-state">
+      <mat-icon>sports_esports</mat-icon>
+      <p>No tournaments yet</p>
+      <button mat-raised-button color="primary" routerLink="/create-tournament">
+        Create Tournament
+      </button>
     </div>
-  </ng-template>
-</p-menubar>
+
+  </ng-container>
+
+</div>
+
+<!--
+CSS (tournament-list.component.css):
+
+.tournament-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+section {
+  margin-bottom: 32px;
+}
+
+h2 {
+  margin-bottom: 16px;
+  font-weight: 400;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.tournament-card {
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+
+.tournament-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.empty-state {
+  text-align: center;
+  padding: 64px;
+  color: #666;
+}
+
+.empty-state mat-icon {
+  font-size: 64px;
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+}
+-->

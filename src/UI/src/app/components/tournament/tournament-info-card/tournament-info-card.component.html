@@ -15,11 +15,11 @@
         <span class="label">Max Teams</span>
         <span class="value">{{ tournament?.maxTeams }}</span>
       </div>
-      <div class="info-item" *ngIf="tournament?.format === Format.BracketAndGroup">
+      <div class="info-item" *ngIf="tournament?.format === Format.GroupsAndBracket">
         <span class="label">Teams per Group</span>
         <span class="value">{{ getTeamsPerGroup() || '-' }}</span>
       </div>
-      <div class="info-item" *ngIf="tournament?.format === Format.BracketOnly || tournament?.format === Format.BracketAndGroup">
+      <div class="info-item" *ngIf="tournament?.format === Format.BracketOnly || tournament?.format === Format.GroupsAndBracket">
         <span class="label">Teams per Bracket</span>
         <span class="value">{{ getTeamsPerBracket() || '-' }}</span>
       </div>

@@ -54,7 +54,7 @@
       </mat-tab>
 
       <!-- Group Stage Tab (only if format is BracketAndGroups and tournament has started) -->
-      <mat-tab label="Group Stage" *ngIf="!tournament?.isRegistrationOpen && tournament?.format === Format.BracketAndGroup">
+      <mat-tab label="Group Stage" *ngIf="!tournament?.isRegistrationOpen && tournament?.format === Format.GroupsAndBracket">
         <div class="tab-content">
           <app-standing-group
             [tournament]="tournament"

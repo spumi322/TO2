@@ -13,8 +13,10 @@ export class FormatConfig {
     switch (format) {
       case Format.BracketOnly:
         return 'Bracket Only';
-      case Format.BracketAndGroup:
-        return 'Group Stage + Bracket';
+      case Format.GroupsAndBracket:
+        return 'Groups + Bracket';
+      case Format.GroupsOnly:
+        return 'Groups Only';
       default:
         return 'Unknown Format';
     }
@@ -24,20 +26,20 @@ export class FormatConfig {
    * Checks if the format requires group stage.
    */
   static requiresGroups(format: Format): boolean {
-    return format === Format.BracketAndGroup;
+    return format === Format.GroupsAndBracket || format === Format.GroupsOnly;
   }
 
   /**
    * Checks if the format requires bracket stage.
    */
   static requiresBracket(format: Format): boolean {
-    return true; // All current formats have brackets
+    return format === Format.BracketOnly || format === Format.GroupsAndBracket;
   }
 
   /**
    * Gets all valid format values.
    */
   static getValidFormats(): Format[] {
-    return [Format.BracketOnly, Format.BracketAndGroup];
+    return [Format.BracketOnly, Format.GroupsAndBracket, Format.GroupsOnly];
   }
 }

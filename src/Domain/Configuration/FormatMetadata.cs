@@ -24,8 +24,8 @@ namespace Domain.Configuration
         public int? MinTeamsPerGroup { get; init; }
         public int? MaxTeamsPerGroup { get; init; }
 
-        // Bracket configuration
-        public required int MinTeamsPerBracket { get; init; }
-        public required int MaxTeamsPerBracket { get; init; }
+        // Bracket configuration (nullable for formats without bracket)
+        public int? MinTeamsPerBracket { get; init; }
+        public int? MaxTeamsPerBracket { get; init; }
     }
 }

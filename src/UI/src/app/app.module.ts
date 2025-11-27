@@ -53,7 +53,10 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatRadioModule } from '@angular/material/radio';
 import { LandingComponent } from './components/landing/landing.component';
+import { CreateTournamentWizardComponent } from './components/tournament/create-tournament-wizard/create-tournament-wizard.component';
+import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confirm-dialog.component';
 
 @NgModule({
   declarations: [
@@ -74,7 +77,9 @@ import { LandingComponent } from './components/landing/landing.component';
     MatchesComponent,
     LoginComponent,
     RegisterComponent,
-    LandingComponent
+    LandingComponent,
+    CreateTournamentWizardComponent,
+    ConfirmDialogComponent
   ],
   imports: [
     BrowserModule,
@@ -111,7 +116,8 @@ import { LandingComponent } from './components/landing/landing.component';
     MatDialogModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatRadioModule
 
   ],
   providers: [

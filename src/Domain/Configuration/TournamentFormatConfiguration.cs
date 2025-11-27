@@ -26,19 +26,22 @@ namespace Domain.Configuration
         private readonly Dictionary<Format, string> _formatDisplayNames = new()
         {
             { Format.BracketOnly, "Bracket Only" },
-            { Format.BracketAndGroup, "Group Stage + Bracket" }
+            { Format.GroupsAndBracket, "Groups + Bracket" },
+            { Format.GroupsOnly, "Groups Only" }
         };
 
         private readonly Dictionary<Format, bool> _formatRequiresGroups = new()
         {
             { Format.BracketOnly, false },
-            { Format.BracketAndGroup, true }
+            { Format.GroupsAndBracket, true },
+            { Format.GroupsOnly, true }
         };
 
         private readonly Dictionary<Format, bool> _formatRequiresBracket = new()
         {
             { Format.BracketOnly, true },
-            { Format.BracketAndGroup, true }
+            { Format.GroupsAndBracket, true },
+            { Format.GroupsOnly, false }
         };
 
         private readonly Dictionary<Format, FormatMetadata> _formatMetadata = new()
@@ -47,7 +50,7 @@ namespace Domain.Configuration
             {
                 Format = Format.BracketOnly,
                 DisplayName = "Bracket Only",
-                Description = "Single elimination bracket tournament",
+                Description = "Single elimination bracket - teams must be power of 2",
                 RequiresGroups = false,
                 RequiresBracket = true,
                 MinTeams = 2,
@@ -57,11 +60,11 @@ namespace Domain.Configuration
                 MinTeamsPerBracket = 2,
                 MaxTeamsPerBracket = 32
             }},
-            { Format.BracketAndGroup, new FormatMetadata
+            { Format.GroupsAndBracket, new FormatMetadata
             {
-                Format = Format.BracketAndGroup,
-                DisplayName = "Group Stage + Bracket",
-                Description = "Group stage followed by playoff bracket",
+                Format = Format.GroupsAndBracket,
+                DisplayName = "Groups + Bracket",
+                Description = "Round-robin groups followed by playoff bracket",
                 RequiresGroups = true,
                 RequiresBracket = true,
                 MinTeams = 2,
@@ -70,6 +73,20 @@ namespace Domain.Configuration
                 MaxTeamsPerGroup = 16,
                 MinTeamsPerBracket = 2,
                 MaxTeamsPerBracket = 32
+            }},
+            { Format.GroupsOnly, new FormatMetadata
+            {
+                Format = Format.GroupsOnly,
+                DisplayName = "Groups Only",
+                Description = "Round-robin groups only, no playoff bracket",
+                RequiresGroups = true,
+                RequiresBracket = false,
+                MinTeams = 2,
+                MaxTeams = 32,
+                MinTeamsPerGroup = 2,
+                MaxTeamsPerGroup = 16,
+                MinTeamsPerBracket = null,
+                MaxTeamsPerBracket = null
             }}
         };
 
@@ -137,6 +154,11 @@ namespace Domain.Configuration
             return _formatMetadata[format];
         }
 
+        private bool IsPowerOfTwo(int n)
+        {
+            return n > 0 && (n & (n - 1)) == 0;
+        }
+
         public bool ValidateTeamConfiguration(Format format, int maxTeams, int? teamsPerGroup, int? teamsPerBracket)
         {
             var metadata = GetFormatMetadata(format);
@@ -147,18 +169,28 @@ namespace Domain.Configuration
 
             if (format == Format.BracketOnly)
             {
-                // BracketOnly: no groups, maxTeams must equal teamsPerBracket
+                // BracketOnly: maxTeams must be power of 2 and equal teamsPerBracket, no groups
                 return teamsPerGroup == null
                     && teamsPerBracket.HasValue
+                    && IsPowerOfTwo(maxTeams)
                     && maxTeams == teamsPerBracket.Value;
             }
-            else if (format == Format.BracketAndGroup)
+            else if (format == Format.GroupsAndBracket)
             {
-                // BracketAndGroup: groups required, maxTeams divisible by teamsPerGroup
+                // GroupsAndBracket: groups required, maxTeams divisible by teamsPerGroup
                 return teamsPerGroup.HasValue
                     && teamsPerGroup.Value >= metadata.MinTeamsPerGroup
                     && teamsPerGroup.Value <= metadata.MaxTeamsPerGroup
                     && maxTeams % teamsPerGroup.Value == 0;
+            }
+            else if (format == Format.GroupsOnly)
+            {
+                // GroupsOnly: groups required, maxTeams divisible by teamsPerGroup, no bracket
+                return teamsPerGroup.HasValue
+                    && teamsPerGroup.Value >= metadata.MinTeamsPerGroup
+                    && teamsPerGroup.Value <= metadata.MaxTeamsPerGroup
+                    && maxTeams % teamsPerGroup.Value == 0
+                    && teamsPerBracket == null;
             }
 
             return false;
@@ -175,17 +207,30 @@ namespace Domain.Configuration
             {
                 if (teamsPerGroup.HasValue)
                     return "TeamsPerGroup should not be set for BracketOnly format";
+                if (!IsPowerOfTwo(maxTeams))
+                    return "For BracketOnly, MaxTeams must be a power of 2 (2, 4, 8, 16, 32)";
                 if (!teamsPerBracket.HasValue || maxTeams != teamsPerBracket.Value)
                     return "For BracketOnly, MaxTeams must equal TeamsPerBracket";
             }
-            else if (format == Format.BracketAndGroup)
+            else if (format == Format.GroupsAndBracket)
             {
                 if (!teamsPerGroup.HasValue)
-                    return "TeamsPerGroup is required for BracketAndGroup format";
+                    return "TeamsPerGroup is required for GroupsAndBracket format";
                 if (teamsPerGroup.Value < metadata.MinTeamsPerGroup || teamsPerGroup.Value > metadata.MaxTeamsPerGroup)
                     return $"TeamsPerGroup must be between {metadata.MinTeamsPerGroup} and {metadata.MaxTeamsPerGroup}";
                 if (maxTeams % teamsPerGroup.Value != 0)
                     return "MaxTeams must be divisible by TeamsPerGroup";
+            }
+            else if (format == Format.GroupsOnly)
+            {
+                if (!teamsPerGroup.HasValue)
+                    return "TeamsPerGroup is required for GroupsOnly format";
+                if (teamsPerGroup.Value < metadata.MinTeamsPerGroup || teamsPerGroup.Value > metadata.MaxTeamsPerGroup)
+                    return $"TeamsPerGroup must be between {metadata.MinTeamsPerGroup} and {metadata.MaxTeamsPerGroup}";
+                if (maxTeams % teamsPerGroup.Value != 0)
+                    return "MaxTeams must be divisible by TeamsPerGroup";
+                if (teamsPerBracket.HasValue)
+                    return "TeamsPerBracket should not be set for GroupsOnly format";
             }
 
             return string.Empty;

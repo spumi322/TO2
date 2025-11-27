@@ -32,7 +32,8 @@
       "Bash(test:*)",
       "Bash(npx ng generate:*)",
       "Bash(npx ng build:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(ls -la \"G:\\Code\\TO2\\src\\Application\\Pipelines\\StartGroups\"\" && ls -la \"G:CodeTO2srcApplicationPipelinesStartBracket\"\")"
     ],
     "deny": [],
     "ask": []

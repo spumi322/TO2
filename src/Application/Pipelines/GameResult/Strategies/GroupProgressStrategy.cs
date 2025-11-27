@@ -12,15 +12,18 @@ namespace Application.Pipelines.GameResult.Strategies
     public class GroupProgressStrategy : IStandingProgressStrategy
     {
         private readonly IStandingService _standingService;
+        private readonly IRepository<Domain.AggregateRoots.Tournament> _tournamentRepository;
         private readonly ILogger<GroupProgressStrategy> _logger;
 
         public StandingType StandingType => StandingType.Group;
 
         public GroupProgressStrategy(
             IStandingService standingService,
+            IRepository<Domain.AggregateRoots.Tournament> tournamentRepository,
             ILogger<GroupProgressStrategy> logger)
         {
             _standingService = standingService;
+            _tournamentRepository = tournamentRepository;
             _logger = logger;
         }
 
@@ -60,7 +63,25 @@ namespace Application.Pipelines.GameResult.Strategies
 
             _logger.LogInformation("All groups finished for tournament {TournamentId}", tournamentId);
 
-            // Continue to TransitionTournamentStateStep (will transition to GroupsCompleted)
+            // Check tournament format to determine next state
+            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+                ?? throw new InvalidOperationException($"Tournament {tournamentId} not found");
+
+            if (tournament.Format == Format.GroupsOnly)
+            {
+                // GroupsOnly: Tournament finishes when all groups are complete
+                _logger.LogInformation("GroupsOnly format detected - tournament {TournamentId} will finish", tournamentId);
+                return new StandingProgressResult(
+                    shouldContinuePipeline: true,
+                    message: "All groups finished! Tournament completed.",
+                    standingFinished: true,
+                    allGroupsFinished: true,
+                    tournamentFinished: true,
+                    newTournamentStatus: TournamentStatus.Finished
+                );
+            }
+
+            // GroupsAndBracket: Continue to GroupsCompleted (existing behavior)
             return new StandingProgressResult(
                 shouldContinuePipeline: true,
                 message: "All groups finished! Tournament transitioned to GroupsCompleted status. Admin can now seed bracket.",

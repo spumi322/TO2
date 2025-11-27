@@ -8,7 +8,7 @@
   </div>
   <div class="tournament-actions">
     <!-- Start Groups button (for BracketAndGroups format in Setup state) -->
-    <button *ngIf="tournament?.isRegistrationOpen && tournamentState?.currentStatus === TournamentStatus.Setup && tournament?.format === Format.BracketAndGroup"
+    <button *ngIf="tournament?.isRegistrationOpen && tournamentState?.currentStatus === TournamentStatus.Setup && tournament?.format === Format.GroupsAndBracket"
             mat-raised-button color="primary" (click)="onStartGroups()"
             [disabled]="!tournament || (tournament?.teams?.length || 0) < 2 || isReloading">
       <mat-icon>play_arrow</mat-icon> Start Groups
