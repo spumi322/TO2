@@ -4,6 +4,7 @@ using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
+using Domain.Configuration;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
@@ -18,6 +19,7 @@ namespace Application.Services
     {
         private readonly ITournamentRepository _tournamentRepository;
         private readonly IStandingService _standingService;
+        private readonly ITournamentFormatConfiguration _formatConfig;
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
         private readonly ITournamentStateMachine _stateMachine;
@@ -26,6 +28,7 @@ namespace Application.Services
 
         public TournamentService(ITournamentRepository tournamentRepository,
                                  IStandingService standingService,
+                                 ITournamentFormatConfiguration formatConfig,
                                  IMapper mapper,
                                  ILogger<TournamentService> logger,
                                  ITournamentStateMachine stateMachine,
@@ -33,6 +36,7 @@ namespace Application.Services
         {
             _tournamentRepository = tournamentRepository;
             _standingService = standingService;
+            _formatConfig = formatConfig;
             _mapper = mapper;
             _logger = logger;
             _stateMachine = stateMachine;
@@ -88,13 +92,26 @@ namespace Application.Services
 
             await _tournamentRepository.AddAsync(tournament);
             await _unitOfWork.SaveChangesAsync();
-            await _standingService.GenerateStanding(tournament.Id, "Main Bracket", StandingType.Bracket, request.TeamsPerBracket);
 
-            if (request.Format is Format.BracketAndGroup)
+            var metadata = _formatConfig.GetFormatMetadata(request.Format);
+
+            // Create bracket if required
+            if (metadata.RequiresBracket)
             {
-                for (int i = 0; i < (tournament.MaxTeams / request.TeamsPerGroup); i++)
+                await _standingService.GenerateStanding(
+                    tournament.Id, "Main Bracket", StandingType.Bracket, request.TeamsPerBracket);
+            }
+
+            // Create groups if required
+            if (metadata.RequiresGroups && request.TeamsPerGroup.HasValue)
+            {
+                int groupCount = _formatConfig.CalculateNumberOfGroups(
+                    request.Format, tournament.MaxTeams, request.TeamsPerGroup.Value);
+
+                for (int i = 0; i < groupCount; i++)
                 {
-                    await _standingService.GenerateStanding(tournament.Id, $"Group {i + 1}", StandingType.Group, request.TeamsPerGroup);
+                    await _standingService.GenerateStanding(
+                        tournament.Id, $"Group {i + 1}", StandingType.Group, request.TeamsPerGroup);
                 }
             }
 

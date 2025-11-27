@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Tournament, TournamentStateDTO, TournamentStatus, Format } from '../../../models/tournament';
 import { TournamentStatusLabel } from '../tournament-status-label/tournament-status-label';
+import { FormatConfig } from '../../../utils/format-config';
 
 @Component({
   selector: 'app-tournament-header',
@@ -21,14 +22,7 @@ export class TournamentHeaderComponent {
   Format = Format;
 
   getFormatLabel(format: Format): string {
-    switch (format) {
-      case Format.BracketOnly:
-        return 'Bracket Only';
-      case Format.BracketAndGroups:
-        return 'Group Stage + Bracket';
-      default:
-        return 'Unknown Format';
-    }
+    return FormatConfig.getFormatLabel(format);
   }
 
   getStatusClass(status: TournamentStatus): string {

@@ -3,6 +3,7 @@ using Application.Contracts;
 using Application.DTOs.Game;
 using Application.DTOs.Match;
 using Domain.AggregateRoots;
+using Domain.Configuration;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
@@ -14,14 +15,17 @@ namespace Application.Services
     {
         private readonly IRepository<Game> _gameRepository;
         private readonly IRepository<Match> _matchRepository;
+        private readonly ITournamentFormatConfiguration _formatConfig;
         private readonly ILogger<GameService> _logger;
 
         public GameService(IRepository<Game> gameRepository,
                            IRepository<Match> matchRepository,
+                           ITournamentFormatConfiguration formatConfig,
                            ILogger<GameService> logger)
         {
             _gameRepository = gameRepository;
             _matchRepository = matchRepository;
+            _formatConfig = formatConfig;
             _logger = logger;
         }
 
@@ -39,13 +43,7 @@ namespace Application.Services
             }
 
             var games = new List<Game>();
-            var matchesToPlay = match.BestOf switch
-            {
-                BestOf.Bo1 => 1,
-                BestOf.Bo3 => 3,
-                BestOf.Bo5 => 5,
-                _ => 1
-            };
+            var matchesToPlay = _formatConfig.GetTotalGames(match.BestOf);
 
             for (int i = 0; i < matchesToPlay; i++)
             {
@@ -104,13 +102,7 @@ namespace Application.Services
                 ?? throw new NotFoundException("Match", matchId);
             var games = await _gameRepository.FindAllAsync(g => g.MatchId == matchId);
 
-            var gamesToWin = match.BestOf switch
-            {
-                BestOf.Bo1 => 1,
-                BestOf.Bo3 => 2,
-                BestOf.Bo5 => 3,
-                _ => 1
-            };
+            var gamesToWin = _formatConfig.GetGamesToWin(match.BestOf);
 
             var winnerId = games
                 .Where(g => g.WinnerId.HasValue)

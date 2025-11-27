@@ -11,6 +11,7 @@ using Application.Pipelines.StartBracket.Contracts;
 using Application.Pipelines.StartGroups;
 using Application.Pipelines.StartGroups.Contracts;
 using Application.Services;
+using Domain.Configuration;
 using Domain.Entities;
 using Domain.StateMachine;
 using FluentValidation;
@@ -55,6 +56,7 @@ namespace TO2
             
             // Domain Services
             builder.Services.AddScoped<ITournamentStateMachine, TournamentStateMachine>();
+            builder.Services.AddScoped<ITournamentFormatConfiguration, TournamentFormatConfiguration>();
 
             // Multi-Tenancy Service
             builder.Services.AddScoped<ITenantService, HttpContextTenantService>();

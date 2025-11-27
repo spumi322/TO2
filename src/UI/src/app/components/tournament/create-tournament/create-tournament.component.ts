@@ -59,7 +59,7 @@ export class CreateTournamentComponent implements OnInit {
 
       // For BracketOnly format, maxTeams must equal teamsPerBracket
       this.form.get('teamsPerBracket')?.setValue(this.form.get('maxTeams')?.value);
-    } else if (format === Format.BracketAndGroups) {
+    } else if (format === Format.BracketAndGroup) {
       this.form.get('teamsPerGroup')?.setValidators([
         Validators.required,
         Validators.min(2),

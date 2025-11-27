@@ -1,4 +1,5 @@
 using Application.DTOs.Tournament;
+using Domain.Configuration;
 using Domain.Enums;
 using FluentValidation.TestHelper;
 
@@ -10,7 +11,8 @@ namespace Tests.Unit.Validators
 
         public CreateTournamentValidatorTests()
         {
-            _validator = new CreateTournamentValidator();
+            var formatConfig = new TournamentFormatConfiguration();
+            _validator = new CreateTournamentValidator(formatConfig);
         }
 
         // Helper to create valid DTO with defaults
@@ -123,7 +125,7 @@ namespace Tests.Unit.Validators
         #region TeamsPerBracket Validation
 
         [Theory]
-        [InlineData(3)]
+        [InlineData(1)]
         [InlineData(0)]
         public void Should_HaveError_When_TeamsPerBracket_IsBelowMinimum(int teamsPerBracket)
         {

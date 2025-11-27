@@ -15,7 +15,7 @@ export interface Tournament {
 
 export enum Format {
   BracketOnly = 1,
-  BracketAndGroups = 2,
+  BracketAndGroup = 2,
 }
 
 export enum TournamentStatus {

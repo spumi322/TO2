@@ -5,8 +5,9 @@ using Microsoft.Extensions.Logging;
 namespace Application.Pipelines.StartBracket.Steps
 {
     /// <summary>
-    /// Step 3: Gets teams advancing from groups to bracket.
-    /// Calls StandingService.GetTeamsForBracket which also updates GroupEntry statuses.
+    /// Step 3: Gets teams for bracket based on format.
+    /// - BracketOnly: All registered teams
+    /// - BracketAndGroup: Teams advancing from groups (also updates GroupEntry statuses)
     /// </summary>
     public class GetAdvancedTeamsStep : IStartBracketPipelineStep
     {
@@ -23,13 +24,13 @@ namespace Application.Pipelines.StartBracket.Steps
 
         public async Task<bool> ExecuteAsync(StartBracketContext context)
         {
-            _logger.LogInformation("Step 3: Getting teams advancing to bracket for tournament {TournamentId}",
+            _logger.LogInformation("Step 3: Getting teams for bracket in tournament {TournamentId}",
                 context.TournamentId);
 
             try
             {
-                // This call also updates GroupEntry statuses (Advanced/Eliminated)
-                var teams = await _standingService.GetTeamsForBracket(context.TournamentId);
+                // Format-aware team selection (all teams for BracketOnly, advanced teams for BracketAndGroup)
+                var teams = await _standingService.GetTeamsForBracketByFormat(context.TournamentId);
 
                 if (teams == null || teams.Count == 0)
                 {

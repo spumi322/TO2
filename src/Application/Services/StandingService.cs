@@ -3,6 +3,7 @@ using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
+using Domain.Configuration;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
@@ -18,6 +19,7 @@ namespace Application.Services
         private readonly IRepository<Group> _groupRepository;
         private readonly IRepository<Team> _teamRepository;
         private readonly IRepository<TournamentTeam> _tournamentTeamRepository;
+        private readonly ITournamentFormatConfiguration _formatConfig;
         private readonly ILogger<StandingService> _logger;
         private readonly IMapper _mapper;
 
@@ -29,6 +31,7 @@ namespace Application.Services
                                IRepository<Group> groupRepository,
                                IRepository<Team> teamRepository,
                                IRepository<TournamentTeam> tournamentTeamRepository,
+                               ITournamentFormatConfiguration formatConfig,
                                ILogger<StandingService> logger,
                                IMapper mapper,
                                IUnitOfWork unitOfWork)
@@ -39,6 +42,7 @@ namespace Application.Services
             _groupRepository = groupRepository;
             _teamRepository = teamRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
+            _formatConfig = formatConfig;
             _logger = logger;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
@@ -103,7 +107,98 @@ namespace Application.Services
             return allGroupsFinished;
         }
 
+        public async Task<List<Team>> GetTeamsForBracketByFormat(long tournamentId)
+        {
+            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+                ?? throw new NotFoundException("Tournament", tournamentId);
+
+            var metadata = _formatConfig.GetFormatMetadata(tournament.Format);
+
+            // BracketOnly: All registered teams
+            if (!metadata.RequiresGroups)
+            {
+                _logger.LogInformation("Selecting all registered teams for BracketOnly tournament {Id}", tournamentId);
+
+                var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(tt => tt.TournamentId == tournamentId);
+                var teamIds = tournamentTeams.Select(tt => tt.TeamId).ToList();
+
+                var teams = new List<Team>();
+                foreach (var teamId in teamIds)
+                {
+                    var team = await _teamRepository.GetByIdAsync(teamId);
+                    if (team != null)
+                    {
+                        teams.Add(team);
+                    }
+                }
+
+                _logger.LogInformation("{Count} registered teams selected for bracket", teams.Count);
+                return teams;
+            }
+
+            // BracketAndGroup: Advanced teams from groups
+            _logger.LogInformation("Selecting advanced teams from groups for tournament {Id}", tournamentId);
+
+            var standings = await GetStandingsAsync(tournamentId);
+            var groups = standings.Where(s => s.StandingType == StandingType.Group).ToList();
+            var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket)
+                ?? throw new NotFoundException("Bracket standing not found");
+
+            if (groups.Count == 0)
+                throw new NotFoundException("No groups found for BracketAndGroup tournament");
+
+            int teamsAdvancingPerGroup = bracket.MaxTeams / groups.Count;
+            var advancedTeams = new List<Team>();
+
+            _logger.LogInformation("Teams advancing per group: {TeamsPerGroup} (Bracket: {BracketSize}, Groups: {GroupCount})",
+                teamsAdvancingPerGroup, bracket.MaxTeams, groups.Count);
+
+            foreach (var group in groups)
+            {
+                var groupEntries = await _groupRepository.FindAllAsync(g => g.StandingId == group.Id);
+                var rankedTeams = groupEntries
+                    .OrderByDescending(g => g.Points)
+                    .ThenByDescending(g => g.Wins)
+                    .ThenBy(g => g.Losses)
+                    .Take(teamsAdvancingPerGroup)
+                    .ToList();
+
+                foreach (var groupEntry in rankedTeams)
+                {
+                    groupEntry.Status = TeamStatus.Advanced;
+                    await _groupRepository.UpdateAsync(groupEntry);
+
+                    var team = await _teamRepository.GetByIdAsync(groupEntry.TeamId);
+                    if (team != null)
+                    {
+                        advancedTeams.Add(team);
+                        _logger.LogInformation("Team {TeamName} advanced from {GroupName}", team.Name, group.Name);
+                    }
+                }
+
+                // Mark eliminated teams
+                var eliminatedEntries = groupEntries
+                    .OrderByDescending(g => g.Points)
+                    .ThenByDescending(g => g.Wins)
+                    .ThenBy(g => g.Losses)
+                    .Skip(teamsAdvancingPerGroup)
+                    .ToList();
+
+                foreach (var groupEntry in eliminatedEntries)
+                {
+                    groupEntry.Status = TeamStatus.Eliminated;
+                    groupEntry.Eliminated = true;
+                    await _groupRepository.UpdateAsync(groupEntry);
+                    _logger.LogInformation("Team {TeamName} eliminated from {GroupName}", groupEntry.TeamName, group.Name);
+                }
+            }
+
+            _logger.LogInformation("{Count} teams advanced from {GroupCount} groups", advancedTeams.Count, groups.Count);
+            return advancedTeams;
+        }
+
         // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ MARK FOR REFACTOR
+        [Obsolete("Use GetTeamsForBracketByFormat instead")]
         public async Task<List<Team>> GetTeamsForBracket(long tournamentId)
         {
             var advancingTeams = new List<Team>();
