@@ -1,18 +1,31 @@
+/* ========================================
+   Team Management Card - Tactical Green Theme
+   ======================================== */
+
 .teams-card {
-  border-radius: 12px;
+  border-radius: var(--border-radius);
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-card);
   transition: transform 0.2s, box-shadow 0.2s;
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+}
+
+.teams-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-primary);
+  border-color: var(--primary-color);
 }
 
 mat-card-header {
-  background-color: #f5f8fa;
+  background-color: var(--bg-dark);
   padding: 16px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: var(--border-width) solid var(--border-color);
 }
 
 mat-card-content {
   padding: 20px;
+  background: var(--bg-card);
 }
 
 mat-progress-bar {

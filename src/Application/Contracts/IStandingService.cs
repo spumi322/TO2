@@ -21,6 +21,12 @@ namespace Application.Contracts
         Task<bool> CheckAllGroupsAreFinished(long tournamentId);
         Task<List<Team>> GetTeamsForBracket(long tournamentId);
         /// <summary>
+        /// Gets teams for bracket based on tournament format.
+        /// BracketOnly: Returns all registered teams.
+        /// BracketAndGroup: Returns teams advancing from groups.
+        /// </summary>
+        Task<List<Team>> GetTeamsForBracketByFormat(long tournamentId);
+        /// <summary>
         /// Advances the match winner to the next round by populating the appropriate team slot.
         /// </summary>
         Task<List<TeamPlacementDTO>> GetFinalResultsAsync(long tournamentId);

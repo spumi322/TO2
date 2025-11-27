@@ -1,4 +1,5 @@
 using Application.DTOs.Tournament;
+using Domain.Configuration;
 using Domain.Enums;
 using FluentValidation.TestHelper;
 
@@ -10,7 +11,8 @@ namespace Tests.Unit.Validators
 
         public CreateTournamentValidatorTests()
         {
-            _validator = new CreateTournamentValidator();
+            var formatConfig = new TournamentFormatConfiguration();
+            _validator = new CreateTournamentValidator(formatConfig);
         }
 
         // Helper to create valid DTO with defaults
@@ -123,7 +125,7 @@ namespace Tests.Unit.Validators
         #region TeamsPerBracket Validation
 
         [Theory]
-        [InlineData(3)]
+        [InlineData(1)]
         [InlineData(0)]
         public void Should_HaveError_When_TeamsPerBracket_IsBelowMinimum(int teamsPerBracket)
         {
@@ -151,7 +153,7 @@ namespace Tests.Unit.Validators
         [InlineData(0)]
         public void Should_HaveError_When_TeamsPerGroup_IsBelowMinimum_ForBracketAndGroup(int teamsPerGroup)
         {
-            var request = CreateValidDTO(format: Format.BracketAndGroup, maxTeams: 8, teamsPerGroup: teamsPerGroup, teamsPerBracket: 4);
+            var request = CreateValidDTO(format: Format.GroupsAndBracket, maxTeams: 8, teamsPerGroup: teamsPerGroup, teamsPerBracket: 4);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.TeamsPerGroup);
         }
@@ -161,7 +163,7 @@ namespace Tests.Unit.Validators
         [InlineData(100)]
         public void Should_HaveError_When_TeamsPerGroup_IsAboveMaximum_ForBracketAndGroup(int teamsPerGroup)
         {
-            var request = CreateValidDTO(format: Format.BracketAndGroup, maxTeams: 16, teamsPerGroup: teamsPerGroup, teamsPerBracket: 4);
+            var request = CreateValidDTO(format: Format.GroupsAndBracket, maxTeams: 16, teamsPerGroup: teamsPerGroup, teamsPerBracket: 4);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.TeamsPerGroup);
         }
@@ -197,7 +199,7 @@ namespace Tests.Unit.Validators
         [Fact]
         public void Should_HaveError_When_MaxTeams_NotDivisibleBy_TeamsPerGroup_ForBracketAndGroup()
         {
-            var request = CreateValidDTO(format: Format.BracketAndGroup, maxTeams: 10, teamsPerGroup: 3, teamsPerBracket: 4);
+            var request = CreateValidDTO(format: Format.GroupsAndBracket, maxTeams: 10, teamsPerGroup: 3, teamsPerBracket: 4);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x);
         }
@@ -205,7 +207,7 @@ namespace Tests.Unit.Validators
         [Fact]
         public void Should_NotHaveError_When_MaxTeams_DivisibleBy_TeamsPerGroup_ForBracketAndGroup()
         {
-            var request = CreateValidDTO(format: Format.BracketAndGroup, maxTeams: 12, teamsPerGroup: 4, teamsPerBracket: 4);
+            var request = CreateValidDTO(format: Format.GroupsAndBracket, maxTeams: 12, teamsPerGroup: 4, teamsPerBracket: 4);
             var result = _validator.TestValidate(request);
             result.ShouldNotHaveValidationErrorFor(x => x);
         }

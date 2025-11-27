@@ -1,21 +1,25 @@
 <div class="register-container">
   <div class="register-card">
+    <!-- Toggle Buttons -->
+    <div class="auth-toggle">
+      <button class="toggle-btn" type="button" (click)="goToLogin()">Login</button>
+      <button class="toggle-btn active" type="button">Register</button>
+    </div>
+
     <div class="register-header">
       <h2>Create Your Account</h2>
       <p>Start managing your tournaments with TO2</p>
     </div>
 
-    <form (ngSubmit)="onSubmit()" class="register-form">
+    <form (ngSubmit)="onSubmit()" class="register-form" method="post" action="/register">
       <div class="field">
         <label for="userName">Username</label>
         <input
-          pInputText
           id="userName"
           type="text"
           [(ngModel)]="userName"
-          name="userName"
+          name="username"
           placeholder="Choose a username"
-          [disabled]="isLoading"
           required
           autocomplete="username"
         />
@@ -24,13 +28,11 @@
       <div class="field">
         <label for="email">Email</label>
         <input
-          pInputText
           id="email"
           type="email"
           [(ngModel)]="email"
           name="email"
           placeholder="Enter your email"
-          [disabled]="isLoading"
           required
           autocomplete="email"
         />
@@ -38,65 +40,50 @@
 
       <div class="field">
         <label for="password">Password</label>
-        <p-password
+        <input
+          id="password"
+          type="password"
           [(ngModel)]="password"
           name="password"
-          [toggleMask]="true"
-          [feedback]="true"
           placeholder="Create a password"
-          [disabled]="isLoading"
-          inputId="password"
-          styleClass="w-full"
-          [inputStyle]="{'width': '100%'}"
-          promptLabel="Choose a password"
-          weakLabel="Too simple"
-          mediumLabel="Average"
-          strongLabel="Strong"
-        ></p-password>
+          required
+          autocomplete="new-password"
+          minlength="6"
+        />
       </div>
 
       <div class="field">
         <label for="tenantName">Organization Name</label>
         <input
-          pInputText
           id="tenantName"
           type="text"
           [(ngModel)]="tenantName"
           name="tenantName"
           placeholder="Your company or organization name"
-          [disabled]="isLoading"
           required
         />
       </div>
 
-      <p-message
-        *ngIf="errorMessage"
-        severity="danger"
-        [text]="errorMessage"
-        styleClass="w-full"
-      ></p-message>
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="custom-error-message">
+        <mat-icon class="message-icon">error</mat-icon>
+        <span class="message-text">{{ errorMessage }}</span>
+      </div>
 
-      <p-message
-        *ngIf="successMessage"
-        severity="success"
-        [text]="successMessage"
-        styleClass="w-full"
-      ></p-message>
+      <!-- Success Message -->
+      <div *ngIf="successMessage" class="custom-success-message">
+        <mat-icon class="message-icon">check_circle</mat-icon>
+        <span class="message-text">{{ successMessage }}</span>
+      </div>
 
-      <p-button
+      <button
         type="submit"
-        label="Create Account"
-        icon="pi pi-user-plus"
-        [loading]="isLoading"
-        styleClass="w-full"
-      ></p-button>
+        class="submit-button"
+        [disabled]="isLoading"
+      >
+        <span *ngIf="!isLoading">Create Account</span>
+        <span *ngIf="isLoading">Creating...</span>
+      </button>
     </form>
-
-    <div class="register-footer">
-      <p>
-        Already have an account?
-        <a (click)="goToLogin()" class="login-link">Sign in</a>
-      </p>
-    </div>
   </div>
 </div>

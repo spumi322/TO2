@@ -1,71 +1,68 @@
+/* ========================================
+   Create Tournament - Tactical Green Theme
+   ======================================== */
+
 :host {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
   margin-top: 80px;
-  background: #f5f7fa;
+  background: var(--bg-dark);
   min-height: calc(100vh - 80px);
 }
 
 .tournament-form {
-  max-width: 600px;
+  max-width: 700px;
   width: 100%;
   margin: 0 auto;
-  border-radius: 12px;
+  border-radius: var(--border-radius);
   overflow: hidden;
-  background: #ffffff;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12);
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  box-shadow: var(--shadow-card);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 mat-card-header {
-  background: #1976d2;
-  color: #fff;
-  padding: 20px;
+  background: var(--primary-color);
+  color: var(--text-dark);
+  padding: 24px;
   position: relative;
+  border-bottom: var(--border-width) solid var(--primary-color);
 }
-
-  mat-card-header::after {
-    content: '';
-    position: absolute;
-    bottom: -10px;
-    left: 0;
-    right: 0;
-    height: 10px;
-    background: linear-gradient(90deg, #1976d2, #2196f3);
-  }
 
 mat-card-title {
   font-size: 1.8rem;
-  font-weight: 600;
+  font-weight: 700;
   margin: 0;
   letter-spacing: 0.5px;
+  color: var(--text-dark);
 }
 
 mat-card-content {
   padding: 32px 24px;
+  background: var(--bg-card);
 }
 
 .full-width {
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 mat-form-field {
   width: 100%;
 }
 
-  mat-form-field.mat-form-field {
-    background: #fafafa;
-    border-radius: 8px;
-  }
-
 input[matInput],
-textarea[matInput],
-mat-select {
+textarea[matInput] {
   font-size: 1rem;
-  padding: 8px;
+  color: var(--text-primary);
+}
+
+textarea[matInput] {
+  min-height: 100px;
+  line-height: 1.5;
 }
 
 .action-buttons {
@@ -75,23 +72,25 @@ mat-select {
   margin-top: 24px;
 }
 
-  .action-buttons button {
-    flex: 1;
-    padding: 12px;
-    font-size: 1rem;
-    font-weight: 500;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-  }
-
-button[mat-stroked-button] {
-  border-color: #1976d2;
-  color: #1976d2;
+.action-buttons button {
+  flex: 1;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--border-radius);
+  transition: all 0.3s ease;
 }
 
-  button[mat-stroked-button]:hover {
-    background-color: rgba(25, 118, 210, 0.04);
-  }
+button[mat-stroked-button] {
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  border-width: var(--border-width);
+}
+
+button[mat-stroked-button]:hover {
+  background-color: var(--bg-card-hover);
+  border-color: var(--primary-color);
+}
 
 button[mat-raised-button] {
   position: relative;
@@ -100,17 +99,20 @@ button[mat-raised-button] {
   justify-content: center;
   align-items: center;
   gap: 8px;
+  background-color: var(--primary-color) !important;
+  color: var(--text-dark) !important;
 }
 
-  button[mat-raised-button]:hover:not(:disabled) {
-    background-color: #0d5ca0;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
+button[mat-raised-button]:hover:not(:disabled) {
+  box-shadow: var(--glow-primary);
+  transform: translateY(-2px);
+}
 
-  button[mat-raised-button]:disabled {
-    background-color: rgba(0, 0, 0, 0.12) !important;
-    color: rgba(0, 0, 0, 0.38) !important;
-  }
+button[mat-raised-button]:disabled {
+  background-color: rgba(0, 0, 0, 0.12) !important;
+  color: rgba(255, 255, 255, 0.3) !important;
+  opacity: 0.5;
+}
 
 .spinner {
   margin-right: 8px;
@@ -118,28 +120,29 @@ button[mat-raised-button] {
 
 .alert {
   width: 100%;
-  max-width: 600px;
+  max-width: 700px;
   margin-top: 16px;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: var(--border-radius);
   text-align: center;
   animation: fadeIn 0.3s ease-in-out;
+  border: var(--border-width) solid;
 }
 
 .success {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-  border: 1px solid #a5d6a7;
+  background-color: rgba(0, 217, 54, 0.1);
+  color: var(--success-color);
+  border-color: var(--success-color);
 }
 
 .error {
-  background-color: #ffebee;
-  color: #c62828;
-  border: 1px solid #ef9a9a;
+  background-color: rgba(255, 68, 68, 0.1);
+  color: var(--error-color);
+  border-color: var(--error-color);
 }
 
 mat-hint {
-  color: #607d8b;
+  color: var(--text-muted);
   font-size: 0.8rem;
 }
 
@@ -155,7 +158,8 @@ mat-hint {
   }
 }
 
-@media (max-width: 600px) {
+/* Desktop optimized */
+@media (max-width: 900px) {
   :host {
     padding: 12px;
     margin-top: 70px;
@@ -164,10 +168,11 @@ mat-hint {
   .tournament-form {
     margin: 0;
     width: 100%;
+    max-width: 600px;
   }
 
   mat-card-content {
-    padding: 20px 16px;
+    padding: 24px 20px;
   }
 
   .action-buttons {

@@ -21,11 +21,11 @@ namespace Tests.Helpers
                 return new Tournament(name, description, maxTeams, format);
             }
 
-            public static Tournament CreateBracketAndGroup(
+            public static Tournament CreateGroupsAndBracket(
                 string name = "Test Tournament with Groups",
                 int maxTeams = 8)
             {
-                return new Tournament(name, "Test with groups", maxTeams, Format.BracketAndGroup);
+                return new Tournament(name, "Test with groups", maxTeams, Format.GroupsAndBracket);
             }
 
             public static Tournament CreateInStatus(

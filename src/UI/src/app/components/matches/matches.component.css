@@ -1,37 +1,79 @@
+/* ========================================
+   Matches Component - Tactical Green Theme
+   ======================================== */
+
 .group-matches {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 16px;
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
 }
 
-  .group-matches th, .group-matches td {
-    padding: 12px;
-    text-align: center;
-    font-size: 1rem;
-  }
+.group-matches th,
+.group-matches td {
+  padding: 14px 12px;
+  text-align: center;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
 
-  .group-matches th {
-    background-color: var(--primary-color);
-    color: var(--primary-color-text);
-  }
+.group-matches th {
+  background-color: var(--primary-color);
+  color: var(--text-dark);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.9rem;
+}
+
+.group-matches tbody tr {
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.group-matches tbody tr:last-child {
+  border-bottom: none;
+}
+
+.group-matches tbody tr:hover {
+  background-color: var(--bg-card-hover);
+}
 
 .loading-spinner {
   text-align: center;
-  color: var(--secondary-color);
-  font-weight: bold;
+  color: var(--primary-color);
+  font-weight: 600;
+  padding: 20px;
 }
 
 .winner {
-  background-color: green;
-  color: white;
+  background-color: rgba(0, 217, 54, 0.2);
+  color: var(--success-color);
+  font-weight: 700;
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 .loser {
-  background-color: red;
-  color: white;
+  background-color: rgba(255, 68, 68, 0.15);
+  color: var(--error-color);
+  padding: 4px 8px;
+  border-radius: 4px;
 }
 
 button[disabled] {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Desktop optimized */
+@media (max-width: 900px) {
+  .group-matches th,
+  .group-matches td {
+    padding: 10px 8px;
+    font-size: 0.9rem;
+  }
 }

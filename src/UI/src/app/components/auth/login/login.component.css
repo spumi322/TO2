@@ -1,19 +1,62 @@
+/* ========================================
+   Login Component - Tactical Green Theme
+   ======================================== */
+
 .login-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  min-height: calc(100vh - 80px);
-  padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  align-items: flex-start;
+  min-height: 100vh;
+  padding-top: 10vh;
+  padding-left: 3rem;
+  padding-right: 3rem;
+  padding-bottom: 3rem;
+  background-color: var(--bg-dark);
 }
 
 .login-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-card);
   width: 100%;
-  max-width: 450px;
+  max-width: 500px;
+  min-height: 580px;
   padding: 3rem 2.5rem;
+}
+
+/* Toggle Buttons */
+.auth-toggle {
+  display: flex;
+  gap: 0;
+  margin-bottom: 2rem;
+  background: var(--bg-dark);
+  border-radius: var(--border-radius);
+  padding: 4px;
+  border: var(--border-width) solid var(--border-color);
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: calc(var(--border-radius) - 2px);
+  transition: all 0.3s ease;
+}
+
+.toggle-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-card-hover);
+}
+
+.toggle-btn.active {
+  background: var(--primary-color);
+  color: var(--text-dark);
 }
 
 .login-header {
@@ -24,13 +67,13 @@
 .login-header h2 {
   margin: 0 0 0.5rem 0;
   font-size: 1.75rem;
-  color: #333;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 .login-header p {
   margin: 0;
-  color: #666;
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
@@ -48,46 +91,101 @@
 
 .field label {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
   font-size: 0.9rem;
 }
 
-.field input[type="email"] {
+.field input[type="email"],
+.field input[type="password"] {
   width: 100%;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 10px;
 }
 
-.login-footer {
-  margin-top: 2rem;
-  text-align: center;
-  padding-top: 1.5rem;
-  border-top: 1px solid #eee;
-}
-
-.login-footer p {
-  margin: 0;
-  color: #666;
-  font-size: 0.9rem;
-}
-
-.register-link {
-  color: #667eea;
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: none;
-}
-
-.register-link:hover {
-  text-decoration: underline;
-}
-
-::ng-deep .p-password {
-  width: 100%;
-}
-
-::ng-deep .p-password input {
-  width: 100%;
+.field input[type="email"]:focus,
+.field input[type="password"]:focus {
+  border-color: var(--primary-color);
+  outline: none;
 }
 
 ::ng-deep .p-button {
   margin-top: 0.5rem;
+}
+
+/* Native Submit Button Styling */
+.submit-button {
+  width: 100%;
+  padding: 12px 24px;
+  margin-top: 0.5rem;
+  background: var(--primary-color);
+  border: var(--border-width) solid var(--primary-color);
+  border-radius: var(--border-radius);
+  color: var(--text-dark);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Custom Error Message Styling */
+.custom-error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin: 0.5rem 0 1rem 0;
+  background: var(--bg-dark);
+  border: 1px solid var(--error-color);
+  border-radius: var(--border-radius);
+}
+
+.custom-error-message .message-icon {
+  font-size: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  color: var(--error-color);
+  flex-shrink: 0;
+}
+
+.custom-error-message .message-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+/* Animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
+  20%, 40%, 60%, 80% { transform: translateX(8px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Desktop optimized - responsive adjustments */
+@media (max-width: 900px) {
+  .login-container {
+    padding: 2rem;
+  }
+
+  .login-card {
+    max-width: 450px;
+    padding: 2.5rem 2rem;
+  }
 }

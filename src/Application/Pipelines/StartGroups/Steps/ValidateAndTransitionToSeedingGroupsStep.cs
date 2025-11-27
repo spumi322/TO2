@@ -1,6 +1,7 @@
 using Application.Contracts;
 using Application.Pipelines.StartGroups.Contracts;
 using Domain.AggregateRoots;
+using Domain.Configuration;
 using Domain.Enums;
 using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
@@ -16,15 +17,18 @@ namespace Application.Pipelines.StartGroups.Steps
         private readonly ILogger<ValidateAndTransitionToSeedingGroupsStep> _logger;
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
+        private readonly ITournamentFormatConfiguration _formatConfig;
 
         public ValidateAndTransitionToSeedingGroupsStep(
             ILogger<ValidateAndTransitionToSeedingGroupsStep> logger,
             IRepository<Tournament> tournamentRepository,
-            ITournamentStateMachine stateMachine)
+            ITournamentStateMachine stateMachine,
+            ITournamentFormatConfiguration formatConfig)
         {
             _logger = logger;
             _tournamentRepository = tournamentRepository;
             _stateMachine = stateMachine;
+            _formatConfig = formatConfig;
         }
 
         public async Task<bool> ExecuteAsync(StartGroupsContext context)
@@ -42,10 +46,21 @@ namespace Application.Pipelines.StartGroups.Steps
                 return false;
             }
 
+            // Validate format supports groups
+            var metadata = _formatConfig.GetFormatMetadata(tournament.Format);
+            if (!metadata.RequiresGroups)
+            {
+                context.Success = false;
+                context.Message = $"Cannot start groups for {metadata.DisplayName} format";
+                _logger.LogWarning("Tournament {TournamentId} has format {Format} which does not use groups",
+                    context.TournamentId, tournament.Format);
+                return false;
+            }
+
             try
             {
-                // Validate and transition to SeedingGroups
-                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingGroups);
+                // Validate and transition to SeedingGroups using format-aware validation
+                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingGroups, tournament.Format);
                 tournament.Status = TournamentStatus.SeedingGroups;
                 tournament.IsRegistrationOpen = false; // Close registration when starting groups
 

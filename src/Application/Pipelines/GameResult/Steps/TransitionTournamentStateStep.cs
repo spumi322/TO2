@@ -41,18 +41,23 @@ namespace Application.Pipelines.GameResult.Steps
 
             if (context.AllGroupsFinished)
             {
-                // Transition to GroupsCompleted
-                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.GroupsCompleted);
-                tournament.Status = TournamentStatus.GroupsCompleted;
-                context.NewTournamentStatus = TournamentStatus.GroupsCompleted;
+                // Determine target status based on format
+                TournamentStatus targetStatus = tournament.Format == Format.GroupsOnly
+                    ? TournamentStatus.Finished
+                    : TournamentStatus.GroupsCompleted;
 
-                Logger.LogInformation("Tournament {TournamentId} transitioned to GroupsCompleted",
-                    tournament.Id);
+                // Use format-aware validation
+                _stateMachine.ValidateTransition(tournament.Status, targetStatus, tournament.Format);
+                tournament.Status = targetStatus;
+                context.NewTournamentStatus = targetStatus;
+
+                Logger.LogInformation("Tournament {TournamentId} transitioned to {Status}",
+                    tournament.Id, targetStatus);
             }
             else if (context.TournamentFinished)
             {
-                // Transition to Finished
-                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.Finished);
+                // Transition to Finished (bracket completed)
+                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.Finished, tournament.Format);
                 tournament.Status = TournamentStatus.Finished;
                 context.NewTournamentStatus = TournamentStatus.Finished;
 

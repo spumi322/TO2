@@ -49,17 +49,22 @@ export class CreateTournamentComponent implements OnInit {
     const format = this.form.get('format')?.value;
 
     if (format === Format.BracketOnly) {
+      // BracketOnly: Power of 2 validation, no groups
       this.form.get('maxTeams')?.setValidators([
         Validators.required,
         Validators.min(2),
-        Validators.max(32)
+        Validators.max(32),
+        this.powerOfTwoValidator()
       ]);
       this.form.get('teamsPerGroup')?.clearValidators();
       this.form.get('teamsPerBracket')?.clearValidators();
 
+      // Clear group fields
+      this.form.get('teamsPerGroup')?.setValue(null);
       // For BracketOnly format, maxTeams must equal teamsPerBracket
       this.form.get('teamsPerBracket')?.setValue(this.form.get('maxTeams')?.value);
-    } else if (format === Format.BracketAndGroups) {
+    } else if (format === Format.GroupsAndBracket) {
+      // GroupsAndBracket: Groups followed by bracket
       this.form.get('teamsPerGroup')?.setValidators([
         Validators.required,
         Validators.min(2),
@@ -79,6 +84,24 @@ export class CreateTournamentComponent implements OnInit {
 
       // Auto-calculate maxTeams if possible
       this.updateMaxTeams();
+    } else if (format === Format.GroupsOnly) {
+      // GroupsOnly: Only groups, no bracket
+      this.form.get('teamsPerGroup')?.setValidators([
+        Validators.required,
+        Validators.min(2),
+        Validators.max(16)
+      ]);
+      this.form.get('teamsPerBracket')?.clearValidators();
+      this.form.get('teamsPerBracket')?.setValue(null);
+      this.form.get('maxTeams')?.setValidators([
+        Validators.required,
+        Validators.min(2),
+        Validators.max(32),
+        this.divisibleByValidator()
+      ]);
+
+      // Auto-calculate maxTeams if possible
+      this.updateMaxTeams();
     }
 
     this.form.get('maxTeams')?.updateValueAndValidity();
@@ -86,7 +109,18 @@ export class CreateTournamentComponent implements OnInit {
     this.form.get('teamsPerBracket')?.updateValueAndValidity();
   }
 
-  // For BracketAndGroup format, maxTeams must be divisible by teamsPerGroup
+  // For BracketOnly format, maxTeams must be power of 2
+  powerOfTwoValidator() {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = control.value;
+      if (!value) return null;
+
+      const isPowerOfTwo = value > 0 && (value & (value - 1)) === 0;
+      return isPowerOfTwo ? null : { powerOfTwo: true };
+    };
+  }
+
+  // For GroupsAndBracket and GroupsOnly formats, maxTeams must be divisible by teamsPerGroup
   divisibleByValidator() {
     return (control: AbstractControl): ValidationErrors | null => {
       const maxTeams = control.value;

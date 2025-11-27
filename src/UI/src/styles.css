@@ -1,13 +1,338 @@
+/* ========================================
+   TACTICAL GREEN THEME - Global Variables & Overrides
+   ======================================== */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* Override PrimeNG theme variables with our tactical green */
+:root {
+  /* Our Custom Colors */
+  --primary-color: #00d936 !important;
+  --primary-color-text: #0a0e1a !important;
+  
+  /* Override PrimeNG variables */
+  --p-primary-color: #00d936 !important;
+  --p-primary-contrast-color: #0a0e1a !important;
+  
+  /* Background Colors */
+  --bg-dark: #0a0e1a;
+  --bg-card: #141820;
+  --bg-card-hover: #1a1f2b;
+  
+  /* Border Colors */
+  --border-color: #1a2028;
+  --border-primary: #00d936;
+  
+  /* Text Colors */
+  --text-primary: #e8eaf0;
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --text-dark: #0a0e1a;
+  
+  /* Status Colors */
+  --success-color: #00d936;
+  --error-color: #ff4444;
+  --warning-color: #ffaa00;
+  
+  /* Layout */
+  --border-radius: 6px;
+  --border-width: 2px;
+  
+  /* Shadows & Glows */
+  --glow-primary: 0 0 20px rgba(0, 217, 54, 0.3);
+  --shadow-card: 0 4px 8px rgba(0, 0, 0, 0.4);
+  
+  /* Override PrimeNG surfaces to match our dark theme */
+  --surface-ground: #0a0e1a !important;
+  --surface-section: #141820 !important;
+  --surface-card: #141820 !important;
+  --surface-overlay: #141820 !important;
+  --surface-border: #1a2028 !important;
+  --surface-hover: #1a1f2b !important;
+  
+  /* Override PrimeNG text colors */
+  --text-color: #e8eaf0 !important;
+  --text-color-secondary: rgba(255, 255, 255, 0.5) !important;
+  
+  /* Override PrimeNG highlights */
+  --highlight-bg: rgba(0, 217, 54, 0.2) !important;
+  --highlight-text-color: #e8eaf0 !important;
+}
+
+/* ========================================
+   Base Styles
+   ======================================== */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+/* ========================================
+   Global Utility Classes
+   ======================================== */
 
 .success-snackbar {
-  background: #4caf50;
-  color: white;
+  background: var(--success-color) !important;
+  color: var(--text-dark) !important;
+  font-weight: 600;
 }
 
 .error-snackbar {
-  background: #f44336;
-  color: white;
+  background: var(--error-color) !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+/* ========================================
+   PrimeNG Component Overrides
+   ======================================== */
+
+/* PrimeNG Button */
+.p-button {
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--text-dark) !important;
+  border-radius: var(--border-radius) !important;
+  font-weight: 600 !important;
+  border-width: var(--border-width) !important;
+}
+
+.p-button:hover:not(:disabled) {
+  box-shadow: var(--glow-primary) !important;
+  transform: translateY(-2px);
+}
+
+.p-button:disabled {
+  opacity: 0.5 !important;
+}
+
+/* PrimeNG Input */
+.p-inputtext {
+  background-color: var(--bg-dark) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+  border-width: var(--border-width) !important;
+}
+
+.p-inputtext:enabled:focus {
+  border-color: var(--primary-color) !important;
+  box-shadow: 0 0 0 0.2rem rgba(0, 217, 54, 0.25) !important;
+}
+
+/* PrimeNG Dropdown/Select */
+.p-dropdown {
+  background-color: var(--bg-dark) !important;
+  border-color: var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+  border-width: var(--border-width) !important;
+}
+
+.p-dropdown:not(.p-disabled):hover {
+  border-color: var(--primary-color) !important;
+}
+
+.p-dropdown-panel {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+.p-dropdown-item {
+  color: var(--text-primary) !important;
+}
+
+.p-dropdown-item:hover {
+  background: var(--bg-card-hover) !important;
+}
+
+.p-dropdown-item.p-highlight {
+  background: rgba(0, 217, 54, 0.2) !important;
+  color: var(--text-primary) !important;
+}
+
+/* PrimeNG Password */
+.p-password-panel {
+  background: var(--bg-card) !important;
+  border-color: var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+/* PrimeNG Dialog */
+.p-dialog {
+  background: var(--bg-card) !important;
+  border: var(--border-width) solid var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+.p-dialog .p-dialog-header {
+  background: var(--bg-dark) !important;
+  border-bottom: var(--border-width) solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.p-dialog .p-dialog-content {
+  background: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+}
+
+/* ========================================
+   Material Theme Overrides
+   ======================================== */
+
+/* Card Styling */
+mat-card {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border: var(--border-width) solid var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+mat-card:hover {
+  border-color: var(--primary-color) !important;
+  box-shadow: var(--glow-primary) !important;
+}
+
+/* Button Styling */
+.mat-mdc-raised-button.mat-primary {
+  background-color: var(--primary-color) !important;
+  color: var(--text-dark) !important;
+  border: var(--border-width) solid var(--primary-color) !important;
+  border-radius: var(--border-radius) !important;
+  font-weight: 600 !important;
+}
+
+.mat-mdc-raised-button.mat-primary:hover:not([disabled]) {
+  box-shadow: var(--glow-primary) !important;
+  transform: translateY(-2px);
+}
+
+.mat-mdc-raised-button:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Form Field Styling */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+.mat-mdc-text-field-wrapper {
+  background-color: var(--bg-dark) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+.mat-mdc-form-field .mat-mdc-input-element {
+  color: var(--text-primary) !important;
+}
+
+.mat-mdc-form-field .mat-mdc-select {
+  color: var(--text-primary) !important;
+}
+
+.mat-mdc-form-field-label {
+  color: var(--text-muted) !important;
+}
+
+.mat-mdc-form-field-focus-overlay {
+  background-color: transparent !important;
+}
+
+/* Outline appearance styling */
+.mdc-notched-outline__leading,
+.mdc-notched-outline__notch,
+.mdc-notched-outline__trailing {
+  border-color: var(--border-color) !important;
+  border-width: var(--border-width) !important;
+}
+
+.mat-mdc-form-field:hover .mdc-notched-outline__leading,
+.mat-mdc-form-field:hover .mdc-notched-outline__notch,
+.mat-mdc-form-field:hover .mdc-notched-outline__trailing {
+  border-color: var(--primary-color) !important;
+}
+
+/* Input focus state */
+.mat-mdc-form-field.mat-focused .mat-mdc-form-field-label {
+  color: var(--primary-color) !important;
+}
+
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__notch,
+.mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing {
+  border-color: var(--primary-color) !important;
+  border-width: 2px !important;
+}
+
+/* Hint and error text */
+.mat-mdc-form-field-hint {
+  color: var(--text-muted) !important;
+}
+
+.mat-mdc-form-field-error {
+  color: var(--error-color) !important;
+}
+
+/* Select dropdown panel */
+.mat-mdc-select-panel {
+  background-color: var(--bg-card) !important;
+  border: var(--border-width) solid var(--border-color) !important;
+  border-radius: var(--border-radius) !important;
+}
+
+.mat-mdc-option {
+  color: var(--text-primary) !important;
+}
+
+.mat-mdc-option:hover {
+  background-color: var(--bg-card-hover) !important;
+}
+
+.mat-mdc-option.mat-mdc-option-active {
+  background-color: rgba(0, 217, 54, 0.1) !important;
+}
+
+.mat-mdc-option.mdc-list-item--selected {
+  background-color: rgba(0, 217, 54, 0.2) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Tab styling */
+.mat-mdc-tab:not(.mat-mdc-tab-disabled).mdc-tab--active .mdc-tab__text-label {
+  color: var(--primary-color) !important;
+}
+
+.mat-mdc-tab-header {
+  border-bottom: 2px solid var(--border-color) !important;
+}
+
+.mdc-tab-indicator__content--underline {
+  border-color: var(--primary-color) !important;
+  border-width: 3px !important;
+}
+
+.mat-mdc-tab {
+  color: var(--text-muted) !important;
+}
+
+.mat-mdc-tab:hover {
+  color: var(--text-primary) !important;
+}
+
+/* Progress bar */
+.mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: var(--primary-color) !important;
+}
+
+/* Spinner */
+.mat-mdc-progress-spinner {
+  --mdc-circular-progress-active-indicator-color: var(--primary-color) !important;
 }

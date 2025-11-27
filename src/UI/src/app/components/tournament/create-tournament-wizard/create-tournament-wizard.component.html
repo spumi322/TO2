@@ -1,0 +1,271 @@
+<mat-card class="wizard-container">
+  <mat-card-header>
+    <mat-card-title>Create New Tournament</mat-card-title>
+    <mat-card-subtitle>Follow the steps to set up your tournament</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <mat-stepper #stepper linear (selectionChange)="onStepChange($event)">
+
+      <!-- STEP 1: Tournament Details -->
+      <mat-step [stepControl]="detailsForm" label="Tournament Details">
+        <form [formGroup]="detailsForm" class="step-form">
+          <h3>Basic Information</h3>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Tournament Name</mat-label>
+            <input matInput formControlName="name" required />
+            <mat-hint>4-100 characters</mat-hint>
+            <mat-error *ngIf="detailsForm.get('name')?.hasError('required')">
+              Name is required
+            </mat-error>
+            <mat-error *ngIf="detailsForm.get('name')?.hasError('minlength')">
+              Minimum 4 characters
+            </mat-error>
+            <mat-error *ngIf="detailsForm.get('name')?.hasError('maxlength')">
+              Maximum 100 characters
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" rows="4"></textarea>
+            <mat-hint>Optional, up to 250 characters</mat-hint>
+            <mat-error *ngIf="detailsForm.get('description')?.hasError('maxlength')">
+              Maximum 250 characters
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Date/Schedule Section -->
+          <div class="wip-section">
+            <h4>Date & Schedule <span class="wip-badge">WORK IN PROGRESS</span></h4>
+            <p class="wip-text">Tournament scheduling features coming soon!</p>
+          </div>
+
+          <div class="step-actions">
+            <button mat-button matStepperPrevious disabled>Back</button>
+            <button mat-raised-button color="primary" matStepperNext
+                    [disabled]="!detailsForm.valid">
+              Next: Choose Format
+            </button>
+          </div>
+        </form>
+      </mat-step>
+
+      <!-- STEP 2: Format Selection -->
+      <mat-step [stepControl]="formatForm" label="Choose Format">
+        <form [formGroup]="formatForm" class="step-form">
+          <h3>Select Tournament Format</h3>
+          <p class="step-description">Choose the structure that best fits your tournament</p>
+
+          <div class="format-cards">
+
+            <!-- BracketOnly Card -->
+            <div class="format-card"
+                 [class.selected]="selectedFormat === Format.BracketOnly"
+                 (click)="formatForm.patchValue({format: Format.BracketOnly})">
+              <div class="format-image-placeholder">
+                <mat-icon>account_tree</mat-icon>
+                <span class="placeholder-text">Bracket diagram placeholder</span>
+              </div>
+              <h4>Bracket Only</h4>
+              <p>Single-elimination bracket. Teams compete in knockout rounds until a winner emerges.</p>
+              <ul class="format-features">
+                <li>Random seeding</li>
+                <li>Power-of-2 teams (2, 4, 8, 16, 32)</li>
+                <li>Fast tournament format</li>
+              </ul>
+              <mat-radio-group formControlName="format">
+                <mat-radio-button [value]="Format.BracketOnly">
+                  Select Bracket Only
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
+
+            <!-- GroupsAndBracket Card -->
+            <div class="format-card"
+                 [class.selected]="selectedFormat === Format.GroupsAndBracket"
+                 (click)="formatForm.patchValue({format: Format.GroupsAndBracket})">
+              <div class="format-image-placeholder">
+                <mat-icon>view_module</mat-icon>
+                <span class="placeholder-text">Groups + Bracket diagram placeholder</span>
+              </div>
+              <h4>Groups + Bracket</h4>
+              <p>Round-robin group stage followed by single-elimination bracket playoffs.</p>
+              <ul class="format-features">
+                <li>Initial group stage</li>
+                <li>Top teams advance</li>
+                <li>Balanced competition</li>
+              </ul>
+              <mat-radio-group formControlName="format">
+                <mat-radio-button [value]="Format.GroupsAndBracket">
+                  Select Groups + Bracket
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
+
+            <!-- GroupsOnly Card -->
+            <div class="format-card"
+                 [class.selected]="selectedFormat === Format.GroupsOnly"
+                 (click)="formatForm.patchValue({format: Format.GroupsOnly})">
+              <div class="format-image-placeholder">
+                <mat-icon>grid_on</mat-icon>
+                <span class="placeholder-text">Groups diagram placeholder</span>
+              </div>
+              <h4>Groups Only</h4>
+              <p>Round-robin group stage only. Teams compete within groups, final standings determine placement.</p>
+              <ul class="format-features">
+                <li>No single winner</li>
+                <li>Group rankings</li>
+                <li>All teams play multiple matches</li>
+              </ul>
+              <mat-radio-group formControlName="format">
+                <mat-radio-button [value]="Format.GroupsOnly">
+                  Select Groups Only
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
+
+          </div>
+
+          <div class="step-actions">
+            <button mat-button matStepperPrevious>Back</button>
+            <button mat-raised-button color="primary" matStepperNext
+                    [disabled]="!formatForm.valid">
+              Next: Configure Teams
+            </button>
+          </div>
+        </form>
+      </mat-step>
+
+      <!-- STEP 3: Team Configuration -->
+      <mat-step [stepControl]="configForm" label="Team Setup">
+        <form [formGroup]="configForm" class="step-form">
+          <h3>Configure Team Settings</h3>
+          <p class="step-description">
+            Set up team configuration for
+            <strong>{{ getFormatDisplayName(selectedFormat) }}</strong> format
+          </p>
+
+          <!-- BracketOnly Configuration -->
+          <div *ngIf="selectedFormat === Format.BracketOnly">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Tournament Size</mat-label>
+              <mat-select formControlName="maxTeams">
+                <mat-option [value]="2">2 teams</mat-option>
+                <mat-option [value]="4">4 teams</mat-option>
+                <mat-option [value]="8">8 teams</mat-option>
+                <mat-option [value]="16">16 teams</mat-option>
+                <mat-option [value]="32">32 teams</mat-option>
+              </mat-select>
+              <mat-hint>Select power-of-2 team count</mat-hint>
+              <mat-error *ngIf="configForm.get('maxTeams')?.hasError('required')">
+                Tournament size is required
+              </mat-error>
+              <mat-error *ngIf="configForm.get('maxTeams')?.hasError('powerOfTwo')">
+                Must be power of 2
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- GroupsAndBracket Configuration -->
+          <div *ngIf="selectedFormat === Format.GroupsAndBracket">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Teams per Group</mat-label>
+              <input matInput type="number" formControlName="teamsPerGroup"
+                     min="2" max="16" />
+              <mat-hint>2-16 teams in each group</mat-hint>
+              <mat-error *ngIf="configForm.get('teamsPerGroup')?.hasError('required')">
+                Teams per group is required
+              </mat-error>
+              <mat-error *ngIf="configForm.get('teamsPerGroup')?.hasError('min')">
+                Minimum 2 teams per group
+              </mat-error>
+              <mat-error *ngIf="configForm.get('teamsPerGroup')?.hasError('max')">
+                Maximum 16 teams per group
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Teams Advancing to Bracket</mat-label>
+              <input matInput type="number" formControlName="teamsPerBracket"
+                     min="4" max="32" />
+              <mat-hint>4-32 teams advancing from groups</mat-hint>
+              <mat-error *ngIf="configForm.get('teamsPerBracket')?.hasError('required')">
+                Teams per bracket is required
+              </mat-error>
+              <mat-error *ngIf="configForm.get('teamsPerBracket')?.hasError('min')">
+                Minimum 4 teams per bracket
+              </mat-error>
+              <mat-error *ngIf="configForm.get('teamsPerBracket')?.hasError('max')">
+                Maximum 32 teams per bracket
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Total Tournament Size</mat-label>
+              <input matInput type="number" formControlName="maxTeams"
+                     min="2" max="64" />
+              <mat-hint>Must be divisible by teams per group</mat-hint>
+              <mat-error *ngIf="configForm.get('maxTeams')?.hasError('required')">
+                Total teams is required
+              </mat-error>
+              <mat-error *ngIf="configForm.get('maxTeams')?.hasError('divisibleBy')">
+                Must be divisible by teams per group
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- GroupsOnly Configuration -->
+          <div *ngIf="selectedFormat === Format.GroupsOnly">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Teams per Group</mat-label>
+              <input matInput type="number" formControlName="teamsPerGroup"
+                     min="2" max="16" />
+              <mat-hint>2-16 teams in each group</mat-hint>
+              <mat-error *ngIf="configForm.get('teamsPerGroup')?.hasError('required')">
+                Teams per group is required
+              </mat-error>
+              <mat-error *ngIf="configForm.get('teamsPerGroup')?.hasError('min')">
+                Minimum 2 teams per group
+              </mat-error>
+              <mat-error *ngIf="configForm.get('teamsPerGroup')?.hasError('max')">
+                Maximum 16 teams per group
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Total Tournament Size</mat-label>
+              <input matInput type="number" formControlName="maxTeams"
+                     min="2" max="32" />
+              <mat-hint>Must be divisible by teams per group</mat-hint>
+              <mat-error *ngIf="configForm.get('maxTeams')?.hasError('required')">
+                Total teams is required
+              </mat-error>
+              <mat-error *ngIf="configForm.get('maxTeams')?.hasError('divisibleBy')">
+                Must be divisible by teams per group
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="step-actions">
+            <button mat-button matStepperPrevious>Back</button>
+            <button mat-raised-button color="primary" type="button"
+                    [disabled]="!configForm.valid || isSubmitting"
+                    (click)="submit()">
+              <mat-spinner diameter="20" *ngIf="isSubmitting" class="spinner"></mat-spinner>
+              <span *ngIf="!isSubmitting">Create Tournament</span>
+              <span *ngIf="isSubmitting">Creating...</span>
+            </button>
+          </div>
+        </form>
+      </mat-step>
+
+    </mat-stepper>
+  </mat-card-content>
+</mat-card>
+
+<!-- Error Message -->
+<div *ngIf="errorMessage" class="alert error">
+  {{ errorMessage }}
+</div>

@@ -1,6 +1,7 @@
 using Application.Contracts;
 using Application.Pipelines.StartBracket.Contracts;
 using Domain.AggregateRoots;
+using Domain.Configuration;
 using Domain.Enums;
 using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
@@ -16,15 +17,18 @@ namespace Application.Pipelines.StartBracket.Steps
         private readonly ILogger<ValidateAndTransitionToSeedingBracketStep> _logger;
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
+        private readonly ITournamentFormatConfiguration _formatConfig;
 
         public ValidateAndTransitionToSeedingBracketStep(
             ILogger<ValidateAndTransitionToSeedingBracketStep> logger,
             IRepository<Tournament> tournamentRepository,
-            ITournamentStateMachine stateMachine)
+            ITournamentStateMachine stateMachine,
+            ITournamentFormatConfiguration formatConfig)
         {
             _logger = logger;
             _tournamentRepository = tournamentRepository;
             _stateMachine = stateMachine;
+            _formatConfig = formatConfig;
         }
 
         public async Task<bool> ExecuteAsync(StartBracketContext context)
@@ -42,10 +46,21 @@ namespace Application.Pipelines.StartBracket.Steps
                 return false;
             }
 
+            // Validate format supports bracket
+            var metadata = _formatConfig.GetFormatMetadata(tournament.Format);
+            if (!metadata.RequiresBracket)
+            {
+                context.Success = false;
+                context.Message = $"Cannot start bracket for {metadata.DisplayName} format";
+                _logger.LogWarning("Tournament {TournamentId} has format {Format} which does not use bracket",
+                    context.TournamentId, tournament.Format);
+                return false;
+            }
+
             try
             {
-                // Validate and transition to SeedingBracket
-                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingBracket);
+                // Validate and transition to SeedingBracket using format-aware validation
+                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingBracket, tournament.Format);
                 tournament.Status = TournamentStatus.SeedingBracket;
 
                 await _tournamentRepository.UpdateAsync(tournament);

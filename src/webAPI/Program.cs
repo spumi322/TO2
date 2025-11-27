@@ -11,6 +11,7 @@ using Application.Pipelines.StartBracket.Contracts;
 using Application.Pipelines.StartGroups;
 using Application.Pipelines.StartGroups.Contracts;
 using Application.Services;
+using Domain.Configuration;
 using Domain.Entities;
 using Domain.StateMachine;
 using FluentValidation;
@@ -55,6 +56,7 @@ namespace TO2
             
             // Domain Services
             builder.Services.AddScoped<ITournamentStateMachine, TournamentStateMachine>();
+            builder.Services.AddScoped<ITournamentFormatConfiguration, TournamentFormatConfiguration>();
 
             // Multi-Tenancy Service
             builder.Services.AddScoped<ITenantService, HttpContextTenantService>();
@@ -105,6 +107,7 @@ namespace TO2
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateAndTransitionToSeedingBracketStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateBracketNotSeededStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.GetAdvancedTeamsStep>();
+            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.RandomSeedTeamsStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateTeamCountStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.CalculateBracketStructureStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.GenerateBracketMatchesStep>();

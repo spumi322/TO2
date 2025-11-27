@@ -3,6 +3,7 @@
     public enum Format
     {
         BracketOnly = 1,
-        BracketAndGroup = 2,
+        GroupsAndBracket = 2,
+        GroupsOnly = 3,
     }
 }

@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { Tournament, Format } from '../../../models/tournament';
 import { Standing } from '../../../models/standing';
+import { FormatConfig } from '../../../utils/format-config';
 
 @Component({
   selector: 'app-tournament-info-card',
@@ -16,14 +17,7 @@ export class TournamentInfoCardComponent {
   Format = Format;
 
   getFormatLabel(format: Format): string {
-    switch (format) {
-      case Format.BracketOnly:
-        return 'Bracket Only';
-      case Format.BracketAndGroups:
-        return 'Group Stage + Bracket';
-      default:
-        return 'Unknown Format';
-    }
+    return FormatConfig.getFormatLabel(format);
   }
 
   getTeamsPerGroup(): number | null {

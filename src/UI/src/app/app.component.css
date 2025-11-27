@@ -1,23 +1,57 @@
+/* ========================================
+   App Component - Tactical Green Theme
+   ======================================== */
+
 :host {
-    max-width: 1280px;
-    padding: 2rem;
-    text-align: center;
+  max-width: 1920px;
+  padding: 2rem;
+  text-align: center;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+}
+
+/* Table styling */
+table {
+  margin: 0 auto;
+  border-collapse: collapse;
+  background-color: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
 }
 
 tr:nth-child(even) {
-    background: #F2F2F2;
+  background: var(--bg-card);
 }
 
 tr:nth-child(odd) {
-    background: #FFF;
+  background: var(--bg-dark);
 }
 
-th, td {
-    padding-left: 1rem;
-    padding-right: 1rem;
+tr:hover {
+  background: var(--bg-card-hover);
 }
 
-table {
-    margin: 0 auto;
+th,
+td {
+  padding: 12px 16px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
 }
 
+th {
+  background-color: var(--primary-color);
+  color: var(--text-dark);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: var(--border-width) solid var(--primary-color);
+}
+
+/* Desktop optimized */
+@media (max-width: 1200px) {
+  :host {
+    max-width: 100%;
+    padding: 1.5rem;
+  }
+}
