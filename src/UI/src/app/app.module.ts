@@ -36,24 +36,20 @@ import { ListboxModule } from 'primeng/listbox';
 import { MatchesComponent } from './components/matches/matches.component';
 import { TableModule } from 'primeng/table';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-// Angular Material Imports
-import { MatStepperModule } from '@angular/material/stepper';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatListModule } from '@angular/material/list';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatRadioModule } from '@angular/material/radio';
+// PrimeNG Additional Modules
+import { RadioButtonModule } from 'primeng/radiobutton';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { StepsModule } from 'primeng/steps';
+import { TooltipModule } from 'primeng/tooltip';
+import { FloatLabelModule } from 'primeng/floatlabel';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { ToastModule } from 'primeng/toast';
+import { MessagesModule } from 'primeng/messages';
+// PrimeNG Services
+import { MessageService } from 'primeng/api';
+import { DialogService } from 'primeng/dynamicdialog';
 import { LandingComponent } from './components/landing/landing.component';
 import { CreateTournamentWizardComponent } from './components/tournament/create-tournament-wizard/create-tournament-wizard.component';
 import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confirm-dialog.component';
@@ -84,43 +80,37 @@ import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confi
   imports: [
     BrowserModule,
     HttpClientModule,
-    CardModule,
-    TabViewModule,
     AppRoutingModule,
-    MenubarModule,
-    ButtonModule,
     ReactiveFormsModule,
+    FormsModule,
     BrowserAnimationsModule,
+    // PrimeNG Modules
+    ButtonModule,
+    CardModule,
     InputTextModule,
     InputTextareaModule,
     DropdownModule,
     DialogModule,
-    FormsModule,
-    ListboxModule,
+    TabViewModule,
+    MenubarModule,
     TableModule,
     PasswordModule,
     MessageModule,
-    // Angular Material Modules
-    MatCardModule,
-    MatStepperModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatTabsModule,
-    MatIconModule,
-    MatProgressBarModule,
-    MatListModule,
-    MatDialogModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
-    MatTooltipModule,
-    MatRadioModule
-
+    ListboxModule,
+    RadioButtonModule,
+    ProgressSpinnerModule,
+    ProgressBarModule,
+    StepsModule,
+    TooltipModule,
+    FloatLabelModule,
+    IconFieldModule,
+    InputIconModule,
+    ToastModule,
+    MessagesModule
   ],
   providers: [
+    MessageService,
+    DialogService,
     provideAnimationsAsync(),
     {
       provide: HTTP_INTERCEPTORS,

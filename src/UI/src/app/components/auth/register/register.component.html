@@ -66,13 +66,13 @@
 
       <!-- Error Message -->
       <div *ngIf="errorMessage" class="custom-error-message">
-        <mat-icon class="message-icon">error</mat-icon>
+        <i class="pi pi-exclamation-circle message-icon"></i>
         <span class="message-text">{{ errorMessage }}</span>
       </div>
 
       <!-- Success Message -->
       <div *ngIf="successMessage" class="custom-success-message">
-        <mat-icon class="message-icon">check_circle</mat-icon>
+        <i class="pi pi-check-circle message-icon"></i>
         <span class="message-text">{{ successMessage }}</span>
       </div>
 

@@ -10,7 +10,9 @@ import { filter } from 'rxjs/operators';
 export class AppComponent {
   showNavbar = true;
 
-  constructor(private router: Router) {
+  constructor(
+    private router: Router
+  ) {
     // Hide navbar on landing, login, and register pages
     this.router.events
       .pipe(filter(event => event instanceof NavigationEnd))

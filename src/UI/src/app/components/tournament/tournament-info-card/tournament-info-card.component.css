@@ -17,15 +17,14 @@
   border-color: var(--primary-color);
 }
 
-mat-card-header {
-  background-color: var(--bg-dark);
-  padding: 16px;
-  border-bottom: var(--border-width) solid var(--border-color);
+/* PrimeNG card styling */
+::ng-deep .info-card .p-card-header {
+  padding: 12px;
 }
 
-mat-card-content {
-  padding: 20px;
-  background: var(--bg-card);
+::ng-deep .info-card .p-card-content,
+::ng-deep .info-card .p-card-body {
+  padding: 12px;
 }
 
 .muted-text {
@@ -35,10 +34,10 @@ mat-card-content {
 
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 20px;
-  margin-top: 24px;
-  padding-top: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: var(--border-width) solid var(--border-color);
 }
 
@@ -48,16 +47,16 @@ mat-card-content {
 }
 
 .info-item .label {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: var(--text-muted);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   font-weight: 500;
 }
 
 .info-item .value {
-  font-size: 1.15rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
 }

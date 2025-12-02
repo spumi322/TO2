@@ -1,134 +1,186 @@
-<mat-card class="tournament-form">
-  <mat-card-header>
-    <mat-card-title>Create Tournament</mat-card-title>
-  </mat-card-header>
-  <mat-card-content>
+<p-card class="tournament-form">
+  <ng-template pTemplate="header">
+    <h3>Create Tournament</h3>
+  </ng-template>
+  <ng-template pTemplate="content">
     <form [formGroup]="form" (ngSubmit)="submit()">
       <!-- Name with uniqueness check -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Tournament Name</mat-label>
-        <input matInput formControlName="name" required />
-        <mat-hint>Must be unique, 4-100 characters</mat-hint>
-        <mat-error *ngIf="form.get('name')?.hasError('required')">Name is required</mat-error>
-        <mat-error *ngIf="form.get('name')?.hasError('minlength')">Name must be at least 4 characters</mat-error>
-        <mat-error *ngIf="form.get('name')?.hasError('maxlength')">Name cannot exceed 100 characters</mat-error>
-        <mat-error *ngIf="form.get('name')?.hasError('notUnique')">This tournament name is already taken</mat-error>
-      </mat-form-field>
+      <div class="field full-width">
+        <label for="name">Tournament Name</label>
+        <input pInputText id="name" formControlName="name"
+               [class.ng-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
+               [class.ng-dirty]="form.get('name')?.dirty"
+               class="w-full" />
+        <small class="hint">Must be unique, 4-100 characters</small>
+        <small class="p-error" *ngIf="form.get('name')?.hasError('required') && form.get('name')?.touched">
+          Name is required
+        </small>
+        <small class="p-error" *ngIf="form.get('name')?.hasError('minlength') && form.get('name')?.touched">
+          Name must be at least 4 characters
+        </small>
+        <small class="p-error" *ngIf="form.get('name')?.hasError('maxlength') && form.get('name')?.touched">
+          Name cannot exceed 100 characters
+        </small>
+        <small class="p-error" *ngIf="form.get('name')?.hasError('notUnique') && form.get('name')?.touched">
+          This tournament name is already taken
+        </small>
+      </div>
 
       <!-- Description -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Description</mat-label>
-        <textarea matInput formControlName="description" rows="4"></textarea>
-        <mat-hint>Optional, up to 250 characters</mat-hint>
-        <mat-error *ngIf="form.get('description')?.hasError('maxlength')">Description cannot exceed 250 characters</mat-error>
-      </mat-form-field>
+      <div class="field full-width">
+        <label for="description">Description</label>
+        <textarea pInputTextarea id="description" formControlName="description" rows="4"
+                  [class.ng-invalid]="form.get('description')?.invalid && form.get('description')?.touched"
+                  class="w-full"></textarea>
+        <small class="hint">Optional, up to 250 characters</small>
+        <small class="p-error" *ngIf="form.get('description')?.hasError('maxlength') && form.get('description')?.touched">
+          Description cannot exceed 250 characters
+        </small>
+      </div>
 
       <!-- Format -->
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Tournament Format</mat-label>
-        <mat-select formControlName="format" (selectionChange)="onFormatChange()">
-          <mat-option [value]="Format.BracketOnly">Bracket Only (Power of 2 teams)</mat-option>
-          <mat-option [value]="Format.GroupsAndBracket">Groups + Bracket</mat-option>
-          <mat-option [value]="Format.GroupsOnly">Groups Only</mat-option>
-        </mat-select>
-        <mat-hint>Select the tournament structure</mat-hint>
-        <mat-error *ngIf="form.get('format')?.invalid">Format is required</mat-error>
-      </mat-form-field>
+      <div class="field full-width">
+        <label for="format">Tournament Format</label>
+        <p-dropdown id="format" formControlName="format"
+                    [options]="formatOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Select a format"
+                    (onChange)="onFormatChange()"
+                    [class.ng-invalid]="form.get('format')?.invalid && form.get('format')?.touched"
+                    styleClass="w-full"></p-dropdown>
+        <small class="hint">Select the tournament structure</small>
+        <small class="p-error" *ngIf="form.get('format')?.invalid && form.get('format')?.touched">
+          Format is required
+        </small>
+      </div>
 
       <!-- Max Teams (for BracketOnly) -->
-      <div *ngIf="form.get('format')?.value === Format.BracketOnly">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Max Teams</mat-label>
-          <input matInput type="number" formControlName="maxTeams" min="2" max="32" />
-          <mat-hint>Tournament size - must be power of 2 (2, 4, 8, 16, 32)</mat-hint>
-          <mat-error *ngIf="form.get('maxTeams')?.hasError('required')">Max teams is required</mat-error>
-          <mat-error *ngIf="form.get('maxTeams')?.hasError('min')">Minimum 2 teams required</mat-error>
-          <mat-error *ngIf="form.get('maxTeams')?.hasError('max')">Maximum 32 teams allowed</mat-error>
-          <mat-error *ngIf="form.get('maxTeams')?.hasError('powerOfTwo')">
-            Team count must be a power of 2 (2, 4, 8, 16, 32)
-          </mat-error>
-        </mat-form-field>
+      <div *ngIf="form.get('format')?.value === Format.BracketOnly" class="field full-width">
+        <label for="maxTeamsBracket">Max Teams</label>
+        <input pInputText id="maxTeamsBracket" type="number" formControlName="maxTeams"
+               min="2" max="32"
+               [class.ng-invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
+               class="w-full" />
+        <small class="hint">Tournament size - must be power of 2 (2, 4, 8, 16, 32)</small>
+        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('required') && form.get('maxTeams')?.touched">
+          Max teams is required
+        </small>
+        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('min') && form.get('maxTeams')?.touched">
+          Minimum 2 teams required
+        </small>
+        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('max') && form.get('maxTeams')?.touched">
+          Maximum 32 teams allowed
+        </small>
+        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('powerOfTwo') && form.get('maxTeams')?.touched">
+          Team count must be a power of 2 (2, 4, 8, 16, 32)
+        </small>
       </div>
 
       <!-- Teams per Group (for GroupsAndBracket) -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsAndBracket">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Teams per Group</mat-label>
-          <input matInput type="number" formControlName="teamsPerGroup" min="2" max="16" />
-          <mat-hint>Number of teams in each group (2-16)</mat-hint>
-          <mat-error *ngIf="form.get('teamsPerGroup')?.hasError('required')">Teams per group is required</mat-error>
-          <mat-error *ngIf="form.get('teamsPerGroup')?.hasError('min')">Minimum 2 teams per group</mat-error>
-          <mat-error *ngIf="form.get('teamsPerGroup')?.hasError('max')">Maximum 16 teams per group</mat-error>
-        </mat-form-field>
+      <div *ngIf="form.get('format')?.value === Format.GroupsAndBracket" class="field full-width">
+        <label for="teamsPerGroupGB">Teams per Group</label>
+        <input pInputText id="teamsPerGroupGB" type="number" formControlName="teamsPerGroup"
+               min="2" max="16"
+               [class.ng-invalid]="form.get('teamsPerGroup')?.invalid && form.get('teamsPerGroup')?.touched"
+               class="w-full" />
+        <small class="hint">Number of teams in each group (2-16)</small>
+        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('required') && form.get('teamsPerGroup')?.touched">
+          Teams per group is required
+        </small>
+        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('min') && form.get('teamsPerGroup')?.touched">
+          Minimum 2 teams per group
+        </small>
+        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('max') && form.get('teamsPerGroup')?.touched">
+          Maximum 16 teams per group
+        </small>
       </div>
 
       <!-- Teams per Bracket (for GroupsAndBracket) -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsAndBracket">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Teams per Bracket</mat-label>
-          <input matInput type="number" formControlName="teamsPerBracket" min="4" max="32" />
-          <mat-hint>Number of teams advancing to bracket stage (4-32)</mat-hint>
-          <mat-error *ngIf="form.get('teamsPerBracket')?.hasError('required')">Teams per bracket is required</mat-error>
-          <mat-error *ngIf="form.get('teamsPerBracket')?.hasError('min')">Minimum 4 teams per bracket</mat-error>
-          <mat-error *ngIf="form.get('teamsPerBracket')?.hasError('max')">Maximum 32 teams per bracket</mat-error>
-        </mat-form-field>
+      <div *ngIf="form.get('format')?.value === Format.GroupsAndBracket" class="field full-width">
+        <label for="teamsPerBracket">Teams per Bracket</label>
+        <input pInputText id="teamsPerBracket" type="number" formControlName="teamsPerBracket"
+               min="4" max="32"
+               [class.ng-invalid]="form.get('teamsPerBracket')?.invalid && form.get('teamsPerBracket')?.touched"
+               class="w-full" />
+        <small class="hint">Number of teams advancing to bracket stage (4-32)</small>
+        <small class="p-error" *ngIf="form.get('teamsPerBracket')?.hasError('required') && form.get('teamsPerBracket')?.touched">
+          Teams per bracket is required
+        </small>
+        <small class="p-error" *ngIf="form.get('teamsPerBracket')?.hasError('min') && form.get('teamsPerBracket')?.touched">
+          Minimum 4 teams per bracket
+        </small>
+        <small class="p-error" *ngIf="form.get('teamsPerBracket')?.hasError('max') && form.get('teamsPerBracket')?.touched">
+          Maximum 32 teams per bracket
+        </small>
       </div>
 
       <!-- Max Teams (for GroupsAndBracket) -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsAndBracket" class="full-width">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Total Tournament Size</mat-label>
-          <input matInput type="number" formControlName="maxTeams" min="2" max="64" />
-          <mat-hint>Total number of teams in tournament</mat-hint>
-          <mat-error *ngIf="form.get('maxTeams')?.hasError('required')">Total teams is required</mat-error>
-          <mat-error *ngIf="form.get('maxTeams')?.hasError('divisibleBy')">
-            Must be divisible by teams per group
-          </mat-error>
-        </mat-form-field>
+      <div *ngIf="form.get('format')?.value === Format.GroupsAndBracket" class="field full-width">
+        <label for="maxTeamsGB">Total Tournament Size</label>
+        <input pInputText id="maxTeamsGB" type="number" formControlName="maxTeams"
+               min="2" max="64"
+               [class.ng-invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
+               class="w-full" />
+        <small class="hint">Total number of teams in tournament</small>
+        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('required') && form.get('maxTeams')?.touched">
+          Total teams is required
+        </small>
+        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('divisibleBy') && form.get('maxTeams')?.touched">
+          Must be divisible by teams per group
+        </small>
       </div>
 
       <!-- Teams per Group (for GroupsOnly) -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsOnly">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Teams per Group</mat-label>
-          <input matInput type="number" formControlName="teamsPerGroup" min="2" max="16" />
-          <mat-hint>Number of teams in each group (2-16)</mat-hint>
-          <mat-error *ngIf="form.get('teamsPerGroup')?.hasError('required')">Teams per group is required</mat-error>
-          <mat-error *ngIf="form.get('teamsPerGroup')?.hasError('min')">Minimum 2 teams per group</mat-error>
-          <mat-error *ngIf="form.get('teamsPerGroup')?.hasError('max')">Maximum 16 teams per group</mat-error>
-        </mat-form-field>
+      <div *ngIf="form.get('format')?.value === Format.GroupsOnly" class="field full-width">
+        <label for="teamsPerGroupGO">Teams per Group</label>
+        <input pInputText id="teamsPerGroupGO" type="number" formControlName="teamsPerGroup"
+               min="2" max="16"
+               [class.ng-invalid]="form.get('teamsPerGroup')?.invalid && form.get('teamsPerGroup')?.touched"
+               class="w-full" />
+        <small class="hint">Number of teams in each group (2-16)</small>
+        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('required') && form.get('teamsPerGroup')?.touched">
+          Teams per group is required
+        </small>
+        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('min') && form.get('teamsPerGroup')?.touched">
+          Minimum 2 teams per group
+        </small>
+        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('max') && form.get('teamsPerGroup')?.touched">
+          Maximum 16 teams per group
+        </small>
       </div>
 
       <!-- Max Teams (for GroupsOnly) -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsOnly" class="full-width">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Total Tournament Size</mat-label>
-          <input matInput type="number" formControlName="maxTeams" min="2" max="32" />
-          <mat-hint>Total number of teams in tournament</mat-hint>
-          <mat-error *ngIf="form.get('maxTeams')?.hasError('required')">Total teams is required</mat-error>
-          <mat-error *ngIf="form.get('maxTeams')?.hasError('divisibleBy')">
-            Must be divisible by teams per group
-          </mat-error>
-        </mat-form-field>
+      <div *ngIf="form.get('format')?.value === Format.GroupsOnly" class="field full-width">
+        <label for="maxTeamsGO">Total Tournament Size</label>
+        <input pInputText id="maxTeamsGO" type="number" formControlName="maxTeams"
+               min="2" max="32"
+               [class.ng-invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
+               class="w-full" />
+        <small class="hint">Total number of teams in tournament</small>
+        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('required') && form.get('maxTeams')?.touched">
+          Total teams is required
+        </small>
+        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('divisibleBy') && form.get('maxTeams')?.touched">
+          Must be divisible by teams per group
+        </small>
       </div>
 
       <!-- Action Buttons -->
       <div class="action-buttons">
-        <button mat-stroked-button type="button" routerLink="/tournaments">
-          Cancel
-        </button>
-        <button mat-raised-button
-                color="primary"
-                type="submit"
-                [disabled]="form.invalid || isSubmitting">
-          <mat-spinner diameter="20" *ngIf="isSubmitting" class="spinner"></mat-spinner>
-          <span *ngIf="!isSubmitting">Create Tournament</span>
-          <span *ngIf="isSubmitting">Creating...</span>
-        </button>
+        <p-button label="Cancel"
+                  [outlined]="true"
+                  type="button"
+                  routerLink="/tournaments"
+                  severity="secondary"></p-button>
+        <p-button [label]="isSubmitting ? 'Creating...' : 'Create Tournament'"
+                  type="submit"
+                  [disabled]="form.invalid || isSubmitting"
+                  [loading]="isSubmitting"></p-button>
       </div>
     </form>
-  </mat-card-content>
-</mat-card>
+  </ng-template>
+</p-card>
 
 <!-- Success/Error Messages -->
 <div *ngIf="successMessage" class="alert success">

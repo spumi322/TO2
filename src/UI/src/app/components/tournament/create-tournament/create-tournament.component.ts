@@ -18,6 +18,12 @@ export class CreateTournamentComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
 
+  formatOptions = [
+    { label: 'Bracket Only (Power of 2 teams)', value: Format.BracketOnly },
+    { label: 'Groups + Bracket', value: Format.GroupsAndBracket },
+    { label: 'Groups Only', value: Format.GroupsOnly }
+  ];
+
   constructor(
     private fb: FormBuilder,
     private tournamentService: TournamentService,

@@ -283,8 +283,9 @@
   font-size: 1.05rem;
 }
 
-.demo-feature-item mat-icon {
+.demo-feature-item i {
   color: var(--primary-color);
+  font-size: 1.5rem;
 }
 
 /* Sign Up Section */
@@ -327,7 +328,7 @@
   margin-bottom: 10px;
 }
 
-.error-message mat-icon {
+.error-message i {
   color: var(--error-color);
 }
 
@@ -339,7 +340,7 @@
   margin-top: 10px;
 }
 
-.submit-button mat-spinner {
+.submit-button p-progressSpinner {
   display: inline-block;
   margin-right: 10px;
 }

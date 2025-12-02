@@ -7,9 +7,10 @@
         Organize professional tournaments with automated brackets, group stages, and real-time tracking.
         Built for organizations that demand reliability and data security.
       </p>
-      <button mat-raised-button color="primary" class="cta-button" routerLink="/register">
-        Get Started Free
-      </button>
+      <p-button label="Get Started Free"
+                severity="primary"
+                styleClass="cta-button"
+                routerLink="/register"></p-button>
       <p class="hero-note">No credit card required • Setup in minutes</p>
     </div>
   </section>
@@ -20,13 +21,13 @@
       <h2 class="section-title">Everything You Need to Run Professional Tournaments</h2>
 
       <div class="features-grid">
-        <mat-card class="feature-card" *ngFor="let feature of features">
-          <mat-card-content>
-            <mat-icon class="feature-icon">{{feature.icon}}</mat-icon>
+        <p-card class="feature-card" *ngFor="let feature of features">
+          <ng-template pTemplate="content">
+            <i class="pi pi-{{feature.icon}} feature-icon"></i>
             <h3 class="feature-title">{{feature.title}}</h3>
             <p class="feature-description">{{feature.description}}</p>
-          </mat-card-content>
-        </mat-card>
+          </ng-template>
+        </p-card>
       </div>
     </div>
   </section>
@@ -42,7 +43,7 @@
           <div class="step-number">{{step.number}}</div>
           <h3 class="step-title">{{step.title}}</h3>
           <p class="step-description">{{step.description}}</p>
-          <mat-icon class="step-arrow" *ngIf="i < steps.length - 1">arrow_forward</mat-icon>
+          <i class="pi pi-arrow-right step-arrow" *ngIf="i < steps.length - 1"></i>
         </div>
       </div>
     </div>
@@ -54,10 +55,10 @@
       <h2 class="section-title">See It In Action</h2>
       <p class="section-subtitle">Visualize your tournament brackets in real-time</p>
 
-      <mat-card class="demo-card">
-        <mat-card-content>
+      <p-card class="demo-card">
+        <ng-template pTemplate="content">
           <div class="demo-placeholder">
-            <mat-icon class="demo-icon">view_module</mat-icon>
+            <i class="pi pi-sitemap demo-icon"></i>
             <h3>Interactive Bracket Visualization</h3>
             <p>
               Our bracket system automatically generates and updates tournament trees as matches are completed.
@@ -65,25 +66,25 @@
             </p>
             <div class="demo-features">
               <div class="demo-feature-item">
-                <mat-icon>check_circle</mat-icon>
+                <i class="pi pi-check-circle"></i>
                 <span>Real-time updates</span>
               </div>
               <div class="demo-feature-item">
-                <mat-icon>check_circle</mat-icon>
+                <i class="pi pi-check-circle"></i>
                 <span>Multiple formats</span>
               </div>
               <div class="demo-feature-item">
-                <mat-icon>check_circle</mat-icon>
+                <i class="pi pi-check-circle"></i>
                 <span>Automatic seeding</span>
               </div>
               <div class="demo-feature-item">
-                <mat-icon>check_circle</mat-icon>
+                <i class="pi pi-check-circle"></i>
                 <span>Export results</span>
               </div>
             </div>
           </div>
-        </mat-card-content>
-      </mat-card>
+        </ng-template>
+      </p-card>
     </div>
   </section>
 

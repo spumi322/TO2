@@ -17,33 +17,31 @@
   border-color: var(--primary-color);
 }
 
-mat-card-header {
-  background-color: var(--bg-dark);
-  padding: 16px;
-  border-bottom: var(--border-width) solid var(--border-color);
+/* PrimeNG card styling */
+::ng-deep .teams-card .p-card-header {
+  padding: 12px;
 }
 
-mat-card-content {
-  padding: 20px;
-  background: var(--bg-card);
+::ng-deep .teams-card .p-card-content,
+::ng-deep .teams-card .p-card-body {
+  padding: 12px;
 }
 
-mat-progress-bar {
-  margin: 16px 0;
-  border-radius: 4px;
-  overflow: hidden;
+::ng-deep .teams-card p-progressBar {
+  margin: 12px 0;
 }
 
 .bulk-add-form {
   display: flex;
   flex-direction: column;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 16px;
+  margin-top: 12px;
+  gap: 8px;
 }
 
 .full-width {

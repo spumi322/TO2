@@ -1,10 +1,14 @@
-<mat-card class="top-4-card" *ngIf="finalStandings.length > 0">
-  <mat-card-header>
-    <mat-icon mat-card-avatar class="trophy-avatar">emoji_events</mat-icon>
-    <mat-card-title>Top 4 Results</mat-card-title>
-    <mat-card-subtitle>Final Standings</mat-card-subtitle>
-  </mat-card-header>
-  <mat-card-content>
+<p-card class="top-4-card" *ngIf="finalStandings.length > 0">
+  <ng-template pTemplate="header">
+    <div class="card-header-content">
+      <i class="pi pi-trophy card-avatar"></i>
+      <div>
+        <h3>Top 4 Results</h3>
+        <p class="subtitle">Final Standings</p>
+      </div>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="content">
     <div class="top-4-list">
       <div *ngFor="let standing of topFourStandings" class="top-4-item">
         <span class="placement-badge" [ngClass]="getRankClass(standing.placement)">
@@ -16,10 +20,10 @@
             Round {{ standing.eliminatedInRound }}
           </div>
           <div class="top-4-team-detail champion-label" *ngIf="standing.status === 4">
-            <mat-icon>emoji_events</mat-icon> Champion
+            <i class="pi pi-trophy"></i> Champion
           </div>
         </div>
       </div>
     </div>
-  </mat-card-content>
-</mat-card>
+  </ng-template>
+</p-card>

@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Format, Tournament, TournamentStatus, TournamentStateDTO } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,8 +8,7 @@ import { Standing, StandingType } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
 import { Team } from '../../../models/team';
 import { TeamService } from '../../../services/team/team.service';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MessageService } from 'primeng/api';
 import { MatchService } from '../../../services/match/match.service';
 import { MatchFinishedIds } from '../../../models/matchresult';
 import { FinalStanding } from '../../../models/final-standing';
@@ -20,8 +19,6 @@ import { FinalStanding } from '../../../models/final-standing';
   styleUrls: ['./tournament-details.component.css']
 })
 export class TournamentDetailsComponent implements OnInit {
-  @ViewChild('confirmDialog') confirmDialog!: TemplateRef<any>;
-
   tournament$: Observable<Tournament | null> = of(null);
   tournament: Tournament | null = null;
   tournamentId: number | null = null;
@@ -35,7 +32,6 @@ export class TournamentDetailsComponent implements OnInit {
 
   // Team management
   allTeams: Team[] = [];
-  teamToRemove: Team | null = null;
 
   // Final Results
   finalStandings: FinalStanding[] = [];
@@ -45,7 +41,7 @@ export class TournamentDetailsComponent implements OnInit {
   isReloading = false;
   isAddingTeams = false;
   errorMessage = '';
-  selectedTabIndex = 0; // Track active tab to preserve state during reloads
+  activeTabIndex = 0; // Track active tab to preserve state during reloads
 
   // Constants for template
   Format = Format;
@@ -58,8 +54,7 @@ export class TournamentDetailsComponent implements OnInit {
     private matchService: MatchService,
     private route: ActivatedRoute,
     private router: Router,
-    private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private messageService: MessageService
   ) { }
 
   ngOnInit(): void {
@@ -314,14 +309,9 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   confirmRemoveTeam(team: Team): void {
-    this.teamToRemove = team;
-
-    this.dialog.open(this.confirmDialog).afterClosed().subscribe(result => {
-      if (result && this.teamToRemove) {
-        this.removeTeam(this.teamToRemove);
-      }
-      this.teamToRemove = null;
-    });
+    if (confirm(`Are you sure you want to remove team "${team.name}" from this tournament?`)) {
+      this.removeTeam(team);
+    }
   }
 
   removeTeam(team: Team): void {
@@ -463,16 +453,20 @@ export class TournamentDetailsComponent implements OnInit {
 
   // Notification methods
   showSuccess(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      panelClass: ['success-snackbar']
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: message,
+      life: 3000
     });
   }
 
   showError(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 5000,
-      panelClass: ['error-snackbar']
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: message,
+      life: 5000
     });
   }
 }

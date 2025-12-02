@@ -1,9 +1,11 @@
-<mat-card class="info-card" *ngIf="tournament">
-  <mat-card-header>
-    <mat-icon mat-card-avatar>info</mat-icon>
-    <mat-card-title>Tournament Details</mat-card-title>
-  </mat-card-header>
-  <mat-card-content>
+<p-card class="info-card" *ngIf="tournament">
+  <ng-template pTemplate="header">
+    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 1rem;">
+      <i class="pi pi-info-circle"></i>
+      <h3 style="margin: 0;">Tournament Details</h3>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="content">
     <p *ngIf="tournament?.description">{{ tournament?.description }}</p>
     <p *ngIf="!tournament?.description" class="muted-text">No description provided</p>
     <div class="info-grid">
@@ -24,5 +26,5 @@
         <span class="value">{{ getTeamsPerBracket() || '-' }}</span>
       </div>
     </div>
-  </mat-card-content>
-</mat-card>
+  </ng-template>
+</p-card>

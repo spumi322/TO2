@@ -17,9 +17,9 @@
 
   <!-- Main Content Area -->
   <div class="tournament-content">
-    <mat-tab-group [(selectedIndex)]="selectedTabIndex" animationDuration="300ms" mat-stretch-tabs="false" mat-align-tabs="start">
+    <p-tabView [(activeIndex)]="activeTabIndex">
       <!-- Overview Tab -->
-      <mat-tab label="Overview">
+      <p-tabPanel header="Overview">
         <div class="tab-content">
           <div class="overview-grid">
             <!-- Tournament Info -->
@@ -51,70 +51,54 @@
             (removeTeam)="confirmRemoveTeam($event)">
           </app-registered-teams-list>
         </div>
-      </mat-tab>
+      </p-tabPanel>
 
       <!-- Group Stage Tab (only if format is BracketAndGroups and tournament has started) -->
-      <mat-tab label="Group Stage" *ngIf="!tournament?.isRegistrationOpen && tournament?.format === Format.GroupsAndBracket">
+      <p-tabPanel header="Group Stage" *ngIf="!tournament?.isRegistrationOpen && tournament?.format === Format.GroupsAndBracket">
         <div class="tab-content">
           <app-standing-group
             [tournament]="tournament"
             (matchFinished)="onGroupMatchFinished($event)">
           </app-standing-group>
         </div>
-      </mat-tab>
+      </p-tabPanel>
 
       <!-- Bracket Tab (only show when bracket is seeded and in progress or finished) -->
-      <mat-tab label="Bracket" *ngIf="brackets.length > 0 && (tournamentState?.currentStatus === TournamentStatus.BracketInProgress || tournamentState?.currentStatus === TournamentStatus.Finished)">
-        <ng-template matTabContent>
-          <div class="tab-content">
-            <app-standing-bracket
-              [tournament]="tournament"
-              [standingId]="brackets[0]?.id"
-              [tournamentState]="tournamentState"
-              [teams]="tournament.teams"
-              (matchFinished)="onBracketMatchFinished($event)">
-            </app-standing-bracket>
-          </div>
-        </ng-template>
-      </mat-tab>
+      <p-tabPanel header="Bracket" *ngIf="brackets.length > 0 && (tournamentState?.currentStatus === TournamentStatus.BracketInProgress || tournamentState?.currentStatus === TournamentStatus.Finished)">
+        <div class="tab-content">
+          <app-standing-bracket
+            [tournament]="tournament"
+            [standingId]="brackets[0]?.id"
+            [tournamentState]="tournamentState"
+            [teams]="tournament.teams"
+            (matchFinished)="onBracketMatchFinished($event)">
+          </app-standing-bracket>
+        </div>
+      </p-tabPanel>
 
       <!-- Results Tab (only if tournament is finished and we have results) -->
-      <mat-tab label="Results" *ngIf="tournamentState?.currentStatus === TournamentStatus.Finished && finalStandings.length > 0">
-        <ng-template matTabContent>
-          <div class="tab-content results-tab-content">
-            <app-final-standings-display
-              [finalStandings]="finalStandings">
-            </app-final-standings-display>
-          </div>
-        </ng-template>
-      </mat-tab>
-    </mat-tab-group>
+      <p-tabPanel header="Results" *ngIf="tournamentState?.currentStatus === TournamentStatus.Finished && finalStandings.length > 0">
+        <div class="tab-content results-tab-content">
+          <app-final-standings-display
+            [finalStandings]="finalStandings">
+          </app-final-standings-display>
+        </div>
+      </p-tabPanel>
+    </p-tabView>
   </div>
 </div>
 
 <!-- Loading Indicator -->
 <div class="loading-container" *ngIf="isReloading">
-  <mat-spinner></mat-spinner>
+  <p-progressSpinner></p-progressSpinner>
   <p>Loading tournament data...</p>
 </div>
 
-<!-- Confirmation Dialog Template -->
-<ng-template #confirmDialog>
-  <h2 mat-dialog-title>Confirm Removal</h2>
-  <mat-dialog-content>
-    Are you sure you want to remove <strong>{{ teamToRemove?.name }}</strong> from this tournament?
-  </mat-dialog-content>
-  <mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close>Cancel</button>
-    <button mat-raised-button color="warn" [mat-dialog-close]="true">Remove</button>
-  </mat-dialog-actions>
-</ng-template>
-
 <!-- Error Messages -->
 <div *ngIf="errorMessage" class="error-container">
-  <mat-icon>error</mat-icon>
+  <i class="pi pi-exclamation-circle"></i>
   <p>{{ errorMessage }}</p>
-  <button mat-icon-button (click)="errorMessage = ''">
-    <mat-icon>close</mat-icon>
+  <button pButton icon (click)="errorMessage = ''">
+    <i class="pi pi-times"></i>
   </button>
 </div>
