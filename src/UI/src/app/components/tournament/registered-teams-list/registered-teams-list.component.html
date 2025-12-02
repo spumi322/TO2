@@ -1,11 +1,13 @@
-<mat-card class="registered-teams-card">
-  <mat-card-header>
-    <mat-icon mat-card-avatar>people</mat-icon>
-    <mat-card-title>Registered Teams</mat-card-title>
-  </mat-card-header>
-  <mat-card-content>
+<p-card class="registered-teams-card">
+  <ng-template pTemplate="header">
+    <div class="card-header-content">
+      <i class="card-avatar pi pi-users"></i>
+      <h3>Registered Teams</h3>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="content">
     <div *ngIf="!teams?.length" class="empty-state">
-      <mat-icon class="empty-icon">sports_esports</mat-icon>
+      <i class="empty-icon pi pi-inbox"></i>
       <p>No teams have been registered yet</p>
       <p *ngIf="isRegistrationOpen" class="muted-text">Add teams using the form above</p>
     </div>
@@ -13,10 +15,12 @@
       <div *ngFor="let team of teams" class="team-card">
         <div class="team-avatar">{{ team?.name?.charAt(0) }}</div>
         <div class="team-name">{{ team?.name }}</div>
-        <button *ngIf="isRegistrationOpen" mat-icon-button color="warn" (click)="onRemoveTeam(team)">
-          <mat-icon>delete</mat-icon>
-        </button>
+        <p-button *ngIf="isRegistrationOpen"
+                  icon="pi pi-trash"
+                  severity="danger"
+                  [text]="true"
+                  (onClick)="onRemoveTeam(team)"></p-button>
       </div>
     </div>
-  </mat-card-content>
-</mat-card>
+  </ng-template>
+</p-card>

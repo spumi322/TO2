@@ -1,14 +1,12 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { MatStepper } from '@angular/material/stepper';
-import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
+import { MessageService } from 'primeng/api';
+import { MenuItem } from 'primeng/api';
 import { finalize } from 'rxjs/operators';
 
 import { Format, Tournament } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
-import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-create-tournament-wizard',
@@ -16,10 +14,13 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
   styleUrls: ['./create-tournament-wizard.component.css']
 })
 export class CreateTournamentWizardComponent implements OnInit {
-  @ViewChild('stepper') stepper!: MatStepper;
-
-  // Stepper configuration
-  isLinear = true;
+  // Wizard state
+  activeStep = 0;
+  wizardSteps: MenuItem[] = [
+    { label: 'Tournament Details' },
+    { label: 'Choose Format' },
+    { label: 'Team Setup' }
+  ];
 
   // Forms
   detailsForm!: FormGroup;
@@ -30,13 +31,20 @@ export class CreateTournamentWizardComponent implements OnInit {
   Format = Format;
   selectedFormat: Format | null = null;
   isSubmitting = false;
-  errorMessage = '';
+
+  bracketSizes = [
+    { label: '2 teams', value: 2 },
+    { label: '4 teams', value: 4 },
+    { label: '8 teams', value: 8 },
+    { label: '16 teams', value: 16 },
+    { label: '32 teams', value: 32 }
+  ];
 
   constructor(
     private fb: FormBuilder,
     private tournamentService: TournamentService,
     private router: Router,
-    private dialog: MatDialog
+    private messageService: MessageService
   ) { }
 
   ngOnInit(): void {
@@ -77,6 +85,22 @@ export class CreateTournamentWizardComponent implements OnInit {
   onFormatChange(format: Format): void {
     this.selectedFormat = format;
     this.resetConfigForm(format);
+  }
+
+  selectFormat(format: Format): void {
+    this.formatForm.patchValue({ format });
+  }
+
+  nextStep(): void {
+    if (this.activeStep < 2) {
+      this.activeStep++;
+    }
+  }
+
+  prevStep(): void {
+    if (this.activeStep > 0) {
+      this.activeStep--;
+    }
   }
 
   resetConfigForm(format: Format): void {
@@ -169,31 +193,6 @@ export class CreateTournamentWizardComponent implements OnInit {
     };
   }
 
-  onStepChange(event: StepperSelectionEvent): void {
-    // If going backward, show confirmation
-    if (event.previouslySelectedIndex > event.selectedIndex) {
-      this.confirmBackNavigation(event);
-    }
-  }
-
-  confirmBackNavigation(event: StepperSelectionEvent): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Go Back?',
-        message: 'Are you sure you want to go back? Your current step data will be preserved.'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirmed => {
-      if (!confirmed) {
-        // Cancel navigation - stay on current step
-        setTimeout(() => {
-          this.stepper.selectedIndex = event.previouslySelectedIndex;
-        });
-      }
-    });
-  }
-
   getFormatDisplayName(format: Format | null): string {
     if (!format) return '';
 
@@ -218,7 +217,6 @@ export class CreateTournamentWizardComponent implements OnInit {
     }
 
     this.isSubmitting = true;
-    this.errorMessage = '';
 
     const tournament: Tournament = {
       ...this.detailsForm.value,
@@ -237,11 +235,20 @@ export class CreateTournamentWizardComponent implements OnInit {
       )
       .subscribe({
         next: (res) => {
-          this.router.navigate(['/tournament', res.id]);
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Tournament created successfully!'
+          });
+          setTimeout(() => this.router.navigate(['/tournament', res.id]), 1500);
         },
         error: (err) => {
           console.error('Error creating tournament:', err);
-          this.errorMessage = err.error?.message || 'Failed to create tournament. Please try again.';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: err.error?.message || 'Failed to create tournament. Please try again.'
+          });
         }
       });
   }

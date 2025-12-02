@@ -1,7 +1,7 @@
 <div class="bracket-container">
   <!-- Loading state -->
   <div class="loading-state" *ngIf="isLoading">
-    <mat-spinner diameter="50"></mat-spinner>
+    <p-progressSpinner diameter="50"></p-progressSpinner>
     <p>Loading bracket...</p>
   </div>
 
@@ -13,7 +13,7 @@
 
   <!-- Empty state -->
   <div class="empty-state" *ngIf="!isLoading && matches.length === 0">
-    <mat-icon class="empty-icon">emoji_events</mat-icon>
+    <i class="empty-icon pi pi-trophy"></i>
     <p>Bracket not ready yet</p>
     <p class="hint">Complete group stage and start the bracket to view matches</p>
   </div>

@@ -1,25 +1,34 @@
-<mat-card class="teams-card" *ngIf="tournament">
-  <mat-card-header>
-    <mat-icon mat-card-avatar>groups</mat-icon>
-    <mat-card-title>Team Management</mat-card-title>
-    <mat-card-subtitle>{{ tournament?.teams?.length || 0 }}/{{ tournament?.maxTeams }} teams registered</mat-card-subtitle>
-  </mat-card-header>
-  <mat-card-content>
-    <mat-progress-bar mode="determinate" [value]="getProgressPercentage()"></mat-progress-bar>
+<p-card class="teams-card" *ngIf="tournament">
+  <ng-template pTemplate="header">
+    <div class="card-header-content">
+      <i class="card-avatar pi pi-users"></i>
+      <div>
+        <h3>Team Management</h3>
+        <p class="subtitle">{{ tournament?.teams?.length || 0 }}/{{ tournament?.maxTeams }} teams registered</p>
+      </div>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="content">
+    <p-progressBar [value]="getProgressPercentage()"></p-progressBar>
 
     <!-- Bulk Add Form -->
     <form [formGroup]="bulkAddForm" (ngSubmit)="onSubmit()" class="bulk-add-form">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Team Names (comma separated)</mat-label>
-        <textarea matInput formControlName="teamNames" rows="3"></textarea>
-        <mat-hint>Enter multiple team names separated by commas</mat-hint>
-        <mat-error *ngIf="bulkAddForm.get('teamNames')?.hasError('required')">Team names are required</mat-error>
-      </mat-form-field>
+      <div class="field full-width">
+        <label for="teamNames">Team Names (comma separated)</label>
+        <textarea pInputTextarea id="teamNames" formControlName="teamNames" rows="3"
+                  [class.ng-invalid]="bulkAddForm.get('teamNames')?.invalid && bulkAddForm.get('teamNames')?.touched"
+                  class="w-full"></textarea>
+        <small class="hint">Enter multiple team names separated by commas</small>
+        <small class="p-error" *ngIf="bulkAddForm.get('teamNames')?.hasError('required') && bulkAddForm.get('teamNames')?.touched">
+          Team names are required
+        </small>
+      </div>
       <div class="form-actions">
-        <button mat-raised-button color="primary" type="submit" [disabled]="bulkAddForm.invalid || isAddingTeams">
-          <mat-icon>add_circle</mat-icon> Add Teams
-        </button>
+        <p-button label="Add Teams"
+                  icon="pi pi-plus-circle"
+                  type="submit"
+                  [disabled]="bulkAddForm.invalid || isAddingTeams"></p-button>
       </div>
     </form>
-  </mat-card-content>
-</mat-card>
+  </ng-template>
+</p-card>

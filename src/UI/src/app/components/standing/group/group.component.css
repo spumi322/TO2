@@ -4,9 +4,23 @@
 
 .group-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-  gap: 24px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  max-width: 100%;
+  gap: 16px;
+  padding: 12px;
+}
+
+/* Limit to 4 columns maximum on large screens */
+@media (min-width: 1400px) {
+  .group-container {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1399px) {
+  .group-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .group-card {
@@ -27,25 +41,25 @@
 .group-header {
   background: var(--primary-color);
   color: var(--text-dark);
-  padding: 16px;
+  padding: 10px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: 700;
-  font-size: 1.2rem;
+  font-size: 1rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .status-badge {
-  padding: 6px 12px;
+  padding: 4px 8px;
   border-radius: var(--border-radius);
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  border: 2px solid;
+  gap: 4px;
+  border: 1px solid;
 }
 
 .status-badge.finished {
@@ -70,21 +84,22 @@
 
 .group-standings th {
   background: var(--bg-dark);
-  padding: 12px 8px;
+  padding: 8px 6px;
   text-align: center;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-primary);
-  font-size: 0.85rem;
-  letter-spacing: 0.5px;
+  font-size: 0.75rem;
+  letter-spacing: 0.3px;
   border-bottom: var(--border-width) solid var(--border-color);
 }
 
 .group-standings td {
-  padding: 12px 8px;
+  padding: 8px 6px;
   text-align: center;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-primary);
+  font-size: 0.9rem;
 }
 
 .group-standings tbody tr:last-child td {
@@ -145,17 +160,33 @@
   letter-spacing: 0.5px;
 }
 
-/* Desktop optimized */
-@media (max-width: 1200px) {
+/* Matches section heading */
+.group-card h4 {
+  margin: 12px 12px 8px 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1023px) {
   .group-container {
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 768px) {
   .group-container {
     grid-template-columns: 1fr;
-    padding: 16px;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .group-header {
+    font-size: 0.9rem;
+    padding: 8px 10px;
   }
 }

@@ -3,30 +3,30 @@
    ======================================== */
 
 .tournament-details-container {
-  max-width: 1400px;
+  max-width: 100%;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0;
 }
 
 /* Tab Content Styles */
 .tournament-content {
-  margin-top: 24px;
+  margin-top: 0;
 }
 
 .tab-content {
-  padding: 24px 0;
+  padding: 12px 16px;
 }
 
 .results-tab-content {
-  padding: 8px 0;
+  padding: 12px 16px;
 }
 
 /* Grid Layout - Desktop optimized */
 .overview-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: 16px;
+  margin-bottom: 16px;
 }
 
 /* Loading State */
@@ -80,18 +80,25 @@
 /* Desktop optimized - responsive adjustments */
 @media (max-width: 1200px) {
   .tournament-details-container {
-    max-width: 1000px;
-    padding: 16px;
+    padding: 0;
+  }
+
+  .tab-content {
+    padding: 12px;
   }
 }
 
 @media (max-width: 900px) {
   .overview-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
   }
 
   .tournament-details-container {
-    padding: 12px;
+    padding: 0;
+  }
+
+  .tab-content {
+    padding: 8px 12px;
   }
 }
