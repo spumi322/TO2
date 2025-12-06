@@ -1,14 +1,12 @@
-<p-card class="top-4-card" *ngIf="finalStandings.length > 0">
-  <ng-template pTemplate="header">
-    <div class="card-header-content">
-      <i class="pi pi-trophy card-avatar"></i>
-      <div>
-        <h3>Top 4 Results</h3>
-        <p class="subtitle">Final Standings</p>
-      </div>
+<div class="top-4-card" *ngIf="finalStandings.length > 0">
+  <div class="card-header">
+    <i class="pi pi-trophy"></i>
+    <div class="header-text">
+      <h3>Top 4 Results</h3>
+      <p class="subtitle">Final Standings</p>
     </div>
-  </ng-template>
-  <ng-template pTemplate="content">
+  </div>
+  <div class="card-content">
     <div class="top-4-list">
       <div *ngFor="let standing of topFourStandings" class="top-4-item">
         <span class="placement-badge" [ngClass]="getRankClass(standing.placement)">
@@ -25,5 +23,5 @@
         </div>
       </div>
     </div>
-  </ng-template>
-</p-card>
+  </div>
+</div>

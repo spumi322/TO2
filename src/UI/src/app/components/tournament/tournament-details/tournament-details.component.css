@@ -1,104 +1,169 @@
 /* ========================================
-   Tournament Details - Tactical Green Theme
+   Tournament Details - Centered Card Pattern
    ======================================== */
 
+/* Outer container - centered, full height, dark background */
 .tournament-details-container {
-  max-width: 100%;
-  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 0.5rem 3rem;
+  padding-top: 80px; /* Space for fixed navbar */
+  background-color: var(--bg-dark);
+}
+
+/* Main card - centered, max-width */
+.tournament-details-card {
+  background: var(--bg-card);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-card);
+  width: 100%;
+  max-width: 1600px;
+  overflow: hidden;
+}
+
+/* Tabs container */
+.tabs-container {
   padding: 0;
 }
 
-/* Tab Content Styles */
-.tournament-content {
-  margin-top: 0;
-}
-
+/* Tab content - consistent padding */
 .tab-content {
-  padding: 12px 16px;
+  padding: 1.25rem;
 }
 
 .results-tab-content {
-  padding: 12px 16px;
+  padding: 1.25rem;
 }
 
-/* Grid Layout - Desktop optimized */
+/* Overview grid - 2 columns for info/team-management/results */
 .overview-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
 }
 
-/* Loading State */
-.loading-container {
+/* Loading overlay - full screen */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 14, 26, 0.8);
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px;
-  margin: 20px auto;
-  max-width: 300px;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.loading-spinner {
   text-align: center;
   color: var(--text-primary);
 }
 
-/* Error Messages */
+.loading-spinner p {
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Error container - centered card */
 .error-container {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
   display: flex;
+  justify-content: center;
   align-items: center;
-  background-color: rgba(255, 68, 68, 0.15);
+  min-height: 50vh;
+}
+
+.error-card {
+  background: var(--bg-card);
   border: var(--border-width) solid var(--error-color);
-  color: var(--error-color);
-  padding: 14px 18px;
   border-radius: var(--border-radius);
+  padding: 2rem;
+  text-align: center;
+  max-width: 500px;
   box-shadow: var(--shadow-card);
-  z-index: 9999;
-  animation: slideIn 0.3s ease-out;
 }
 
-.error-container mat-icon {
-  margin-right: 10px;
+.error-card i {
+  font-size: 4rem;
   color: var(--error-color);
+  margin-bottom: 1rem;
 }
 
-/* Animations */
-@keyframes slideIn {
-  from {
-    transform: translateY(100px);
-    opacity: 0;
-  }
-
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+.error-card h3 {
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+  font-size: 1.5rem;
 }
 
-/* Desktop optimized - responsive adjustments */
+.error-card p {
+  color: var(--text-muted);
+  margin: 0 0 1.5rem 0;
+}
+
+.retry-button {
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color);
+  border: none;
+  border-radius: var(--border-radius);
+  color: var(--text-dark);
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.retry-button:hover {
+  transform: translateY(-2px);
+}
+
+/* Responsive */
 @media (max-width: 1200px) {
   .tournament-details-container {
-    padding: 0;
-  }
-
-  .tab-content {
-    padding: 12px;
+    padding: 0.5rem 2rem;
+    padding-top: 80px;
   }
 }
 
 @media (max-width: 900px) {
-  .overview-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
+  .tournament-details-container {
+    padding: 0.5rem 1rem;
+    padding-top: 80px;
   }
 
-  .tournament-details-container {
-    padding: 0;
+  .overview-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .tab-content {
-    padding: 8px 12px;
+    padding: 1rem;
+  }
+
+  .results-tab-content {
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .tournament-details-container {
+    padding: 0.5rem;
+    padding-top: 72px;
+  }
+
+  .tab-content {
+    padding: 0.75rem;
+  }
+
+  .results-tab-content {
+    padding: 0.75rem;
   }
 }

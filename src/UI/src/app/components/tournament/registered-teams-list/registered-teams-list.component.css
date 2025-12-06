@@ -17,15 +17,31 @@
   border-color: var(--primary-color);
 }
 
-mat-card-header {
-  background-color: var(--bg-dark);
-  padding: 16px;
+/* Native card header */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bg-dark);
   border-bottom: var(--border-width) solid var(--border-color);
 }
 
-mat-card-content {
-  padding: 20px;
-  background: var(--bg-card);
+.card-header i {
+  color: var(--primary-color);
+  font-size: 1.25rem;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Native card content */
+.card-content {
+  padding: 1.25rem;
 }
 
 .muted-text {
@@ -93,6 +109,30 @@ mat-card-content {
   flex: 1;
   font-weight: 600;
   color: var(--text-primary);
+  font-size: 1rem;
+}
+
+.remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  color: var(--error-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.remove-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error-color);
+}
+
+.remove-btn i {
   font-size: 1rem;
 }
 

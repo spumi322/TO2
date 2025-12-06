@@ -17,33 +17,155 @@
   border-color: var(--primary-color);
 }
 
-/* PrimeNG card styling */
-::ng-deep .teams-card .p-card-header {
-  padding: 12px;
+/* Native card header */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--bg-dark);
+  border-bottom: var(--border-width) solid var(--border-color);
 }
 
-::ng-deep .teams-card .p-card-content,
-::ng-deep .teams-card .p-card-body {
-  padding: 12px;
+.card-header i {
+  color: var(--primary-color);
+  font-size: 1.25rem;
 }
 
-::ng-deep .teams-card p-progressBar {
-  margin: 12px 0;
+.header-text {
+  flex: 1;
 }
 
+.header-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-text .subtitle {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Native card content */
+.card-content {
+  padding: 1rem;
+}
+
+/* Native progress bar */
+.progress-container {
+  margin-bottom: 1rem;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-dark);
+  border-radius: 4px;
+  overflow: hidden;
+  border: var(--border-width) solid var(--border-color);
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-color), #00ff6a);
+  transition: width 0.3s ease;
+  border-radius: 4px 0 0 4px;
+}
+
+/* Form */
 .bulk-add-form {
   display: flex;
   flex-direction: column;
-  margin-top: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.textarea-input {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--bg-dark);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+
+.textarea-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(0, 217, 54, 0.1);
+}
+
+.textarea-input.ng-invalid.ng-touched {
+  border-color: var(--error-color);
+}
+
+.hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.error-message {
+  font-size: 0.75rem;
+  color: var(--error-color);
 }
 
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 12px;
-  gap: 8px;
+  margin-top: 1rem;
+  gap: 0.5rem;
 }
 
-.full-width {
-  width: 100%;
+.submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--primary-color);
+  border: none;
+  border-radius: var(--border-radius);
+  color: var(--text-dark);
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #00ff6a;
+  box-shadow: var(--glow-primary);
+  transform: translateY(-2px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submit-btn i {
+  font-size: 1rem;
 }

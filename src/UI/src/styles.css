@@ -10,8 +10,9 @@ body {
   font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 14px;
   line-height: 1.5;
-  background: var(--p-surface-50);
-  color: var(--p-text-color);
+  background: var(--bg-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
 }
 
 /* Container */
@@ -31,19 +32,21 @@ body {
 
 /* Success/Error Alert Helpers */
 .alert-success {
-  background: var(--p-green-50);
-  color: var(--p-green-700);
-  padding: 1rem;
-  border-radius: 6px;
-  border-left: 4px solid var(--p-green-500);
+  background: rgba(76, 175, 80, 0.2);
+  color: var(--success-color);
+  border: 1px solid var(--success-color);
+  padding: 12px;
+  border-radius: var(--border-radius);
+  margin-bottom: 16px;
 }
 
 .alert-error {
-  background: var(--p-red-50);
-  color: var(--p-red-700);
-  padding: 1rem;
-  border-radius: 6px;
-  border-left: 4px solid var(--p-red-500);
+  background: rgba(244, 67, 54, 0.2);
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+  padding: 12px;
+  border-radius: var(--border-radius);
+  margin-bottom: 16px;
 }
 
 /* Snackbar Classes (for backwards compatibility during migration) */
@@ -59,60 +62,239 @@ body {
   font-weight: 600;
 }
 
-/* Form Field Styles */
-.field {
-  margin-bottom: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+/* Body padding for fixed navbar */
+body {
+  padding-top: 64px;
 }
 
-.field label {
+@media (max-width: 768px) {
+  body {
+    padding-top: 64px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    padding-top: 56px;
+  }
+}
+
+/* PrimeNG Dark Mode Component Overrides - Minimal Global Theming */
+/* Using cleaner approach without excessive !important flags */
+
+/* Core PrimeNG theme adjustments - only essentials */
+.p-component {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Menubar (Navbar) */
+.p-menubar {
+  background: var(--bg-card);
+  border: none;
+  border-radius: 0;
+}
+
+.p-menubar .p-menubar-root-list {
+  background: transparent;
+}
+
+/* Menu (Dropdown) */
+.p-menu {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.p-menu .p-menuitem-link {
+  color: var(--text-primary);
+}
+
+.p-menu .p-menuitem-link:hover {
+  background: var(--bg-elevated);
+}
+
+.p-menu .p-menuitem-icon {
+  color: var(--text-muted);
+}
+
+.p-menu .p-submenu-header {
+  background: transparent;
+  color: var(--text-muted);
   font-weight: 600;
-  color: var(--p-text-color);
-  font-size: 0.875rem;
-}
-
-.field small.hint {
-  color: var(--p-text-secondary-color);
   font-size: 0.75rem;
-  margin-top: -0.25rem;
+  text-transform: uppercase;
+  padding: 8px 12px 4px;
 }
 
-.field small.p-error {
-  color: var(--p-red-500);
-  font-size: 0.75rem;
-  display: block;
+.p-menu-separator {
+  border-color: var(--border-color);
 }
 
-.field input.ng-invalid.ng-touched,
-.field textarea.ng-invalid.ng-touched,
-.field p-dropdown.ng-invalid.ng-touched {
-  border-color: var(--p-red-500);
+/* Dropdown panel */
+.p-dropdown-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
 }
 
-/* Full Width Helper */
-.full-width {
-  width: 100%;
+.p-dropdown-panel .p-dropdown-item {
+  color: var(--text-primary);
 }
 
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 1.5rem;
+.p-dropdown-panel .p-dropdown-item:hover {
+  background: var(--bg-elevated);
 }
 
-/* Card Header Content */
-.card-header-content {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
+.p-dropdown-panel .p-dropdown-item.p-highlight {
+  background: var(--primary-color);
+  color: white;
 }
 
-.card-header-content .card-avatar {
-  font-size: 2rem;
-  color: var(--p-primary-color);
+/* Toast notifications */
+.p-toast .p-toast-message {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.p-toast .p-toast-message.p-toast-message-success {
+  border-left: 4px solid var(--success-color);
+}
+
+.p-toast .p-toast-message.p-toast-message-error {
+  border-left: 4px solid var(--error-color);
+}
+
+/* Dialog */
+.p-dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.p-dialog .p-dialog-header {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.p-dialog .p-dialog-content {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+/* PrimeNG TabView Dark Mode Overrides */
+.p-tabview .p-tabview-nav {
+  background: var(--bg-card);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 1rem 1.5rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.p-tabview .p-tabview-nav li .p-tabview-nav-link:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+  background: transparent;
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+  font-weight: 600;
+}
+
+.p-tabview .p-tabview-panels {
+  background: var(--bg-card);
+  padding: 0;
+  border: none;
+}
+
+/* Table */
+.p-datatable .p-datatable-thead > tr > th {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.p-datatable .p-datatable-tbody > tr {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background: var(--bg-elevated);
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  border-color: var(--border-color);
+}
+
+/* Progress Spinner */
+.p-progress-spinner-circle {
+  stroke: var(--primary-color);
+}
+
+/* Brackets Viewer Dark Mode */
+.brackets-viewer {
+  background: var(--bg-dark);
+}
+
+.bracket {
+  background: transparent;
+}
+
+.match {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+}
+
+.match-participant {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.match-participant.winner {
+  background: var(--primary-color);
+  color: white;
+}
+
+.connector {
+  stroke: var(--border-color);
+}
+
+/* FIXED — Full override for PrimeNG tooltip */
+.p-tooltip.error-tooltip {
+  background: var(--error-color) !important;
+  border-radius: var(--border-radius) !important;
+  padding: 0 !important; /* container shouldn't add padding */
+}
+
+.p-tooltip.error-tooltip .p-tooltip-text {
+  background: var(--error-color) !important;
+  color: #fff !important;
+  font-size: 0.85rem !important;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: var(--border-radius) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Fix arrow color */
+.p-tooltip.error-tooltip.p-tooltip-right .p-tooltip-arrow {
+  border-right-color: var(--error-color) !important;
+}
+
+.p-tooltip.error-tooltip.p-tooltip-left .p-tooltip-arrow {
+  border-left-color: var(--error-color) !important;
+}
+
+.p-tooltip.error-tooltip.p-tooltip-top .p-tooltip-arrow {
+  border-top-color: var(--error-color) !important;
+}
+
+.p-tooltip.error-tooltip.p-tooltip-bottom .p-tooltip-arrow {
+  border-bottom-color: var(--error-color) !important;
 }

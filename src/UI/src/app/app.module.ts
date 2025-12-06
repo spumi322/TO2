@@ -22,6 +22,7 @@ import { GroupComponent } from './components/standing/group/group.component';
 import { BracketComponent } from './components/standing/bracket/bracket.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { MenubarModule } from 'primeng/menubar';
+import { MenuModule } from 'primeng/menu';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TabViewModule } from 'primeng/tabview'; 
@@ -51,7 +52,6 @@ import { MessagesModule } from 'primeng/messages';
 import { MessageService } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
 import { LandingComponent } from './components/landing/landing.component';
-import { CreateTournamentWizardComponent } from './components/tournament/create-tournament-wizard/create-tournament-wizard.component';
 import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confirm-dialog.component';
 
 @NgModule({
@@ -74,7 +74,6 @@ import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confi
     LoginComponent,
     RegisterComponent,
     LandingComponent,
-    CreateTournamentWizardComponent,
     ConfirmDialogComponent
   ],
   imports: [
@@ -93,6 +92,7 @@ import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confi
     DialogModule,
     TabViewModule,
     MenubarModule,
+    MenuModule,
     TableModule,
     PasswordModule,
     MessageModule,

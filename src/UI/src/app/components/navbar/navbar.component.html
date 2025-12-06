@@ -1,39 +1,92 @@
-<p-menubar class="navbar" [model]="items">
-  <!-- Start facet: Always visible on the left -->
-  <ng-template pTemplate="start">
+<nav class="navbar">
+  <div class="navbar-container">
+    <!-- Left: Navigation Links -->
     <div class="navbar-left">
-      <a routerLink="/" class="home-link">My Tournaments</a>
+      <div class="logo">
+        <i class="pi pi-trophy"></i>
+        <span>TO2</span>
+      </div>
+      <div class="nav-links">
+        <a routerLink="/tournaments" routerLinkActive="active" class="nav-link">
+          <i class="pi pi-th-large"></i>
+          <span>Tournaments</span>
+        </a>
+      </div>
     </div>
-  </ng-template>
 
-  <!-- End facet: Contains buttons based on auth state -->
-  <ng-template pTemplate="end">
+    <!-- Middle: Current Tournament Info -->
+    <div class="navbar-middle" *ngIf="currentTournament">
+      <span class="tournament-badge" [ngClass]="getStatusClass(currentTournament.status)">
+        {{ getStatusLabel(currentTournament.status) }}
+      </span>
+      <span class="tournament-name">{{ currentTournament.name }}</span>
+      <span class="tournament-format">• {{ getFormatLabel(currentTournament.format) }}</span>
+    </div>
+
+    <!-- Right: User Info & Actions -->
     <div class="navbar-right">
       <!-- Authenticated User View -->
       <ng-container *ngIf="isAuthenticated && currentUser">
-        <button pButton
+        <!-- Tournament Actions (if tournament context exists) -->
+        <ng-container *ngIf="currentTournament && tournamentState">
+          <!-- Start Groups button (for BracketAndGroups format in Setup state) -->
+          <button *ngIf="currentTournament.isRegistrationOpen && tournamentState.currentStatus === TournamentStatus.Setup && currentTournament.format === Format.GroupsAndBracket"
+                  pButton
+                  type="button"
+                  label="Start Groups"
+                  icon="pi pi-play"
+                  class="p-button-success action-btn"
+                  (click)="onStartGroups()"
+                  [disabled]="(currentTournament.teams?.length || 0) < 2">
+          </button>
+
+          <!-- Start Tournament button (for BracketOnly format in Setup state) -->
+          <button *ngIf="currentTournament.isRegistrationOpen && tournamentState.currentStatus === TournamentStatus.Setup && currentTournament.format === Format.BracketOnly"
+                  pButton
+                  type="button"
+                  label="Start Tournament"
+                  icon="pi pi-play"
+                  class="p-button-success action-btn"
+                  (click)="onStartTournament()"
+                  [disabled]="(currentTournament.teams?.length || 0) < 2">
+          </button>
+
+          <!-- Start Bracket Button (only in GroupsCompleted state) -->
+          <button *ngIf="tournamentState.currentStatus === TournamentStatus.GroupsCompleted"
+                  pButton
+                  type="button"
+                  label="Start Bracket"
+                  icon="pi pi-play"
+                  class="p-button-success action-btn"
+                  (click)="onStartBracket()">
+          </button>
+
+          <div class="divider" *ngIf="currentTournament.isRegistrationOpen || tournamentState.currentStatus === TournamentStatus.GroupsCompleted"></div>
+        </ng-container>
+
+        <!-- New Tournament button (only if no tournament context) -->
+        <button *ngIf="!currentTournament"
+                pButton
                 type="button"
-                label="Create Tournament"
+                label="New Tournament"
                 icon="pi pi-plus"
-                class="create-btn"
+                class="p-button-text create-btn"
                 (click)="goToCreateTournament($event)">
         </button>
 
-        <div class="user-info">
-          <span class="user-name">
-            <i class="pi pi-user"></i>
-            {{ currentUser.userName }}
-          </span>
-          <span class="tenant-name">{{ currentUser.tenantName }}</span>
-        </div>
+        <div class="divider" *ngIf="!currentTournament"></div>
 
-        <button pButton
-                type="button"
-                label="Logout"
-                icon="pi pi-sign-out"
-                class="logout-btn"
-                (click)="logout($event)">
-        </button>
+        <div class="user-menu-trigger" (click)="toggleUserMenu($event)">
+          <div class="user-avatar">
+            <i class="pi pi-user"></i>
+          </div>
+          <div class="user-details">
+            <span class="user-name">{{ currentUser.userName }}</span>
+            <span class="tenant-name">{{ currentUser.tenantName }}</span>
+          </div>
+          <i class="pi pi-angle-down"></i>
+        </div>
+        <p-menu #userMenu [model]="userMenuItems" [popup]="true"></p-menu>
       </ng-container>
 
       <!-- Guest User View -->
@@ -42,18 +95,17 @@
                 type="button"
                 label="Sign In"
                 icon="pi pi-sign-in"
-                class="signin-btn"
+                class="p-button-text signin-btn"
                 (click)="goToLogin($event)">
         </button>
         <button pButton
                 type="button"
                 label="Register"
                 icon="pi pi-user-plus"
-                class="register-btn"
-                severity="success"
+                class="p-button-success register-btn"
                 (click)="goToRegister($event)">
         </button>
       </ng-container>
     </div>
-  </ng-template>
-</p-menubar>
+  </div>
+</nav>

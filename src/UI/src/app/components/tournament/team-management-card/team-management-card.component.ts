@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Subject } from 'rxjs';
 import { Tournament } from '../../../models/tournament';
 
 @Component({
@@ -7,13 +8,14 @@ import { Tournament } from '../../../models/tournament';
   templateUrl: './team-management-card.component.html',
   styleUrls: ['./team-management-card.component.css']
 })
-export class TeamManagementCardComponent implements OnInit {
+export class TeamManagementCardComponent implements OnInit, OnDestroy {
   @Input() tournament: Tournament | null = null;
   @Input() isAddingTeams: boolean = false;
 
   @Output() addTeams = new EventEmitter<string[]>();
 
   bulkAddForm!: FormGroup;
+  private destroy$ = new Subject<void>();
 
   constructor(private fb: FormBuilder) { }
 
@@ -21,6 +23,11 @@ export class TeamManagementCardComponent implements OnInit {
     this.bulkAddForm = this.fb.group({
       teamNames: ['', Validators.required]
     });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   onSubmit(): void {

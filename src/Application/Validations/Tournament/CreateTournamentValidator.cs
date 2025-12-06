@@ -39,17 +39,27 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
 
         // TeamsPerBracket validation using configuration
         RuleFor(x => x.TeamsPerBracket)
-            .NotEmpty()
             .Must((dto, teamsPerBracket) =>
             {
-                if (!teamsPerBracket.HasValue) return false;
                 var metadata = _formatConfig.GetFormatMetadata(dto.Format);
+
+                // GroupsOnly: must be null
+                if (!metadata.RequiresBracket)
+                    return teamsPerBracket == null;
+                // BracketAndGroups: must be valid range
+                if (!teamsPerBracket.HasValue)
+                    return false;
+
                 return teamsPerBracket.Value >= metadata.MinTeamsPerBracket
                     && teamsPerBracket.Value <= metadata.MaxTeamsPerBracket;
             })
             .WithMessage(dto =>
             {
                 var metadata = _formatConfig.GetFormatMetadata(dto.Format);
+                
+                if (!metadata.RequiresBracket)
+                    return "Teams per bracket should not be set for GroupsOnly format.";
+
                 return $"Teams per bracket must be between {metadata.MinTeamsPerBracket} and {metadata.MaxTeamsPerBracket}.";
             });
 
@@ -63,7 +73,7 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
                 if (!metadata.RequiresGroups)
                     return teamsPerGroup == null;
 
-                // BracketAndGroup: must be in valid range
+                // BracketAndGroups: must be in valid range
                 if (!teamsPerGroup.HasValue)
                     return false;
 

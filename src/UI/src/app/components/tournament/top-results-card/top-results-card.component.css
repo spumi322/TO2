@@ -21,15 +21,43 @@
   color: #ffd700;
 }
 
-mat-card-header {
-  background-color: var(--bg-dark);
-  padding: 16px;
+/* Native card header */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--bg-dark);
   border-bottom: var(--border-width) solid var(--border-color);
 }
 
-mat-card-content {
-  padding: 20px;
-  background: var(--bg-card);
+.card-header i {
+  color: var(--primary-color);
+  font-size: 1.25rem;
+}
+
+.header-text {
+  flex: 1;
+}
+
+.header-text h3 {
+  margin: 0 0 4px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.header-text .subtitle {
+  margin: 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* Native card content */
+.card-content {
+  padding: 1rem;
 }
 
 .top-4-list {
@@ -115,9 +143,7 @@ mat-card-content {
   font-weight: 600;
 }
 
-.top-4-team-detail.champion-label mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
+.top-4-team-detail.champion-label i {
+  font-size: 1rem;
   color: var(--primary-color);
 }

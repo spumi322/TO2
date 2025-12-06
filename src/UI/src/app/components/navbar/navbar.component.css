@@ -1,80 +1,296 @@
-/* Base navbar styling */
+/* Modern Borderless Navbar */
 .navbar {
-  width: 100%;
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
   z-index: 1000;
-  background-color: #1976d2; /* Modern blue */
-  color: #fff;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 1px 0 var(--border-color);
 }
 
-  /* Start facet (left side) */
-  .navbar .navbar-left {
-    display: flex;
-    align-items: center;
-  }
-
-.home-link {
-  color: #fff;
-  text-decoration: none;
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 10px 15px;
+.navbar-container {
+  max-width: 100%;
+  height: 64px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  padding: 0 12px;
+  gap: 32px;
 }
 
-/* End facet (right side) */
-.navbar .navbar-right {
+/* Left Section: Logo & Navigation */
+.navbar-left {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+.logo {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-right: 15px;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  user-select: none;
 }
 
-/* Button styling overrides */
-.create-btn {
-  background-color: #ffffff;
-  border: none;
-  color: #1976d2;
+.logo i {
+  font-size: 1.6rem;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.nav-link i {
+  font-size: 1rem;
+}
+
+.nav-link:hover {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+}
+
+.nav-link.active {
+  background: rgba(76, 175, 80, 0.15);
+  color: var(--primary-color);
+}
+
+/* Middle Section: Tournament Info */
+.navbar-middle {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: 40px;
+}
+
+.tournament-badge {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
-  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-  .create-btn:hover {
-    background-color: #e3f2fd;
-  }
+.tournament-badge.status-setup {
+  background: rgba(33, 150, 243, 0.15);
+  color: #2196f3;
+}
+
+.tournament-badge.status-seeding {
+  background: rgba(255, 152, 0, 0.15);
+  color: #ff9800;
+}
+
+.tournament-badge.status-ongoing {
+  background: rgba(76, 175, 80, 0.15);
+  color: var(--primary-color);
+}
+
+.tournament-badge.status-finished {
+  background: rgba(156, 39, 176, 0.15);
+  color: #9c27b0;
+}
+
+.tournament-badge.status-cancelled {
+  background: rgba(244, 67, 54, 0.15);
+  color: var(--error-color);
+}
+
+.tournament-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.tournament-format {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Right Section: User & Actions */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Divider */
+.divider {
+  width: 1px;
+  height: 32px;
+  background: var(--border-color);
+  margin: 0 8px;
+}
+
+/* User Menu Trigger - Clickable dropdown */
+.user-menu-trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.user-menu-trigger:hover {
+  background: var(--bg-overlay);
+}
+
+.user-menu-trigger:active {
+  transform: scale(0.98);
+}
+
+.user-menu-trigger > .pi-angle-down {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  transition: transform 0.2s ease;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1rem;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.user-name {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.tenant-name {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+/* Button Overrides - Use PrimeNG text buttons for clean look */
+.action-btn {
+  font-weight: 600 !important;
+}
+
+.create-btn {
+  color: var(--primary-color) !important;
+}
+
+.create-btn:hover {
+  background: rgba(76, 175, 80, 0.1) !important;
+}
 
 .signin-btn {
-  background-color: transparent;
-  border: 1px solid #ffffff;
-  color: #fff;
-  font-weight: 600;
-  border-radius: 4px;
+  color: var(--text-primary) !important;
 }
 
-  .signin-btn:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+.signin-btn:hover {
+  background: var(--bg-elevated) !important;
+}
+
+.register-btn {
+  background: var(--primary-color) !important;
+  border: none !important;
+  color: white !important;
+}
+
+.register-btn:hover {
+  background: var(--primary-hover) !important;
+}
+
+/* User menu styling handled by PrimeNG Menu component */
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .navbar-container {
+    gap: 16px;
+    padding: 0 16px;
   }
 
-/* Adjust body padding so content isn’t hidden behind the fixed navbar */
-body {
-  padding-top: 60px; /* Adjust based on the navbar height */
+  .navbar-left {
+    gap: 16px;
+  }
+
+  .nav-link span {
+    display: none;
+  }
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
-  .navbar .navbar-left .home-link {
-    font-size: 1.2rem;
-    padding: 8px 10px;
+  .navbar-container {
+    grid-template-columns: auto auto;
+    gap: 12px;
   }
 
-  .navbar .navbar-right {
-    gap: 5px;
-    padding-right: 10px;
+  .navbar-middle {
+    display: none;
   }
 
-  body {
-    padding-top: 80px; /* Increase if navbar height increases on smaller screens */
+  .action-btn .p-button-label {
+    display: none;
+  }
+
+  .logo span {
+    display: none;
+  }
+
+  .user-menu-trigger {
+    padding: 6px;
+  }
+
+  .user-details {
+    display: none;
+  }
+
+  .user-menu-trigger > .pi-angle-down {
+    display: none;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  .create-btn .p-button-label {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar-container {
+    height: 56px;
   }
 }

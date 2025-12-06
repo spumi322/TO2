@@ -1,23 +1,15 @@
-<div class="tournament-details-container" *ngIf="tournament$ | async as tournament">
-  <!-- Tournament Header -->
-  <app-tournament-header
-    [tournament]="tournament"
-    [tournamentState]="tournamentState"
-    [isReloading]="isReloading"
-    (startGroups)="onStartGroups()"
-    (startTournament)="startTournament()"
-    (startBracket)="onStartBracket()">
-  </app-tournament-header>
+<div class="tournament-details-container">
+  <div class="tournament-details-card" *ngIf="tournament$ | async as tournament">
 
-  <!-- Tournament State Banner -->
-  <app-tournament-state-banner
-    [tournamentState]="tournamentState"
-    [isRegistrationOpen]="tournament?.isRegistrationOpen || false">
-  </app-tournament-state-banner>
+    <!-- Tournament State Banner -->
+    <!--<app-tournament-state-banner
+      [tournamentState]="tournamentState"
+      [isRegistrationOpen]="tournament?.isRegistrationOpen || false">
+    </app-tournament-state-banner>-->
 
-  <!-- Main Content Area -->
-  <div class="tournament-content">
-    <p-tabView [(activeIndex)]="activeTabIndex">
+    <!-- Tabs Container -->
+    <div class="tabs-container">
+      <p-tabView [(activeIndex)]="activeTabIndex">
       <!-- Overview Tab -->
       <p-tabPanel header="Overview">
         <div class="tab-content">
@@ -85,20 +77,26 @@
         </div>
       </p-tabPanel>
     </p-tabView>
+    </div>
   </div>
-</div>
 
-<!-- Loading Indicator -->
-<div class="loading-container" *ngIf="isReloading">
-  <p-progressSpinner></p-progressSpinner>
-  <p>Loading tournament data...</p>
-</div>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="isReloading">
+    <div class="loading-spinner">
+      <p-progressSpinner></p-progressSpinner>
+      <p>Loading tournament data...</p>
+    </div>
+  </div>
 
-<!-- Error Messages -->
-<div *ngIf="errorMessage" class="error-container">
-  <i class="pi pi-exclamation-circle"></i>
-  <p>{{ errorMessage }}</p>
-  <button pButton icon (click)="errorMessage = ''">
-    <i class="pi pi-times"></i>
-  </button>
+  <!-- Error State (centered card if no tournament) -->
+  <div class="error-container" *ngIf="!tournament && errorMessage">
+    <div class="error-card">
+      <i class="pi pi-exclamation-triangle"></i>
+      <h3>Error Loading Tournament</h3>
+      <p>{{ errorMessage }}</p>
+      <button class="retry-button" (click)="loadTournamentData()">
+        <i class="pi pi-refresh"></i> Retry
+      </button>
+    </div>
+  </div>
 </div>

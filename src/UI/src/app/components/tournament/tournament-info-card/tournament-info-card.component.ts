@@ -1,7 +1,8 @@
 import { Component, Input } from '@angular/core';
-import { Tournament, Format } from '../../../models/tournament';
+import { Tournament, Format, TournamentStatus } from '../../../models/tournament';
 import { Standing } from '../../../models/standing';
 import { FormatConfig } from '../../../utils/format-config';
+import { Status } from 'brackets-model';
 
 @Component({
   selector: 'app-tournament-info-card',
@@ -15,6 +16,7 @@ export class TournamentInfoCardComponent {
 
   // Expose enum for template
   Format = Format;
+  TournamentStatus = TournamentStatus;
 
   getFormatLabel(format: Format): string {
     return FormatConfig.getFormatLabel(format);

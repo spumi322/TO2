@@ -17,14 +17,41 @@
   border-color: var(--primary-color);
 }
 
-/* PrimeNG card styling */
-::ng-deep .info-card .p-card-header {
-  padding: 12px;
+/* Native card header */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bg-dark);
+  border-bottom: var(--border-width) solid var(--border-color);
 }
 
-::ng-deep .info-card .p-card-content,
-::ng-deep .info-card .p-card-body {
-  padding: 12px;
+.card-header i {
+  color: var(--primary-color);
+  font-size: 1.25rem;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Native card content */
+.card-content {
+  padding: 1rem;
+}
+
+.card-content > p {
+  margin: 0 0 1rem 0;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.card-content > p:last-child {
+  margin-bottom: 0;
 }
 
 .muted-text {
@@ -35,9 +62,8 @@
 .info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 12px;
-  margin-top: 12px;
-  padding-top: 12px;
+  gap: 1rem;
+  padding-top: 1rem;
   border-top: var(--border-width) solid var(--border-color);
 }
 

@@ -26,38 +26,6 @@ namespace Domain.Configuration
         /// </summary>
         BestOf GetDefaultBestOf();
 
-        /// <summary>
-        /// Gets all valid BestOf values that are supported.
-        /// </summary>
-        IEnumerable<BestOf> GetValidBestOfValues();
-
-        /// <summary>
-        /// Checks if a BestOf value is valid and supported.
-        /// </summary>
-        bool IsValidBestOf(BestOf bestOf);
-
-        // Format Configuration
-
-        /// <summary>
-        /// Gets the display name for a tournament format.
-        /// </summary>
-        string GetFormatDisplayName(Format format);
-
-        /// <summary>
-        /// Checks if the format requires group stage.
-        /// </summary>
-        bool RequiresGroups(Format format);
-
-        /// <summary>
-        /// Checks if the format requires bracket stage.
-        /// </summary>
-        bool RequiresBracket(Format format);
-
-        /// <summary>
-        /// Gets all valid Format values that are supported.
-        /// </summary>
-        IEnumerable<Format> GetValidFormatValues();
-
         // Format Metadata & Validation
 
         /// <summary>

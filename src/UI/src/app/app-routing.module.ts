@@ -3,7 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { TournamentListComponent } from './components/tournament/tournament-list/tournament-list.component';
 import { TournamentDetailsComponent } from './components/tournament/tournament-details/tournament-details.component';
 import { CreateTournamentComponent } from './components/tournament/create-tournament/create-tournament.component';
-import { CreateTournamentWizardComponent } from './components/tournament/create-tournament-wizard/create-tournament-wizard.component';
 import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 import { LandingComponent } from './components/landing/landing.component';
@@ -15,7 +14,7 @@ const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'tournaments', component: TournamentListComponent, canActivate: [AuthGuard] },
   { path: 'tournament/:id', component: TournamentDetailsComponent, canActivate: [AuthGuard] },
-  { path: 'create-tournament', component: CreateTournamentWizardComponent, canActivate: [AuthGuard] }
+  { path: 'create-tournament', component: CreateTournamentComponent, canActivate: [AuthGuard] }
 ];
 
 @NgModule({
