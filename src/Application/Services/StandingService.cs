@@ -3,7 +3,6 @@ using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
-using Domain.Configuration;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
@@ -19,7 +18,7 @@ namespace Application.Services
         private readonly IRepository<Group> _groupRepository;
         private readonly IRepository<Team> _teamRepository;
         private readonly IRepository<TournamentTeam> _tournamentTeamRepository;
-        private readonly ITournamentFormatConfiguration _formatConfig;
+        private readonly IFormatService _formatService;
         private readonly ILogger<StandingService> _logger;
         private readonly IMapper _mapper;
 
@@ -31,7 +30,7 @@ namespace Application.Services
                                IRepository<Group> groupRepository,
                                IRepository<Team> teamRepository,
                                IRepository<TournamentTeam> tournamentTeamRepository,
-                               ITournamentFormatConfiguration formatConfig,
+                               IFormatService formatService,
                                ILogger<StandingService> logger,
                                IMapper mapper,
                                IUnitOfWork unitOfWork)
@@ -42,7 +41,7 @@ namespace Application.Services
             _groupRepository = groupRepository;
             _teamRepository = teamRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
-            _formatConfig = formatConfig;
+            _formatService = formatService;
             _logger = logger;
             _mapper = mapper;
             _unitOfWork = unitOfWork;
@@ -68,7 +67,7 @@ namespace Application.Services
         {
             var standing = await _standingRepository.GetByIdAsync(standingId)
                 ?? throw new NotFoundException("Standing", standingId);
-            var matches = await _matchRepository.FindAllAsync(m => m.StandingId ==  standingId);
+            var matches = await _matchRepository.FindAllAsync(m => m.StandingId == standingId);
             bool standingFinished = false;
 
             if (matches.All(m => m.WinnerId is not null && m.LoserId is not null))
@@ -90,7 +89,7 @@ namespace Application.Services
 
         public async Task<bool> CheckAllGroupsAreFinished(long tournamentId)
         {
-            var allStandings = await _standingRepository.FindAllAsync(s => s.TournamentId ==  tournamentId);
+            var allStandings = await _standingRepository.FindAllAsync(s => s.TournamentId == tournamentId);
             var allGroups = allStandings.Where(s => s.StandingType == StandingType.Group);
 
             bool allGroupsFinished = allGroups.Any() && allGroups.All(ag => ag.IsFinished);
@@ -112,7 +111,7 @@ namespace Application.Services
             var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
                 ?? throw new NotFoundException("Tournament", tournamentId);
 
-            var metadata = _formatConfig.GetFormatMetadata(tournament.Format);
+            var metadata = _formatService.GetFormatMetadata(tournament.Format);
 
             // BracketOnly: All registered teams
             if (!metadata.RequiresGroups)

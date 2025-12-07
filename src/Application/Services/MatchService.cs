@@ -1,8 +1,5 @@
 ﻿using Application.Contracts;
 using Domain.AggregateRoots;
-using Domain.Configuration;
-using Domain.Enums;
-using Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Services
@@ -10,15 +7,15 @@ namespace Application.Services
     public class MatchService : IMatchService
     {
         private readonly IRepository<Match> _matchRepository;
-        private readonly ITournamentFormatConfiguration _formatConfig;
+        private readonly IFormatService _formatService;
         private readonly ILogger<MatchService> _logger;
 
         public MatchService(IRepository<Match> matchRepository,
-                            ITournamentFormatConfiguration formatConfig,
+                            IFormatService formatService,
                             ILogger<MatchService> logger)
         {
             _matchRepository = matchRepository;
-            _formatConfig = formatConfig;
+            _formatService = formatService;
             _logger = logger;
         }
 
@@ -33,7 +30,7 @@ namespace Application.Services
         {
             Match match;
 
-            var defaultBestOf = _formatConfig.GetDefaultBestOf();
+            var defaultBestOf = _formatService.GetDefaultBestOf();
 
             if (teamA != null && teamB != null)
             {

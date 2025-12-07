@@ -1,7 +1,6 @@
 ﻿using Application.Contracts;
 using Domain.Common;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace Infrastructure.Persistence.Repository

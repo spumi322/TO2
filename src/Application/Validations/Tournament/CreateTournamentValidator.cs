@@ -1,15 +1,18 @@
+﻿using Application.Contracts;
 using Application.DTOs.Tournament;
-using Domain.Configuration;
+using Application.Pipelines.StartBracket.Utilities;
 using Domain.Enums;
 using FluentValidation;
 
 public class CreateTournamentValidator : AbstractValidator<CreateTournamentRequestDTO>
 {
-    private readonly ITournamentFormatConfiguration _formatConfig;
+    private readonly IFormatService _formatService;
 
-    public CreateTournamentValidator(ITournamentFormatConfiguration formatConfig)
+    public CreateTournamentValidator(IFormatService formatService)
     {
-        _formatConfig = formatConfig;
+        _formatService = formatService;
+
+        // GENERAL VALIDATION (applies to ALL formats)
 
         RuleFor(x => x.Name)
             .NotEmpty()
@@ -24,77 +27,212 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
             .IsInEnum()
             .WithMessage("Invalid tournament format.");
 
-        // Use configuration for MaxTeams validation
-        RuleFor(x => x.MaxTeams)
-            .Must((dto, maxTeams) =>
-            {
-                var metadata = _formatConfig.GetFormatMetadata(dto.Format);
-                return maxTeams >= metadata.MinTeams && maxTeams <= metadata.MaxTeams;
-            })
-            .WithMessage(dto =>
-            {
-                var metadata = _formatConfig.GetFormatMetadata(dto.Format);
-                return $"Max teams must be between {metadata.MinTeams} and {metadata.MaxTeams}.";
-            });
+        // BRACKET ONLY FORMAT
 
-        // TeamsPerBracket validation using configuration
-        RuleFor(x => x.TeamsPerBracket)
-            .Must((dto, teamsPerBracket) =>
-            {
-                var metadata = _formatConfig.GetFormatMetadata(dto.Format);
+        When(x => x.Format == Format.BracketOnly, () =>
+        {
+            // 1. TeamsPerGroup must be null
+            RuleFor(x => x)
+                .Must(dto => dto.TeamsPerGroup == null)
+                .WithMessage("TeamsPerGroup should not be set for BracketOnly format.")
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerGroup));
 
-                // GroupsOnly: must be null
-                if (!metadata.RequiresBracket)
-                    return teamsPerBracket == null;
-                // BracketAndGroups: must be valid range
-                if (!teamsPerBracket.HasValue)
-                    return false;
+            // 2. TeamsPerBracket required
+            RuleFor(x => x)
+                .Must(dto => dto.TeamsPerBracket.HasValue)
+                .WithMessage("TeamsPerBracket is required for BracketOnly format.")
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerBracket));
 
-                return teamsPerBracket.Value >= metadata.MinTeamsPerBracket
-                    && teamsPerBracket.Value <= metadata.MaxTeamsPerBracket;
-            })
-            .WithMessage(dto =>
-            {
-                var metadata = _formatConfig.GetFormatMetadata(dto.Format);
-                
-                if (!metadata.RequiresBracket)
-                    return "Teams per bracket should not be set for GroupsOnly format.";
+            // 3. MaxTeams range check
+            RuleFor(x => x)
+                .Must(dto =>
+                {
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return dto.MaxTeams >= metadata.MinTeams && dto.MaxTeams <= metadata.MaxTeams;
+                })
+                .WithMessage(dto =>
+                {
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return $"MaxTeams must be between {metadata.MinTeams} and {metadata.MaxTeams}.";
+                })
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.MaxTeams));
 
-                return $"Teams per bracket must be between {metadata.MinTeamsPerBracket} and {metadata.MaxTeamsPerBracket}.";
-            });
+            // 4. MaxTeams power-of-2 check
+            RuleFor(x => x)
+                .Must(dto => BracketSeedingUtility.IsPowerOfTwo(dto.MaxTeams))
+                .WithMessage("For BracketOnly format, MaxTeams must be a power of 2 (4, 8, 16, 32).")
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.MaxTeams));
 
-        // TeamsPerGroup validation - format specific
-        RuleFor(x => x.TeamsPerGroup)
-            .Must((dto, teamsPerGroup) =>
-            {
-                var metadata = _formatConfig.GetFormatMetadata(dto.Format);
+            // 5. TeamsPerBracket range check
+            RuleFor(x => x)
+                .Must(dto =>
+                {
+                    if (!dto.TeamsPerBracket.HasValue) return true;
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return dto.TeamsPerBracket.Value >= metadata.MinTeamsPerBracket
+                        && dto.TeamsPerBracket.Value <= metadata.MaxTeamsPerBracket;
+                })
+                .WithMessage(dto =>
+                {
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return $"TeamsPerBracket must be between {metadata.MinTeamsPerBracket} and {metadata.MaxTeamsPerBracket}.";
+                })
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerBracket));
 
-                // BracketOnly: must be null
-                if (!metadata.RequiresGroups)
-                    return teamsPerGroup == null;
+            // 6. MaxTeams must equal TeamsPerBracket
+            RuleFor(x => x)
+                .Must(dto => !dto.TeamsPerBracket.HasValue || dto.MaxTeams == dto.TeamsPerBracket.Value)
+                .WithMessage("For BracketOnly format, MaxTeams must equal TeamsPerBracket.");
+        });
 
-                // BracketAndGroups: must be in valid range
-                if (!teamsPerGroup.HasValue)
-                    return false;
+        // GROUPS + BRACKET FORMAT
 
-                return teamsPerGroup.Value >= metadata.MinTeamsPerGroup
-                    && teamsPerGroup.Value <= metadata.MaxTeamsPerGroup;
-            })
-            .WithMessage(dto =>
-            {
-                var metadata = _formatConfig.GetFormatMetadata(dto.Format);
+        When(x => x.Format == Format.GroupsAndBracket, () =>
+        {
+            // 1. TeamsPerGroup required
+            RuleFor(x => x)
+                .Must(dto => dto.TeamsPerGroup.HasValue)
+                .WithMessage("TeamsPerGroup is required for GroupsAndBracket format.")
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerGroup));
 
-                if (!metadata.RequiresGroups)
-                    return "Teams per group should not be set for BracketOnly format.";
+            // 2. TeamsPerBracket required
+            RuleFor(x => x)
+                .Must(dto => dto.TeamsPerBracket.HasValue)
+                .WithMessage("TeamsPerBracket is required for GroupsAndBracket format.")
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerBracket));
 
-                return $"Teams per group must be between {metadata.MinTeamsPerGroup} and {metadata.MaxTeamsPerGroup}.";
-            });
+            // 3. MaxTeams range check
+            RuleFor(x => x)
+                .Must(dto =>
+                {
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return dto.MaxTeams >= metadata.MinTeams && dto.MaxTeams <= metadata.MaxTeams;
+                })
+                .WithMessage(dto =>
+                {
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return $"MaxTeams must be between {metadata.MinTeams} and {metadata.MaxTeams}.";
+                })
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.MaxTeams));
 
-        // Use configuration for format-specific validation
-        RuleFor(x => x)
-            .Must(dto => _formatConfig.ValidateTeamConfiguration(
-                dto.Format, dto.MaxTeams, dto.TeamsPerGroup, dto.TeamsPerBracket))
-            .WithMessage(dto => _formatConfig.GetValidationErrorMessage(
-                dto.Format, dto.MaxTeams, dto.TeamsPerGroup, dto.TeamsPerBracket));
+            // 4. TeamsPerGroup range check
+            RuleFor(x => x)
+                .Must(dto =>
+                {
+                    if (!dto.TeamsPerGroup.HasValue) return true;
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return dto.TeamsPerGroup.Value >= metadata.MinTeamsPerGroup
+                        && dto.TeamsPerGroup.Value <= metadata.MaxTeamsPerGroup;
+                })
+                .WithMessage(dto =>
+                {
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return $"TeamsPerGroup must be between {metadata.MinTeamsPerGroup} and {metadata.MaxTeamsPerGroup}.";
+                })
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerGroup));
+
+            // 5. TeamsPerBracket range check
+            RuleFor(x => x)
+                .Must(dto =>
+                {
+                    if (!dto.TeamsPerBracket.HasValue) return true;
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return dto.TeamsPerBracket.Value >= metadata.MinTeamsPerBracket
+                        && dto.TeamsPerBracket.Value <= metadata.MaxTeamsPerBracket;
+                })
+                .WithMessage(dto =>
+                {
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return $"TeamsPerBracket must be between {metadata.MinTeamsPerBracket} and {metadata.MaxTeamsPerBracket}.";
+                })
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerBracket));
+
+            // 6. TeamsPerGroup <= MaxTeams
+            RuleFor(x => x)
+                .Must(dto => !dto.TeamsPerGroup.HasValue || dto.TeamsPerGroup.Value <= dto.MaxTeams)
+                .WithMessage("TeamsPerGroup cannot be greater than MaxTeams.")
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerGroup));
+
+            // 7. TeamsPerBracket <= MaxTeams
+            RuleFor(x => x)
+                .Must(dto => !dto.TeamsPerBracket.HasValue || dto.TeamsPerBracket.Value <= dto.MaxTeams)
+                .WithMessage("TeamsPerBracket cannot be greater than MaxTeams.")
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerBracket));
+
+            // 8. TeamsPerBracket power-of-2 check
+            RuleFor(x => x)
+                .Must(dto => !dto.TeamsPerBracket.HasValue || BracketSeedingUtility.IsPowerOfTwo(dto.TeamsPerBracket.Value))
+                .WithMessage("For GroupsAndBracket format, TeamsPerBracket must be a power of 2 (4, 8, 16, 32).")
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerBracket));
+
+            // 9. MaxTeams divisible by TeamsPerGroup
+            RuleFor(x => x)
+                .Must(dto => !dto.TeamsPerGroup.HasValue || dto.TeamsPerGroup.Value == 0 || dto.MaxTeams % dto.TeamsPerGroup.Value == 0)
+                .WithMessage("MaxTeams must be divisible by TeamsPerGroup.");
+
+            // 10. TeamsPerBracket divisible by number of groups
+            RuleFor(x => x)
+                .Must(dto =>
+                {
+                    if (!dto.TeamsPerBracket.HasValue || !dto.TeamsPerGroup.HasValue) return true;
+                    if (dto.TeamsPerGroup.Value == 0) return true;
+                    int numberOfGroups = dto.MaxTeams / dto.TeamsPerGroup.Value;
+                    if (numberOfGroups == 0) return true;
+                    return dto.TeamsPerBracket.Value % numberOfGroups == 0;
+                })
+                .WithMessage("TeamsPerBracket must be divisible by the number of groups (MaxTeams / TeamsPerGroup).");
+        });
+
+        // GROUPS ONLY FORMAT
+
+        When(x => x.Format == Format.GroupsOnly, () =>
+        {
+            // 1. TeamsPerGroup required
+            RuleFor(x => x)
+                .Must(dto => dto.TeamsPerGroup.HasValue)
+                .WithMessage("TeamsPerGroup is required for GroupsOnly format.")
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerGroup));
+
+            // 2. TeamsPerBracket must be null
+            RuleFor(x => x)
+                .Must(dto => dto.TeamsPerBracket == null)
+                .WithMessage("TeamsPerBracket should not be set for GroupsOnly format.")
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerBracket));
+
+            // 3. MaxTeams range check
+            RuleFor(x => x)
+                .Must(dto =>
+                {
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return dto.MaxTeams >= metadata.MinTeams && dto.MaxTeams <= metadata.MaxTeams;
+                })
+                .WithMessage(dto =>
+                {
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return $"MaxTeams must be between {metadata.MinTeams} and {metadata.MaxTeams}.";
+                })
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.MaxTeams));
+
+            // 4. TeamsPerGroup range check
+            RuleFor(x => x)
+                .Must(dto =>
+                {
+                    if (!dto.TeamsPerGroup.HasValue) return true;
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return dto.TeamsPerGroup.Value >= metadata.MinTeamsPerGroup
+                        && dto.TeamsPerGroup.Value <= metadata.MaxTeamsPerGroup;
+                })
+                .WithMessage(dto =>
+                {
+                    var metadata = _formatService.GetFormatMetadata(dto.Format);
+                    return $"TeamsPerGroup must be between {metadata.MinTeamsPerGroup} and {metadata.MaxTeamsPerGroup}.";
+                })
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.TeamsPerGroup));
+
+            // 5. MaxTeams divisible by TeamsPerGroup
+            RuleFor(x => x)
+                .Must(dto => !dto.TeamsPerGroup.HasValue || dto.TeamsPerGroup.Value == 0 || dto.MaxTeams % dto.TeamsPerGroup.Value == 0)
+                .WithMessage("MaxTeams must be divisible by TeamsPerGroup.");
+        });
     }
 }

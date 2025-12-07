@@ -1,7 +1,6 @@
 using Application.Contracts;
 using Application.Pipelines.StartGroups.Contracts;
 using Domain.Entities;
-using Domain.Enums;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Pipelines.StartGroups.Steps

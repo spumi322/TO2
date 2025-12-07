@@ -1,7 +1,6 @@
 using Application.Contracts;
 using Application.Pipelines.StartGroups.Contracts;
 using Domain.AggregateRoots;
-using Domain.Configuration;
 using Domain.Enums;
 using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
@@ -17,18 +16,18 @@ namespace Application.Pipelines.StartGroups.Steps
         private readonly ILogger<ValidateAndTransitionToSeedingGroupsStep> _logger;
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
-        private readonly ITournamentFormatConfiguration _formatConfig;
+        private readonly IFormatService _formatService;
 
         public ValidateAndTransitionToSeedingGroupsStep(
             ILogger<ValidateAndTransitionToSeedingGroupsStep> logger,
             IRepository<Tournament> tournamentRepository,
             ITournamentStateMachine stateMachine,
-            ITournamentFormatConfiguration formatConfig)
+            IFormatService formatService)
         {
             _logger = logger;
             _tournamentRepository = tournamentRepository;
             _stateMachine = stateMachine;
-            _formatConfig = formatConfig;
+            _formatService = formatService;
         }
 
         public async Task<bool> ExecuteAsync(StartGroupsContext context)
@@ -47,7 +46,7 @@ namespace Application.Pipelines.StartGroups.Steps
             }
 
             // Validate format supports groups
-            var metadata = _formatConfig.GetFormatMetadata(tournament.Format);
+            var metadata = _formatService.GetFormatMetadata(tournament.Format);
             if (!metadata.RequiresGroups)
             {
                 context.Success = false;
