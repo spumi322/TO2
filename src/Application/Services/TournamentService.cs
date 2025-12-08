@@ -123,11 +123,13 @@ namespace Application.Services
             return _mapper.Map<GetTournamentResponseDTO>(existingTournament);
         }
 
-        public async Task<List<GetAllTournamentsResponseDTO>> GetAllTournamentsAsync()
+        public async Task<List<GetTournamentListResponseDTO>> GetTournamentListAsync()
         {
-            var tournaments = await _tournamentRepository.GetAllAsync();
+            var tournaments = await _tournamentRepository.GetAllForListAsync();
 
-            return _mapper.Map<List<GetAllTournamentsResponseDTO>>(tournaments);
+            return tournaments
+                .Select(t => _mapper.Map<GetTournamentListResponseDTO>(t) with { CurrentTeams = t.TournamentTeams.Count })
+                .ToList();
         }
 
         public async Task<UpdateTournamentResponseDTO> UpdateTournamentAsync(long id, UpdateTournamentRequestDTO request)

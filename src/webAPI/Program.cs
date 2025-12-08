@@ -65,6 +65,7 @@ namespace TO2
             builder.Services.AddScoped<AuditInterceptor>();
 
             // Application Services
+            builder.Services.AddScoped<ITournamentService, TournamentService>();
             builder.Services.AddScoped<IStandingService, StandingService>();
             builder.Services.AddScoped<ITeamService, TeamService>();
             builder.Services.AddScoped<IMatchService, MatchService>();

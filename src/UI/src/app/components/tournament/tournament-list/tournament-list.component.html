@@ -45,19 +45,17 @@
 <ng-template #tournamentCard let-tournament>
   <div class="tournament-card" (click)="goToDetails(tournament.id)">
     <div class="card-header">
-      <img
-        class="tournament-logo"
-        src="../../../../assets/cup_logo.png"
-        alt="Tournament logo"
-      />
+      <img class="tournament-logo"
+           src="../../../../assets/cup_logo.png"
+           alt="Tournament logo" />
       <h4 class="tournament-title">{{ tournament.name }}</h4>
     </div>
 
-    <p class="tournament-format">{{ FormatConfig.getFormatLabel(tournament.format) }}</p>
+    <p class="tournament-format">{{ getFormatLabel(tournament.format) }}</p>
 
     <div class="card-footer">
-      <span class="team-info">Teams: {{ tournament.teams.length }} / {{ tournament.maxTeams }}</span>
-      <span class="status-text">{{ StatusConfig.getStatusLabel(tournament.status) }}</span>
+      <span class="team-info">Teams: {{ tournament.currentTeams }} / {{ tournament.maxTeams }}</span>
+      <span class="status-text">{{ getStatusLabel(tournament.status) }}</span>
     </div>
   </div>
 </ng-template>

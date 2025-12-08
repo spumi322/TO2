@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { StartBracketResponse, StartGroupsResponse, Tournament, TournamentStateDTO } from '../../models/tournament';
+import { StartBracketResponse, StartGroupsResponse, Tournament, TournamentList, TournamentStateDTO } from '../../models/tournament';
 import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
 import { Team } from '../../models/team';
 import { FinalStanding } from '../../models/final-standing';
@@ -32,6 +32,11 @@ export class TournamentService {
         )
       )
     );
+  }
+
+  // GET /api/tournament-list
+  getTournamentList(): Observable<TournamentList[]> {
+    return this.http.get < TournamentList[] >(`${this.apiUrl}/list`);
   }
 
   // POST /api/tournaments

@@ -15,12 +15,14 @@
     </div>
 
     <!-- Middle: Current Tournament Info -->
-    <div class="navbar-middle" *ngIf="currentTournament">
-      <span class="tournament-badge" [ngClass]="getStatusClass(currentTournament.status)">
-        {{ getStatusLabel(currentTournament.status) }}
-      </span>
-      <span class="tournament-name">{{ currentTournament.name }}</span>
-      <span class="tournament-format">• {{ getFormatLabel(currentTournament.format) }}</span>
+    <div class="navbar-middle">
+      <ng-container *ngIf="currentTournament as tournament">
+        <span class="tournament-badge" [ngClass]="getStatusClass(tournament.status)">
+          {{ getStatusLabel(tournament.status) }}
+        </span>
+        <span class="tournament-name">{{ tournament.name }}</span>
+        <span class="tournament-format">• {{ getFormatLabel(tournament.format) }}</span>
+      </ng-container>
     </div>
 
     <!-- Right: User Info & Actions -->
@@ -69,7 +71,6 @@
                 pButton
                 type="button"
                 label="New Tournament"
-                icon="pi pi-plus"
                 class="p-button-text create-btn"
                 (click)="goToCreateTournament($event)">
         </button>

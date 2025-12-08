@@ -10,10 +10,11 @@ namespace Infrastructure.Profiles
     {
         public MappingProfile()
         {
+            CreateMap<Tournament, GetTournamentListResponseDTO>();
             CreateMap<CreateTournamentRequestDTO, Tournament>();
             CreateMap<Tournament, CreateTournamentResponseDTO>();
             CreateMap<Tournament, GetTournamentResponseDTO>();
-            CreateMap<Tournament, GetAllTournamentsResponseDTO>();
+            CreateMap<Tournament, GetTournamentListResponseDTO>();
             CreateMap<Tournament, UpdateTournamentResponseDTO>();
             CreateMap<UpdateTournamentRequestDTO, Tournament>();
             CreateMap<CreateTeamRequestDTO, Team>();
