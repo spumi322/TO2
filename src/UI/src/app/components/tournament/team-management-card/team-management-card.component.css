@@ -118,7 +118,7 @@
   box-shadow: 0 0 0 2px rgba(0, 217, 54, 0.1);
 }
 
-.textarea-input.ng-invalid.ng-touched {
+.textarea-input.ng-invalid {
   border-color: var(--error-color);
 }
 
@@ -129,8 +129,11 @@
 }
 
 .error-message {
+  display: block;
   font-size: 0.75rem;
   color: var(--error-color);
+  margin-top: 0.25rem;
+  font-weight: 500;
 }
 
 .form-actions {
@@ -140,32 +143,28 @@
   gap: 0.5rem;
 }
 
-.submit-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+/* Button styling - copied from navbar */
+.form-actions .p-button {
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem 1.1rem;
+}
+
+/* Icon spacing removed - handled in global styles */
+
+.form-actions .p-button-success.navbar-style,
+.form-actions .p-button-success.navbar-style .p-button-label,
+.form-actions .p-button-success.navbar-style .p-button-icon {
+  color: #fff;
+}
+
+.form-actions .p-button-success.navbar-style {
   background: var(--primary-color);
   border: none;
-  border-radius: var(--border-radius);
-  color: var(--text-dark);
-  font-weight: 600;
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s;
 }
 
-.submit-btn:hover:not(:disabled) {
-  background: #00ff6a;
-  box-shadow: var(--glow-primary);
-  transform: translateY(-2px);
+.form-actions .p-button-success.navbar-style:hover {
+  background: var(--primary-hover);
 }
 
-.submit-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.submit-btn i {
-  font-size: 1rem;
-}

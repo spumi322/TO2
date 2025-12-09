@@ -45,8 +45,8 @@
         </div>
       </p-tabPanel>
 
-      <!-- Group Stage Tab (only if format is BracketAndGroups and tournament has started) -->
-      <p-tabPanel header="Group Stage" *ngIf="!tournament?.isRegistrationOpen && tournament?.format === Format.GroupsAndBracket">
+      <!-- Group Stage Tab (only if format has groups and tournament has started) -->
+      <p-tabPanel header="Group Stage" *ngIf="!tournament?.isRegistrationOpen && (tournament?.format === Format.GroupsAndBracket || tournament?.format === Format.GroupsOnly)">
         <div class="tab-content">
           <app-standing-group
             [tournament]="tournament"

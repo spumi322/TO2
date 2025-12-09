@@ -19,19 +19,30 @@
       <div class="field full-width">
         <label for="teamNames">Team Names (comma separated)</label>
         <textarea id="teamNames" formControlName="teamNames" rows="3"
-                  [class.ng-invalid]="bulkAddForm.get('teamNames')?.invalid && bulkAddForm.get('teamNames')?.touched"
+                  [class.ng-invalid]="bulkAddForm.get('teamNames')?.invalid && (submitted || bulkAddForm.get('teamNames')?.touched)"
                   class="textarea-input"></textarea>
         <small class="hint">Enter multiple team names separated by commas</small>
-        <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('required') && bulkAddForm.get('teamNames')?.touched">
+        <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('required') && submitted">
           Team names are required
+        </small>
+        <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('duplicateNames') && (submitted || bulkAddForm.get('teamNames')?.touched)">
+          Duplicate team names found: {{ bulkAddForm.get('teamNames')?.errors?.['duplicateNames']?.value }}
+        </small>
+        <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('alreadyInTournament') && (submitted || bulkAddForm.get('teamNames')?.touched)">
+          Teams already in tournament: {{ bulkAddForm.get('teamNames')?.errors?.['alreadyInTournament']?.value }}
+        </small>
+        <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('capacityExceeded') && (submitted || bulkAddForm.get('teamNames')?.touched)">
+          Not enough capacity. Trying to add {{ bulkAddForm.get('teamNames')?.errors?.['capacityExceeded']?.trying }} teams, but only {{ bulkAddForm.get('teamNames')?.errors?.['capacityExceeded']?.available }} slots available.
         </small>
       </div>
       <div class="form-actions">
-        <button type="submit"
-                class="submit-btn"
-                [disabled]="bulkAddForm.invalid || isAddingTeams">
-          <i class="pi pi-plus-circle"></i>
-          <span>Add Teams</span>
+        <button pButton
+                type="submit"
+                label="Add Teams"
+                icon="pi pi-plus-circle"
+                class="p-button-success navbar-style"
+                [disabled]="bulkAddForm.invalid || isAddingTeams"
+                [loading]="isAddingTeams">
         </button>
       </div>
     </form>

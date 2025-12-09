@@ -31,13 +31,13 @@
       <ng-container *ngIf="isAuthenticated && currentUser">
         <!-- Tournament Actions (if tournament context exists) -->
         <ng-container *ngIf="currentTournament && tournamentState">
-          <!-- Start Groups button (for BracketAndGroups format in Setup state) -->
-          <button *ngIf="currentTournament.isRegistrationOpen && tournamentState.currentStatus === TournamentStatus.Setup && currentTournament.format === Format.GroupsAndBracket"
+          <!-- Start Groups button (for GroupsAndBracket and GroupsOnly formats in Setup state) -->
+          <button *ngIf="currentTournament.isRegistrationOpen && tournamentState.currentStatus === TournamentStatus.Setup && (currentTournament.format === Format.GroupsAndBracket || currentTournament.format === Format.GroupsOnly)"
                   pButton
                   type="button"
                   label="Start Groups"
                   icon="pi pi-play"
-                  class="p-button-success action-btn"
+                  class="p-button-success navbar-primary"
                   (click)="onStartGroups()"
                   [disabled]="(currentTournament.teams?.length || 0) < 2">
           </button>
@@ -48,7 +48,7 @@
                   type="button"
                   label="Start Tournament"
                   icon="pi pi-play"
-                  class="p-button-success action-btn"
+                  class="p-button-success navbar-primary"
                   (click)="onStartTournament()"
                   [disabled]="(currentTournament.teams?.length || 0) < 2">
           </button>
@@ -59,7 +59,7 @@
                   type="button"
                   label="Start Bracket"
                   icon="pi pi-play"
-                  class="p-button-success action-btn"
+                  class="p-button-success navbar-primary"
                   (click)="onStartBracket()">
           </button>
 
@@ -71,7 +71,7 @@
                 pButton
                 type="button"
                 label="New Tournament"
-                class="p-button-text create-btn"
+                class="p-button-success navbar-primary"
                 (click)="goToCreateTournament($event)">
         </button>
 

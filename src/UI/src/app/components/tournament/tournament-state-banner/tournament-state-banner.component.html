@@ -1,9 +1,9 @@
-<div class="state-banner" *ngIf="tournamentState && !isRegistrationOpen" [ngClass]="'state-' + tournamentState?.currentStatus">
+<div class="state-banner" *ngIf="tournamentState && !isRegistrationOpen" [ngClass]="'state-' + tournamentState.currentStatus">
   <div class="state-content">
-    <i class="pi state-icon" [ngClass]="tournamentState?.isTransitionState ? 'pi-spin pi-spinner' : 'pi-info-circle'"></i>
+    <i class="pi state-icon" [ngClass]="tournamentState.isTransitionState ? 'pi-spin pi-spinner' : 'pi-info-circle'"></i>
     <div class="state-text">
-      <h3>{{ tournamentState?.statusDisplayName }}</h3>
-      <p>{{ tournamentState?.statusDescription }}</p>
+      <h3>{{ tournamentState.statusDisplayName }}</h3>
+      <p>{{ tournamentState.statusDescription }}</p>
     </div>
   </div>
 </div>

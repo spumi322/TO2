@@ -238,32 +238,90 @@ body {
   stroke: var(--primary-color);
 }
 
-/* Brackets Viewer Dark Mode */
+/* Button icon spacing */
+.p-button .p-button-icon {
+  margin-right: 0.5rem;
+}
+
+/* Brackets Viewer Dark Mode - Override library CSS variables */
 .brackets-viewer {
-  background: var(--bg-dark);
+  /* Background colors */
+  --primary-background: #1a1f2e;
+  --secondary-background: #242938;
+  --match-background: #1a1f2e;
+
+  /* Text colors */
+  --font-color: #f5fcf6;
+  --label-color: #9ca3af;
+  --hint-color: #9ca3af;
+
+  /* Status colors */
+  --win-color: #43a047;
+  --loss-color: #f44336;
+
+  /* Border colors - use explicit values to avoid circular reference */
+  --border-color: #374151;
+  --border-hover-color: #4caf50;
+  --border-selected-color: #43a047;
+  --connector-color: #374151;
+
+  /* Sizing - scale up for better visibility (32 teams = 5 rounds max) */
+  --text-size: 15px;
+  --match-width: 220px;
+  --match-horizontal-padding: 12px;
+  --match-vertical-padding: 8px;
+  --round-margin: 60px;
+  --match-border-radius: 6px;
+
+  /* Override library background */
+  background: #0b1120 !important;
 }
 
-.bracket {
-  background: transparent;
-}
-
-.match {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-}
-
-.match-participant {
+/* Additional dark mode overrides */
+.brackets-viewer .participant {
   background: var(--bg-elevated);
-  color: var(--text-primary);
 }
 
-.match-participant.winner {
-  background: var(--primary-color);
-  color: white;
+.brackets-viewer .participant:hover {
+  background: var(--bg-elevated) !important;
 }
 
-.connector {
-  stroke: var(--border-color);
+.brackets-viewer .participant.win {
+  background-color: rgba(67, 160, 71, 0.2);
+  border-left: 3px solid var(--primary-color);
+}
+
+/* Round headers */
+.brackets-viewer h3 {
+  background: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Clickable participant styling (custom) */
+.brackets-viewer .clickable-participant {
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.brackets-viewer .clickable-participant:hover {
+  background-color: rgba(67, 160, 71, 0.15) !important;
+  transform: scale(1.02);
+  box-shadow: 0 0 12px rgba(67, 160, 71, 0.3);
+}
+
+.brackets-viewer .clickable-participant:active {
+  transform: scale(0.98);
+}
+
+/* Match updating state (custom) */
+.brackets-viewer .match.updating {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* SVG connectors */
+.brackets-viewer .connector {
+  stroke: var(--border-color) !important;
 }
 
 /* FIXED — Full override for PrimeNG tooltip */

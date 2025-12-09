@@ -205,11 +205,16 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
   }
 
   onStartBracket(): void {
-    if (!confirm('Start bracket? This will seed teams from group results.')) {
+    if (!this.tournamentId) return;
+
+    // Different messages based on tournament format
+    const confirmMessage = this.tournament?.format === Format.BracketOnly
+      ? 'Start tournament? Registration will be closed and bracket will be initialized.'
+      : 'Start bracket? This will seed teams from group results.';
+
+    if (!confirm(confirmMessage)) {
       return;
     }
-
-    if (!this.tournamentId) return;
 
     this.isReloading = true;
     this.tournamentService.startBracket(this.tournamentId).subscribe({
@@ -368,6 +373,19 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // BracketOnly format: Call start-bracket endpoint directly
+    if (this.tournament.format === Format.BracketOnly) {
+      this.onStartBracket();
+      return;
+    }
+
+    // GroupsOnly format: Call start-groups endpoint directly
+    if (this.tournament.format === Format.GroupsOnly) {
+      this.onStartGroups();
+      return;
+    }
+
+    // Other formats: Just close registration
     this.isReloading = true;
     this.tournamentService.startTournament(this.tournamentId).pipe(
       catchError(error => {
@@ -385,11 +403,16 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
   }
 
   onStartGroups(): void {
-    if (!confirm('Start group stage? Registration will be closed.')) {
+    if (!this.tournamentId) return;
+
+    // Different messages based on tournament format
+    const confirmMessage = this.tournament?.format === Format.GroupsOnly
+      ? 'Start tournament? Registration will be closed and groups will be initialized.'
+      : 'Start group stage? Registration will be closed.';
+
+    if (!confirm(confirmMessage)) {
       return;
     }
-
-    if (!this.tournamentId) return;
 
     this.isReloading = true;
     this.tournamentService.startGroups(this.tournamentId).subscribe({

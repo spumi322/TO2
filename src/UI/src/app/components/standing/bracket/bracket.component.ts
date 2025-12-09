@@ -228,15 +228,7 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
         }
       };
 
-      // Add hover effect
-      htmlElement.onmouseenter = () => {
-        if (!this.isUpdating[match.id]) {
-          htmlElement.style.backgroundColor = 'rgba(33, 150, 243, 0.1)';
-        }
-      };
-      htmlElement.onmouseleave = () => {
-        htmlElement.style.backgroundColor = '';
-      };
+      // Hover effects now handled by CSS (no inline styles needed)
     });
   }
 

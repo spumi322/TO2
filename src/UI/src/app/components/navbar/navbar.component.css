@@ -136,6 +136,36 @@
   gap: 8px;
 }
 
+  .navbar-right .p-button {
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.9rem;
+  }
+
+  .navbar-right .p-button-success.navbar-primary,
+  .navbar-right .p-button-success.navbar-primary .p-button-label,
+  .navbar-right .p-button-success.navbar-primary .p-button-icon {
+    color: #fff;
+  }
+
+  .navbar-right .p-button-text.navbar-secondary {
+    color: var(--text-primary);
+  }
+
+    .navbar-right .p-button-text.navbar-secondary:hover {
+      background: var(--bg-elevated);
+    }
+
+  .navbar-right .p-button-success.navbar-primary {
+    background: var(--primary-color);
+    border: none;
+  }
+
+    .navbar-right .p-button-success.navbar-primary:hover {
+      background: var(--primary-hover);
+    }
+
 /* Divider */
 .divider {
   width: 1px;
@@ -203,7 +233,7 @@
 }
 
 /* Button Overrides - Use PrimeNG text buttons for clean look */
-.action-btn {
+/*.action-btn {
   font-weight: 600 !important;
 }
 
@@ -231,7 +261,7 @@
 
 .register-btn:hover {
   background: var(--primary-hover) !important;
-}
+}*/
 
 /* User menu styling handled by PrimeNG Menu component */
 
