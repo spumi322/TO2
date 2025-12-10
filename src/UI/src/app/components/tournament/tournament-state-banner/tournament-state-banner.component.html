@@ -1,12 +1,9 @@
-<p-card class="state-banner" *ngIf="tournamentState && !isRegistrationOpen" [ngClass]="'state-' + tournamentState?.currentStatus">
-  <ng-template pTemplate="content">
-    <div class="state-content">
-      <i class="pi state-icon" [ngClass]="tournamentState?.isTransitionState ? 'pi-spin pi-spinner' : 'pi-info-circle'"></i>
-      <div class="state-text">
-        <h3>{{ tournamentState?.statusDisplayName }}</h3>
-        <p>{{ tournamentState?.statusDescription }}</p>
-      </div>
-      <p-progressSpinner *ngIf="tournamentState?.isTransitionState" [style]="{width: '40px', height: '40px'}"></p-progressSpinner>
+<div class="state-banner" *ngIf="tournamentState && !isRegistrationOpen" [ngClass]="'state-' + tournamentState.currentStatus">
+  <div class="state-content">
+    <i class="pi state-icon" [ngClass]="tournamentState.isTransitionState ? 'pi-spin pi-spinner' : 'pi-info-circle'"></i>
+    <div class="state-text">
+      <h3>{{ tournamentState.statusDisplayName }}</h3>
+      <p>{{ tournamentState.statusDescription }}</p>
     </div>
-  </ng-template>
-</p-card>
+  </div>
+</div>

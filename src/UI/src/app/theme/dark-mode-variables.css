@@ -1,0 +1,27 @@
+:root {
+  /* Background Colors - Dark Gray Palette */
+  --bg-dark: #0b1120; /* Deepest dark for body */
+  --bg-card: #1a1f2e; /* Card backgrounds */
+  --bg-elevated: #242938; /* Elevated surfaces (hover, active) */
+  --bg-overlay: #2d3340; /* Overlays, modals */
+  /* Primary Color - Green */
+  --primary-color: #43a047; /* Main green */
+  --primary-hover: #4caf50; /* Hover state */
+  --primary-active: #388e3c; /* Active/pressed */
+  /* Text Colors */
+  --text-primary: #f5fcf6; /* Main text */
+  --text-muted: #9ca3af; /* Secondary text */
+  --text-disabled: #6b7280; /* Disabled text */
+  /* Border & Dividers */
+  --border-color: #374151;
+  --border-width: 1px;
+  --border-radius: 8px;
+  /* Effects */
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --glow-primary: 0 0 20px rgba(76, 175, 80, 0.3);
+  /* Status Colors */
+  --success-color: #4caf50;
+  --warning-color: #ff9800;
+  --error-color: #f44336;
+  --info-color: #2196f3;
+}

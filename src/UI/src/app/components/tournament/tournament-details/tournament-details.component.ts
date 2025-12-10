@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Format, Tournament, TournamentStatus, TournamentStateDTO } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, catchError, finalize, forkJoin, of, from } from 'rxjs';
-import { concatMap, switchMap, tap, map, toArray } from 'rxjs/operators';
+import { Observable, catchError, finalize, forkJoin, of, from, Subject } from 'rxjs';
+import { concatMap, switchMap, tap, map, toArray, takeUntil } from 'rxjs/operators';
 import { Standing, StandingType } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
 import { Team } from '../../../models/team';
@@ -12,13 +12,15 @@ import { MessageService } from 'primeng/api';
 import { MatchService } from '../../../services/match/match.service';
 import { MatchFinishedIds } from '../../../models/matchresult';
 import { FinalStanding } from '../../../models/final-standing';
+import { TournamentContextService } from '../../../services/tournament-context.service';
 
 @Component({
   selector: 'app-tournament-details',
   templateUrl: './tournament-details.component.html',
   styleUrls: ['./tournament-details.component.css']
 })
-export class TournamentDetailsComponent implements OnInit {
+export class TournamentDetailsComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
   tournament$: Observable<Tournament | null> = of(null);
   tournament: Tournament | null = null;
   tournamentId: number | null = null;
@@ -54,7 +56,8 @@ export class TournamentDetailsComponent implements OnInit {
     private matchService: MatchService,
     private route: ActivatedRoute,
     private router: Router,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private tournamentContext: TournamentContextService
   ) { }
 
   ngOnInit(): void {
@@ -62,6 +65,25 @@ export class TournamentDetailsComponent implements OnInit {
     this.loadTournamentData();
     this.loadTournamentState();
     this.loadAllTeams();
+
+    // Subscribe to action triggers from navbar
+    this.tournamentContext.startGroups$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onStartGroups());
+
+    this.tournamentContext.startTournament$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.startTournament());
+
+    this.tournamentContext.startBracket$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onStartBracket());
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+    this.tournamentContext.clear();
   }
 
   initForms(): void {
@@ -102,6 +124,7 @@ export class TournamentDetailsComponent implements OnInit {
             tap(tournament => {
               if (tournament) {
                 this.tournament = tournament;
+                this.tournamentContext.setTournament(tournament);
                 this.loadStandings();
               }
             }),
@@ -128,10 +151,12 @@ export class TournamentDetailsComponent implements OnInit {
           return this.tournamentService.getTournamentState(this.tournamentId);
         }
         return of(null);
-      })
+      }),
+      takeUntil(this.destroy$)
     ).subscribe({
       next: (state) => {
         this.tournamentState = state;
+        this.tournamentContext.setState(state);
       },
       error: (error) => {
         console.error('Error loading tournament state:', error);
@@ -142,45 +167,54 @@ export class TournamentDetailsComponent implements OnInit {
   loadStandings(): void {
     if (!this.tournamentId) return;
 
-    this.standingService.getStandingsByTournamentId(this.tournamentId).subscribe({
-      next: (standings: Standing[]) => {
-        this.standings = standings;
-        this.groups = standings.filter(s => s.standingType === StandingType.Group);
-        this.brackets = standings.filter(s => s.standingType === StandingType.Bracket);
+    this.standingService.getStandingsByTournamentId(this.tournamentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (standings: Standing[]) => {
+          this.standings = standings;
+          this.groups = standings.filter(s => s.standingType === StandingType.Group);
+          this.brackets = standings.filter(s => s.standingType === StandingType.Bracket);
 
-        // Load bracket matches if in bracket stage
-        this.loadBracketMatches();
+          // Load bracket matches if in bracket stage
+          this.loadBracketMatches();
 
-        // Load final standings if tournament is finished
-        if (this.tournamentState?.currentStatus === TournamentStatus.Finished) {
-          this.loadFinalStandings();
+          // Load final standings if tournament is finished
+          if (this.tournamentState?.currentStatus === TournamentStatus.Finished) {
+            this.loadFinalStandings();
+          }
+        },
+        error: (error) => {
+          console.error('Error loading standings', error);
         }
-      },
-      error: (error) => {
-        console.error('Error loading standings', error);
-      }
-    });
+      });
   }
 
   loadFinalStandings(): void {
     if (!this.tournamentId) return;
 
-    this.tournamentService.getFinalStandings(this.tournamentId).subscribe({
-      next: (standings) => {
-        this.finalStandings = standings;
-      },
-      error: (error) => {
-        console.error('Error loading final standings', error);
-      }
-    });
+    this.tournamentService.getFinalStandings(this.tournamentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (standings) => {
+          this.finalStandings = standings;
+        },
+        error: (error) => {
+          console.error('Error loading final standings', error);
+        }
+      });
   }
 
   onStartBracket(): void {
-    if (!confirm('Start bracket? This will seed teams from group results.')) {
+    if (!this.tournamentId) return;
+
+    // Different messages based on tournament format
+    const confirmMessage = this.tournament?.format === Format.BracketOnly
+      ? 'Start tournament? Registration will be closed and bracket will be initialized.'
+      : 'Start bracket? This will seed teams from group results.';
+
+    if (!confirm(confirmMessage)) {
       return;
     }
-
-    if (!this.tournamentId) return;
 
     this.isReloading = true;
     this.tournamentService.startBracket(this.tournamentId).subscribe({
@@ -206,14 +240,16 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   loadAllTeams(): void {
-    this.teamService.getAllTeams().subscribe({
-      next: (teams) => {
-        this.allTeams = teams;
-      },
-      error: (error) => {
-        console.error('Error loading teams', error);
-      }
-    });
+    this.teamService.getAllTeams()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (teams) => {
+          this.allTeams = teams;
+        },
+        error: (error) => {
+          console.error('Error loading teams', error);
+        }
+      });
   }
 
   addBulkTeams(teamNames: string[]): void {
@@ -337,6 +373,19 @@ export class TournamentDetailsComponent implements OnInit {
       return;
     }
 
+    // BracketOnly format: Call start-bracket endpoint directly
+    if (this.tournament.format === Format.BracketOnly) {
+      this.onStartBracket();
+      return;
+    }
+
+    // GroupsOnly format: Call start-groups endpoint directly
+    if (this.tournament.format === Format.GroupsOnly) {
+      this.onStartGroups();
+      return;
+    }
+
+    // Other formats: Just close registration
     this.isReloading = true;
     this.tournamentService.startTournament(this.tournamentId).pipe(
       catchError(error => {
@@ -354,11 +403,16 @@ export class TournamentDetailsComponent implements OnInit {
   }
 
   onStartGroups(): void {
-    if (!confirm('Start group stage? Registration will be closed.')) {
+    if (!this.tournamentId) return;
+
+    // Different messages based on tournament format
+    const confirmMessage = this.tournament?.format === Format.GroupsOnly
+      ? 'Start tournament? Registration will be closed and groups will be initialized.'
+      : 'Start group stage? Registration will be closed.';
+
+    if (!confirm(confirmMessage)) {
       return;
     }
-
-    if (!this.tournamentId) return;
 
     this.isReloading = true;
     this.tournamentService.startGroups(this.tournamentId).subscribe({
@@ -393,6 +447,7 @@ export class TournamentDetailsComponent implements OnInit {
       tap(tournament => {
         if (tournament) {
           this.tournament = tournament;
+          this.tournamentContext.setTournament(tournament);
           this.loadStandings();
         }
       }),

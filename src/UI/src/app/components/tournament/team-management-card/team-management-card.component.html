@@ -1,34 +1,50 @@
-<p-card class="teams-card" *ngIf="tournament">
-  <ng-template pTemplate="header">
-    <div class="card-header-content">
-      <i class="card-avatar pi pi-users"></i>
-      <div>
-        <h3>Team Management</h3>
-        <p class="subtitle">{{ tournament?.teams?.length || 0 }}/{{ tournament?.maxTeams }} teams registered</p>
+<div class="teams-card" *ngIf="tournament">
+  <div class="card-header">
+    <i class="pi pi-users"></i>
+    <div class="header-text">
+      <h3>Team Management</h3>
+      <p class="subtitle">{{ tournament?.teams?.length || 0 }}/{{ tournament?.maxTeams }} teams registered</p>
+    </div>
+  </div>
+  <div class="card-content">
+    <!-- Native Progress Bar -->
+    <div class="progress-container">
+      <div class="progress-bar">
+        <div class="progress-fill" [style.width.%]="getProgressPercentage()"></div>
       </div>
     </div>
-  </ng-template>
-  <ng-template pTemplate="content">
-    <p-progressBar [value]="getProgressPercentage()"></p-progressBar>
 
     <!-- Bulk Add Form -->
     <form [formGroup]="bulkAddForm" (ngSubmit)="onSubmit()" class="bulk-add-form">
       <div class="field full-width">
         <label for="teamNames">Team Names (comma separated)</label>
-        <textarea pInputTextarea id="teamNames" formControlName="teamNames" rows="3"
-                  [class.ng-invalid]="bulkAddForm.get('teamNames')?.invalid && bulkAddForm.get('teamNames')?.touched"
-                  class="w-full"></textarea>
+        <textarea id="teamNames" formControlName="teamNames" rows="3"
+                  [class.ng-invalid]="bulkAddForm.get('teamNames')?.invalid && (submitted || bulkAddForm.get('teamNames')?.touched)"
+                  class="textarea-input"></textarea>
         <small class="hint">Enter multiple team names separated by commas</small>
-        <small class="p-error" *ngIf="bulkAddForm.get('teamNames')?.hasError('required') && bulkAddForm.get('teamNames')?.touched">
+        <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('required') && submitted">
           Team names are required
+        </small>
+        <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('duplicateNames') && (submitted || bulkAddForm.get('teamNames')?.touched)">
+          Duplicate team names found: {{ bulkAddForm.get('teamNames')?.errors?.['duplicateNames']?.value }}
+        </small>
+        <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('alreadyInTournament') && (submitted || bulkAddForm.get('teamNames')?.touched)">
+          Teams already in tournament: {{ bulkAddForm.get('teamNames')?.errors?.['alreadyInTournament']?.value }}
+        </small>
+        <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('capacityExceeded') && (submitted || bulkAddForm.get('teamNames')?.touched)">
+          Not enough capacity. Trying to add {{ bulkAddForm.get('teamNames')?.errors?.['capacityExceeded']?.trying }} teams, but only {{ bulkAddForm.get('teamNames')?.errors?.['capacityExceeded']?.available }} slots available.
         </small>
       </div>
       <div class="form-actions">
-        <p-button label="Add Teams"
-                  icon="pi pi-plus-circle"
-                  type="submit"
-                  [disabled]="bulkAddForm.invalid || isAddingTeams"></p-button>
+        <button pButton
+                type="submit"
+                label="Add Teams"
+                icon="pi pi-plus-circle"
+                class="p-button-success navbar-style"
+                [disabled]="bulkAddForm.invalid || isAddingTeams"
+                [loading]="isAddingTeams">
+        </button>
       </div>
     </form>
-  </ng-template>
-</p-card>
+  </div>
+</div>

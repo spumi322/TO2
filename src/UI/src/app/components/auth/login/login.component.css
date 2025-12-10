@@ -111,10 +111,6 @@
   outline: none;
 }
 
-::ng-deep .p-button {
-  margin-top: 0.5rem;
-}
-
 /* Native Submit Button Styling */
 .submit-button {
   width: 100%;

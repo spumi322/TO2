@@ -1,7 +1,5 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Tournament;
-using Application.Pipelines.StartBracket.Contracts;
-using Application.Pipelines.StartGroups.Contracts;
 using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,18 +26,19 @@ namespace TO2.Controllers
             _workFlowService = workFlowService;
         }
 
-        // GET: api/Tournaments
-        [HttpGet("all")]
-        public async Task<IActionResult> GetAll()
-        {
-            return Ok(await _tournamentService.GetAllTournamentsAsync());
-        }
 
         // GET: api/Tournament/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(long id)
         {
             return Ok(await _tournamentService.GetTournamentAsync(id));
+        }
+
+        // GET: api/tournaments/list
+        [HttpGet("list")]
+        public async Task<IActionResult> GetTournamentList()
+        {
+            return Ok(await _tournamentService.GetTournamentListAsync());
         }
 
         // GET: api/Tournament/5/teams

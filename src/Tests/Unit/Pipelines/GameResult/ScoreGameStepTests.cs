@@ -1,12 +1,10 @@
 using Application.Contracts;
 using Application.DTOs.Game;
-using Application.Pipelines.GameResult;
 using Application.Pipelines.GameResult.Contracts;
 using Application.Pipelines.GameResult.Steps;
 using FluentAssertions;
 using Moq;
 using Tests.Base;
-using Tests.Helpers;
 
 namespace Tests.Unit.Pipelines.GameResult
 {

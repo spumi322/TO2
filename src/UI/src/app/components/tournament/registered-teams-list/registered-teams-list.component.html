@@ -1,11 +1,9 @@
-<p-card class="registered-teams-card">
-  <ng-template pTemplate="header">
-    <div class="card-header-content">
-      <i class="card-avatar pi pi-users"></i>
-      <h3>Registered Teams</h3>
-    </div>
-  </ng-template>
-  <ng-template pTemplate="content">
+<div class="registered-teams-card">
+  <div class="card-header">
+    <i class="pi pi-users"></i>
+    <h3>Registered Teams</h3>
+  </div>
+  <div class="card-content">
     <div *ngIf="!teams?.length" class="empty-state">
       <i class="empty-icon pi pi-inbox"></i>
       <p>No teams have been registered yet</p>
@@ -15,12 +13,13 @@
       <div *ngFor="let team of teams" class="team-card">
         <div class="team-avatar">{{ team?.name?.charAt(0) }}</div>
         <div class="team-name">{{ team?.name }}</div>
-        <p-button *ngIf="isRegistrationOpen"
-                  icon="pi pi-trash"
-                  severity="danger"
-                  [text]="true"
-                  (onClick)="onRemoveTeam(team)"></p-button>
+        <button *ngIf="isRegistrationOpen"
+                class="remove-btn"
+                (click)="onRemoveTeam(team)"
+                title="Remove team">
+          <i class="pi pi-trash"></i>
+        </button>
       </div>
     </div>
-  </ng-template>
-</p-card>
+  </div>
+</div>

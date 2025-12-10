@@ -1,12 +1,8 @@
 ﻿using Application.Contracts.Repositories;
+using Application.Pipelines.Common;
 using Domain.AggregateRoots;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Persistence.Repository
 {
@@ -28,6 +24,11 @@ namespace Infrastructure.Persistence.Repository
                     .ThenInclude(tt => tt.Team)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
+        public async Task<IReadOnlyList<Tournament>> GetAllForListAsync()
+            => await _dbSet
+                .Include(t => t.TournamentTeams)
+                .ToListAsync();
+
         public async Task<IReadOnlyList<Tournament>> GetActiveAsync()
             => await _dbSet
                 .Where(t => t.Status != TournamentStatus.Finished
@@ -35,6 +36,8 @@ namespace Infrastructure.Persistence.Repository
                 .ToListAsync();
 
         public async Task<IReadOnlyList<Tournament>> GetByStatusAsync(TournamentStatus status)
-            => await _dbSet.Where(t => t.Status == status).ToListAsync();
+            => await _dbSet
+            .Where(t => t.Status == status)
+            .ToListAsync();
     }
 }

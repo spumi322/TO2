@@ -1,191 +1,200 @@
-<p-card class="tournament-form">
-  <ng-template pTemplate="header">
-    <h3>Create Tournament</h3>
-  </ng-template>
-  <ng-template pTemplate="content">
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <!-- Name with uniqueness check -->
-      <div class="field full-width">
+<div class="create-tournament-container">
+  <div class="create-tournament-card">
+    <div class="tournament-header">
+      <h2>Create Tournament</h2>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="tournament-form">
+      <!-- Tournament Name -->
+      <div class="field">
         <label for="name">Tournament Name</label>
-        <input pInputText id="name" formControlName="name"
-               [class.ng-invalid]="form.get('name')?.invalid && form.get('name')?.touched"
-               [class.ng-dirty]="form.get('name')?.dirty"
-               class="w-full" />
-        <small class="hint">Must be unique, 4-100 characters</small>
-        <small class="p-error" *ngIf="form.get('name')?.hasError('required') && form.get('name')?.touched">
-          Name is required
-        </small>
-        <small class="p-error" *ngIf="form.get('name')?.hasError('minlength') && form.get('name')?.touched">
-          Name must be at least 4 characters
-        </small>
-        <small class="p-error" *ngIf="form.get('name')?.hasError('maxlength') && form.get('name')?.touched">
-          Name cannot exceed 100 characters
-        </small>
-        <small class="p-error" *ngIf="form.get('name')?.hasError('notUnique') && form.get('name')?.touched">
-          This tournament name is already taken
-        </small>
+        <input id="name"
+               type="text"
+               formControlName="name"
+               [class.invalid]="form.get('name')?.invalid && form.get('name')?.touched"
+               [pTooltip]="getErrorMessage('name')"
+               tooltipPosition="right"
+               [showDelay]="0"
+               tooltipStyleClass="error-tooltip" />
       </div>
 
       <!-- Description -->
-      <div class="field full-width">
+      <div class="field">
         <label for="description">Description</label>
-        <textarea pInputTextarea id="description" formControlName="description" rows="4"
-                  [class.ng-invalid]="form.get('description')?.invalid && form.get('description')?.touched"
-                  class="w-full"></textarea>
-        <small class="hint">Optional, up to 250 characters</small>
-        <small class="p-error" *ngIf="form.get('description')?.hasError('maxlength') && form.get('description')?.touched">
-          Description cannot exceed 250 characters
+        <textarea id="description"
+                  formControlName="description"
+                  rows="1"
+                  [class.invalid]="form.get('description')?.invalid && form.get('description')?.touched"
+                  [pTooltip]="getErrorMessage('description')"
+                  tooltipPosition="right"
+                  [showDelay]="0"
+                  tooltipStyleClass="error-tooltip"></textarea>
+      </div>
+
+      <!-- Tournament Format -->
+      <div class="field">
+        <label>Tournament Format</label>
+        <div class="format-options">
+          <div class="format-option"
+               [class.selected]="form.get('format')?.value === Format.BracketOnly"
+               (click)="selectFormat(Format.BracketOnly)">
+            <input type="radio"
+                   [value]="Format.BracketOnly"
+                   formControlName="format"
+                   id="format-bracket" />
+            <div class="format-details">
+              <span class="format-name">Bracket Only</span>
+              <span class="format-desc">Single-elimination knockout</span>
+            </div>
+          </div>
+
+          <div class="format-option"
+               [class.selected]="form.get('format')?.value === Format.GroupsAndBracket"
+               (click)="selectFormat(Format.GroupsAndBracket)">
+            <input type="radio"
+                   [value]="Format.GroupsAndBracket"
+                   formControlName="format"
+                   id="format-groups-bracket" />
+            <div class="format-details">
+              <span class="format-name">Groups + Bracket</span>
+              <span class="format-desc">Groups then playoffs Bracket</span>
+            </div>
+          </div>
+
+          <div class="format-option"
+               [class.selected]="form.get('format')?.value === Format.GroupsOnly"
+               (click)="selectFormat(Format.GroupsOnly)">
+            <input type="radio"
+                   [value]="Format.GroupsOnly"
+                   formControlName="format"
+                   id="format-groups" />
+            <div class="format-details">
+              <span class="format-name">Groups Only</span>
+              <span class="format-desc">Round-robin Groups</span>
+            </div>
+          </div>
+        </div>
+        <small class="error-message" *ngIf="form.get('format')?.invalid && form.get('format')?.touched">
+          Please select a tournament format
         </small>
       </div>
 
-      <!-- Format -->
-      <div class="field full-width">
-        <label for="format">Tournament Format</label>
-        <p-dropdown id="format" formControlName="format"
-                    [options]="formatOptions"
-                    optionLabel="label"
-                    optionValue="value"
-                    placeholder="Select a format"
-                    (onChange)="onFormatChange()"
-                    [class.ng-invalid]="form.get('format')?.invalid && form.get('format')?.touched"
-                    styleClass="w-full"></p-dropdown>
-        <small class="hint">Select the tournament structure</small>
-        <small class="p-error" *ngIf="form.get('format')?.invalid && form.get('format')?.touched">
-          Format is required
-        </small>
+      <!-- Bracket Only Config -->
+      <div *ngIf="form.get('format')?.value === Format.BracketOnly">
+        <div class="field">
+          <label for="maxTeamsBracket">Tournament Size</label>
+          <select id="maxTeamsBracket"
+                  formControlName="maxTeams"
+                  [class.invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
+                  [pTooltip]="getErrorMessage('maxTeams')"
+                  tooltipPosition="right"
+                  [showDelay]="0"
+                  tooltipStyleClass="error-tooltip">
+            <option value="" disabled selected>Select team count</option>
+            <option *ngFor="let option of bracketSizeOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <!-- Groups Only Config -->
+      <div *ngIf="form.get('format')?.value === Format.GroupsOnly">
+        <div class="field-row">
+          <div class="field">
+            <label for="maxTeamsGB">Total Teams</label>
+            <input id="maxTeamsGB"
+                   type="number"
+                   formControlName="maxTeams"
+                   placeholder="2-32"
+                   min="2"
+                   max="32"
+                   [class.invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
+                   [pTooltip]="getErrorMessage('maxTeams')"
+                   tooltipPosition="right"
+                   [showDelay]="0"
+                   tooltipStyleClass="error-tooltip" />
+          </div>
+          <div class="field">
+            <label for="teamsPerGroup">Teams per Group</label>
+            <input id="teamsPerGroup"
+                   type="number"
+                   formControlName="teamsPerGroup"
+                   placeholder="2-16"
+                   min="2"
+                   max="16"
+                   [class.invalid]="form.get('teamsPerGroup')?.invalid && form.get('teamsPerGroup')?.touched"
+                   [pTooltip]="getErrorMessage('teamsPerGroup')"
+                   tooltipPosition="right"
+                   [showDelay]="0"
+                   tooltipStyleClass="error-tooltip" />
+        </div>
+      </div>
       </div>
 
-      <!-- Max Teams (for BracketOnly) -->
-      <div *ngIf="form.get('format')?.value === Format.BracketOnly" class="field full-width">
-        <label for="maxTeamsBracket">Max Teams</label>
-        <input pInputText id="maxTeamsBracket" type="number" formControlName="maxTeams"
-               min="2" max="32"
-               [class.ng-invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
-               class="w-full" />
-        <small class="hint">Tournament size - must be power of 2 (2, 4, 8, 16, 32)</small>
-        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('required') && form.get('maxTeams')?.touched">
-          Max teams is required
-        </small>
-        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('min') && form.get('maxTeams')?.touched">
-          Minimum 2 teams required
-        </small>
-        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('max') && form.get('maxTeams')?.touched">
-          Maximum 32 teams allowed
-        </small>
-        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('powerOfTwo') && form.get('maxTeams')?.touched">
-          Team count must be a power of 2 (2, 4, 8, 16, 32)
-        </small>
+      <!-- Groups + Bracket Config -->
+      <div *ngIf="form.get('format')?.value === Format.GroupsAndBracket">
+        <div class="field-row">
+          <div class="field">
+            <label for="maxTeamsGB">Total Teams</label>
+            <input id="maxTeamsGB"
+                   type="number"
+                   formControlName="maxTeams"
+                   placeholder="2-32"
+                   min="2"
+                   max="32"
+                   [class.invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
+                   [pTooltip]="getErrorMessage('maxTeams')"
+                   tooltipPosition="right"
+                   [showDelay]="0"
+                   tooltipStyleClass="error-tooltip" />
+          </div>
+          <div class="field">
+            <label for="teamsPerGroup">Teams per Group</label>
+            <input id="teamsPerGroup"
+                   type="number"
+                   formControlName="teamsPerGroup"
+                   placeholder="2-16"
+                   min="2"
+                   max="16"
+                   [class.invalid]="form.get('teamsPerGroup')?.invalid && form.get('teamsPerGroup')?.touched"
+                   [pTooltip]="getErrorMessage('teamsPerGroup')"
+                   tooltipPosition="right"
+                   [showDelay]="0"
+                   tooltipStyleClass="error-tooltip" />
+          </div>
+          <div class="field">
+            <label for="teamsPerBracket">Bracket Size</label>
+            <input id="teamsPerBracket"
+                   type="number"
+                   formControlName="teamsPerBracket"
+                   placeholder="2-32"
+                   min="2"
+                   max="32"
+                   [class.invalid]="form.get('teamsPerBracket')?.invalid && form.get('teamsPerBracket')?.touched"
+                   [pTooltip]="getErrorMessage('teamsPerBracket')"
+                   tooltipPosition="right"
+                   [showDelay]="0"
+                   tooltipStyleClass="error-tooltip" />
+          </div>
+        </div>
       </div>
 
-      <!-- Teams per Group (for GroupsAndBracket) -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsAndBracket" class="field full-width">
-        <label for="teamsPerGroupGB">Teams per Group</label>
-        <input pInputText id="teamsPerGroupGB" type="number" formControlName="teamsPerGroup"
-               min="2" max="16"
-               [class.ng-invalid]="form.get('teamsPerGroup')?.invalid && form.get('teamsPerGroup')?.touched"
-               class="w-full" />
-        <small class="hint">Number of teams in each group (2-16)</small>
-        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('required') && form.get('teamsPerGroup')?.touched">
-          Teams per group is required
-        </small>
-        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('min') && form.get('teamsPerGroup')?.touched">
-          Minimum 2 teams per group
-        </small>
-        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('max') && form.get('teamsPerGroup')?.touched">
-          Maximum 16 teams per group
-        </small>
-      </div>
+      <!-- Submit Button -->
+      <button type="submit"
+              class="submit-button"
+              [disabled]="form.invalid || isSubmitting">
+        <span *ngIf="!isSubmitting">Create Tournament</span>
+        <span *ngIf="isSubmitting">Creating...</span>
+      </button>
 
-      <!-- Teams per Bracket (for GroupsAndBracket) -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsAndBracket" class="field full-width">
-        <label for="teamsPerBracket">Teams per Bracket</label>
-        <input pInputText id="teamsPerBracket" type="number" formControlName="teamsPerBracket"
-               min="4" max="32"
-               [class.ng-invalid]="form.get('teamsPerBracket')?.invalid && form.get('teamsPerBracket')?.touched"
-               class="w-full" />
-        <small class="hint">Number of teams advancing to bracket stage (4-32)</small>
-        <small class="p-error" *ngIf="form.get('teamsPerBracket')?.hasError('required') && form.get('teamsPerBracket')?.touched">
-          Teams per bracket is required
-        </small>
-        <small class="p-error" *ngIf="form.get('teamsPerBracket')?.hasError('min') && form.get('teamsPerBracket')?.touched">
-          Minimum 4 teams per bracket
-        </small>
-        <small class="p-error" *ngIf="form.get('teamsPerBracket')?.hasError('max') && form.get('teamsPerBracket')?.touched">
-          Maximum 32 teams per bracket
-        </small>
-      </div>
-
-      <!-- Max Teams (for GroupsAndBracket) -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsAndBracket" class="field full-width">
-        <label for="maxTeamsGB">Total Tournament Size</label>
-        <input pInputText id="maxTeamsGB" type="number" formControlName="maxTeams"
-               min="2" max="64"
-               [class.ng-invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
-               class="w-full" />
-        <small class="hint">Total number of teams in tournament</small>
-        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('required') && form.get('maxTeams')?.touched">
-          Total teams is required
-        </small>
-        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('divisibleBy') && form.get('maxTeams')?.touched">
-          Must be divisible by teams per group
-        </small>
-      </div>
-
-      <!-- Teams per Group (for GroupsOnly) -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsOnly" class="field full-width">
-        <label for="teamsPerGroupGO">Teams per Group</label>
-        <input pInputText id="teamsPerGroupGO" type="number" formControlName="teamsPerGroup"
-               min="2" max="16"
-               [class.ng-invalid]="form.get('teamsPerGroup')?.invalid && form.get('teamsPerGroup')?.touched"
-               class="w-full" />
-        <small class="hint">Number of teams in each group (2-16)</small>
-        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('required') && form.get('teamsPerGroup')?.touched">
-          Teams per group is required
-        </small>
-        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('min') && form.get('teamsPerGroup')?.touched">
-          Minimum 2 teams per group
-        </small>
-        <small class="p-error" *ngIf="form.get('teamsPerGroup')?.hasError('max') && form.get('teamsPerGroup')?.touched">
-          Maximum 16 teams per group
-        </small>
-      </div>
-
-      <!-- Max Teams (for GroupsOnly) -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsOnly" class="field full-width">
-        <label for="maxTeamsGO">Total Tournament Size</label>
-        <input pInputText id="maxTeamsGO" type="number" formControlName="maxTeams"
-               min="2" max="32"
-               [class.ng-invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
-               class="w-full" />
-        <small class="hint">Total number of teams in tournament</small>
-        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('required') && form.get('maxTeams')?.touched">
-          Total teams is required
-        </small>
-        <small class="p-error" *ngIf="form.get('maxTeams')?.hasError('divisibleBy') && form.get('maxTeams')?.touched">
-          Must be divisible by teams per group
-        </small>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="action-buttons">
-        <p-button label="Cancel"
-                  [outlined]="true"
-                  type="button"
-                  routerLink="/tournaments"
-                  severity="secondary"></p-button>
-        <p-button [label]="isSubmitting ? 'Creating...' : 'Create Tournament'"
-                  type="submit"
-                  [disabled]="form.invalid || isSubmitting"
-                  [loading]="isSubmitting"></p-button>
-      </div>
+      <!-- Cancel Button -->
+      <button type="button"
+              class="cancel-button"
+              routerLink="/tournaments">
+        Cancel
+      </button>
     </form>
-  </ng-template>
-</p-card>
+  </div>
+</div>
 
-<!-- Success/Error Messages -->
-<div *ngIf="successMessage" class="alert success">
-  {{ successMessage }}
-</div>
-<div *ngIf="errorMessage" class="alert error">
-  {{ errorMessage }}
-</div>
+<p-toast position="top-right"></p-toast>

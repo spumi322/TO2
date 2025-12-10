@@ -4,12 +4,9 @@ using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
-using Domain.Configuration;
-using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
 using Domain.StateMachine;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 
@@ -19,7 +16,7 @@ namespace Application.Services
     {
         private readonly ITournamentRepository _tournamentRepository;
         private readonly IStandingService _standingService;
-        private readonly ITournamentFormatConfiguration _formatConfig;
+        private readonly IFormatService _formatService;
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
         private readonly ITournamentStateMachine _stateMachine;
@@ -28,7 +25,7 @@ namespace Application.Services
 
         public TournamentService(ITournamentRepository tournamentRepository,
                                  IStandingService standingService,
-                                 ITournamentFormatConfiguration formatConfig,
+                                 IFormatService formatService,
                                  IMapper mapper,
                                  ILogger<TournamentService> logger,
                                  ITournamentStateMachine stateMachine,
@@ -36,7 +33,7 @@ namespace Application.Services
         {
             _tournamentRepository = tournamentRepository;
             _standingService = standingService;
-            _formatConfig = formatConfig;
+            _formatService = formatService;
             _mapper = mapper;
             _logger = logger;
             _stateMachine = stateMachine;
@@ -93,7 +90,7 @@ namespace Application.Services
             await _tournamentRepository.AddAsync(tournament);
             await _unitOfWork.SaveChangesAsync();
 
-            var metadata = _formatConfig.GetFormatMetadata(request.Format);
+            var metadata = _formatService.GetFormatMetadata(request.Format);
 
             // Create bracket if required
             if (metadata.RequiresBracket)
@@ -105,7 +102,7 @@ namespace Application.Services
             // Create groups if required
             if (metadata.RequiresGroups && request.TeamsPerGroup.HasValue)
             {
-                int groupCount = _formatConfig.CalculateNumberOfGroups(
+                int groupCount = _formatService.CalculateNumberOfGroups(
                     request.Format, tournament.MaxTeams, request.TeamsPerGroup.Value);
 
                 for (int i = 0; i < groupCount; i++)
@@ -126,11 +123,13 @@ namespace Application.Services
             return _mapper.Map<GetTournamentResponseDTO>(existingTournament);
         }
 
-        public async Task<List<GetAllTournamentsResponseDTO>> GetAllTournamentsAsync()
+        public async Task<List<GetTournamentListResponseDTO>> GetTournamentListAsync()
         {
-            var tournaments = await _tournamentRepository.GetAllAsync();
+            var tournaments = await _tournamentRepository.GetAllForListAsync();
 
-            return _mapper.Map<List<GetAllTournamentsResponseDTO>>(tournaments);
+            return tournaments
+                .Select(t => _mapper.Map<GetTournamentListResponseDTO>(t) with { CurrentTeams = t.TournamentTeams.Count })
+                .ToList();
         }
 
         public async Task<UpdateTournamentResponseDTO> UpdateTournamentAsync(long id, UpdateTournamentRequestDTO request)

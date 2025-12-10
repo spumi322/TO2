@@ -3,10 +3,10 @@
     <div class="group-header">
       {{ group.name }}
       <span *ngIf="group.isFinished" class="status-badge finished">
-        <i class="pi pi-check-circle"></i> Completed
+        Completed
       </span>
       <span *ngIf="!group.isFinished" class="status-badge active">
-        <i class="pi pi-spin pi-spinner"></i> In Progress
+        In Progress
       </span>
     </div>
 

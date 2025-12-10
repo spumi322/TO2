@@ -39,7 +39,15 @@ export interface TournamentStateDTO {
   statusDisplayName: string;
   statusDescription: string;
 }
-
+export interface TournamentList {
+  id: number;
+  name: string;
+  description: string;
+  currentTeams: number;
+  maxTeams: number;
+  format: Format;
+  status: TournamentStatus;
+}
 export interface StartGroupsResponse {
   success: boolean;
   message: string;

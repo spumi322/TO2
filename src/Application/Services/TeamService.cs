@@ -5,7 +5,6 @@ using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Exceptions;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Services

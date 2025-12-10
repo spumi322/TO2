@@ -33,7 +33,7 @@
 }
 
 .group-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   box-shadow: var(--glow-primary);
   border-color: var(--primary-color);
 }
@@ -52,26 +52,11 @@
 }
 
 .status-badge {
-  padding: 4px 8px;
-  border-radius: var(--border-radius);
-  font-size: 10px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  border: 1px solid;
-}
-
-.status-badge.finished {
-  background: rgba(0, 217, 54, 0.2);
-  color: var(--success-color);
-  border-color: var(--success-color);
-}
-
-.status-badge.active {
-  background: rgba(255, 170, 0, 0.2);
-  color: var(--warning-color);
-  border-color: var(--warning-color);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  opacity: 0.8;
+  color: inherit;
 }
 
 .group-standings {
@@ -83,14 +68,14 @@
 }
 
 .group-standings th {
-  background: var(--bg-dark);
+  background: var(--bg-elevated);
   padding: 8px 6px;
   text-align: center;
   font-weight: 700;
   text-transform: uppercase;
   color: var(--text-primary);
   font-size: 0.75rem;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
   border-bottom: var(--border-width) solid var(--border-color);
 }
 
@@ -107,7 +92,7 @@
 }
 
 .group-standings tbody tr:hover {
-  background-color: var(--bg-card-hover);
+  background-color: var(--bg-elevated);
 }
 
 .team-info {
@@ -139,31 +124,33 @@
 }
 
 .badge-advanced {
-  background: var(--success-color);
-  color: var(--text-dark);
-  padding: 3px 10px;
-  border-radius: var(--border-radius);
-  font-size: 10px;
+  background: rgba(76, 175, 80, 0.15);
+  color: var(--success-color);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
   margin-left: 8px;
-  font-weight: 700;
+  font-weight: 600;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .badge-eliminated {
-  background: var(--error-color);
-  color: white;
-  padding: 3px 10px;
-  border-radius: var(--border-radius);
-  font-size: 10px;
+  background: rgba(244, 67, 54, 0.15);
+  color: var(--error-color);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
   margin-left: 8px;
-  font-weight: 700;
+  font-weight: 600;
+  text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 /* Matches section heading */
 .group-card h4 {
-  margin: 12px 12px 8px 12px;
-  font-size: 0.95rem;
+  margin: 10px 12px 6px 12px;
+  font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);
   text-transform: uppercase;

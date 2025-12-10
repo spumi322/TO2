@@ -101,9 +101,9 @@ namespace Application.Services
             if (user == null)
                 throw new UnauthorizedException("Invalid email or password");
 
-        var isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
-        if (!isPasswordValid)
-            throw new UnauthorizedException("Invalid email or password");
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
+            if (!isPasswordValid)
+                throw new UnauthorizedException("Invalid email or password");
 
             var tenant = await _tenantRepository.GetByIdAsync(user.TenantId);
             if (tenant == null)

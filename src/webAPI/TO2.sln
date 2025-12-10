@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.3.11222.16 d18.3
+VisualStudioVersion = 18.3.11222.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TO2", "TO2.csproj", "{128879AE-CB6A-4A81-869B-C83DF20DEF4C}"
 EndProject
@@ -15,7 +15,13 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "UI", "..\UI\UI.esproj", "{9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
+		BRACKET_REFACTOR.md = BRACKET_REFACTOR.md
 		..\..\docs\CHANGELOG_FORMAT_CONFIG.md = ..\..\docs\CHANGELOG_FORMAT_CONFIG.md
+		GROUPSONLY_FORMAT.md = GROUPSONLY_FORMAT.md
+		REALTIME_MULTIADMIN_EDIT.md = REALTIME_MULTIADMIN_EDIT.md
+		REFACTOR_GROUPS.md = REFACTOR_GROUPS.md
+		TODO.md = TODO.md
+		..\..\docs\UI_DARK_MODE_RESKIN_PLAN.md = ..\..\docs\UI_DARK_MODE_RESKIN_PLAN.md
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "..\Tests\Tests.csproj", "{A1E69636-E761-4D46-A9CE-2813642D4371}"

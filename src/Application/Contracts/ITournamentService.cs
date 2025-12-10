@@ -8,7 +8,7 @@ namespace Application.Contracts
     {
         Task<CreateTournamentResponseDTO> CreateTournamentAsync(CreateTournamentRequestDTO request);
         Task<GetTournamentResponseDTO> GetTournamentAsync(long id);
-        Task<List<GetAllTournamentsResponseDTO>> GetAllTournamentsAsync();
+        Task<List<GetTournamentListResponseDTO>> GetTournamentListAsync();
         Task<UpdateTournamentResponseDTO> UpdateTournamentAsync(long id, UpdateTournamentRequestDTO request);
         Task SoftDeleteTournamentAsync(long id);
         Task SetTournamentStatusAsync(long id, TournamentStatus status);

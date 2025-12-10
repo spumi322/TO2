@@ -11,7 +11,6 @@ using Application.Pipelines.StartBracket.Contracts;
 using Application.Pipelines.StartGroups;
 using Application.Pipelines.StartGroups.Contracts;
 using Application.Services;
-using Domain.Configuration;
 using Domain.Entities;
 using Domain.StateMachine;
 using FluentValidation;
@@ -52,11 +51,13 @@ namespace TO2
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
             builder.Services.AddScoped<IGroupRepository, GroupRepository>();
+            builder.Services.AddScoped<IStandingRepository, StandingRepository>();
+            builder.Services.AddScoped<IMatchRepository, MatchRepository>();
             builder.Services.AddScoped<ITournamentTeamRepository, TournamentTeamRepository>();
-            
+
             // Domain Services
             builder.Services.AddScoped<ITournamentStateMachine, TournamentStateMachine>();
-            builder.Services.AddScoped<ITournamentFormatConfiguration, TournamentFormatConfiguration>();
+            builder.Services.AddScoped<IFormatService, FormatService>();
 
             // Multi-Tenancy Service
             builder.Services.AddScoped<ITenantService, HttpContextTenantService>();
@@ -88,7 +89,7 @@ namespace TO2
             // Standing Progress Strategies
             builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
             builder.Services.AddScoped<IStandingProgressStrategy, BracketProgressStrategy>();
-           
+
             // Start Groups Pipeline - Tournament group stage initialization
             builder.Services.AddScoped<IStartGroupsPipeline, StartGroupsPipeline>();
             // Pipeline Steps (registered in execution order)
@@ -118,7 +119,7 @@ namespace TO2
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddFluentValidation().AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
- 
+
             // Exception Handling
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
             builder.Services.AddProblemDetails();

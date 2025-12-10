@@ -1,7 +1,6 @@
 using Application.Contracts;
 using Application.DTOs.Tournament;
 using Application.Pipelines.StartGroups.Contracts;
-using Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Pipelines.StartGroups

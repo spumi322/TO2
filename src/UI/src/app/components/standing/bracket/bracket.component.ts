@@ -1,12 +1,11 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnChanges, AfterViewInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { Tournament, TournamentStateDTO, TournamentStatus } from '../../../models/tournament';
 import { MatchService } from '../../../services/match/match.service';
+import { StandingService } from '../../../services/standing/standing.service';
 import { BracketAdapterService } from '../../../services/bracket-adapter.service';
 import { Match } from '../../../models/match';
 import { Team } from '../../../models/team';
-import { forkJoin } from 'rxjs';
 import { MatchResult, MatchFinishedIds } from '../../../models/matchresult';
-import { Game } from '../../../models/game';
 
 @Component({
   selector: 'app-standing-bracket',
@@ -27,6 +26,7 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
   private viewInitialized = false;
 
   constructor(
+    private standingService: StandingService,
     private matchService: MatchService,
     private bracketAdapter: BracketAdapterService,
     private cdr: ChangeDetectorRef
@@ -35,12 +35,12 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
   ngOnInit() {
     // ngOnInit fires when tab content is initialized (thanks to matTabContent lazy loading)
     // By this point, the element is in the DOM and visible
-    this.loadMatches();
+    this.loadBracket();
   }
 
   ngOnChanges() {
     if (this.viewInitialized) {
-      this.loadMatches();
+      this.loadBracket();
     }
   }
 
@@ -51,51 +51,35 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
     }
   }
 
-  loadMatches(resetUpdatingFlag: number | null = null) {
-    if (!this.standingId || !this.tournament) {
+  loadBracket(resetUpdatingFlag: number | null = null) {
+    if (!this.tournament?.id) {
       this.isLoading = false;
       return;
     }
 
     this.isLoading = true;
 
-    this.matchService.getMatchesByStandingId(this.standingId).subscribe({
-      next: (matches) => {
-        this.matches = matches;
-        this.loadAllMatchScores(resetUpdatingFlag);
-      },
-      error: (err) => {
-        console.error('Error loading matches:', err);
-        this.isLoading = false;
-        if (resetUpdatingFlag !== null) {
-          this.isUpdating[resetUpdatingFlag] = false;
+    this.standingService.getBracketWithDetails(this.tournament.id).subscribe({
+      next: (bracketStanding) => {
+        if (bracketStanding) {
+          this.matches = bracketStanding.matches;
+          this.standingId = bracketStanding.id;
+
+          // Map backend results to MatchResult structure
+          this.matches.forEach(match => {
+            match.result = {
+              teamAId: match.teamAId,
+              teamAWins: match.teamAWins,  // From backend
+              teamBId: match.teamBId,
+              teamBWins: match.teamBWins   // From backend
+            };
+          });
+        } else {
+          this.matches = [];
         }
-      }
-    });
-  }
 
-  loadAllMatchScores(resetUpdatingFlag: number | null = null): void {
-    if (this.matches.length === 0) {
-      this.isLoading = false;
-      if (resetUpdatingFlag !== null) {
-        this.isUpdating[resetUpdatingFlag] = false;
-      }
-      return;
-    }
-
-    const gameRequests = this.matches.map(match =>
-      this.matchService.getAllGamesByMatch(match.id)
-    );
-
-    forkJoin(gameRequests).subscribe({
-      next: (allGames) => {
-        this.matches.forEach((match, index) => {
-          match.games = allGames[index];
-          match.result = this.getMatchResults(allGames[index]);
-        });
         this.isLoading = false;
 
-        // Reset the updating flag after reload completes
         if (resetUpdatingFlag !== null) {
           this.isUpdating[resetUpdatingFlag] = false;
         }
@@ -105,30 +89,14 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
         }
       },
       error: (err) => {
-        console.error('Error loading match games:', err);
+        console.error('Error loading bracket:', err);
         this.isLoading = false;
+        this.matches = [];
         if (resetUpdatingFlag !== null) {
           this.isUpdating[resetUpdatingFlag] = false;
         }
       }
     });
-  }
-
-  getMatchResults(games: Game[]): MatchResult {
-    let teamAWins = 0;
-    let teamBWins = 0;
-    let teamAId = games[0]?.teamAId ?? 0;
-    let teamBId = games[0]?.teamBId ?? 0;
-
-    games.forEach(game => {
-      if (game.winnerId === teamAId) {
-        teamAWins++;
-      } else if (game.winnerId === teamBId) {
-        teamBWins++;
-      }
-    });
-
-    return { teamAId, teamAWins, teamBId, teamBWins };
   }
 
   async renderBracket() {
@@ -228,15 +196,7 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
         }
       };
 
-      // Add hover effect
-      htmlElement.onmouseenter = () => {
-        if (!this.isUpdating[match.id]) {
-          htmlElement.style.backgroundColor = 'rgba(33, 150, 243, 0.1)';
-        }
-      };
-      htmlElement.onmouseleave = () => {
-        htmlElement.style.backgroundColor = '';
-      };
+      // Hover effects now handled by CSS (no inline styles needed)
     });
   }
 
@@ -248,61 +208,45 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
 
     this.isUpdating[matchId] = true;
 
-    // Find the first unfinished game in this match
-    this.matchService.getAllGamesByMatch(matchId).subscribe({
-      next: (games) => {
-        const gameToUpdate = games.find(game => !game.winnerId);
+    // Find unfinished game (data already loaded)
+    const gameToUpdate = match.games.find(game => !game.winnerId);
 
-        if (!gameToUpdate) {
-          console.warn('No unfinished game found for match', matchId);
-          this.isUpdating[matchId] = false;
-          return;
+    if (!gameToUpdate) {
+      console.warn('No unfinished game found for match', matchId);
+      this.isUpdating[matchId] = false;
+      return;
+    }
+
+    const gameResult = {
+      gameId: gameToUpdate.id,
+      winnerId: teamId,
+      teamAScore: undefined,
+      teamBScore: undefined,
+      matchId: matchId,
+      standingId: match.standingId,
+      tournamentId: this.tournament.id
+    };
+
+    this.matchService.setGameResult(gameResult).subscribe({
+      next: (result) => {
+        if (result.matchFinished && result.matchWinnerId && result.matchLoserId) {
+          match.winnerId = result.matchWinnerId;
+          match.loserId = result.matchLoserId;
+
+          this.matchFinished.emit({
+            winnerId: result.matchWinnerId,
+            loserId: result.matchLoserId,
+            allGroupsFinished: result.allGroupsFinished || false,
+            tournamentFinished: result.tournamentFinished || false,
+            finalStandings: result.finalStandings
+          });
         }
 
-        const gameResult = {
-          gameId: gameToUpdate.id,
-          winnerId: teamId,
-          teamAScore: undefined,
-          teamBScore: undefined,
-          matchId: matchId,
-          standingId: match.standingId,
-          tournamentId: this.tournament.id
-        };
-
-        this.matchService.setGameResult(gameResult).subscribe({
-          next: (result) => {
-            // Check if match finished
-            if (result.matchFinished && result.matchWinnerId && result.matchLoserId) {
-              match.winnerId = result.matchWinnerId;
-              match.loserId = result.matchLoserId;
-
-              // Emit event to parent component
-              const matchFinishedData: MatchFinishedIds = {
-                winnerId: result.matchWinnerId,
-                loserId: result.matchLoserId,
-                allGroupsFinished: result.allGroupsFinished || false,
-                tournamentFinished: result.tournamentFinished || false,
-                finalStandings: result.finalStandings
-              };
-              this.matchFinished.emit(matchFinishedData);
-
-              // Show tournament finish message if applicable
-              if (result.tournamentFinished) {
-                // Tournament finished - match refresh will show updated state
-              }
-            }
-
-            // Reload matches and re-render bracket, passing matchId to reset the updating flag
-            this.loadMatches(matchId);
-          },
-          error: (err) => {
-            console.error('Error scoring game:', err);
-            this.isUpdating[matchId] = false;
-          }
-        });
+        // Single reload call
+        this.loadBracket(matchId);
       },
       error: (err) => {
-        console.error('Error loading games:', err);
+        console.error('Error scoring game:', err);
         this.isUpdating[matchId] = false;
       }
     });

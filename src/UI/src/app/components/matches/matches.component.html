@@ -23,7 +23,7 @@
                 [disabled]="match.winnerId || isUpdating[match.id] || isGroupFinished">
         </button>
 
-        <span *ngIf="!isUpdating[match.id]">{{ match.result.teamAWins }} - {{ match.result.teamBWins }}</span>
+        <span *ngIf="!isUpdating[match.id]">{{ match.teamAWins }} - {{ match.teamBWins }}</span>
         <span *ngIf="isUpdating[match.id]" class="loading-spinner">Updating...</span>
 
         <button pButton

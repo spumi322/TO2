@@ -1,14 +1,16 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Tournament, TournamentStatus } from '../../../models/tournament';
-import { TournamentService } from '../../../services/tournament/tournament.service';
 import { Router } from '@angular/router';
 
+import { TournamentList } from '../../../models/tournament';
+import { TournamentService } from '../../../services/tournament/tournament.service';
+import { Format, TournamentStatus } from '../../../models/tournament';
+
 interface GroupedTournaments {
-  upcoming: Tournament[];
-  ongoing: Tournament[];
-  finished: Tournament[];
+  upcoming: TournamentList[];
+  ongoing: TournamentList[];
+  finished: TournamentList[];
 }
 
 @Component({
@@ -25,78 +27,75 @@ export class TournamentListComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.groupedTournaments$ = this.tournamentService.getAllTournamentsWithTeams().pipe(
-      map(tournaments => ({
-        upcoming: tournaments.filter(t => t.status === TournamentStatus.Setup),
-        ongoing: tournaments.filter(t =>
-          t.status === TournamentStatus.SeedingGroups ||
-          t.status === TournamentStatus.GroupsInProgress ||
-          t.status === TournamentStatus.GroupsCompleted ||
-          t.status === TournamentStatus.SeedingBracket ||
-          t.status === TournamentStatus.BracketInProgress
-        ),
-        finished: tournaments.filter(t =>
-          t.status === TournamentStatus.Finished ||
-          t.status === TournamentStatus.Cancelled
-        )
-      }))
+    this.groupedTournaments$ = this.tournamentService.getTournamentList().pipe(
+      map(tournaments => this.groupTournaments(tournaments))
     );
   }
 
-  // Default action when clicking on the card
+  private groupTournaments(tournaments: TournamentList[]): GroupedTournaments {
+    return {
+      upcoming: tournaments.filter(t => this.getStatusCategory(t.status) === 'upcoming'),
+      ongoing: tournaments.filter(t => this.getStatusCategory(t.status) === 'ongoing'),
+      finished: tournaments.filter(t => this.getStatusCategory(t.status) === 'finished')
+    };
+  }
+
+  // Status → high-level category for grouping
+  private getStatusCategory(status: TournamentStatus): 'upcoming' | 'ongoing' | 'finished' {
+    switch (status) {
+      case TournamentStatus.Setup:
+        return 'upcoming';
+
+      case TournamentStatus.SeedingGroups:
+      case TournamentStatus.GroupsCompleted:
+      case TournamentStatus.SeedingBracket:
+      case TournamentStatus.GroupsInProgress:
+      case TournamentStatus.BracketInProgress:
+        return 'ongoing';
+
+      case TournamentStatus.Finished:
+      case TournamentStatus.Cancelled:
+      default:
+        return 'finished';
+    }
+  }
+
+  // Simple status label map
+  private readonly statusLabels: Record<TournamentStatus, string> = {
+    [TournamentStatus.Setup]: 'Setup',
+    [TournamentStatus.SeedingGroups]: 'Seeding Groups',
+    [TournamentStatus.GroupsInProgress]: 'Groups In Progress',
+    [TournamentStatus.GroupsCompleted]: 'Groups Completed',
+    [TournamentStatus.SeedingBracket]: 'Seeding Bracket',
+    [TournamentStatus.BracketInProgress]: 'Bracket In Progress',
+    [TournamentStatus.Finished]: 'Finished',
+    [TournamentStatus.Cancelled]: 'Cancelled'
+  };
+
+  // Local format label helper
+  getFormatLabel(format: Format): string {
+    switch (format) {
+      case Format.BracketOnly:
+        return 'Bracket Only';
+      case Format.GroupsOnly:
+        return 'Groups Only';
+      case Format.GroupsAndBracket:
+        return 'Groups + Bracket';
+      default:
+        return 'Unknown Format';
+    }
+  }
+
+  // Local status label helper
+  getStatusLabel(status: TournamentStatus): string {
+    return this.statusLabels[status] ?? 'Unknown Status';
+  }
+
   goToDetails(tournamentId: number): void {
     this.router.navigate(['/tournament', tournamentId]);
   }
 
-  // Determines the label of the action button based on tournament status
-  getActionLabel(tournament: Tournament): string {
-    switch (tournament.status) {
-      case TournamentStatus.Setup:
-        return 'Edit';
-      case TournamentStatus.SeedingGroups:
-      case TournamentStatus.GroupsInProgress:
-      case TournamentStatus.GroupsCompleted:
-      case TournamentStatus.SeedingBracket:
-      case TournamentStatus.BracketInProgress:
-        return 'Play';
-      case TournamentStatus.Finished:
-      case TournamentStatus.Cancelled:
-        return 'Results';
-      default:
-        return 'Details';
-    }
-  }
-
-  // Handles the action button click. Stops event propagation so the card click isn't triggered.
-  action(tournament: Tournament, event: Event): void {
-    event.stopPropagation();
-    switch (tournament.status) {
-      case TournamentStatus.Setup:
-        // Navigate to the edit tournament component.
-        this.router.navigate(['/tournament/edit', tournament.id]);
-        break;
-      case TournamentStatus.SeedingGroups:
-      case TournamentStatus.GroupsInProgress:
-      case TournamentStatus.GroupsCompleted:
-      case TournamentStatus.SeedingBracket:
-      case TournamentStatus.BracketInProgress:
-        // Navigate to a tournament details view where you can enter match results.
-        this.router.navigate(['/tournament/play', tournament.id]);
-        break;
-      case TournamentStatus.Finished:
-      case TournamentStatus.Cancelled:
-        // Navigate to the tournament results view.
-        this.router.navigate(['/tournament/results', tournament.id]);
-        break;
-      default:
-        // Fallback action.
-        this.router.navigate(['/tournament', tournament.id]);
-        break;
-    }
-  }
-
-  // trackBy function for performance in ngFor.
-  trackByTournament(index: number, tournament: Tournament): number {
+  trackByTournament(index: number, tournament: TournamentList): number {
     return tournament.id;
   }
 }

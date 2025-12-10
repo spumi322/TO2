@@ -11,8 +11,13 @@ export interface Match {
   winnerId: number;
   loserId: number;
   bestOf: BestOf;
+
+  // Backend-calculated fields
+  teamAWins: number;
+  teamBWins: number;
+
   games: Game[];
-  result: MatchResult;
+  result?: MatchResult;  // Optional - derived from teamAWins/teamBWins
 }
 
 export enum BestOf {
