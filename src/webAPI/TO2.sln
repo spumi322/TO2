@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{02EA681E-C
 	ProjectSection(SolutionItems) = preProject
 		..\..\docs\CHANGELOG_FORMAT_CONFIG.md = ..\..\docs\CHANGELOG_FORMAT_CONFIG.md
 		GROUPSONLY_FORMAT.md = GROUPSONLY_FORMAT.md
+		REALTIME_MULTIADMIN_EDIT.md = REALTIME_MULTIADMIN_EDIT.md
+		REFACTOR_GROUPS.md = REFACTOR_GROUPS.md
 		TODO.md = TODO.md
 		..\..\docs\UI_DARK_MODE_RESKIN_PLAN.md = ..\..\docs\UI_DARK_MODE_RESKIN_PLAN.md
 	EndProjectSection
