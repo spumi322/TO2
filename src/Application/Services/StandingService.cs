@@ -1,4 +1,6 @@
 ﻿using Application.Contracts;
+using Application.Contracts.Repositories;
+using Application.DTOs.Standing;
 using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using AutoMapper;
@@ -12,10 +14,10 @@ namespace Application.Services
 {
     public class StandingService : IStandingService
     {
-        private readonly IRepository<Standing> _standingRepository;
+        private readonly IStandingRepository _standingRepository;
         private readonly IRepository<Match> _matchRepository;
         private readonly IRepository<Tournament> _tournamentRepository;
-        private readonly IRepository<Group> _groupRepository;
+        private readonly IGroupRepository _groupRepository;
         private readonly IRepository<Team> _teamRepository;
         private readonly IRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly IFormatService _formatService;
@@ -24,10 +26,10 @@ namespace Application.Services
 
         private readonly IUnitOfWork _unitOfWork;
 
-        public StandingService(IRepository<Standing> standingRepository,
+        public StandingService(IStandingRepository standingRepository,
                                IRepository<Match> matchRepository,
                                IRepository<Tournament> tournamentRepository,
-                               IRepository<Group> groupRepository,
+                               IGroupRepository groupRepository,
                                IRepository<Team> teamRepository,
                                IRepository<TournamentTeam> tournamentTeamRepository,
                                IFormatService formatService,
@@ -469,6 +471,53 @@ namespace Application.Services
             var participants = await _groupRepository.FindAllAsync(p => p.StandingId == standingId);
 
             return _mapper.Map<List<GetTeamWithStatsResponseDTO>>(participants);
+        }
+
+        public async Task<List<GetGroupsWithDetailsResponseDTO>> GetGroupsWithDetailsAsync(long tournamentId)
+        {
+            // Get standings with matches eager loaded (2 queries via Include)
+            var standings = await _standingRepository.GetGroupsWithMatchesAsync(tournamentId);
+
+            var result = new List<GetGroupsWithDetailsResponseDTO>();
+
+            foreach (var standing in standings)
+            {
+                // Get teams ordered by points (1 query per standing)
+                var groupEntries = await _groupRepository.GetByStandingIdOrderedAsync(standing.Id);
+
+                var dto = new GetGroupsWithDetailsResponseDTO
+                {
+                    Id = standing.Id,
+                    Name = standing.Name,
+                    IsFinished = standing.IsFinished,
+                    IsSeeded = standing.IsSeeded,
+                    Teams = groupEntries.Select(ge => new GroupTeamDTO
+                    {
+                        Id = ge.TeamId,
+                        Name = ge.TeamName,
+                        Wins = ge.Wins,
+                        Losses = ge.Losses,
+                        Points = ge.Points,
+                        Status = (int)ge.Status
+                    }).ToList(),
+                    Matches = standing.Matches.Select(m => new GroupMatchDTO
+                    {
+                        Id = m.Id,
+                        StandingId = m.StandingId,  // Required by match component
+                        Round = m.Round,
+                        Seed = m.Seed,
+                        TeamAId = m.TeamAId,
+                        TeamBId = m.TeamBId,
+                        WinnerId = m.WinnerId,
+                        LoserId = m.LoserId,
+                        BestOf = (int)m.BestOf
+                    }).ToList()
+                };
+
+                result.Add(dto);
+            }
+
+            return result;
         }
     }
 }

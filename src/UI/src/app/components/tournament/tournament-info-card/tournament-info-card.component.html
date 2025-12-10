@@ -4,7 +4,7 @@
     <h3>Tournament Details</h3>
   </div>
   <div class="card-content">
-    <p *ngIf="tournament?.description">{{ tournament?.description }}</p>
+    <p *ngIf="tournament?.description">{{ tournament.description }}</p>
     <p *ngIf="!tournament?.description" class="muted-text">No description provided</p>
     <div class="info-grid">
       <div class="info-item">
@@ -13,7 +13,7 @@
       </div>
       <div class="info-item">
         <span class="label">Max Teams</span>
-        <span class="value">{{ tournament?.maxTeams }}</span>
+        <span class="value">{{ tournament.maxTeams }}</span>
       </div>
       <div class="info-item" *ngIf="tournament?.format === Format.GroupsAndBracket">
         <span class="label">Teams per Group</span>

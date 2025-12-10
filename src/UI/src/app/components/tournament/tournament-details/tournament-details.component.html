@@ -60,7 +60,7 @@
         <div class="tab-content">
           <app-standing-bracket
             [tournament]="tournament"
-            [standingId]="brackets[0]?.id"
+            [standingId]="brackets[0].id"
             [tournamentState]="tournamentState"
             [teams]="tournament.teams"
             (matchFinished)="onBracketMatchFinished($event)">

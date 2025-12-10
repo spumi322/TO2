@@ -16,12 +16,10 @@ export class GroupComponent implements OnInit {
   @Input() tournament!: Tournament;
   @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
 
-  groups$: Observable<Standing[]> = of([]);
   groups: Standing[] = [];
 
   constructor(
-    private standingService: StandingService,
-    private matchService: MatchService) { }
+    private standingService: StandingService) { }
 
   ngOnInit(): void {
     this.refreshGroups();
@@ -29,26 +27,9 @@ export class GroupComponent implements OnInit {
 
   refreshGroups(): void {
     if (this.tournament.id) {
-      this.groups$ = this.standingService.getGroupsWithTeamsByTournamentId(this.tournament.id).pipe(
-        switchMap((groupsWithTeams) => {
-          const groupDetails$ = groupsWithTeams.map(({ standing, teams }) =>
-            forkJoin({
-              teams,
-              matches: this.matchService.getMatchesByStandingId(standing.id)
-            }).pipe(
-              map(({ teams, matches }) => ({
-                ...standing,
-                teams: teams?.sort((a, b) => b.points - a.points) || [], // Sort teams by points descending
-                matches: matches ?? []
-              }))
-            )
-          );
-          return forkJoin(groupDetails$);
-        }),
+      this.standingService.getGroupsWithDetails(this.tournament.id).pipe(
         catchError(() => of([]))
-      );
-
-      this.groups$.subscribe((groups) => {
+      ).subscribe((groups) => {
         this.groups = groups;
       });
     }

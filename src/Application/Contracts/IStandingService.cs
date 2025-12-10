@@ -1,4 +1,5 @@
-﻿using Application.DTOs.Team;
+﻿using Application.DTOs.Standing;
+using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -30,6 +31,11 @@ namespace Application.Contracts
         /// Advances the match winner to the next round by populating the appropriate team slot.
         /// </summary>
         Task<List<TeamPlacementDTO>> GetFinalResultsAsync(long tournamentId);
+        /// <summary>
+        /// Gets all groups with teams and matches in optimized response.
+        /// Teams pre-sorted by points descending.
+        /// </summary>
+        Task<List<GetGroupsWithDetailsResponseDTO>> GetGroupsWithDetailsAsync(long tournamentId);
         Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateFinalPlacements(long standingId);
         Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements);
         Task<List<GetTeamWithStatsResponseDTO>> GetTeamsWithStatsAsync(long standingId);
