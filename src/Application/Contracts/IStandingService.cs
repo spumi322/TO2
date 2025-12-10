@@ -39,6 +39,7 @@ namespace Application.Contracts
         Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateFinalPlacements(long standingId);
         Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements);
         Task<List<GetTeamWithStatsResponseDTO>> GetTeamsWithStatsAsync(long standingId);
+        Task<GetBracketWithDetailsResponseDTO?> GetBracketWithDetailsAsync(long tournamentId);
 
     }
 }

@@ -18,10 +18,24 @@ namespace TO2.Controllers
             _standingService = standingService;
         }
 
+        [HttpGet("{tournamentId}")]
+        public async Task<IActionResult> GetStandings(long tournamentId)
+        {
+            var result = await _standingService.GetStandingsAsync(tournamentId);
+            return Ok(result);
+        }
+
         [HttpGet("{tournamentId}/groups")]
         public async Task<IActionResult> GetGroupsWithDetails(long tournamentId)
         {
             var result = await _standingService.GetGroupsWithDetailsAsync(tournamentId);
+            return Ok(result);
+        }
+
+        [HttpGet("{tournamentId}/bracket")]
+        public async Task<IActionResult> GetBracketWithDetails(long tournamentId)
+        {
+            var result = await _standingService.GetBracketWithDetailsAsync(tournamentId);
             return Ok(result);
         }
     }

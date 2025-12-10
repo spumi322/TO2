@@ -52,6 +52,7 @@ namespace TO2
             builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
             builder.Services.AddScoped<IGroupRepository, GroupRepository>();
             builder.Services.AddScoped<IStandingRepository, StandingRepository>();
+            builder.Services.AddScoped<IMatchRepository, MatchRepository>();
             builder.Services.AddScoped<ITournamentTeamRepository, TournamentTeamRepository>();
 
             // Domain Services

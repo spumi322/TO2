@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs.Standing
 {
-    public record GroupMatchDTO : StandingMatchBaseDTO
+    public record BracketMatchDTO : StandingMatchBaseDTO
     {
         public List<StandingGameDTO> Games { get; init; } = new();
     }

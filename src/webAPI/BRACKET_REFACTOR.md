@@ -2,7 +2,8 @@
 
  Goal
 
- Refactor bracket component to follow group component pattern: reduce 5-7 API calls per game to 1-2, move match result calculation to backend, create specialized repositories, maintain brackets-viewer library compatibility.
+ Refactor bracket component to follow group component pattern: reduce 5-7 API calls per game to 1-2, move match result calculation to backend, create specialized repositories,
+ maintain brackets-viewer library compatibility.
 
  Current Issues
 
