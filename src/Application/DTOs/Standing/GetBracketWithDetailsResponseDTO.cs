@@ -12,6 +12,6 @@ namespace Application.DTOs.Standing
         public string Name { get; init; } = string.Empty;
         public bool IsFinished { get; init; }
         public bool IsSeeded { get; init; }
-        public List<BracketMatchDTO> Matches { get; init; } = new();
+        public List<StandingMatchDTO> Matches { get; init; } = new();
     }
 }

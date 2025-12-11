@@ -473,6 +473,11 @@ namespace Application.Services
             return _mapper.Map<List<GetTeamWithStatsResponseDTO>>(participants);
         }
 
+        private int CalculateTeamWins(Match match, long? teamId)
+        {
+            return match.Games.Count(g => g.WinnerId == teamId);
+        }
+
         public async Task<List<GetGroupsWithDetailsResponseDTO>> GetGroupsWithDetailsAsync(long tournamentId)
         {
             var standings = await _standingRepository.GetGroupsWithMatchesAsync(tournamentId);
@@ -483,9 +488,24 @@ namespace Application.Services
             {
                 var groupEntries = await _groupRepository.GetByStandingIdOrderedAsync(standing.Id);
 
+                var matches = standing.Matches.Select(m =>
+                {
+                    var dto = _mapper.Map<StandingMatchDTO>(m);
+                    return dto with
+                    {
+                        TeamAWins = CalculateTeamWins(m, m.TeamAId),
+                        TeamBWins = CalculateTeamWins(m, m.TeamBId)
+                    };
+                }).ToList();
+
                 var dto = new GetGroupsWithDetailsResponseDTO
                 {
-                    Matches = _mapper.Map<List<GroupMatchDTO>>(standing.Matches)
+                    Id = standing.Id,
+                    Name = standing.Name,
+                    IsFinished = standing.IsFinished,
+                    IsSeeded = standing.IsSeeded,
+                    Teams = _mapper.Map<List<GroupTeamDTO>>(groupEntries),
+                    Matches = matches
                 };
 
                 result.Add(dto);
@@ -500,13 +520,23 @@ namespace Application.Services
 
             if (bracketStanding == null) return null;
 
+            var matches = bracketStanding.Matches.Select(m =>
+            {
+                var dto = _mapper.Map<StandingMatchDTO>(m);
+                return dto with
+                {
+                    TeamAWins = CalculateTeamWins(m, m.TeamAId),
+                    TeamBWins = CalculateTeamWins(m, m.TeamBId)
+                };
+            }).ToList();
+
             return new GetBracketWithDetailsResponseDTO
             {
                 Id = bracketStanding.Id,
                 Name = bracketStanding.Name,
                 IsFinished = bracketStanding.IsFinished,
                 IsSeeded = bracketStanding.IsSeeded,
-                Matches = _mapper.Map<List<BracketMatchDTO>>(bracketStanding.Matches)
+                Matches = matches
             };
         }
     }

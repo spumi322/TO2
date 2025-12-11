@@ -35,7 +35,8 @@
       "Bash(npm run:*)",
       "Bash(ls -la \"G:\\Code\\TO2\\src\\Application\\Pipelines\\StartGroups\"\" && ls -la \"G:CodeTO2srcApplicationPipelinesStartBracket\"\")",
       "Bash(npm uninstall:*)",
-      "Bash({} ;)"
+      "Bash({} ;)",
+      "Bash(dotnet clean:*)"
     ],
     "deny": [],
     "ask": []

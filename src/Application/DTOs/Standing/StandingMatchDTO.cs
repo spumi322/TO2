@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Application.DTOs.Standing
 {
-    // Shared base for GroupMatchDTO and BracketMatchDTO
-    public record StandingMatchBaseDTO
+    // Consolidated match DTO for both groups and bracket
+    public record StandingMatchDTO
     {
         public long Id { get; init; }
         public long StandingId { get; init; }
@@ -19,8 +19,10 @@ namespace Application.DTOs.Standing
         public long? LoserId { get; init; }
         public int BestOf { get; init; }
 
-        // Backend-calculated results (shared logic)
+        // Backend-calculated results
         public int TeamAWins { get; init; }
         public int TeamBWins { get; init; }
+
+        public List<StandingGameDTO> Games { get; init; } = new();
     }
 }
