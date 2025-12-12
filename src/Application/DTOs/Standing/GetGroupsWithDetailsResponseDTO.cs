@@ -13,6 +13,6 @@ namespace Application.DTOs.Standing
         public bool IsFinished { get; init; }
         public bool IsSeeded { get; init; }
         public List<GroupTeamDTO> Teams { get; init; } = new();
-        public List<GroupMatchDTO> Matches { get; init; } = new();
+        public List<StandingMatchDTO> Matches { get; init; } = new();
     }
 }

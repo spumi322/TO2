@@ -1,96 +1,105 @@
-﻿1. Validations (team name)
-2. Tests
-3. Auth
+# Landing Page
+### Goal: Starting screen for the app with rich info.
+### Current structure: 
+1. Hero section -> Get started
+2. Key Features section -> Short, compact feature display
+3. How it works section -> Step by step explanation
+4. Demo/Screenshot section -> Placeholder AI bullshitting
+
+### Things to improve
+- Apply design of the more progressed components like, auth, create-tournament, tournament-list, etc.
+- Review blocks, content and layout-wise.
+- Remove demo/screenshot section.
+
+### UX upgrade
+- Implemet polished demo/tour/screenshot section.
+## Priority: 2/5
 
 
-Optional:
-1. Caching
-2. Optimization(DB, fuctions)
-3. Backend refactor(dependencies of the services, clean up endpoints)
-4. Deploy
-5. Tie
-6. Score edit 
-7. Scheduling
-8. Stats
+# Auth Page (Register and Login)
+
+### Goal: Handle authentication
+### Current structure: 
+1. Register -> Registration form for new users
+2. Login -> Sign In option for registered users
+
+### Things to improve
+- Validation Error massages and Success massage should work and look like in create-tournament component.
+- Component positioning, validation error masssage expands the current layout out of screen.
+
+### UX upgrade
+- Try using chrome's password manager functions for password fields.
+
+## Priority: 1/5
 
 
+# Tournament-List
 
-Create Tournament -> Add/Remove Teams -> Start Tournament(change to start groups?) | BETWEEN STATE UNTIL GROUPS ARE PROPERLY SEEDED | -> Play matches in groups -> All Groups Finished -> *I NEED A NEW STEP HERE (start bracket maybe) | ITS A BETWEEN STATE TOO, WHERE BRACKET ARE SEEDED| -> Play Bracket Matches(WIP, not important now) -> Declare Champion -> Tournament Finished
+### Goal: Main Navigation Page 
+### Current structure: 
+1. Three section grid for tournaments, based on status
 
+### Things to improve
+- Empty State is justa a header, replace it.
+- Tournament Card: Format is broken, always shows Unknown Format.
+- Minor section layout fix.
 
-G:\Code\TO2\src\Application\Services\OrchestrationService.cs.bak ????????????????
+### UX upgrade
+- Search field for tournaments
+- Jump to section
+## Priority: 1/5
 
-Problem: Related objects dont show up, system uses more API calls and db queries, then it should. Not using EFcore to full potential.
-Solution: Refactor the Repository and use Unit Of Work for complex flows, consider dropping wrapper around dbcontext.
+# Create Tournament
 
-I see - GetAllByFK() does NOT include navigation properties (line 42-47). So when backend returns Match[], the games collection is empty!
+### Goal: Create new tournament
+### Current structure: 
+1. Simple form, team configuration fields changing based on selected format
 
-  That's why the matches component makes separate API calls for games. Let me verify how bracket component loads matches:
+### Things to improve
+- Implement Groups Only format. In the backend it is supported, but not yet implemented.
+- Change Description field from resizeable.
+- Success message (popup toast?) should be replaced or removed completly.
 
-● Read(G:\Code\TO2\src\UI\src\app\components\standing\bracket\bracket.component.ts)
-  ⎿  Read 110 lines
+### UX upgrade
+- Better Tournament Format Selector, with small pictures and more explanation of the rules
+## Priority: 5/5
 
-● Perfect! Now I see the issue:
+# Navbar
 
-  Current Problem:
+### Goal: Quick access to features and functions
+### Current structure: 
+Sections from left to right:
+1. Logo
+2. Navigation
+3. Tournament info
+4. Tournament management functions
+5. User info
 
-  bracket.component.ts:52-54 loads matches:
-  this.matchService.getMatchesByStandingId(this.standingId) // Returns Match[] WITHOUT games
+### Things to improve
+- Fix layout during different elements, when tournament info is empty, the layout shrinks to left. 
+- Tournament management functions have different button design.
+- Clicking on User Info dropdowns a Logout button, inconsistent look.
 
-  bracket-adapter.service.ts:57-61 tries to calculate scores:
-  const calculateScore = (match: Match, teamId: number): number => {
-    if (!match.games || match.games.length === 0) {  // Always true - games is empty!
-      return 0;
-    }
-    return match.games.filter(game => game.winnerId === teamId).length;
-  };
+## Priority: 4/5
 
-  Result: All scores show as 0-0 because match.games is empty!
+# Tournament Details
 
-  How Groups Handle This:
+### Goal: Main Tournament Admin Page
+### Current structure: 
+Multi-phase layout based on Tournament State and tabs
 
-  matches.component.ts:33-39 loads games separately for each match:
-  this.matches.forEach(match => {
-    this.matchService.getAllGamesByMatch(match.id).subscribe(games => {
-      match.result = this.getMatchResults(games); // Calculate scores from games
-    });
-  });
+### Things to improve
+- General:
+1. Too much space between container and navabar.
+- Upcoming tournament:
+1. Registered Teams do not look like teams, should be redesigned.
+2. Implement duplicate team name error message.
+- Ongoing tournament:
+1. Overview tab missing top right element.
+2. Group stage tab needs layout and design overview.
+3. Bracket tab needs layout and design overview.
+- Finished tournament:
+1. Overview tab results element redesign
+2. Results tab need overhaul
 
-
-1. Dismantle DeclareChampionAndFinish(), move the method body into the orchestration method(its basically state management, which belongs here).
-2.Remove ChampionId from the DTO and from the frontend too.
-3. AdvanceWinnerToNextRound() should be a standingService
-method, move it to there.
-4. We are going to make a new method, that collects the final result and we are going to push to the frontend when tournament is finished.
-5. Use this final result object, to display final result component and update overview tab. 
-
-
-Revisit:
-UpdateStandingStatsStep (brackentries)
-HandleStandingCompletition(maybe strategy here?)
-TransitionTournamentStateStep ???????????????
-BuildResponseStep???
-
-1. Remove brackentries
-2. Rethink HandleStandingCompletion
-
-
-1. BracketEntries table will be removed. Relevant application removed/replaced.
-2. Remove IStandingStatStrategy and connected strategies.
-3. Rework HandleStandingCompletion and ProgressBracket into a strategy instead.
-4. Adjust TransitionTournamentStateStep.
-5. Invetigate BuildResponseStep and how it populates GameProcessResultDTO.
-6. Check DI container 
-7. Fix orchestrationService calling the pipeline.
-8. Fix controller 
-9. Test
-
-
-0. Manage Tournaments
-1. Create Tournament
-2. Add/Remove teams
-3. Start Groups
-4. Play Groups
-5. Start Bracket
-6. Play Bracket
-7. Results
+## Priority: 4/5

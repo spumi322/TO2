@@ -28,6 +28,7 @@ namespace Infrastructure.Persistence.Repository
             return await _dbSet
                 .Where(s => s.TournamentId == tournamentId && s.StandingType == StandingType.Group)
                 .Include(s => s.Matches)
+                .ThenInclude(m => m.Games)  // Nested eager loading for match scoring
                 .ToListAsync();
         }
     }

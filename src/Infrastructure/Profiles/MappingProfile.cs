@@ -29,21 +29,15 @@ namespace Infrastructure.Profiles
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.TeamName))
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TeamId));
 
+            CreateMap<Group, GroupTeamDTO>()
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.TeamName))
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TeamId))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (int)src.Status));
+
             // Standing DTOs - Game and Match mappings
             CreateMap<Game, StandingGameDTO>();
 
-            CreateMap<Match, BracketMatchDTO>()
-                .ForMember(dest => dest.TeamAWins, opt => opt.MapFrom(src =>
-                    src.Games.Count(g => g.WinnerId == src.TeamAId)))
-                .ForMember(dest => dest.TeamBWins, opt => opt.MapFrom(src =>
-                    src.Games.Count(g => g.WinnerId == src.TeamBId)))
-                .ForMember(dest => dest.BestOf, opt => opt.MapFrom(src => (int)src.BestOf));
-
-            CreateMap<Match, GroupMatchDTO>()
-                .ForMember(dest => dest.TeamAWins, opt => opt.MapFrom(src =>
-                    src.Games.Count(g => g.WinnerId == src.TeamAId)))
-                .ForMember(dest => dest.TeamBWins, opt => opt.MapFrom(src =>
-                    src.Games.Count(g => g.WinnerId == src.TeamBId)))
+            CreateMap<Match, StandingMatchDTO>()
                 .ForMember(dest => dest.BestOf, opt => opt.MapFrom(src => (int)src.BestOf));
         }
     }

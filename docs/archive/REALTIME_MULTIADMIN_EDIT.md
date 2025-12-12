@@ -77,7 +77,7 @@ Even before SignalR:
   - Show a clear message: “Someone else changed this. Data has been updated; try again.”
   - Option A (very simple): ask user to refresh manually.
   - Option B (still simple, recommended): auto-call `GET /tournaments/{id}` (or `/matches/{id}`) and update UI.
-
+  
 Once 1.x is done, you have safe saves. Next step is real-time sync.
 
 ---
