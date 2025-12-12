@@ -2,5 +2,5 @@
 
 namespace Application.DTOs.Tournament
 {
-    public record StartBracketResponseDTO(bool Success, string Message, TournamentStatus TournamentStatus);
+    public record StartBracketResponseDTO(bool Success, string Message, TournamentStatus TournamentStatus, byte[]? RowVersion);
 }

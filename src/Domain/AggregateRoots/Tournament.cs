@@ -50,6 +50,9 @@ namespace Domain.AggregateRoots
         public long TenantId { get; set; }
         public Tenant Tenant { get; set; } = null!;
 
+        [Timestamp]
+        public byte[]? RowVersion { get; set; }
+
         public ICollection<TournamentTeam> TournamentTeams { get; private set; } = new List<TournamentTeam>();
 
         public IReadOnlyList<Standing> Standings => _standings;

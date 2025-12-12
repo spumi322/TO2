@@ -25,6 +25,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TO2.Hubs;
+using TO2.SignalR;
 using webAPI.Middleware;
 
 namespace TO2
@@ -61,6 +63,8 @@ namespace TO2
 
             // Multi-Tenancy Service
             builder.Services.AddScoped<ITenantService, HttpContextTenantService>();
+            builder.Services.AddSignalR();
+            builder.Services.AddScoped<ISignalRService, SignalRService>();
 
             // EF Core Interceptors (Modern approach for tenant isolation and auditing)
             builder.Services.AddScoped<TenantSaveChangesInterceptor>();
@@ -189,6 +193,8 @@ namespace TO2
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            app.MapHub<TournamentHub>("/hubs/tournament");
 
             if (app.Environment.IsDevelopment())
             {

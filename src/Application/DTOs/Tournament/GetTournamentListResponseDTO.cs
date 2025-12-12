@@ -11,5 +11,6 @@ namespace Application.DTOs.Tournament
         public int MaxTeams { get; init; }
         public Format Format { get; init; }
         public TournamentStatus Status { get; init; }
+        public byte[]? RowVersion { get; init; }
     }
 }

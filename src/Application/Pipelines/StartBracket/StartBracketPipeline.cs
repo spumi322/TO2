@@ -65,7 +65,8 @@ namespace Application.Pipelines.StartBracket
                 var result = new StartBracketResponseDTO(
                     context.Success,
                     context.Message,
-                    context.NewStatus
+                    context.NewStatus,
+                    context.Tournament.RowVersion
                 );
 
                 _logger.LogInformation("Pipeline completed successfully for tournament {TournamentId}. Success: {Success}",

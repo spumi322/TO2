@@ -63,6 +63,11 @@ namespace Infrastructure.Persistence
 
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Tournament>().Property(e => e.RowVersion).IsRowVersion();
+            modelBuilder.Entity<Match>().Property(e => e.RowVersion).IsRowVersion();
+            modelBuilder.Entity<Game>().Property(e => e.RowVersion).IsRowVersion();
+            modelBuilder.Entity<Standing>().Property(e => e.RowVersion).IsRowVersion();
+
             modelBuilder.Entity<Tenant>(entity =>
             {
                 entity.HasKey(t => t.Id);

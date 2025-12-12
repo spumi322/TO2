@@ -1,5 +1,6 @@
 ﻿using Domain.AggregateRoots;
 using Domain.Common;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Entities
 {
@@ -34,5 +35,8 @@ namespace Domain.Entities
         public int? TeamBScore { get; set; }
 
         public TimeSpan? Duration { get; set; }
+
+        [Timestamp]
+        public byte[]? RowVersion { get; set; }
     }
 }

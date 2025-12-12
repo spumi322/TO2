@@ -1,4 +1,4 @@
 ﻿namespace Application.DTOs.Team
 {
-    public record GetTeamResponseDTO(long Id, string Name);
+    public record GetTeamResponseDTO(long Id, string Name, byte[]? RowVersion);
 }

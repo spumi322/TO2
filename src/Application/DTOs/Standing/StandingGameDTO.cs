@@ -16,5 +16,6 @@ namespace Application.DTOs.Standing
         public long? TeamBId { get; init; }
         public int? TeamBScore { get; init; }
         public long? WinnerId { get; init; }
+        public byte[]? RowVersion { get; init; }
     }
 }

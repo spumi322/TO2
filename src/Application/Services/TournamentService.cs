@@ -20,6 +20,8 @@ namespace Application.Services
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
         private readonly ITournamentStateMachine _stateMachine;
+        private readonly ISignalRService _signalRService;
+        private readonly ITenantService _tenantService;
 
         private readonly IUnitOfWork _unitOfWork;
 
@@ -29,7 +31,9 @@ namespace Application.Services
                                  IMapper mapper,
                                  ILogger<TournamentService> logger,
                                  ITournamentStateMachine stateMachine,
-                                 IUnitOfWork unitOfWork)
+                                 IUnitOfWork unitOfWork,
+                                 ISignalRService signalRService,
+                                 ITenantService tenantService)
         {
             _tournamentRepository = tournamentRepository;
             _standingService = standingService;
@@ -38,6 +42,9 @@ namespace Application.Services
             _logger = logger;
             _stateMachine = stateMachine;
             _unitOfWork = unitOfWork;
+            _signalRService = signalRService;
+            _tenantService = tenantService;
+
         }
 
         public async Task<TournamentStateDTO> GetTournamentStateAsync(long tournamentId)
@@ -52,7 +59,8 @@ namespace Application.Services
                 CanScoreMatches: _stateMachine.CanScoreMatches(tournament.Status),
                 CanModifyTeams: _stateMachine.CanModifyTeams(tournament.Status),
                 StatusDisplayName: GetStatusDisplayName(tournament.Status),
-                StatusDescription: GetStatusDescription(tournament.Status)
+                StatusDescription: GetStatusDescription(tournament.Status),
+                RowVersion: tournament.RowVersion
             );
         }
 
@@ -112,7 +120,7 @@ namespace Application.Services
                 }
             }
 
-            return new CreateTournamentResponseDTO(tournament.Id);
+            return new CreateTournamentResponseDTO(tournament.Id, tournament.RowVersion);
         }
 
         public async Task<GetTournamentResponseDTO> GetTournamentAsync(long id)
@@ -141,6 +149,7 @@ namespace Application.Services
 
             await _tournamentRepository.UpdateAsync(existingTournament);
             await _unitOfWork.SaveChangesAsync();
+            await _signalRService.BroadcastTournamentUpdated(id, _tenantService.GetCurrentUserName());
 
             return _mapper.Map<UpdateTournamentResponseDTO>(existingTournament);
         }
@@ -190,13 +199,13 @@ namespace Application.Services
                 await _tournamentRepository.UpdateAsync(existingTournament);
                 await _unitOfWork.SaveChangesAsync();
 
-                return new StartTournamentDTO("Tournament succesfully started", true);
+                return new StartTournamentDTO("Tournament succesfully started", true, existingTournament.RowVersion);
             }
             else
             {
                 _logger.LogInformation("Tournament already started");
 
-                return new StartTournamentDTO("Tournament already started", false);
+                return new StartTournamentDTO("Tournament already started", false, existingTournament.RowVersion);
             }
         }
     }

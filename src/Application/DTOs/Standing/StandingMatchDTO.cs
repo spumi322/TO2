@@ -18,6 +18,7 @@ namespace Application.DTOs.Standing
         public long? WinnerId { get; init; }
         public long? LoserId { get; init; }
         public int BestOf { get; init; }
+        public byte[]? RowVersion { get; init; }
 
         // Backend-calculated results
         public int TeamAWins { get; init; }
