@@ -89,6 +89,7 @@ namespace TO2
             builder.Services.AddScoped<IGameResultPipelineStep, HandleStandingProgressStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, TransitionTournamentStateStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, CalculateFinalPlacementsStep>();
+            // BroadcastUpdatesStep removed - broadcasting now happens after transaction commit in pipeline executor
             builder.Services.AddScoped<IGameResultPipelineStep, BuildResponseStep>();
             // Standing Progress Strategies
             builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
@@ -181,6 +182,23 @@ namespace TO2
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(jwtSettings?.SecretKey ?? throw new InvalidOperationException("JWT SecretKey not configured")))
                 };
+
+                // Configure SignalR authentication from query string
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
             builder.Services.AddAuthorization();
@@ -190,6 +208,9 @@ namespace TO2
 
             app.UseExceptionHandler();
             app.UseCors("AllowFrontend");
+
+            // Enable WebSockets for SignalR
+            app.UseWebSockets();
 
             app.UseAuthentication();
             app.UseAuthorization();

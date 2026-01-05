@@ -13,6 +13,7 @@ import { MatchService } from '../../../services/match/match.service';
 import { MatchFinishedIds } from '../../../models/matchresult';
 import { FinalStanding } from '../../../models/final-standing';
 import { TournamentContextService } from '../../../services/tournament-context.service';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-tournament-details',
@@ -57,7 +58,8 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
-    private tournamentContext: TournamentContextService
+    private tournamentContext: TournamentContextService,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -78,6 +80,88 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
     this.tournamentContext.startBracket$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.onStartBracket());
+
+    // Subscribe to SignalR real-time events
+    const currentUser = this.authService.getAccessToken() ? this.getCurrentUserName() : null;
+
+    this.tournamentContext.tournamentUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Tournament updated by ${event.updatedBy}`);
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.teamAdded$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Team added by ${event.updatedBy}`);
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.teamRemoved$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Team removed by ${event.updatedBy}`);
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.gameUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Game scored by ${event.updatedBy}`);
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.matchUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Match completed by ${event.updatedBy}`);
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.standingUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Standing updated by ${event.updatedBy}`);
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.groupsStarted$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Groups started by ${event.updatedBy}`);
+          this.loadTournamentState();
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.bracketStarted$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Bracket started by ${event.updatedBy}`);
+          this.loadTournamentState();
+          this.reloadTournamentData();
+        }
+      });
+  }
+
+  private getCurrentUserName(): string | null {
+    const user = this.authService.getCurrentUser();
+    return user?.userName || null;
   }
 
   ngOnDestroy(): void {
@@ -522,6 +606,15 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
       summary: 'Error',
       detail: message,
       life: 5000
+    });
+  }
+
+  showInfo(message: string): void {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Update',
+      detail: message,
+      life: 3000
     });
   }
 }

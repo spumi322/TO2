@@ -14,15 +14,21 @@ namespace Application.Pipelines.StartGroups
         private readonly ILogger<StartGroupsPipeline> _logger;
         private readonly IEnumerable<IStartGroupsPipelineStep> _steps;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ISignalRService _signalRService;
+        private readonly ITenantService _tenantService;
 
         public StartGroupsPipeline(
             ILogger<StartGroupsPipeline> logger,
             IEnumerable<IStartGroupsPipelineStep> steps,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ISignalRService signalRService,
+            ITenantService tenantService)
         {
             _logger = logger;
             _steps = steps;
             _unitOfWork = unitOfWork;
+            _signalRService = signalRService;
+            _tenantService = tenantService;
         }
 
         /// <summary>
@@ -60,6 +66,12 @@ namespace Application.Pipelines.StartGroups
 
                 // Commit transaction - saves all changes atomically
                 await _unitOfWork.CommitTransactionAsync();
+
+                // Broadcast SignalR events AFTER transaction commit
+                var updatedBy = _tenantService.GetCurrentUserName();
+                await _signalRService.BroadcastGroupsStarted(context.TournamentId, updatedBy);
+                await _signalRService.BroadcastTournamentUpdated(context.TournamentId, updatedBy);
+                _logger.LogInformation("Broadcasted GroupsStarted and TournamentUpdated for TournamentId: {TournamentId}", context.TournamentId);
 
                 // Return the result
                 var result = new StartGroupsResponseDTO(

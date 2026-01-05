@@ -18,17 +18,23 @@ namespace Application.Pipelines.GameResult
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly IEnumerable<IGameResultPipelineStep> _steps;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ISignalRService _signalRService;
+        private readonly ITenantService _tenantService;
 
         public GameResultPipeline(
             ILogger<GameResultPipeline> logger,
             IRepository<Tournament> tournamentRepository,
             IEnumerable<IGameResultPipelineStep> steps,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ISignalRService signalRService,
+            ITenantService tenantService)
         {
             _logger = logger;
             _tournamentRepository = tournamentRepository;
             _steps = steps;
             _unitOfWork = unitOfWork;
+            _signalRService = signalRService;
+            _tenantService = tenantService;
         }
 
         /// <summary>
@@ -71,6 +77,9 @@ namespace Application.Pipelines.GameResult
                 // Commit transaction - saves all changes atomically
                 await _unitOfWork.CommitTransactionAsync();
 
+                // Broadcast SignalR events AFTER transaction commit
+                await BroadcastUpdatesAsync(context);
+
                 // Return the result (BuildResponseStep should have populated this)
                 var result = new GameProcessResultDTO(
                     Success: context.Success,
@@ -94,6 +103,56 @@ namespace Application.Pipelines.GameResult
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(ex, "Pipeline execution failed, changes rolled back: {Message}", ex.Message);
                 throw; // Let middleware handle the exception
+            }
+        }
+
+        /// <summary>
+        /// Broadcasts SignalR updates after transaction commits.
+        /// This ensures clients only receive notifications when data is persisted.
+        /// </summary>
+        private async Task BroadcastUpdatesAsync(GameResultContext context)
+        {
+            var updatedBy = _tenantService.GetCurrentUserName();
+            var tournamentId = context.GameResult.TournamentId;
+
+            // Always broadcast game update
+            await _signalRService.BroadcastGameUpdated(
+                tournamentId,
+                context.GameResult.gameId,
+                updatedBy);
+
+            _logger.LogInformation("Broadcasted GameUpdated for GameId: {GameId}", context.GameResult.gameId);
+
+            // Broadcast match update if match is finished
+            if (context.MatchFinished)
+            {
+                await _signalRService.BroadcastMatchUpdated(
+                    tournamentId,
+                    context.GameResult.MatchId,
+                    updatedBy);
+
+                _logger.LogInformation("Broadcasted MatchUpdated for MatchId: {MatchId}", context.GameResult.MatchId);
+            }
+
+            // Broadcast standing update if standing is finished
+            if (context.StandingFinished)
+            {
+                await _signalRService.BroadcastStandingUpdated(
+                    tournamentId,
+                    context.GameResult.StandingId,
+                    updatedBy);
+
+                _logger.LogInformation("Broadcasted StandingUpdated for StandingId: {StandingId}", context.GameResult.StandingId);
+            }
+
+            // Broadcast tournament update if all groups finished or tournament finished
+            if (context.AllGroupsFinished || context.TournamentFinished)
+            {
+                await _signalRService.BroadcastTournamentUpdated(
+                    tournamentId,
+                    updatedBy);
+
+                _logger.LogInformation("Broadcasted TournamentUpdated for TournamentId: {TournamentId}", tournamentId);
             }
         }
     }

@@ -72,6 +72,10 @@ namespace Infrastructure.Persistence
             {
                 entity.HasKey(t => t.Id);
                 entity.Property(t => t.Name).IsRequired().HasMaxLength(100);
+
+                // Unique index on Name
+                entity.HasIndex(t => t.Name).IsUnique();
+
                 entity.HasMany(t => t.Users)
                       .WithOne(u => u.Tenant)
                       .HasForeignKey(u => u.TenantId)

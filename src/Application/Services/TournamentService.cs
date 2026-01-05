@@ -120,6 +120,9 @@ namespace Application.Services
                 }
             }
 
+            // Broadcast tournament creation to all users in tenant
+            await _signalRService.BroadcastTournamentCreated(tournament.Id, _tenantService.GetCurrentUserName());
+
             return new CreateTournamentResponseDTO(tournament.Id, tournament.RowVersion);
         }
 

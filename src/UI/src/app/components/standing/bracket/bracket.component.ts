@@ -6,6 +6,7 @@ import { BracketAdapterService } from '../../../services/bracket-adapter.service
 import { Match } from '../../../models/match';
 import { Team } from '../../../models/team';
 import { MatchResult, MatchFinishedIds } from '../../../models/matchresult';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-standing-bracket',
@@ -29,7 +30,8 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
     private standingService: StandingService,
     private matchService: MatchService,
     private bracketAdapter: BracketAdapterService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private messageService: MessageService
   ) {}
 
   ngOnInit() {
@@ -248,6 +250,24 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
       error: (err) => {
         console.error('Error scoring game:', err);
         this.isUpdating[matchId] = false;
+
+        // Handle 409 Conflict (concurrent update)
+        if (err.status === 409) {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Conflict Detected',
+            detail: 'Game was modified by another user. Reloading latest data...',
+            life: 5000
+          });
+          // Reload bracket to get latest state
+          this.loadBracket();
+        } else {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Update Failed',
+            detail: err.error?.message || 'Failed to update game score. Please try again.'
+          });
+        }
       }
     });
   }

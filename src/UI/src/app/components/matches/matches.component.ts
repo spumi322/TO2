@@ -108,11 +108,22 @@ export class MatchesComponent implements OnInit, OnDestroy {
           match.teamBWins = previousTeamBWins;
           this.isUpdating[matchId] = false;
 
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Update Failed',
-            detail: err.error?.message || 'Failed to update match score. Please try again.'
-          });
+          // Handle 409 Conflict (concurrent update)
+          if (err.status === 409) {
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Conflict Detected',
+              detail: 'Game was modified by another user. Reloading...',
+              life: 5000
+            });
+            // Parent component will reload via SignalR events
+          } else {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Update Failed',
+              detail: err.error?.message || 'Failed to update match score. Please try again.'
+            });
+          }
         }
       });
   }
