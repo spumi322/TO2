@@ -43,6 +43,10 @@ export class MatchesComponent implements OnInit, OnDestroy {
     return team ? team.name : 'TBD';
   }
 
+  trackByMatchId(index: number, match: Match): number {
+    return match.id;
+  }
+
   updateMatchScore(matchId: number, gameWinnerId: number): void {
     const match = this.matches.find(m => m.id === matchId);
     if (!match || match.winnerId) return;

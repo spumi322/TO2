@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, AfterViewInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, AfterViewInit, ChangeDetectorRef, ViewChild, ElementRef, OnDestroy, SimpleChanges } from '@angular/core';
 import { Tournament, TournamentStateDTO, TournamentStatus } from '../../../models/tournament';
 import { MatchService } from '../../../services/match/match.service';
 import { StandingService } from '../../../services/standing/standing.service';
@@ -7,13 +7,15 @@ import { Match } from '../../../models/match';
 import { Team } from '../../../models/team';
 import { MatchResult, MatchFinishedIds } from '../../../models/matchresult';
 import { MessageService } from 'primeng/api';
+import { TournamentContextService } from '../../../services/tournament-context.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-standing-bracket',
   templateUrl: './bracket.component.html',
   styleUrls: ['./bracket.component.css']
 })
-export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
+export class BracketComponent implements OnInit, OnChanges, AfterViewInit, OnDestroy {
   @Input() tournament!: Tournament;
   @Input() standingId?: number;
   @Input() tournamentState?: TournamentStateDTO | null;
@@ -25,25 +27,56 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
   isLoading = true;
   isUpdating: { [key: number]: boolean } = {};
   private viewInitialized = false;
+  private destroy$ = new Subject<void>();
 
   constructor(
     private standingService: StandingService,
     private matchService: MatchService,
     private bracketAdapter: BracketAdapterService,
     private cdr: ChangeDetectorRef,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private tournamentContext: TournamentContextService
   ) {}
 
   ngOnInit() {
-    // ngOnInit fires when tab content is initialized (thanks to matTabContent lazy loading)
-    // By this point, the element is in the DOM and visible
+    // Subscribe to bracket updates from context service
+    this.tournamentContext.bracket$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(bracket => {
+        if (bracket && bracket.matches) {
+          this.matches = bracket.matches;
+          this.standingId = bracket.id;
+
+          // Map backend results to MatchResult structure
+          this.matches.forEach(match => {
+            match.result = {
+              teamAId: match.teamAId,
+              teamAWins: match.teamAWins,
+              teamBId: match.teamBId,
+              teamBWins: match.teamBWins
+            };
+          });
+
+          if (this.viewInitialized) {
+            this.renderBracket();
+          }
+        }
+      });
+
+    // Initial load
     this.loadBracket();
   }
 
-  ngOnChanges() {
-    if (this.viewInitialized) {
+  ngOnChanges(changes: SimpleChanges) {
+    // Only reload if tournament changes (not on every input change)
+    if (changes['tournament'] && !changes['tournament'].firstChange && this.viewInitialized) {
       this.loadBracket();
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   ngAfterViewInit() {
@@ -64,20 +97,10 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
     this.standingService.getBracketWithDetails(this.tournament.id).subscribe({
       next: (bracketStanding) => {
         if (bracketStanding) {
-          this.matches = bracketStanding.matches;
-          this.standingId = bracketStanding.id;
-
-          // Map backend results to MatchResult structure
-          this.matches.forEach(match => {
-            match.result = {
-              teamAId: match.teamAId,
-              teamAWins: match.teamAWins,  // From backend
-              teamBId: match.teamBId,
-              teamBWins: match.teamBWins   // From backend
-            };
-          });
+          // Publish to context service so other components and SignalR patching work correctly
+          this.tournamentContext.setBracket(bracketStanding as any);
         } else {
-          this.matches = [];
+          this.tournamentContext.setBracket(null);
         }
 
         this.isLoading = false;
@@ -86,14 +109,12 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
           this.isUpdating[resetUpdatingFlag] = false;
         }
 
-        if (this.viewInitialized) {
-          this.renderBracket();
-        }
+        // Rendering will happen via the bracket$ subscription
       },
       error: (err) => {
         console.error('Error loading bracket:', err);
         this.isLoading = false;
-        this.matches = [];
+        this.tournamentContext.setBracket(null);
         if (resetUpdatingFlag !== null) {
           this.isUpdating[resetUpdatingFlag] = false;
         }
@@ -244,8 +265,8 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit {
           });
         }
 
-        // Single reload call
-        this.loadBracket(matchId);
+        // Bracket auto-updates via parent's subscription to bracket$
+        this.isUpdating[matchId] = false;
       },
       error: (err) => {
         console.error('Error scoring game:', err);

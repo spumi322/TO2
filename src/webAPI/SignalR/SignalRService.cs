@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.DTOs.SignalR;
 using Microsoft.AspNetCore.SignalR;
 using TO2.Hubs;
 
@@ -37,11 +38,11 @@ namespace TO2.SignalR
                 .SendAsync("MatchUpdated", new { tournamentId, matchId, updatedBy });
         }
 
-        public async Task BroadcastGameUpdated(long tournamentId, long gameId, string updatedBy)
+        public async Task BroadcastGameUpdated(GameUpdatedEvent eventPayload)
         {
             await _hubContext.Clients
-                .Group($"tournament-{tournamentId}")
-                .SendAsync("GameUpdated", new { tournamentId, gameId, updatedBy });
+                .Group($"tournament-{eventPayload.TournamentId}")
+                .SendAsync("GameUpdated", eventPayload);
         }
 
         public async Task BroadcastStandingUpdated(long tournamentId, long standingId, string updatedBy)

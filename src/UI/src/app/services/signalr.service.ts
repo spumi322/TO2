@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@microsoft/signalr';
 import { BehaviorSubject, Subject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { GameUpdatedEvent } from '../models/signalr-events';
 
 // Event interfaces
 export interface TournamentUpdateEvent {
@@ -12,12 +13,6 @@ export interface TournamentUpdateEvent {
 export interface TeamEvent {
   tournamentId: number;
   teamId: number;
-  updatedBy: string;
-}
-
-export interface GameEvent {
-  tournamentId: number;
-  gameId: number;
   updatedBy: string;
 }
 
@@ -48,7 +43,7 @@ export class SignalRService {
   private tournamentUpdated$ = new Subject<TournamentUpdateEvent>();
   private teamAdded$ = new Subject<TeamEvent>();
   private teamRemoved$ = new Subject<TeamEvent>();
-  private gameUpdated$ = new Subject<GameEvent>();
+  private gameUpdated$ = new Subject<GameUpdatedEvent>();
   private matchUpdated$ = new Subject<MatchEvent>();
   private standingUpdated$ = new Subject<StandingEvent>();
   private groupsStarted$ = new Subject<TournamentUpdateEvent>();
@@ -77,7 +72,7 @@ export class SignalRService {
     return this.teamRemoved$.asObservable();
   }
 
-  get gameUpdated(): Observable<GameEvent> {
+  get gameUpdated(): Observable<GameUpdatedEvent> {
     return this.gameUpdated$.asObservable();
   }
 
@@ -163,7 +158,7 @@ export class SignalRService {
       this.teamRemoved$.next(data);
     });
 
-    this.hubConnection.on('GameUpdated', (data: GameEvent) => {
+    this.hubConnection.on('GameUpdated', (data: GameUpdatedEvent) => {
       console.log('[SignalR] GameUpdated:', data);
       this.gameUpdated$.next(data);
     });

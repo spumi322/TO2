@@ -1,8 +1,13 @@
 using Application.Contracts;
 using Application.DTOs.Game;
 using Application.DTOs.Orchestration;
+using Application.DTOs.SignalR;
+using Application.DTOs.Standing;
 using Application.Pipelines.GameResult.Contracts;
+using AutoMapper;
 using Domain.AggregateRoots;
+using Domain.Entities;
+using Domain.Enums;
 using Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 
@@ -16,25 +21,34 @@ namespace Application.Pipelines.GameResult
     {
         private readonly ILogger<GameResultPipeline> _logger;
         private readonly IRepository<Tournament> _tournamentRepository;
+        private readonly IRepository<Standing> _standingRepository;
         private readonly IEnumerable<IGameResultPipelineStep> _steps;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ISignalRService _signalRService;
         private readonly ITenantService _tenantService;
+        private readonly IMapper _mapper;
+        private readonly IStandingService _standingService;
 
         public GameResultPipeline(
             ILogger<GameResultPipeline> logger,
             IRepository<Tournament> tournamentRepository,
+            IRepository<Standing> standingRepository,
             IEnumerable<IGameResultPipelineStep> steps,
             IUnitOfWork unitOfWork,
             ISignalRService signalRService,
-            ITenantService tenantService)
+            ITenantService tenantService,
+            IMapper mapper,
+            IStandingService standingService)
         {
             _logger = logger;
             _tournamentRepository = tournamentRepository;
+            _standingRepository = standingRepository;
             _steps = steps;
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
             _tenantService = tenantService;
+            _mapper = mapper;
+            _standingService = standingService;
         }
 
         /// <summary>
@@ -45,8 +59,6 @@ namespace Application.Pipelines.GameResult
         /// <returns>The processed result DTO</returns>
         public async Task<GameProcessResultDTO> ExecuteAsync(SetGameResultDTO gameResult)
         {
-            _logger.LogInformation("Starting game result pipeline for GameId: {GameId}", gameResult.gameId);
-
             // Initialize context
             var context = new GameResultContext
             {
@@ -109,51 +121,95 @@ namespace Application.Pipelines.GameResult
         /// <summary>
         /// Broadcasts SignalR updates after transaction commits.
         /// This ensures clients only receive notifications when data is persisted.
+        /// Fallback to no broadcast on error (doesn't affect game result success).
         /// </summary>
         private async Task BroadcastUpdatesAsync(GameResultContext context)
         {
-            var updatedBy = _tenantService.GetCurrentUserName();
-            var tournamentId = context.GameResult.TournamentId;
-
-            // Always broadcast game update
-            await _signalRService.BroadcastGameUpdated(
-                tournamentId,
-                context.GameResult.gameId,
-                updatedBy);
-
-            _logger.LogInformation("Broadcasted GameUpdated for GameId: {GameId}", context.GameResult.gameId);
-
-            // Broadcast match update if match is finished
-            if (context.MatchFinished)
+            try
             {
-                await _signalRService.BroadcastMatchUpdated(
-                    tournamentId,
-                    context.GameResult.MatchId,
-                    updatedBy);
+                var eventPayload = await BuildGameUpdatedEventAsync(context);
+                await _signalRService.BroadcastGameUpdated(eventPayload);
+                _logger.LogInformation("Broadcasted comprehensive GameUpdated event for GameId: {GameId}", context.GameResult.gameId);
+            }
+            catch (Exception ex)
+            {
+                // Broadcast failure doesn't affect game result success
+                // Users can still refresh manually
+                _logger.LogWarning(ex, "Failed to broadcast GameUpdated event for GameId: {GameId}. Users can refresh manually.", context.GameResult.gameId);
+            }
+        }
 
-                _logger.LogInformation("Broadcasted MatchUpdated for MatchId: {MatchId}", context.GameResult.MatchId);
+        /// <summary>
+        /// Builds a comprehensive GameUpdatedEvent with all relevant data.
+        /// Conditionally includes full group/bracket details when standing finishes.
+        /// </summary>
+        private async Task<GameUpdatedEvent> BuildGameUpdatedEventAsync(GameResultContext context)
+        {
+            // Fetch game and match with details from StandingService
+            // Since game was just scored, we need to get the latest state with all games + calculated wins
+            GetGroupsWithDetailsResponseDTO? updatedGroup = null;
+            GetBracketWithDetailsResponseDTO? updatedBracket = null;
+
+            // Fetch standing to determine type (context.StandingType may be null if match not finished)
+            var standing = await _standingRepository.GetByIdAsync(context.GameResult.StandingId);
+            if (standing == null)
+            {
+                throw new Exception($"Standing {context.GameResult.StandingId} not found");
             }
 
-            // Broadcast standing update if standing is finished
-            if (context.StandingFinished)
+            // Fetch the complete match details (with all games and calculated wins)
+            // We'll use standing service to get properly mapped DTOs
+            if (standing.StandingType == StandingType.Group)
             {
-                await _signalRService.BroadcastStandingUpdated(
-                    tournamentId,
-                    context.GameResult.StandingId,
-                    updatedBy);
-
-                _logger.LogInformation("Broadcasted StandingUpdated for StandingId: {StandingId}", context.GameResult.StandingId);
+                var allGroups = await _standingService.GetGroupsWithDetailsAsync(context.Tournament.Id);
+                updatedGroup = allGroups.FirstOrDefault(g => g.Id == context.GameResult.StandingId);
+            }
+            else
+            {
+                updatedBracket = await _standingService.GetBracketWithDetailsAsync(context.Tournament.Id);
             }
 
-            // Broadcast tournament update if all groups finished or tournament finished
-            if (context.AllGroupsFinished || context.TournamentFinished)
-            {
-                await _signalRService.BroadcastTournamentUpdated(
-                    tournamentId,
-                    updatedBy);
+            // Extract game and match from the fetched standing
+            StandingMatchDTO? match = null;
+            StandingGameDTO? game = null;
 
-                _logger.LogInformation("Broadcasted TournamentUpdated for TournamentId: {TournamentId}", tournamentId);
+            if (updatedGroup != null)
+            {
+                match = updatedGroup.Matches.FirstOrDefault(m => m.Id == context.GameResult.MatchId);
+                if (match != null)
+                {
+                    game = match.Games.FirstOrDefault(g => g.Id == context.GameResult.gameId);
+                }
             }
+            else if (updatedBracket != null)
+            {
+                match = updatedBracket.Matches.FirstOrDefault(m => m.Id == context.GameResult.MatchId);
+                if (match != null)
+                {
+                    game = match.Games.FirstOrDefault(g => g.Id == context.GameResult.gameId);
+                }
+            }
+
+            // Always send full group/bracket to ensure team standings update
+            // Payload is larger (~5-10KB) but UX is much better
+
+            return new GameUpdatedEvent(
+                TournamentId: context.Tournament.Id,
+                GameId: context.GameResult.gameId,
+                MatchId: context.GameResult.MatchId,
+                StandingId: context.GameResult.StandingId,
+                UpdatedBy: _tenantService.GetCurrentUserName(),
+                Game: game,
+                Match: match,
+                MatchFinished: context.MatchFinished,
+                StandingFinished: context.StandingFinished,
+                AllGroupsFinished: context.AllGroupsFinished,
+                TournamentFinished: context.TournamentFinished,
+                UpdatedGroup: updatedGroup,
+                UpdatedBracket: updatedBracket,
+                FinalStandings: context.FinalStandings,
+                NewTournamentStatus: context.NewTournamentStatus
+            );
         }
     }
 }

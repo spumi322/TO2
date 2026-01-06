@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Application.DTOs.SignalR;
 
 namespace Application.Contracts
 {
@@ -11,7 +12,7 @@ namespace Application.Contracts
         Task BroadcastTournamentCreated(long tournamentId, string createdBy);
         Task BroadcastTournamentUpdated(long tournamentId, string updatedBy);
         Task BroadcastMatchUpdated(long tournamentId, long matchId, string updatedBy);
-        Task BroadcastGameUpdated(long tournamentId, long gameId, string updatedBy);
+        Task BroadcastGameUpdated(GameUpdatedEvent eventPayload);
         Task BroadcastStandingUpdated(long tournamentId, long standingId, string updatedBy);
         Task BroadcastTeamAdded(long tournamentId, long teamId, string updatedBy);
         Task BroadcastTeamRemoved(long tournamentId, long teamId, string updatedBy);

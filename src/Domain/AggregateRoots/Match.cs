@@ -19,7 +19,6 @@ namespace Domain.AggregateRoots
         }
 
         public long StandingId { get; set; }
-
         public long TenantId { get; set; }
         public Tenant Tenant { get; set; } = null!;
 
