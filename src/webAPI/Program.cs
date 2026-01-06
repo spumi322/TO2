@@ -1,5 +1,5 @@
-using Application.Common;
 using Application.Configurations;
+using Application.Validations.Tournament;
 using Application.Contracts;
 using Application.Contracts.Repositories;
 using Application.Pipelines.GameResult;
@@ -123,16 +123,14 @@ namespace TO2
 
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));
-            builder.Services.AddFluentValidation().AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateTournamentValidator>();
 
             // Exception Handling
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
             builder.Services.AddProblemDetails();
 
             // API & Middleware
-            builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddControllers();
-            builder.Services.AddSwaggerGen();
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
@@ -216,16 +214,6 @@ namespace TO2
             app.UseAuthorization();
 
             app.MapHub<TournamentHub>("/hubs/tournament");
-
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI(s =>
-                {
-                    s.SwaggerEndpoint("/swagger/v1/swagger.json", "TO2 API");
-                    s.RoutePrefix = string.Empty;
-                });
-            }
 
             app.MapControllers();
 

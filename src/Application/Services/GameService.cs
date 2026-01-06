@@ -82,6 +82,10 @@ namespace Application.Services
             var teamAId = existingGame.TeamAId;
             var teamBId = existingGame.TeamBId;
 
+            // Validate both teams are known (not TBD)
+            if (teamAId == 0 || teamBId == 0)
+                throw new ValidationException("Cannot score game until both teams are determined. Wait for previous round matches to complete.");
+
 
             if (teamAScore >= 0 || teamBScore >= 0)
             {
