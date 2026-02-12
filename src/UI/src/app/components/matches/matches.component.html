@@ -7,7 +7,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let match of matches">
+    <tr *ngFor="let match of matches; trackBy: trackByMatchId">
       <!-- Team A -->
       <td [ngClass]="{'winner': match.winnerId === match.teamAId, 'loser': match.loserId === match.teamAId}">
         {{ getTeamName(match.teamAId) }}

@@ -1,6 +1,7 @@
 ﻿using Domain.AggregateRoots;
 using Domain.Common;
 using Domain.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Entities
 {
@@ -32,6 +33,9 @@ namespace Domain.Entities
         public bool IsFinished { get; set; } = false;
 
         public bool IsSeeded { get; set; } = false;
+
+        [Timestamp]
+        public byte[]? RowVersion { get; set; }
 
         public IReadOnlyList<Match> Matches => _matches;
     }

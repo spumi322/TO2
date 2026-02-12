@@ -3,7 +3,7 @@ import { Format, Tournament, TournamentStatus, TournamentStateDTO } from '../../
 import { TournamentService } from '../../../services/tournament/tournament.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, catchError, finalize, forkJoin, of, from, Subject } from 'rxjs';
-import { concatMap, switchMap, tap, map, toArray, takeUntil } from 'rxjs/operators';
+import { concatMap, switchMap, tap, map, toArray, takeUntil, debounceTime } from 'rxjs/operators';
 import { Standing, StandingType } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
 import { Team } from '../../../models/team';
@@ -13,6 +13,7 @@ import { MatchService } from '../../../services/match/match.service';
 import { MatchFinishedIds } from '../../../models/matchresult';
 import { FinalStanding } from '../../../models/final-standing';
 import { TournamentContextService } from '../../../services/tournament-context.service';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-tournament-details',
@@ -57,7 +58,8 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private messageService: MessageService,
-    private tournamentContext: TournamentContextService
+    private tournamentContext: TournamentContextService,
+    private authService: AuthService
   ) { }
 
   ngOnInit(): void {
@@ -78,6 +80,125 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
     this.tournamentContext.startBracket$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.onStartBracket());
+
+    // Subscribe to groups/bracket from context service
+    this.tournamentContext.groups$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(groups => {
+        this.groups = groups;
+      });
+
+    this.tournamentContext.bracket$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(bracket => {
+        this.brackets = bracket ? [bracket] : [];
+      });
+
+    // Subscribe to SignalR real-time events
+    const currentUser = this.authService.getAccessToken() ? this.getCurrentUserName() : null;
+
+    this.tournamentContext.tournamentUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Tournament updated by ${event.updatedBy}`);
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.teamAdded$
+      .pipe(
+        debounceTime(500), // Wait 500ms after last event before reloading
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event) => {
+        // Ignore events while we're in the middle of adding teams to avoid flickering
+        if (event.updatedBy !== currentUser && !this.isAddingTeams) {
+          this.showInfo(`Teams updated by ${event.updatedBy}`);
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.teamRemoved$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Team removed by ${event.updatedBy}`);
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.gameUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        // Always handle the event (including current user's events)
+        this.tournamentContext.handleGameUpdated(event);
+
+        // Handle tournament completion
+        if (event.tournamentFinished) {
+          if (event.finalStandings) {
+            this.finalStandings = event.finalStandings;
+          }
+          this.loadTournamentState();
+
+          const champTeam = this.tournament?.teams?.find(t => t.id === event.match.winnerId);
+          const champName = champTeam?.name || 'Champion';
+          this.showSuccess(`Tournament Complete! Champion: ${champName}`);
+        }
+        // Handle all groups finished
+        else if (event.allGroupsFinished) {
+          this.showSuccess('All groups completed! You can now start the bracket.');
+          this.loadTournamentState();
+        }
+
+        // Only show notification for other users' regular game updates
+        if (event.updatedBy !== currentUser && !event.tournamentFinished && !event.allGroupsFinished) {
+          this.showInfo(`Game scored by ${event.updatedBy}`);
+        }
+      });
+
+    this.tournamentContext.matchUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Match completed by ${event.updatedBy}`);
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.standingUpdated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Standing updated by ${event.updatedBy}`);
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.groupsStarted$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Groups started by ${event.updatedBy}`);
+          this.loadTournamentState();
+          this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.bracketStarted$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Bracket started by ${event.updatedBy}`);
+          this.loadTournamentState();
+          this.reloadTournamentData();
+        }
+      });
+  }
+
+  private getCurrentUserName(): string | null {
+    const user = this.authService.getCurrentUser();
+    return user?.userName || null;
   }
 
   ngOnDestroy(): void {
@@ -167,26 +288,39 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
   loadStandings(): void {
     if (!this.tournamentId) return;
 
-    this.standingService.getStandingsByTournamentId(this.tournamentId)
+    // Load detailed groups
+    this.standingService.getGroupsWithDetails(this.tournamentId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (standings: Standing[]) => {
-          this.standings = standings;
-          this.groups = standings.filter(s => s.standingType === StandingType.Group);
-          this.brackets = standings.filter(s => s.standingType === StandingType.Bracket);
-
-          // Load bracket matches if in bracket stage
-          this.loadBracketMatches();
-
-          // Load final standings if tournament is finished
-          if (this.tournamentState?.currentStatus === TournamentStatus.Finished) {
-            this.loadFinalStandings();
-          }
+        next: (groups: Standing[]) => {
+          // Publish to context service for state management
+          this.tournamentContext.setGroups(groups as any);
         },
         error: (error) => {
-          console.error('Error loading standings', error);
+          console.error('Error loading groups', error);
         }
       });
+
+    // Load detailed bracket
+    this.standingService.getBracketWithDetails(this.tournamentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (bracket: Standing | null) => {
+          // Publish to context service for state management
+          this.tournamentContext.setBracket(bracket as any);
+        },
+        error: (error) => {
+          console.error('Error loading bracket', error);
+        }
+      });
+
+    // Load bracket matches if in bracket stage
+    this.loadBracketMatches();
+
+    // Load final standings if tournament is finished
+    if (this.tournamentState?.currentStatus === TournamentStatus.Finished) {
+      this.loadFinalStandings();
+    }
   }
 
   loadFinalStandings(): void {
@@ -273,11 +407,11 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
         if (existingTeam) {
           // Use existing team
           return this.teamService.addTeamToTournament(this.tournamentId!, existingTeam.id).pipe(
-            map(() => ({ name, success: true, error: null })),
+            map(() => ({ name, success: true, error: null, team: existingTeam })),
             catchError(error => {
               const errorMsg = 'Team name already used';
               console.error(`Error adding existing team ${name} to tournament:`, error);
-              return of({ name, success: false, error: errorMsg });
+              return of({ name, success: false, error: errorMsg, team: null });
             })
           );
         } else {
@@ -285,32 +419,32 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
           return this.teamService.createTeam(name).pipe(
             switchMap(createdTeam => {
               if (!createdTeam || !createdTeam.id) {
-                return of({ name, success: false, error: 'Failed to create team' });
+                return of({ name, success: false, error: 'Failed to create team', team: null });
               }
 
-              // Add newly created team to allTeams array
-              this.allTeams.push({
+              // Create team object (will add to allTeams later)
+              const newTeam: Team = {
                 id: createdTeam.id,
                 name: name,
                 wins: 0,
                 losses: 0,
                 points: 0
-              });
+              };
 
               // Add to tournament
               return this.teamService.addTeamToTournament(this.tournamentId!, createdTeam.id).pipe(
-                map(() => ({ name, success: true, error: null })),
+                map(() => ({ name, success: true, error: null, team: newTeam })),
                 catchError(error => {
                   const errorMsg = error?.error?.title || error?.message || 'Failed to add team to tournament';
                   console.error(`Error adding new team ${name} to tournament:`, error);
-                  return of({ name, success: false, error: errorMsg });
+                  return of({ name, success: false, error: errorMsg, team: null });
                 })
               );
             }),
             catchError(error => {
               const errorMsg = error?.error?.title || error?.message || 'Failed to create team';
               console.error(`Error creating team ${name}:`, error);
-              return of({ name, success: false, error: errorMsg });
+              return of({ name, success: false, error: errorMsg, team: null });
             })
           );
         }
@@ -321,10 +455,27 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (results) => {
-        this.reloadTournamentData();
-
+        // Update local state ONCE with all successfully added teams
         const succeeded = results.filter(r => r.success);
         const failed = results.filter(r => !r.success);
+
+        if (succeeded.length > 0 && this.tournament) {
+          const addedTeams = succeeded.map(r => r.team).filter((t): t is Team => t !== null);
+
+          // Update allTeams array ONCE with newly created teams (not already in allTeams)
+          const newlyCreatedTeams = addedTeams.filter(t => !this.allTeams.some(at => at.id === t.id));
+          if (newlyCreatedTeams.length > 0) {
+            this.allTeams = [...this.allTeams, ...newlyCreatedTeams];
+          }
+
+          // Update tournament ONCE with ALL added teams (new + existing)
+          const updatedTournament = {
+            ...this.tournament,
+            teams: [...this.tournament.teams, ...addedTeams]
+          };
+          this.tournament = updatedTournament;
+          this.tournamentContext.setTournament(updatedTournament);
+        }
 
         if (failed.length === 0) {
           this.showSuccess(`Successfully added ${succeeded.length} team(s)`);
@@ -339,7 +490,6 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.showError('Error adding teams');
         console.error('Error adding teams:', error);
-        this.reloadTournamentData();
       }
     });
   }
@@ -351,11 +501,19 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
   }
 
   removeTeam(team: Team): void {
-    if (!this.tournamentId) return;
+    if (!this.tournamentId || !this.tournament) return;
 
     this.teamService.removeTeamFromTournament(team.id, this.tournamentId).subscribe({
       next: () => {
-        this.reloadTournamentData();
+        // Update local state: remove team from tournament
+        if (this.tournament) {
+          const updatedTournament = {
+            ...this.tournament,
+            teams: this.tournament.teams.filter(t => t.id !== team.id)
+          };
+          this.tournament = updatedTournament;
+          this.tournamentContext.setTournament(updatedTournament);
+        }
         this.showSuccess(`Removed ${team.name} from tournament`);
       },
       error: (error) => {
@@ -463,45 +621,13 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
   }
 
   onGroupMatchFinished(result: any): void {
-    if (!this.tournamentId) return;
-
-    // Check if all groups are now finished
-    if (result.allGroupsFinished) {
-      this.showSuccess('All groups completed! You can now start the bracket.');
-
-      // Reload tournament state to show updated status and Start Bracket button
-      this.loadTournamentState();
-      this.reloadTournamentData();
-      return;
-    }
-
-
-    // Normal case: just a regular match completion, reload data
-    this.reloadTournamentData();
+    // No longer needed - group updates handled by SignalR
+    // All groups finished also handled in gameUpdated$ subscription
   }
 
   onBracketMatchFinished(result: MatchFinishedIds): void {
-    // Check if tournament finished
-    if (result.tournamentFinished) {
-      // Store final standings
-      if (result.finalStandings) {
-        this.finalStandings = result.finalStandings;
-      }
-
-      // Reload both tournament data AND state
-      this.loadTournamentState();
-      this.reloadTournamentData();
-
-      // Show success message
-      const champTeam = this.tournament?.teams?.find(t => t.id === result.winnerId);
-      const champName = champTeam?.name || `Team ${result.winnerId}`;
-      this.showSuccess(`Tournament Complete! Champion: ${champName}`);
-
-      return;
-    }
-
-    // Regular match completion - reload data to update bracket
-    this.reloadTournamentData();
+    // No longer needed - bracket updates handled by SignalR
+    // Tournament completion also handled in gameUpdated$ subscription
   }
 
   // UI Helper Methods - moved to sub-components
@@ -522,6 +648,15 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
       summary: 'Error',
       detail: message,
       life: 5000
+    });
+  }
+
+  showInfo(message: string): void {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Update',
+      detail: message,
+      life: 3000
     });
   }
 }

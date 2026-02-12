@@ -9,6 +9,7 @@ namespace Application.DTOs.Tournament
         bool CanScoreMatches,
         bool CanModifyTeams,
         string StatusDisplayName,
-        string StatusDescription
+        string StatusDescription,
+        byte[]? RowVersion
     );
 }

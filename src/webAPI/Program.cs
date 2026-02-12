@@ -1,5 +1,5 @@
-using Application.Common;
 using Application.Configurations;
+using Application.Validations.Tournament;
 using Application.Contracts;
 using Application.Contracts.Repositories;
 using Application.Pipelines.GameResult;
@@ -25,6 +25,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using TO2.Hubs;
+using TO2.SignalR;
 using webAPI.Middleware;
 
 namespace TO2
@@ -61,6 +63,8 @@ namespace TO2
 
             // Multi-Tenancy Service
             builder.Services.AddScoped<ITenantService, HttpContextTenantService>();
+            builder.Services.AddSignalR();
+            builder.Services.AddScoped<ISignalRService, SignalRService>();
 
             // EF Core Interceptors (Modern approach for tenant isolation and auditing)
             builder.Services.AddScoped<TenantSaveChangesInterceptor>();
@@ -85,6 +89,7 @@ namespace TO2
             builder.Services.AddScoped<IGameResultPipelineStep, HandleStandingProgressStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, TransitionTournamentStateStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, CalculateFinalPlacementsStep>();
+            // BroadcastUpdatesStep removed - broadcasting now happens after transaction commit in pipeline executor
             builder.Services.AddScoped<IGameResultPipelineStep, BuildResponseStep>();
             // Standing Progress Strategies
             builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
@@ -118,16 +123,14 @@ namespace TO2
 
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));
-            builder.Services.AddFluentValidation().AddValidatorsFromAssemblyContaining<IAssemblyMarker>();
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateTournamentValidator>();
 
             // Exception Handling
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
             builder.Services.AddProblemDetails();
 
             // API & Middleware
-            builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddControllers();
-            builder.Services.AddSwaggerGen();
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
@@ -177,6 +180,23 @@ namespace TO2
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(jwtSettings?.SecretKey ?? throw new InvalidOperationException("JWT SecretKey not configured")))
                 };
+
+                // Configure SignalR authentication from query string
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs"))
+                        {
+                            context.Token = accessToken;
+                        }
+
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
             builder.Services.AddAuthorization();
@@ -187,18 +207,13 @@ namespace TO2
             app.UseExceptionHandler();
             app.UseCors("AllowFrontend");
 
+            // Enable WebSockets for SignalR
+            app.UseWebSockets();
+
             app.UseAuthentication();
             app.UseAuthorization();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI(s =>
-                {
-                    s.SwaggerEndpoint("/swagger/v1/swagger.json", "TO2 API");
-                    s.RoutePrefix = string.Empty;
-                });
-            }
+            app.MapHub<TournamentHub>("/hubs/tournament");
 
             app.MapControllers();
 

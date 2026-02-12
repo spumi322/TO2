@@ -63,10 +63,19 @@ namespace Infrastructure.Persistence
 
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Tournament>().Property(e => e.RowVersion).IsRowVersion();
+            modelBuilder.Entity<Match>().Property(e => e.RowVersion).IsRowVersion();
+            modelBuilder.Entity<Game>().Property(e => e.RowVersion).IsRowVersion();
+            modelBuilder.Entity<Standing>().Property(e => e.RowVersion).IsRowVersion();
+
             modelBuilder.Entity<Tenant>(entity =>
             {
                 entity.HasKey(t => t.Id);
                 entity.Property(t => t.Name).IsRequired().HasMaxLength(100);
+
+                // Unique index on Name
+                entity.HasIndex(t => t.Name).IsUnique();
+
                 entity.HasMany(t => t.Users)
                       .WithOne(u => u.Tenant)
                       .HasForeignKey(u => u.TenantId)

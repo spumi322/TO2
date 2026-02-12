@@ -51,16 +51,44 @@ namespace Application.Services
             {
                 await _unitOfWork.BeginTransactionAsync();
 
-                // Create tenant
-                var tenant = new Tenant
-                {
-                    Name = request.TenantName,
-                    IsActive = true
-                };
-                await _tenantRepository.AddAsync(tenant);
-                await _unitOfWork.SaveChangesAsync();
+                // Check if tenant exists
+                var tenantName = request.TenantName.Trim();
+                var tenant = await _tenantRepository.FindAsync(t => t.Name == tenantName);
 
-                // Create user
+                // Create tenant only if not found
+                if (tenant == null)
+                {
+                    tenant = new Tenant
+                    {
+                        Name = tenantName,
+                        IsActive = true
+                    };
+                    await _tenantRepository.AddAsync(tenant);
+                    await _unitOfWork.SaveChangesAsync();
+
+                    _logger.LogInformation(
+                        "Created new tenant '{TenantName}' for user {Email}",
+                        tenant.Name, request.Email
+                    );
+                }
+                else
+                {
+                    _logger.LogInformation(
+                        "User {Email} joining existing tenant '{TenantName}' (Id: {TenantId})",
+                        request.Email, tenant.Name, tenant.Id
+                    );
+                }
+
+                // Validate tenant is active
+                if (!tenant.IsActive)
+                {
+                    await _unitOfWork.RollbackTransactionAsync();
+                    throw new ValidationException(
+                        "This organization is currently inactive. Please contact support."
+                    );
+                }
+
+                // Create user with existing or new tenant
                 var user = new User
                 {
                     UserName = request.UserName,

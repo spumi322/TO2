@@ -14,15 +14,21 @@ namespace Application.Pipelines.StartBracket
         private readonly ILogger<StartBracketPipeline> _logger;
         private readonly IEnumerable<IStartBracketPipelineStep> _steps;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ISignalRService _signalRService;
+        private readonly ITenantService _tenantService;
 
         public StartBracketPipeline(
             ILogger<StartBracketPipeline> logger,
             IEnumerable<IStartBracketPipelineStep> steps,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            ISignalRService signalRService,
+            ITenantService tenantService)
         {
             _logger = logger;
             _steps = steps;
             _unitOfWork = unitOfWork;
+            _signalRService = signalRService;
+            _tenantService = tenantService;
         }
 
         /// <summary>
@@ -61,11 +67,18 @@ namespace Application.Pipelines.StartBracket
                 // Commit transaction - saves all changes atomically
                 await _unitOfWork.CommitTransactionAsync();
 
+                // Broadcast SignalR events AFTER transaction commit
+                var updatedBy = _tenantService.GetCurrentUserName();
+                await _signalRService.BroadcastBracketStarted(context.TournamentId, updatedBy);
+                await _signalRService.BroadcastTournamentUpdated(context.TournamentId, updatedBy);
+                _logger.LogInformation("Broadcasted BracketStarted and TournamentUpdated for TournamentId: {TournamentId}", context.TournamentId);
+
                 // Return the result
                 var result = new StartBracketResponseDTO(
                     context.Success,
                     context.Message,
-                    context.NewStatus
+                    context.NewStatus,
+                    context.Tournament.RowVersion
                 );
 
                 _logger.LogInformation("Pipeline completed successfully for tournament {TournamentId}. Success: {Success}",

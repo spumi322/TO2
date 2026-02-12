@@ -16,15 +16,18 @@ namespace Application.Services
         private readonly ITournamentTeamRepository _tournamentTeamRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<TeamService> _logger;
-
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ISignalRService _signalRService;
+        private readonly ITenantService _tenantService;
 
         public TeamService(IRepository<Team> teamRepository,
                            IRepository<Tournament> tournamentRepository,
                            ITournamentTeamRepository tournamentTeamRepository,
                            IMapper mapper,
                            ILogger<TeamService> logger,
-                                 IUnitOfWork unitOfWork)
+                           IUnitOfWork unitOfWork,
+                           ISignalRService signalRService,
+                           ITenantService tenantService)
         {
             _teamRepository = teamRepository;
             _tournamentRepository = tournamentRepository;
@@ -32,6 +35,8 @@ namespace Application.Services
             _mapper = mapper;
             _logger = logger;
             _unitOfWork = unitOfWork;
+            _signalRService = signalRService;
+            _tenantService = tenantService;
         }
 
         public async Task<CreateTeamResponseDTO> CreateTeamAsync(CreateTeamRequestDTO request)
@@ -107,6 +112,8 @@ namespace Application.Services
             await _tournamentTeamRepository.AddAsync(tournamentTeam);
             await _unitOfWork.SaveChangesAsync();
 
+            await _signalRService.BroadcastTeamAdded(request.TournamentId, request.TeamId, _tenantService.GetCurrentUserName());
+
             return new AddTeamToTournamentResponseDTO(request.TournamentId, request.TeamId);
         }
 
@@ -124,6 +131,8 @@ namespace Application.Services
 
             await _tournamentTeamRepository.DeleteAsync(tournamentTeam);
             await _unitOfWork.SaveChangesAsync();
+
+            await _signalRService.BroadcastTeamRemoved(tournamentId, teamId, _tenantService.GetCurrentUserName());
         }
     }
 }

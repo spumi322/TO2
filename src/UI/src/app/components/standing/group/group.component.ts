@@ -12,31 +12,13 @@ import { MatchFinishedIds } from '../../../models/matchresult';
   templateUrl: './group.component.html',
   styleUrl: './group.component.css'
 })
-export class GroupComponent implements OnInit {
+export class GroupComponent {
   @Input() tournament!: Tournament;
+  @Input() groups: Standing[] = [];
   @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
 
-  groups: Standing[] = [];
-
-  constructor(
-    private standingService: StandingService) { }
-
-  ngOnInit(): void {
-    this.refreshGroups();
-  }
-
-  refreshGroups(): void {
-    if (this.tournament.id) {
-      this.standingService.getGroupsWithDetails(this.tournament.id).pipe(
-        catchError(() => of([]))
-      ).subscribe((groups) => {
-        this.groups = groups;
-      });
-    }
-  }
-
   onMatchFinished(matchUpdate: MatchFinishedIds): void {
-    this.refreshGroups();
+    // Groups auto-update via parent's subscription to groups$
     this.matchFinished.emit(matchUpdate);
   }
 }

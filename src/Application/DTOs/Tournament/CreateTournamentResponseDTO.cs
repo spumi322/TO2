@@ -1,4 +1,4 @@
 ﻿namespace Application.DTOs.Tournament
 {
-    public record CreateTournamentResponseDTO(long id);
+    public record CreateTournamentResponseDTO(long id, byte[]? RowVersion);
 }
