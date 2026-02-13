@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.DTOs.SignalR;
+using Domain.AggregateRoots;
 using Microsoft.AspNetCore.SignalR;
 using TO2.Hubs;
 
@@ -8,26 +9,29 @@ namespace TO2.SignalR
     public class SignalRService : ISignalRService
     {
         private readonly IHubContext<TournamentHub> _hubContext;
+        private readonly ITenantService tenantService;
 
-        public SignalRService(IHubContext<TournamentHub> hubContext)
+        public SignalRService(IHubContext<TournamentHub> hubContext, ITenantService tenantService)
         {
             _hubContext = hubContext;
+            this.tenantService = tenantService;
         }
 
         public async Task BroadcastTournamentCreated(long tournamentId, string createdBy)
         {
-            // Note: Can't get tenantId here without injecting ITenantService
-            // Broadcast to all for now - clients are already filtered by tenant via JWT
+            var tenantId = tenantService.GetCurrentTenantId();
+
             await _hubContext.Clients
-                .All
+                .Group($"tenant-{tenantId}")
                 .SendAsync("TournamentCreated", new { tournamentId, updatedBy = createdBy });
         }
 
         public async Task BroadcastTournamentUpdated(long tournamentId, string updatedBy)
         {
-            // Broadcast to all clients so tournament list can receive updates
+            var tenantId = tenantService.GetCurrentTenantId();
+
             await _hubContext.Clients
-                .All
+                .Group($"tenant-{tenantId}")
                 .SendAsync("TournamentUpdated", new { tournamentId, updatedBy });
         }
 

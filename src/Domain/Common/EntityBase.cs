@@ -15,8 +15,7 @@ namespace Domain.Common
 
         protected EntityBase()
         {
-            CreatedDate = DateTime.UtcNow;
-            LastModifiedDate = CreatedDate;
+
         }
 
         public override bool Equals(object? obj)
