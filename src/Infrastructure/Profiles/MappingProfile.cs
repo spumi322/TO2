@@ -15,7 +15,6 @@ namespace Infrastructure.Profiles
             CreateMap<CreateTournamentRequestDTO, Tournament>();
             CreateMap<Tournament, CreateTournamentResponseDTO>();
             CreateMap<Tournament, GetTournamentResponseDTO>();
-            CreateMap<Tournament, GetTournamentListResponseDTO>();
             CreateMap<Tournament, UpdateTournamentResponseDTO>();
             CreateMap<UpdateTournamentRequestDTO, Tournament>();
             CreateMap<CreateTeamRequestDTO, Team>();
