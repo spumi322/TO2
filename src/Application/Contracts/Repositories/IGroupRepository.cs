@@ -1,5 +1,4 @@
 ﻿using Domain.Entities;
-using System.Collections.Generic;
 
 namespace Application.Contracts.Repositories
 {

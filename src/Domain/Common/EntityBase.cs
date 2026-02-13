@@ -10,8 +10,8 @@ namespace Domain.Common
         public long Id { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime LastModifiedDate { get; set; }
-        public string CreatedBy { get; set; }
-        public string LastModifiedBy { get; set; }
+        public string CreatedBy { get; set; } = string.Empty;
+        public string LastModifiedBy { get; set; } = string.Empty;
 
         protected EntityBase()
         {

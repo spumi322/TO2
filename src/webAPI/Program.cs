@@ -1,5 +1,4 @@
 using Application.Configurations;
-using Application.Validations.Tournament;
 using Application.Contracts;
 using Application.Contracts.Repositories;
 using Application.Pipelines.GameResult;

@@ -1,4 +1,3 @@
-using Application.Contracts;
 using Application.Pipelines.StartBracket.Contracts;
 using Microsoft.Extensions.Logging;
 

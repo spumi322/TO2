@@ -1,6 +1,5 @@
 ﻿using Application.Contracts;
 using Application.DTOs.SignalR;
-using Domain.AggregateRoots;
 using Microsoft.AspNetCore.SignalR;
 using TO2.Hubs;
 
