@@ -33,9 +33,6 @@ namespace Application.Pipelines.GameResult.Steps
                 winner.Points += 3;
                 loser.Losses++;
 
-                await _groupRepository.UpdateAsync(winner);
-                await _groupRepository.UpdateAsync(loser);
-
                 Logger.LogInformation("Wins and points handed out for {winnerId}. Lose recorded for {loserId}. Group stats updated.", winner.Id, loser.Id);
 
                 return true;

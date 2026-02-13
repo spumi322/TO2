@@ -18,7 +18,6 @@ namespace Application.Contracts
         // Command operations (void returns for CQS)
         Task AddAsync(T entity);
         Task AddRangeAsync(IEnumerable<T> entities);
-        Task UpdateAsync(T entity);
         Task DeleteAsync(T entity);
         Task DeleteAsync(long id);
     }

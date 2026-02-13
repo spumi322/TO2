@@ -124,6 +124,7 @@ namespace TO2
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddValidatorsFromAssemblyContaining<CreateTournamentValidator>();
+            builder.Services.AddFluentValidationAutoValidation();
 
             // Exception Handling
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

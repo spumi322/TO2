@@ -163,7 +163,6 @@ namespace Application.Services
 
             // Revoke old refresh token
             refreshToken.Revoked = DateTime.UtcNow;
-            await _refreshTokenRepository.UpdateAsync(refreshToken);
 
             // Generate new tokens
             var response = await GenerateAuthResponseAsync(user, tenant);
@@ -187,7 +186,6 @@ namespace Application.Services
                 throw new ValidationException("Token is already revoked");
 
             token.Revoked = DateTime.UtcNow;
-            await _refreshTokenRepository.UpdateAsync(token);
             await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("Refresh token revoked for user {UserId}", token.UserId);

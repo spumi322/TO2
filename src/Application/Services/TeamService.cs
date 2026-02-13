@@ -71,7 +71,6 @@ namespace Application.Services
 
             _mapper.Map(request, existingTeam);
 
-            await _teamRepository.UpdateAsync(existingTeam);
             await _unitOfWork.SaveChangesAsync();
 
             return _mapper.Map<UpdateTeamResponseDTO>(existingTeam);

@@ -64,9 +64,6 @@ namespace Application.Pipelines.GameResult.Steps
                 Logger.LogInformation("Tournament {TournamentName} FINISHED", tournament.Name);
             }
 
-            // Save tournament state
-            await _tournamentRepository.UpdateAsync(tournament);
-
             // Continue to next step
             return true;
         }

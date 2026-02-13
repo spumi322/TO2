@@ -86,7 +86,6 @@ namespace Application.Services
                 ?? throw new NotFoundException("Standing", standingId);
 
             standing.IsFinished = true;
-            await _standingRepository.UpdateAsync(standing);
         }
 
         public async Task<bool> CheckAllGroupsAreFinished(long tournamentId)
@@ -167,7 +166,6 @@ namespace Application.Services
                 foreach (var groupEntry in rankedTeams)
                 {
                     groupEntry.Status = TeamStatus.Advanced;
-                    await _groupRepository.UpdateAsync(groupEntry);
 
                     var team = await _teamRepository.GetByIdAsync(groupEntry.TeamId);
                     if (team != null)
@@ -189,7 +187,6 @@ namespace Application.Services
                 {
                     groupEntry.Status = TeamStatus.Eliminated;
                     groupEntry.Eliminated = true;
-                    await _groupRepository.UpdateAsync(groupEntry);
                     _logger.LogInformation("Team {TeamName} eliminated from {GroupName}", groupEntry.TeamName, group.Name);
                 }
             }
@@ -233,7 +230,6 @@ namespace Application.Services
                 foreach (var groupEntry in advancing)
                 {
                     groupEntry.Status = TeamStatus.Advanced;
-                    await _groupRepository.UpdateAsync(groupEntry);
 
                     // Fetch Team entity using repository
                     var team = await _teamRepository.GetByIdAsync(groupEntry.TeamId);
@@ -249,7 +245,6 @@ namespace Application.Services
                 {
                     groupEntry.Status = TeamStatus.Eliminated;
                     groupEntry.Eliminated = true;
-                    await _groupRepository.UpdateAsync(groupEntry);
                     _logger.LogInformation($"Team {groupEntry.TeamName} eliminated from {group.Name}");
                 }
             }
@@ -458,7 +453,6 @@ namespace Application.Services
                     tournamentTeam.EliminatedInRound = placement.EliminatedInRound;
                     tournamentTeam.ResultFinalizedAt = now;
 
-                    await _tournamentTeamRepository.UpdateAsync(tournamentTeam);
                     _logger.LogInformation($"  Team {placement.TeamId}: Placement {placement}, Eliminated Round {placement.EliminatedInRound.ToString() ?? "N/A"}");
                 }
 

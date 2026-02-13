@@ -37,8 +37,6 @@ namespace Application.Pipelines.StartBracket.Steps
                 _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.BracketInProgress);
                 context.Tournament.Status = TournamentStatus.BracketInProgress;
 
-                await _tournamentRepository.UpdateAsync(context.Tournament);
-
                 // Store in context
                 context.NewStatus = TournamentStatus.BracketInProgress;
 

@@ -66,7 +66,9 @@ namespace TO2.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateTournamentRequestDTO request)
         {
-            return Ok(await _tournamentService.CreateTournamentAsync(request));
+            var result = await _tournamentService.CreateTournamentAsync(request);
+
+            return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
         }
 
         // PUT: api/Tournament/5

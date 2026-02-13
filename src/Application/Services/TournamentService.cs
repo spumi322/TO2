@@ -22,7 +22,6 @@ namespace Application.Services
         private readonly ITournamentStateMachine _stateMachine;
         private readonly ISignalRService _signalRService;
         private readonly ITenantService _tenantService;
-
         private readonly IUnitOfWork _unitOfWork;
 
         public TournamentService(ITournamentRepository tournamentRepository,
@@ -150,7 +149,6 @@ namespace Application.Services
 
             _mapper.Map(request, existingTournament);
 
-            await _tournamentRepository.UpdateAsync(existingTournament);
             await _unitOfWork.SaveChangesAsync();
             await _signalRService.BroadcastTournamentUpdated(id, _tenantService.GetCurrentUserName());
 
@@ -166,7 +164,6 @@ namespace Application.Services
             _stateMachine.ValidateTransition(existingTournament.Status, TournamentStatus.Cancelled);
             existingTournament.Status = TournamentStatus.Cancelled;
 
-            await _tournamentRepository.UpdateAsync(existingTournament);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -179,7 +176,6 @@ namespace Application.Services
             _stateMachine.ValidateTransition(existingTournament.Status, status);
             existingTournament.Status = status;
 
-            await _tournamentRepository.UpdateAsync(existingTournament);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -199,7 +195,6 @@ namespace Application.Services
             if (existingTournament.IsRegistrationOpen)
             {
                 existingTournament.IsRegistrationOpen = false;
-                await _tournamentRepository.UpdateAsync(existingTournament);
                 await _unitOfWork.SaveChangesAsync();
 
                 return new StartTournamentDTO("Tournament succesfully started", true, existingTournament.RowVersion);

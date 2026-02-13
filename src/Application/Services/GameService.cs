@@ -95,7 +95,6 @@ namespace Application.Services
 
             existingGame.WinnerId = winnerId;
 
-            await _gameRepository.UpdateAsync(existingGame);
         }
 
         public async Task<MatchWinner?> SetMatchWinner(long matchId)
@@ -123,8 +122,6 @@ namespace Application.Services
             match.WinnerId = winnerId;
             match.LoserId = loserId;
 
-            await _matchRepository.UpdateAsync(match);
-
             return new MatchWinner(winnerId.Value, loserId.Value);
         }
 
@@ -136,7 +133,6 @@ namespace Application.Services
             {
                 game.TeamAId = teamAId;
                 game.TeamBId = teamBId;
-                await _gameRepository.UpdateAsync(game);
             }
 
             _logger.LogInformation($"Updated {games.Count()} games for match {matchId} with TeamA={teamAId}, TeamB={teamBId}");

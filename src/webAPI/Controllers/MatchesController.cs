@@ -43,7 +43,7 @@ namespace TO2.Controllers
         }
 
         // PUT game result
-        [HttpPut("{gameId}/result")]
+        [HttpPut("result")]
         public async Task<IActionResult> SetGameResult(SetGameResultDTO request)
         {
             var response = await _workFlowService.ProcessGameResult(request);

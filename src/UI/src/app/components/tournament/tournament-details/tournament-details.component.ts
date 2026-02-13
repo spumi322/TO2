@@ -136,8 +136,10 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
 
         // Handle tournament completion
         if (event.tournamentFinished) {
-          if (event.finalStandings) {
+          if (event.finalStandings && event.finalStandings.length > 0) {
             this.finalStandings = event.finalStandings;
+          } else {
+            this.loadFinalStandings();
           }
           this.loadTournamentState();
 

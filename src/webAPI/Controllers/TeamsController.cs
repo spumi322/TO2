@@ -20,6 +20,13 @@ namespace TO2.Controllers
             _standingService = standingService;
         }
 
+        // GET: api/Teams/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(long id)
+        {
+            return Ok(await _teamService.GetTeamAsync(id));
+        }
+
         // GET: api/Teams
         [HttpGet("all")]
         public async Task<IActionResult> GetAll()
@@ -38,7 +45,9 @@ namespace TO2.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateTeamRequestDTO request)
         {
-            return Ok(await _teamService.CreateTeamAsync(request));
+            var result = await _teamService.CreateTeamAsync(request);
+
+            return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
         }
 
         // POST: api/Teams/5/5

@@ -46,12 +46,6 @@ namespace Infrastructure.Persistence.Repository
         public async Task AddRangeAsync(IEnumerable<TEntity> entities)
             => await _dbSet.AddRangeAsync(entities);
 
-        public Task UpdateAsync(TEntity entity)
-        {
-            _dbContext.Entry(entity).State = EntityState.Modified;
-            return Task.CompletedTask;
-        }
-
         public Task DeleteAsync(TEntity entity)
         {
             _dbSet.Remove(entity);

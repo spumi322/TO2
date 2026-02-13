@@ -29,6 +29,6 @@ export class MatchService {
   }
 
   setGameResult(request: GameResult): Observable<GameProcessResult> {
-    return this.http.put<GameProcessResult>(`${this.apiUrl}/${request.gameId}/result`, request);
+    return this.http.put<GameProcessResult>(`${this.apiUrl}/result`, request);
   }
 }
