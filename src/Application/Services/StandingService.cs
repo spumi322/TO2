@@ -144,6 +144,9 @@ namespace Application.Services
             return allGroupsFinished;
         }
 
+        private static double WinRate(GroupEntry e) =>
+            e.Wins + e.Losses == 0 ? 0.0 : (double)e.Wins / (e.Wins + e.Losses);
+
         public async Task<List<Team>> GetTeamsForBracketByFormat(long tournamentId)
         {
             var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
@@ -194,7 +197,7 @@ namespace Application.Services
             {
                 var groupEntries = await _groupRepository.FindAllAsync(g => g.StandingId == group.Id);
                 var rankedTeams = groupEntries
-                    .OrderByDescending(g => g.Points)
+                    .OrderByDescending(g => WinRate(g))
                     .ThenByDescending(g => g.Wins)
                     .ThenBy(g => g.Losses)
                     .Take(teamsAdvancingPerGroup)
@@ -214,7 +217,7 @@ namespace Application.Services
 
                 // Mark eliminated teams
                 var eliminatedEntries = groupEntries
-                    .OrderByDescending(g => g.Points)
+                    .OrderByDescending(g => WinRate(g))
                     .ThenByDescending(g => g.Wins)
                     .ThenBy(g => g.Losses)
                     .Skip(teamsAdvancingPerGroup)
