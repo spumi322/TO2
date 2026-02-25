@@ -204,6 +204,12 @@ namespace TO2
 
             var app = builder.Build();
 
+            using (var scope = app.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<TO2DbContext>();
+                db.Database.Migrate();
+            }
+
             app.UseExceptionHandler();
             app.UseCors("AllowFrontend");
 
