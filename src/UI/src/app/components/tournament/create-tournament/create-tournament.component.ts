@@ -190,7 +190,7 @@ onFormatChange(): void {
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: err.error?.message || 'Failed to create tournament. Please try again.'
+            detail: err.error?.detail || err.error?.message || 'Failed to create tournament. Please try again.'
           });
         }
       });
@@ -251,7 +251,6 @@ onFormatChange(): void {
       if (control.hasError('required')) message = 'Required';
     }
 
-    console.log(`Tooltip for ${fieldName}: ${message}`);
     return message;
   }
 }

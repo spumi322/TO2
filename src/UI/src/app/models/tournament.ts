@@ -36,8 +36,6 @@ export interface TournamentStateDTO {
   isActiveState: boolean;
   canScoreMatches: boolean;
   canModifyTeams: boolean;
-  statusDisplayName: string;
-  statusDescription: string;
 }
 export interface TournamentList {
   id: number;

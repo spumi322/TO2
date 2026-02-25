@@ -1,5 +1,4 @@
 using Application.Configurations;
-using Application.Validations.Tournament;
 using Application.Contracts;
 using Application.Contracts.Repositories;
 using Application.Pipelines.GameResult;
@@ -124,6 +123,7 @@ namespace TO2
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddValidatorsFromAssemblyContaining<CreateTournamentValidator>();
+            builder.Services.AddFluentValidationAutoValidation();
 
             // Exception Handling
             builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

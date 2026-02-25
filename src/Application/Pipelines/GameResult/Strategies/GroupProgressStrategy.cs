@@ -47,6 +47,16 @@ namespace Application.Pipelines.GameResult.Strategies
             // Mark the group as finished
             await _standingService.MarkGroupAsFinished(standingId);
 
+            // Load tournament format once (needed for both early-return and all-groups-finished paths)
+            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+                ?? throw new InvalidOperationException($"Tournament {tournamentId} not found");
+
+            // For GroupsOnly: finalize team statuses (Champion/Eliminated) as soon as this group completes
+            if (tournament.Format == Format.GroupsOnly)
+            {
+                await _standingService.FinalizeGroupTeams(standingId);
+            }
+
             // Check if ALL groups are finished
             var allGroupsFinished = await _standingService.CheckAllGroupsAreFinished(tournamentId);
 
@@ -62,10 +72,6 @@ namespace Application.Pipelines.GameResult.Strategies
             }
 
             _logger.LogInformation("All groups finished for tournament {TournamentId}", tournamentId);
-
-            // Check tournament format to determine next state
-            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
-                ?? throw new InvalidOperationException($"Tournament {tournamentId} not found");
 
             if (tournament.Format == Format.GroupsOnly)
             {

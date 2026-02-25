@@ -8,6 +8,8 @@ import { TournamentService } from '../../../services/tournament/tournament.servi
 import { Format, TournamentStatus } from '../../../models/tournament';
 import { TournamentContextService } from '../../../services/tournament-context.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import { StatusConfig } from '../../../utils/status-config';
+import { FormatConfig } from '../../../utils/format-config';
 
 interface GroupedTournaments {
   upcoming: TournamentList[];
@@ -45,7 +47,6 @@ export class TournamentListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((event) => {
         if (event.updatedBy !== currentUser?.userName) {
-          console.log(`[TournamentList] Tournament created by ${event.updatedBy}, reloading...`);
           this.loadTournaments();
         }
       });
@@ -54,7 +55,6 @@ export class TournamentListComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((event) => {
         if (event.updatedBy !== currentUser?.userName) {
-          console.log(`[TournamentList] Tournament updated by ${event.updatedBy}, reloading...`);
           this.loadTournaments();
         }
       });
@@ -79,55 +79,16 @@ export class TournamentListComponent implements OnInit, OnDestroy {
     };
   }
 
-  // Status → high-level category for grouping
   private getStatusCategory(status: TournamentStatus): 'upcoming' | 'ongoing' | 'finished' {
-    switch (status) {
-      case TournamentStatus.Setup:
-        return 'upcoming';
-
-      case TournamentStatus.SeedingGroups:
-      case TournamentStatus.GroupsCompleted:
-      case TournamentStatus.SeedingBracket:
-      case TournamentStatus.GroupsInProgress:
-      case TournamentStatus.BracketInProgress:
-        return 'ongoing';
-
-      case TournamentStatus.Finished:
-      case TournamentStatus.Cancelled:
-      default:
-        return 'finished';
-    }
+    return StatusConfig.getStatusCategory(status);
   }
 
-  // Simple status label map
-  private readonly statusLabels: Record<TournamentStatus, string> = {
-    [TournamentStatus.Setup]: 'Setup',
-    [TournamentStatus.SeedingGroups]: 'Seeding Groups',
-    [TournamentStatus.GroupsInProgress]: 'Groups In Progress',
-    [TournamentStatus.GroupsCompleted]: 'Groups Completed',
-    [TournamentStatus.SeedingBracket]: 'Seeding Bracket',
-    [TournamentStatus.BracketInProgress]: 'Bracket In Progress',
-    [TournamentStatus.Finished]: 'Finished',
-    [TournamentStatus.Cancelled]: 'Cancelled'
-  };
-
-  // Local format label helper
   getFormatLabel(format: Format): string {
-    switch (format) {
-      case Format.BracketOnly:
-        return 'Bracket Only';
-      case Format.GroupsOnly:
-        return 'Groups Only';
-      case Format.GroupsAndBracket:
-        return 'Groups + Bracket';
-      default:
-        return 'Unknown Format';
-    }
+    return FormatConfig.getFormatLabel(format);
   }
 
-  // Local status label helper
   getStatusLabel(status: TournamentStatus): string {
-    return this.statusLabels[status] ?? 'Unknown Status';
+    return StatusConfig.getStatusLabel(status);
   }
 
   goToDetails(tournamentId: number): void {

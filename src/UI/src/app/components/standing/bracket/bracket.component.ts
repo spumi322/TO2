@@ -5,7 +5,7 @@ import { StandingService } from '../../../services/standing/standing.service';
 import { BracketAdapterService } from '../../../services/bracket-adapter.service';
 import { Match } from '../../../models/match';
 import { Team } from '../../../models/team';
-import { MatchResult, MatchFinishedIds } from '../../../models/matchresult';
+import { MatchFinishedIds } from '../../../models/matchresult';
 import { MessageService } from 'primeng/api';
 import { TournamentContextService } from '../../../services/tournament-context.service';
 import { Subject, takeUntil } from 'rxjs';
@@ -235,7 +235,6 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     const gameToUpdate = match.games.find(game => !game.winnerId);
 
     if (!gameToUpdate) {
-      console.warn('No unfinished game found for match', matchId);
       this.isUpdating[matchId] = false;
       return;
     }

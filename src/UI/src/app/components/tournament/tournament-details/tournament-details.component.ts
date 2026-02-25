@@ -2,15 +2,14 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Format, Tournament, TournamentStatus, TournamentStateDTO } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, catchError, finalize, forkJoin, of, from, Subject } from 'rxjs';
+import { Observable, catchError, finalize, of, from, Subject } from 'rxjs';
 import { concatMap, switchMap, tap, map, toArray, takeUntil, debounceTime } from 'rxjs/operators';
-import { Standing, StandingType } from '../../../models/standing';
+import { Standing } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
 import { Team } from '../../../models/team';
 import { TeamService } from '../../../services/team/team.service';
 import { MessageService } from 'primeng/api';
 import { MatchService } from '../../../services/match/match.service';
-import { MatchFinishedIds } from '../../../models/matchresult';
 import { FinalStanding } from '../../../models/final-standing';
 import { TournamentContextService } from '../../../services/tournament-context.service';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -63,7 +62,6 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.initForms();
     this.loadTournamentData();
     this.loadTournamentState();
     this.loadAllTeams();
@@ -136,25 +134,39 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
 
         // Handle tournament completion
         if (event.tournamentFinished) {
-          if (event.finalStandings) {
-            this.finalStandings = event.finalStandings;
+          // Immediately reflect new status so Results tab *ngIf condition is met without waiting for HTTP
+          if (this.tournamentState) {
+            this.tournamentState = { ...this.tournamentState, currentStatus: TournamentStatus.Finished };
           }
+
+          const resultsTabIndex = this.tournament?.format === Format.GroupsAndBracket ? 3 : 2;
+
+          if (event.finalStandings && event.finalStandings.length > 0) {
+            this.finalStandings = event.finalStandings;
+            setTimeout(() => this.activeTabIndex = resultsTabIndex, 500);
+          } else {
+            // Final standings are calculated pre-commit so the event payload is empty;
+            // load from API (post-commit data is correct) and redirect once loaded
+            this.tournamentService.getFinalStandings(this.tournamentId!)
+              .pipe(takeUntil(this.destroy$))
+              .subscribe(standings => {
+                this.finalStandings = standings;
+                setTimeout(() => this.activeTabIndex = resultsTabIndex, 0);
+              });
+          }
+
           this.loadTournamentState();
 
-          const champTeam = this.tournament?.teams?.find(t => t.id === event.match.winnerId);
+          const champTeam = this.tournament?.teams?.find(t => t.id === event.match?.winnerId);
           const champName = champTeam?.name || 'Champion';
           this.showSuccess(`Tournament Complete! Champion: ${champName}`);
         }
-        // Handle all groups finished
+        // Handle all groups finished (GroupsAndBracket only — GroupsOnly also sets tournamentFinished)
         else if (event.allGroupsFinished) {
           this.showSuccess('All groups completed! You can now start the bracket.');
           this.loadTournamentState();
         }
 
-        // Only show notification for other users' regular game updates
-        if (event.updatedBy !== currentUser && !event.tournamentFinished && !event.allGroupsFinished) {
-          this.showInfo(`Game scored by ${event.updatedBy}`);
-        }
       });
 
     this.tournamentContext.matchUpdated$
@@ -205,10 +217,6 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.tournamentContext.clear();
-  }
-
-  initForms(): void {
-    // Form initialization moved to team-management-card component
   }
 
   loadBracketMatches(): void {
@@ -359,6 +367,8 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
           this.reloadTournamentData();
           // Delay bracket loading slightly to ensure standings are updated
           setTimeout(() => this.loadBracketMatches(), 500);
+          const bracketTabIndex = this.tournament?.format === Format.GroupsAndBracket ? 2 : 1;
+          setTimeout(() => this.activeTabIndex = bracketTabIndex, 500);
         } else {
           this.showError(response.message);
         }
@@ -579,6 +589,7 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
           this.showSuccess(response.message);
           this.loadTournamentState();
           this.reloadTournamentData();
+          setTimeout(() => this.activeTabIndex = 1, 500);
         } else {
           this.showError(response.message);
         }
@@ -619,18 +630,6 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
       })
     );
   }
-
-  onGroupMatchFinished(result: any): void {
-    // No longer needed - group updates handled by SignalR
-    // All groups finished also handled in gameUpdated$ subscription
-  }
-
-  onBracketMatchFinished(result: MatchFinishedIds): void {
-    // No longer needed - bracket updates handled by SignalR
-    // Tournament completion also handled in gameUpdated$ subscription
-  }
-
-  // UI Helper Methods - moved to sub-components
 
   // Notification methods
   showSuccess(message: string): void {

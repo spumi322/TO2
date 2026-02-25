@@ -1,7 +1,7 @@
 ### Variables
 @baseUrl = http://localhost:5161/api
-@accessToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZW1haWwiOiJ1c2VyQUBjb21wYW55LWEuY29tIiwibmFtZSI6InVzZXJBIiwidGVuYW50SWQiOiIxIiwidGVuYW50TmFtZSI6IkNvbXBhbnkgQSIsImp0aSI6ImY3MjcyMDhiLWMwNGYtNDU5Yi1hYjdlLWYyYzhjOWJiNDQ3ZSIsImV4cCI6MTc2MTg1MTAxMiwiaXNzIjoiVE8yLUFQSSIsImF1ZCI6IlRPMi1DbGllbnQifQ.homCykIUEtAkEwDVbqftVthcX0xy6fAH461ck21PZ3E
-@refreshToken = nyNg40FchEfAibLLFI0TvmExmknD63OlGt9GebFHGTMlOA3jKaOqnZ/Q1PLaGQ6YA3I5iLhHBcFZNrBCGorH7Q==
+@accessToken = ""
+@refreshToken = ""
 ### Health Check
 GET {{baseUrl}}/auth/me HTTP/1.1
 

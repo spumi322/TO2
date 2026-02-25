@@ -34,8 +34,8 @@ namespace TO2.Controllers
             return Ok(await _tournamentService.GetTournamentAsync(id));
         }
 
-        // GET: api/tournaments/list
-        [HttpGet("list")]
+        // GET: api/tournaments
+        [HttpGet]
         public async Task<IActionResult> GetTournamentList()
         {
             return Ok(await _tournamentService.GetTournamentListAsync());
@@ -66,7 +66,9 @@ namespace TO2.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateTournamentRequestDTO request)
         {
-            return Ok(await _tournamentService.CreateTournamentAsync(request));
+            var result = await _tournamentService.CreateTournamentAsync(request);
+
+            return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
         }
 
         // PUT: api/Tournament/5
@@ -92,9 +94,9 @@ namespace TO2.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
-        // PUT: api/Tournament/5/status
-        [HttpPut("{id}/{status}")]
-        public async Task<IActionResult> Put(long id, [FromRoute][Required] TournamentStatus status)
+        // PUT: api/tournaments/5/status
+        [HttpPut("{id}/status")]
+        public async Task<IActionResult> Put(long id, [FromBody][Required] TournamentStatus status)
         {
             await _tournamentService.SetTournamentStatusAsync(id, status);
 

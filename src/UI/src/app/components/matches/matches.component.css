@@ -42,11 +42,9 @@
   background-color: var(--bg-elevated);
 }
 
-.loading-spinner {
-  text-align: center;
-  color: var(--primary-color);
-  font-weight: 600;
-  padding: 20px;
+.score-updating {
+  opacity: 0.4;
+  transition: opacity 0.15s ease;
 }
 
 .winner {
@@ -64,9 +62,18 @@
   border-radius: var(--border-radius);
 }
 
-button[disabled] {
-  opacity: 0.6;
-  cursor: not-allowed;
+.clickable-team {
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.clickable-team:hover {
+  background-color: rgba(67, 160, 71, 0.15) !important;
+  color: var(--primary-color);
+}
+
+.clickable-team:active {
+  opacity: 0.75;
 }
 
 /* Desktop optimized */

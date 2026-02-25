@@ -63,8 +63,6 @@ namespace Application.Pipelines.StartGroups.Steps
                 tournament.Status = TournamentStatus.SeedingGroups;
                 tournament.IsRegistrationOpen = false; // Close registration when starting groups
 
-                await _tournamentRepository.UpdateAsync(tournament);
-
                 // Store in context
                 context.Tournament = tournament;
                 context.NewStatus = TournamentStatus.SeedingGroups;

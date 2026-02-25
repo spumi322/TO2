@@ -1,4 +1,3 @@
-using Application.Contracts;
 using Application.Pipelines.StartGroups.Contracts;
 using Microsoft.Extensions.Logging;
 
@@ -11,17 +10,11 @@ namespace Application.Pipelines.StartGroups.Steps
     public class BuildResponseStep : IStartGroupsPipelineStep
     {
         private readonly ILogger<BuildResponseStep> _logger;
-        private readonly ISignalRService _signalRService;
-        private readonly ITenantService _tenantService;
 
         public BuildResponseStep(
-            ILogger<BuildResponseStep> logger,
-            ISignalRService signalRService,
-            ITenantService tenantService)
+            ILogger<BuildResponseStep> logger)
         {
             _logger = logger;
-            _signalRService = signalRService;
-            _tenantService = tenantService;
         }
 
         public async Task<bool> ExecuteAsync(StartGroupsContext context)

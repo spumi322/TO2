@@ -114,6 +114,10 @@
   color: var(--text-primary);
 }
 
+.team-champion {
+  background-color: rgba(255, 215, 0, 0.15) !important;
+}
+
 .team-advanced {
   background-color: rgba(0, 217, 54, 0.15) !important;
 }
@@ -121,6 +125,18 @@
 .team-eliminated {
   background-color: rgba(255, 68, 68, 0.1) !important;
   opacity: 0.7;
+}
+
+.badge-champion {
+  background: rgba(255, 215, 0, 0.15);
+  color: #ffd700;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  margin-left: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .badge-advanced {

@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
 import { TournamentContextService } from '../../services/tournament-context.service';
 import { Tournament, TournamentStateDTO, TournamentStatus, Format } from '../../models/tournament';
 import { FormatConfig } from '../../utils/format-config';
+import { StatusConfig } from '../../utils/status-config';
 import { TournamentStatusLabel } from '../tournament/tournament-status-label/tournament-status-label';
 
 @Component({
@@ -107,23 +108,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   getStatusClass(status: TournamentStatus): string {
-    switch (status) {
-      case TournamentStatus.Setup:
-        return 'status-setup';
-      case TournamentStatus.SeedingGroups:
-      case TournamentStatus.SeedingBracket:
-        return 'status-seeding';
-      case TournamentStatus.GroupsInProgress:
-      case TournamentStatus.GroupsCompleted:
-      case TournamentStatus.BracketInProgress:
-        return 'status-ongoing';
-      case TournamentStatus.Finished:
-        return 'status-finished';
-      case TournamentStatus.Cancelled:
-        return 'status-cancelled';
-      default:
-        return '';
-    }
+    return StatusConfig.getStatusClass(status);
   }
 
   // Tournament action handlers

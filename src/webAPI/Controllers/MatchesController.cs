@@ -21,30 +21,23 @@ namespace TO2.Controllers
             _workFlowService = workFlowService;
         }
 
-        // GET matches by standingId
-        [HttpGet("all/{standingId}")]
-        public async Task<IActionResult> GetMatches(long standingId)
+        // GET /api/matches?standingId={id}
+        [HttpGet]
+        public async Task<IActionResult> GetMatches([FromQuery] long standingId)
         {
             return Ok(await _matchService.GetMatchesAsync(standingId));
         }
 
-        // GET game by id
-        [HttpGet("game/{id}")]
-        public async Task<IActionResult> GetGame(long id)
-        {
-            return Ok(await _gameService.GetGameAsync(id));
-        }
-
-        // GET games by matchId
-        [HttpGet("games/{matchId}")]
+        // GET /api/matches/{matchId}/games
+        [HttpGet("{matchId}/games")]
         public async Task<IActionResult> GetGames(long matchId)
         {
             return Ok(await _gameService.GetAllGamesByMatch(matchId));
         }
 
-        // PUT game result
-        [HttpPut("{gameId}/result")]
-        public async Task<IActionResult> SetGameResult(SetGameResultDTO request)
+        // PUT /api/matches/{matchId}/games/{gameId}/result
+        [HttpPut("{matchId}/games/{gameId}/result")]
+        public async Task<IActionResult> SetGameResult(long matchId, long gameId, [FromBody] SetGameResultDTO request)
         {
             var response = await _workFlowService.ProcessGameResult(request);
 

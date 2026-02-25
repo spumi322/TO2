@@ -11,44 +11,45 @@ namespace TO2.Controllers
     public class TeamsController : ControllerBase
     {
         private readonly ITeamService _teamService;
-        private readonly IStandingService _standingService;
 
-        public TeamsController(ITeamService teamService,
-                               IStandingService standingService)
+        public TeamsController(ITeamService teamService)
         {
             _teamService = teamService;
-            _standingService = standingService;
         }
 
-        // GET: api/Teams
-        [HttpGet("all")]
+        // GET: api/teams/5
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(long id)
+        {
+            return Ok(await _teamService.GetTeamAsync(id));
+        }
+
+        // GET: api/teams
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             return Ok(await _teamService.GetAllTeamsAsync());
         }
 
-        // GET: api/5/teams-with-stats
-        [HttpGet("{standingId}/teams-with-stats")]
-        public async Task<IActionResult> GetTeamsWithStats(long standingId)
-        {
-            return Ok(await _standingService.GetTeamsWithStatsAsync(standingId));
-        }
-
-        // POST: api/Teams
+        // POST: api/teams
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateTeamRequestDTO request)
         {
-            return Ok(await _teamService.CreateTeamAsync(request));
+            var result = await _teamService.CreateTeamAsync(request);
+
+            return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
         }
 
-        // POST: api/Teams/5/5
-        [HttpPost("tournamentId/teamId")]
-        public async Task<IActionResult> AddTeamToTournament([FromBody] AddTeamToTournamentRequestDTO request)
+        // POST: api/teams/{tournamentId}/teams/{teamId}
+        [HttpPost("{tournamentId}/teams/{teamId}")]
+        public async Task<IActionResult> AddTeamToTournament(long tournamentId, long teamId)
         {
+            var request = new AddTeamToTournamentRequestDTO(tournamentId, teamId);
+
             return Ok(await _teamService.AddTeamToTournamentAsync(request));
         }
 
-        // DELETE: api/Tournament/5/5
+        // DELETE: api/teams/{teamId}/{tournamentId}
         [HttpDelete("{teamId}/{tournamentId}")]
         public async Task<IActionResult> RemoveTeamFromTournament(long teamId, long tournamentId)
         {

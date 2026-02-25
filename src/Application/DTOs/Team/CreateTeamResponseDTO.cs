@@ -1,4 +1,4 @@
 ﻿namespace Application.DTOs.Team
 {
-    public record CreateTeamResponseDTO(long id);
+    public record CreateTeamResponseDTO(long Id);
 }

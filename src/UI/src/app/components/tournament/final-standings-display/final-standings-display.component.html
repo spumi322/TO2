@@ -25,7 +25,7 @@
             <div class="team-avatar">{{ standing.teamName.charAt(0) }}</div>
             <div class="team-details">
               <div class="team-name">{{ standing.teamName }}</div>
-              <div class="team-eliminated" *ngIf="standing.status !== 4">
+              <div class="team-eliminated" *ngIf="standing.status !== 4 && standing.eliminatedInRound > 0">
                 Eliminated in Round {{ standing.eliminatedInRound }}
               </div>
               <div class="team-champion" *ngIf="standing.status === 4">

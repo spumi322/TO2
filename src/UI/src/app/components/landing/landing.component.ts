@@ -7,42 +7,54 @@ import { Component } from '@angular/core';
 })
 export class LandingComponent {
 
-  features = [
+  formats = [
     {
-      icon: 'shield',
-      title: 'Multi-Tenant Isolation',
-      description: 'Your organization, your data. Complete data isolation ensures your tournaments stay private and secure.'
+      icon: 'pi-table',
+      name: 'Groups Only',
+      tag: '',
+      description: 'Pure round-robin competition. Every team plays every other team. Final standings decided by wins and losses.',
+      features: ['Round-robin scheduling', 'Automatic standings', 'Configurable groups', 'Fair tiebreakers']
     },
     {
-      icon: 'tournament',
-      title: 'Bracket + Groups Support',
-      description: 'Run comprehensive tournaments with group stages and playoff brackets, or go straight to elimination.'
+      icon: 'pi-sitemap',
+      name: 'Bracket Only',
+      tag: '',
+      description: 'Classic single-elimination. Win or go home. Bracket generated automatically from seeded teams.',
+      features: ['Auto-generated bracket', 'Best-of series', 'Automatic advancement', 'Clear champion']
     },
     {
-      icon: 'auto_awesome',
-      title: 'Automated Seeding & Brackets',
-      description: 'Automatic bracket generation and team seeding based on group results. No manual work required.'
+      icon: 'pi-star',
+      name: 'Groups + Bracket',
+      tag: 'Most Popular',
+      description: 'The complete package. Group stage determines seeding, top teams advance to the knockout bracket.',
+      features: ['Group stage', 'Playoff bracket', 'Auto-seeding from groups', 'Full tournament lifecycle']
     }
+  ];
+
+  features = [
+    { icon: 'pi-bolt', title: 'Real-Time Updates', description: 'Live scores and bracket changes the moment results are recorded. No refreshing needed.' },
+    { icon: 'pi-shield', title: 'Org Isolation', description: 'Your tournaments stay private. Complete data isolation — no cross-tenant access possible.' },
+    { icon: 'pi-sitemap', title: 'Auto Brackets', description: 'Bracket generation and team seeding from group results happens automatically.' },
+    { icon: 'pi-users', title: 'Team Management', description: 'Register teams, control registration windows, and manage your roster in one place.' },
+    { icon: 'pi-chart-bar', title: 'Live Standings', description: 'Automatic standings with win/loss tracking and tiebreaker resolution.' },
+    { icon: 'pi-lock', title: 'State Enforcement', description: 'Tournament lifecycle is enforced. Invalid transitions are blocked — no broken states.' }
   ];
 
   steps = [
     {
-      number: '1',
-      title: 'Create Organization',
-      description: 'Sign up and create your organization in seconds'
+      number: '01',
+      title: 'Create Your Organization',
+      description: 'Sign up and get your private workspace instantly. All your data stays isolated and secure.'
     },
     {
-      number: '2',
-      title: 'Setup Tournament',
-      description: 'Configure format, teams, and tournament structure'
+      number: '02',
+      title: 'Configure a Tournament',
+      description: 'Choose format, set team count, pick best-of series. Ready to go in under a minute.'
     },
     {
-      number: '3',
-      title: 'Run Matches',
-      description: 'Record results and let the system handle the rest'
+      number: '03',
+      title: 'Run & Track Live',
+      description: 'Add teams, start the tournament, record results. Standings and brackets update automatically.'
     }
   ];
-
-  constructor() {}
-
 }

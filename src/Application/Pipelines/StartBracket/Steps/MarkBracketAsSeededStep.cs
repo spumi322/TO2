@@ -27,7 +27,6 @@ namespace Application.Pipelines.StartBracket.Steps
                 context.TournamentId);
 
             context.BracketStanding.IsSeeded = true;
-            await _standingRepository.UpdateAsync(context.BracketStanding);
 
             _logger.LogInformation("Marked bracket '{BracketName}' as seeded for tournament {TournamentId}",
                 context.BracketStanding.Name, context.TournamentId);

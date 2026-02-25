@@ -29,7 +29,6 @@ namespace Application.Pipelines.StartGroups.Steps
             foreach (var standing in context.GroupStandings)
             {
                 standing.IsSeeded = true;
-                await _standingRepository.UpdateAsync(standing);
                 _logger.LogInformation("Marked {StandingName} as seeded", standing.Name);
             }
 

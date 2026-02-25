@@ -15,7 +15,6 @@ namespace Infrastructure.Profiles
             CreateMap<CreateTournamentRequestDTO, Tournament>();
             CreateMap<Tournament, CreateTournamentResponseDTO>();
             CreateMap<Tournament, GetTournamentResponseDTO>();
-            CreateMap<Tournament, GetTournamentListResponseDTO>();
             CreateMap<Tournament, UpdateTournamentResponseDTO>();
             CreateMap<UpdateTournamentRequestDTO, Tournament>();
             CreateMap<CreateTeamRequestDTO, Team>();
@@ -25,11 +24,7 @@ namespace Infrastructure.Profiles
             CreateMap<UpdateTeamRequestDTO, Team>();
             CreateMap<Team, GetAllTeamsResponseDTO>();
             CreateMap<GetTeamResponseDTO, Team>();
-            CreateMap<Group, GetTeamWithStatsResponseDTO>()
-                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.TeamName))
-                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TeamId));
-
-            CreateMap<Group, GroupTeamDTO>()
+            CreateMap<GroupEntry, GroupTeamDTO>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.TeamName))
                 .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.TeamId))
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => (int)src.Status));

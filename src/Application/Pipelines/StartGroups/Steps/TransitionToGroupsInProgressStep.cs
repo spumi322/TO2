@@ -37,8 +37,6 @@ namespace Application.Pipelines.StartGroups.Steps
                 _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.GroupsInProgress);
                 context.Tournament.Status = TournamentStatus.GroupsInProgress;
 
-                await _tournamentRepository.UpdateAsync(context.Tournament);
-
                 // Store in context
                 context.NewStatus = TournamentStatus.GroupsInProgress;
 

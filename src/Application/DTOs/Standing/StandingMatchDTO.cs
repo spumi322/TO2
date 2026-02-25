@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.DTOs.Standing
+﻿namespace Application.DTOs.Standing
 {
     // Consolidated match DTO for both groups and bracket
     public record StandingMatchDTO

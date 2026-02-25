@@ -50,8 +50,7 @@
         <div class="tab-content">
           <app-standing-group
             [tournament]="tournament"
-            [groups]="groups"
-            (matchFinished)="onGroupMatchFinished($event)">
+            [groups]="groups">
           </app-standing-group>
         </div>
       </p-tabPanel>
@@ -63,8 +62,7 @@
             [tournament]="tournament"
             [standingId]="brackets[0].id"
             [tournamentState]="tournamentState"
-            [teams]="tournament.teams"
-            (matchFinished)="onBracketMatchFinished($event)">
+            [teams]="tournament.teams">
           </app-standing-bracket>
         </div>
       </p-tabPanel>

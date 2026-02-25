@@ -1,5 +1,4 @@
 ﻿using Application.Contracts.Repositories;
-using Application.Pipelines.Common;
 using Domain.AggregateRoots;
 using Domain.Enums;
 using Microsoft.EntityFrameworkCore;

@@ -232,37 +232,6 @@
   line-height: 1;
 }
 
-/* Button Overrides - Use PrimeNG text buttons for clean look */
-/*.action-btn {
-  font-weight: 600 !important;
-}
-
-.create-btn {
-  color: var(--primary-color) !important;
-}
-
-.create-btn:hover {
-  background: rgba(76, 175, 80, 0.1) !important;
-}
-
-.signin-btn {
-  color: var(--text-primary) !important;
-}
-
-.signin-btn:hover {
-  background: var(--bg-elevated) !important;
-}
-
-.register-btn {
-  background: var(--primary-color) !important;
-  border: none !important;
-  color: white !important;
-}
-
-.register-btn:hover {
-  background: var(--primary-hover) !important;
-}*/
-
 /* User menu styling handled by PrimeNG Menu component */
 
 /* Responsive Design */

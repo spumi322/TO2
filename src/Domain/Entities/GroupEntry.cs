@@ -4,11 +4,11 @@ using Domain.Enums;
 
 namespace Domain.Entities
 {
-    public class Group : EntityBase
+    public class GroupEntry : EntityBase
     {
-        private Group() { }
+        private GroupEntry() { }
 
-        public Group(long tournamentId, long standingId, Team team)
+        public GroupEntry(long tournamentId, long standingId, Team team)
         {
             TournamentId = tournamentId;
             StandingId = standingId;
@@ -18,7 +18,7 @@ namespace Domain.Entities
         }
 
         // Constructor without Team entity to avoid EF Core tracking conflicts
-        public Group(long tournamentId, long standingId, long teamId, string teamName)
+        public GroupEntry(long tournamentId, long standingId, long teamId, string teamName)
         {
             TournamentId = tournamentId;
             StandingId = standingId;

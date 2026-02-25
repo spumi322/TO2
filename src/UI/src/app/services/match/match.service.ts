@@ -1,11 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Match } from '../../models/match';
-import { BehaviorSubject, Observable, map, tap } from 'rxjs';
-import { Team } from '../../models/team';
+import { Observable } from 'rxjs';
 import { Game } from '../../models/game';
-import { Time } from '@angular/common';
-import { MatchFinishedIds, MatchResult } from '../../models/matchresult';
 import { GameResult, GameProcessResult } from '../../models/gameresult';
 import { environment } from '../../../environments/environment';
 
@@ -14,21 +11,17 @@ import { environment } from '../../../environments/environment';
 })
 export class MatchService {
   private apiUrl = `${environment.apiUrl}/matches`;
-  public matchUpdated = new BehaviorSubject<Match | null>(null);
-
-  matchUpdated$ = this.matchUpdated.asObservable();
-
   constructor(private http: HttpClient) { }
 
   getMatchesByStandingId(standingId: number): Observable<Match[]> {
-    return this.http.get<Match[]>(`${this.apiUrl}/all/${standingId}`);
+    return this.http.get<Match[]>(`${this.apiUrl}?standingId=${standingId}`);
   }
 
   getAllGamesByMatch(matchId: number): Observable<Game[]> {
-    return this.http.get<Game[]>(`${this.apiUrl}/games/${matchId}`);
+    return this.http.get<Game[]>(`${this.apiUrl}/${matchId}/games`);
   }
 
   setGameResult(request: GameResult): Observable<GameProcessResult> {
-    return this.http.put<GameProcessResult>(`${this.apiUrl}/${request.gameId}/result`, request);
+    return this.http.put<GameProcessResult>(`${this.apiUrl}/${request.matchId}/games/${request.gameId}/result`, request);
   }
 }

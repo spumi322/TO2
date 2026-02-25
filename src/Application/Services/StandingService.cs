@@ -58,6 +58,31 @@ namespace Application.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        public async Task InitializeStandingsForTournamentAsync(
+            long tournamentId, Format format, int maxTeams, int? teamsPerGroup, int? teamsPerBracket)
+        {
+            var metadata = _formatService.GetFormatMetadata(format);
+
+            if (metadata.RequiresBracket)
+            {
+                var standing = new Standing("Main Bracket", teamsPerBracket, StandingType.Bracket);
+                standing.TournamentId = tournamentId;
+                await _standingRepository.AddAsync(standing);
+            }
+
+            if (metadata.RequiresGroups && teamsPerGroup.HasValue)
+            {
+                int groupCount = _formatService.CalculateNumberOfGroups(format, maxTeams, teamsPerGroup.Value);
+                for (int i = 0; i < groupCount; i++)
+                {
+                    var standing = new Standing($"Group {i + 1}", teamsPerGroup, StandingType.Group);
+                    standing.TournamentId = tournamentId;
+                    await _standingRepository.AddAsync(standing);
+                }
+            }
+            // No SaveChangesAsync — caller controls persistence
+        }
+
         public async Task<List<Standing>> GetStandingsAsync(long tournamentId)
         {
             var standings = await _standingRepository.FindAllAsync(s => s.TournamentId == tournamentId);
@@ -86,7 +111,18 @@ namespace Application.Services
                 ?? throw new NotFoundException("Standing", standingId);
 
             standing.IsFinished = true;
-            await _standingRepository.UpdateAsync(standing);
+        }
+
+        public async Task FinalizeGroupTeams(long standingId)
+        {
+            var groupEntries = await _groupRepository.GetByStandingIdOrderedAsync(standingId);
+            int position = 1;
+            foreach (var entry in groupEntries)
+            {
+                entry.Status = position == 1 ? TeamStatus.Champion : TeamStatus.Eliminated;
+                entry.Eliminated = position != 1;
+                position++;
+            }
         }
 
         public async Task<bool> CheckAllGroupsAreFinished(long tournamentId)
@@ -167,7 +203,6 @@ namespace Application.Services
                 foreach (var groupEntry in rankedTeams)
                 {
                     groupEntry.Status = TeamStatus.Advanced;
-                    await _groupRepository.UpdateAsync(groupEntry);
 
                     var team = await _teamRepository.GetByIdAsync(groupEntry.TeamId);
                     if (team != null)
@@ -189,7 +224,6 @@ namespace Application.Services
                 {
                     groupEntry.Status = TeamStatus.Eliminated;
                     groupEntry.Eliminated = true;
-                    await _groupRepository.UpdateAsync(groupEntry);
                     _logger.LogInformation("Team {TeamName} eliminated from {GroupName}", groupEntry.TeamName, group.Name);
                 }
             }
@@ -233,7 +267,6 @@ namespace Application.Services
                 foreach (var groupEntry in advancing)
                 {
                     groupEntry.Status = TeamStatus.Advanced;
-                    await _groupRepository.UpdateAsync(groupEntry);
 
                     // Fetch Team entity using repository
                     var team = await _teamRepository.GetByIdAsync(groupEntry.TeamId);
@@ -249,7 +282,6 @@ namespace Application.Services
                 {
                     groupEntry.Status = TeamStatus.Eliminated;
                     groupEntry.Eliminated = true;
-                    await _groupRepository.UpdateAsync(groupEntry);
                     _logger.LogInformation($"Team {groupEntry.TeamName} eliminated from {group.Name}");
                 }
             }
@@ -272,7 +304,8 @@ namespace Application.Services
 
             if (bracketStanding == null)
             {
-                return new List<TeamPlacementDTO>();
+                // No bracket (GroupsOnly) — read from stored TournamentTeam records
+                return await GetFinalResultsFromTournamentTeams(tournamentId);
             }
 
             // Get all bracket matches using repository
@@ -365,9 +398,31 @@ namespace Application.Services
             return standings;
         }
 
-        public async Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateFinalPlacements(long standingId)
+        private async Task<List<TeamPlacementDTO>> GetFinalResultsFromTournamentTeams(long tournamentId)
         {
-            _logger.LogInformation($"=== Calculating final placements for standing {standingId} ===");
+            var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(
+                tt => tt.TournamentId == tournamentId && tt.FinalPlacement != null);
+
+            var teamIds = tournamentTeams.Select(tt => tt.TeamId).ToHashSet();
+            var allTeams = await _teamRepository.GetAllAsync();
+            var teamNameLookup = allTeams.Where(t => teamIds.Contains(t.Id)).ToDictionary(t => t.Id, t => t.Name);
+
+            return tournamentTeams
+                .OrderBy(tt => tt.FinalPlacement)
+                .ThenBy(tt => tt.TeamId)
+                .Select(tt => new TeamPlacementDTO(
+                    tt.TeamId,
+                    teamNameLookup.GetValueOrDefault(tt.TeamId, "Unknown Team"),
+                    tt.FinalPlacement!.Value,
+                    tt.FinalPlacement == 1 ? TeamStatus.Champion : TeamStatus.Eliminated,
+                    tt.EliminatedInRound ?? 0
+                ))
+                .ToList();
+        }
+
+        public async Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateBracketPlacements(long standingId)
+        {
+            _logger.LogInformation($"=== Calculating bracket placements for standing {standingId} ===");
 
             var placements = new List<(long TeamId, int Placement, int? EliminatedInRound)>();
 
@@ -433,6 +488,37 @@ namespace Application.Services
             return placements;
         }
 
+        public async Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateGroupOnlyPlacements(long tournamentId)
+        {
+            _logger.LogInformation($"=== Calculating group-only placements for tournament {tournamentId} ===");
+
+            var placements = new List<(long TeamId, int Placement, int? EliminatedInRound)>();
+
+            var standings = await GetStandingsAsync(tournamentId);
+            var groupStandings = standings.Where(s => s.StandingType == StandingType.Group).ToList();
+
+            foreach (var group in groupStandings)
+            {
+                var teams = await _groupRepository.GetByStandingIdOrderedAsync(group.Id);
+                int position = 1;
+
+                foreach (var team in teams)
+                {
+                    placements.Add((team.TeamId, position, null));
+
+                    // Set group team status: 1st = Champion, rest = Eliminated
+                    team.Status = position == 1 ? TeamStatus.Champion : TeamStatus.Eliminated;
+                    team.Eliminated = position != 1;
+
+                    _logger.LogInformation($"  {group.Name}: Team {team.TeamName} = position {position}, status {team.Status}");
+                    position++;
+                }
+            }
+
+            _logger.LogInformation($"Calculated {placements.Count} group-only placements");
+            return placements;
+        }
+
         public async Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements)
         {
             _logger.LogInformation($"=== Storing final results for tournament {tournamentId} ===");
@@ -458,19 +544,11 @@ namespace Application.Services
                     tournamentTeam.EliminatedInRound = placement.EliminatedInRound;
                     tournamentTeam.ResultFinalizedAt = now;
 
-                    await _tournamentTeamRepository.UpdateAsync(tournamentTeam);
                     _logger.LogInformation($"  Team {placement.TeamId}: Placement {placement}, Eliminated Round {placement.EliminatedInRound.ToString() ?? "N/A"}");
                 }
 
                 _logger.LogInformation($"✓ Stored {placements.Count} final results");
             }
-        }
-
-        public async Task<List<GetTeamWithStatsResponseDTO>> GetTeamsWithStatsAsync(long standingId)
-        {
-            var participants = await _groupRepository.FindAllAsync(p => p.StandingId == standingId);
-
-            return _mapper.Map<List<GetTeamWithStatsResponseDTO>>(participants);
         }
 
         private int CalculateTeamWins(Match match, long? teamId)

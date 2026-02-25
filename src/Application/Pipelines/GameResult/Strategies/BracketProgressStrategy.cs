@@ -144,9 +144,6 @@ namespace Application.Pipelines.GameResult.Strategies
             // Update all games in the next match with the new team IDs
             await _gameService.UpdateGamesTeamIds(nextMatch.Id, nextMatch.TeamAId, nextMatch.TeamBId);
 
-            // Save the updated match
-            await _matchRepository.UpdateAsync(nextMatch);
-
             _logger.LogInformation("Winner advanced to next round successfully");
         }
     }

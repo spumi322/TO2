@@ -9,34 +9,27 @@
   <tbody>
     <tr *ngFor="let match of matches; trackBy: trackByMatchId">
       <!-- Team A -->
-      <td [ngClass]="{'winner': match.winnerId === match.teamAId, 'loser': match.loserId === match.teamAId}">
+      <td [ngClass]="{
+            'winner': match.winnerId === match.teamAId,
+            'loser': match.loserId === match.teamAId,
+            'clickable-team': !match.winnerId && !isUpdating[match.id] && !isGroupFinished
+          }"
+          (click)="!match.winnerId && !isUpdating[match.id] && !isGroupFinished && updateMatchScore(match.id, match.teamAId)">
         {{ getTeamName(match.teamAId) }}
       </td>
 
-      <!-- Score Controls -->
-      <td>
-        <button pButton
-                type="button"
-                icon="pi pi-plus"
-                class="p-button-rounded p-button-primary"
-                (click)="updateMatchScore(match.id, match.teamAId)"
-                [disabled]="match.winnerId || isUpdating[match.id] || isGroupFinished">
-        </button>
-
-        <span *ngIf="!isUpdating[match.id]">{{ match.teamAWins }} - {{ match.teamBWins }}</span>
-        <span *ngIf="isUpdating[match.id]" class="loading-spinner">Updating...</span>
-
-        <button pButton
-                type="button"
-                icon="pi pi-plus"
-                class="p-button-rounded p-button-primary"
-                (click)="updateMatchScore(match.id, match.teamBId)"
-                [disabled]="match.winnerId || isUpdating[match.id] || isGroupFinished">
-        </button>
+      <!-- Score -->
+      <td [class.score-updating]="isUpdating[match.id]">
+        {{ match.teamAWins }} - {{ match.teamBWins }}
       </td>
 
       <!-- Team B -->
-      <td [ngClass]="{'winner': match.winnerId === match.teamBId, 'loser': match.loserId === match.teamBId}">
+      <td [ngClass]="{
+            'winner': match.winnerId === match.teamBId,
+            'loser': match.loserId === match.teamBId,
+            'clickable-team': !match.winnerId && !isUpdating[match.id] && !isGroupFinished
+          }"
+          (click)="!match.winnerId && !isUpdating[match.id] && !isGroupFinished && updateMatchScore(match.id, match.teamBId)">
         {{ getTeamName(match.teamBId) }}
       </td>
     </tr>

@@ -42,14 +42,10 @@ export class TournamentContextService {
 
     try {
       const token = this.authService.getAccessToken();
-      if (!token) {
-        console.log('[TournamentContext] No auth token, skipping SignalR initialization');
-        return;
-      }
+      if (!token) return;
 
       await this.signalRService.startConnection(() => this.authService.getAccessToken());
       this.signalRInitialized = true;
-      console.log('[TournamentContext] SignalR connection initialized');
     } catch (err) {
       console.error('[TournamentContext] Failed to initialize SignalR:', err);
       // Don't set initialized flag, allow retry
@@ -83,17 +79,13 @@ export class TournamentContextService {
 
       // Leave previous tournament if exists
       if (this.currentTournamentId && this.currentTournamentId !== tournament?.id) {
-        await this.signalRService.leaveTournament(this.currentTournamentId).catch(err =>
-          console.warn('[TournamentContext] Failed to leave tournament:', err)
-        );
+        await this.signalRService.leaveTournament(this.currentTournamentId).catch(() => {});
       }
 
       // Join new tournament
       if (tournament?.id) {
         this.currentTournamentId = tournament.id;
-        await this.signalRService.joinTournament(tournament.id).catch(err =>
-          console.warn('[TournamentContext] Failed to join tournament:', err)
-        );
+        await this.signalRService.joinTournament(tournament.id).catch(() => {});
       } else {
         this.currentTournamentId = null;
       }
@@ -176,7 +168,7 @@ export class TournamentContextService {
       // Strategy 2: Minimal patch - replace match only
       this.patchMatchInStandings(event.match);
     } else {
-      console.warn('[TournamentContext] GameUpdated event missing both standing and match data:', event);
+      console.error('[TournamentContext] GameUpdated event missing both standing and match data:', event);
     }
 
     // Update tournament status if changed

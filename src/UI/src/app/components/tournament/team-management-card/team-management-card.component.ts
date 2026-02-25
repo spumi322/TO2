@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { Tournament } from '../../../models/tournament';
 
 @Component({
@@ -29,7 +29,7 @@ export class TeamManagementCardComponent implements OnInit, OnDestroy {
     });
 
     // Reset submitted flag when user starts typing after a failed submission
-    this.bulkAddForm.get('teamNames')?.valueChanges.subscribe(() => {
+    this.bulkAddForm.get('teamNames')?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
       if (this.submitted && this.bulkAddForm.valid) {
         this.submitted = false;  // Clear errors when form becomes valid
       }

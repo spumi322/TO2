@@ -158,21 +158,21 @@ namespace Tests.Helpers
 
         public static class Groups
         {
-            public static Group Create(
+            public static GroupEntry Create(
                 long tournamentId,
                 long standingId,
                 Team team)
             {
-                return new Group(tournamentId, standingId, team);
+                return new GroupEntry(tournamentId, standingId, team);
             }
 
-            public static Group CreateWithIds(
+            public static GroupEntry CreateWithIds(
                 long tournamentId,
                 long standingId,
                 long teamId,
                 string teamName)
             {
-                return new Group(tournamentId, standingId, teamId, teamName);
+                return new GroupEntry(tournamentId, standingId, teamId, teamName);
             }
         }
     }
