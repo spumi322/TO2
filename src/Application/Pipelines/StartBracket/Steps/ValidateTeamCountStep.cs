@@ -24,17 +24,17 @@ namespace Application.Pipelines.StartBracket.Steps
 
             int teamCount = context.AdvancedTeams.Count;
 
-            if (!BracketSeedingUtility.IsPowerOfTwo(teamCount))
+            if (teamCount < 2)
             {
                 context.Success = false;
-                context.Message = $"Team count must be power of 2 for single elimination. Got {teamCount} teams";
-                _logger.LogWarning("Invalid team count {TeamCount} for tournament {TournamentId}. Must be power of 2.",
+                context.Message = $"At least 2 teams are required to start a bracket. Got {teamCount}";
+                _logger.LogWarning("Insufficient team count {TeamCount} for tournament {TournamentId}.",
                     teamCount, context.TournamentId);
                 return Task.FromResult(false);
             }
 
-            _logger.LogInformation("Team count {TeamCount} validated for tournament {TournamentId}",
-                teamCount, context.TournamentId);
+            _logger.LogInformation("Team count {TeamCount} validated for tournament {TournamentId} (bracket size will be {BracketSize})",
+                teamCount, context.TournamentId, BracketSeedingUtility.NextPowerOfTwo(teamCount));
 
             return Task.FromResult(true); // Continue to next step
         }

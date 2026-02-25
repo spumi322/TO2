@@ -20,7 +20,7 @@ namespace Application.Pipelines.StartBracket.Contracts
         public List<Team> AdvancedTeams { get; set; } = new();
 
         // Computed data
-        public List<(Team teamA, Team teamB)> SeededPairs { get; set; } = new();
+        public List<(Team? teamA, Team? teamB)> SeededPairs { get; set; } = new();
         public int TotalRounds { get; set; }
 
         // Output

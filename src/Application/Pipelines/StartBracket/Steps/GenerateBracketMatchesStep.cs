@@ -43,25 +43,37 @@ namespace Application.Pipelines.StartBracket.Steps
                     {
                         if (round == 1)
                         {
-                            // Round 1: Use actual teams from seeding
                             var pairIndex = seed - 1;
                             var (teamA, teamB) = context.SeededPairs[pairIndex];
 
-                            var match = await _matchService.GenerateMatch(teamA, teamB, round, seed, context.BracketStanding.Id);
-                            var gameResponse = await _gameService.GenerateGames(match);
-
-                            if (!gameResponse.Success)
+                            // BYE match: one team is null — auto-resolve immediately
+                            if (teamA == null || teamB == null)
                             {
-                                context.Success = false;
-                                context.Message = $"Failed to generate games for match: {gameResponse.Message}";
-                                _logger.LogError("Failed to generate games for R{Round} Match {Seed}: {Message}",
-                                    round, seed, gameResponse.Message);
-                                return false;
+                                var realTeam = teamA ?? teamB!;
+                                var match = await _matchService.GenerateMatch(realTeam, null, round, seed, context.BracketStanding.Id);
+                                match.WinnerId = realTeam.Id;
+                                matchesGenerated++;
+                                _logger.LogInformation("R{Round} Match {Seed}: {TeamA} vs BYE (auto-resolved)",
+                                    round, seed, realTeam.Name);
                             }
+                            else
+                            {
+                                var match = await _matchService.GenerateMatch(teamA, teamB, round, seed, context.BracketStanding.Id);
+                                var gameResponse = await _gameService.GenerateGames(match);
 
-                            matchesGenerated++;
-                            _logger.LogInformation("R{Round} Match {Seed}: {TeamA} vs {TeamB}",
-                                round, seed, teamA.Name, teamB.Name);
+                                if (!gameResponse.Success)
+                                {
+                                    context.Success = false;
+                                    context.Message = $"Failed to generate games for match: {gameResponse.Message}";
+                                    _logger.LogError("Failed to generate games for R{Round} Match {Seed}: {Message}",
+                                        round, seed, gameResponse.Message);
+                                    return false;
+                                }
+
+                                matchesGenerated++;
+                                _logger.LogInformation("R{Round} Match {Seed}: {TeamA} vs {TeamB}",
+                                    round, seed, teamA.Name, teamB.Name);
+                            }
                         }
                         else
                         {

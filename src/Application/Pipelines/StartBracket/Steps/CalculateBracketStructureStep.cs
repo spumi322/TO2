@@ -22,20 +22,17 @@ namespace Application.Pipelines.StartBracket.Steps
             _logger.LogInformation("Step 5: Calculating bracket structure for tournament {TournamentId}",
                 context.TournamentId);
 
-            int teamCount = context.AdvancedTeams.Count;
-            int totalRounds = (int)Math.Log2(teamCount);
+            var paddedTeams = BracketSeedingUtility.PadToPowerOfTwo(context.AdvancedTeams);
+            int totalRounds = (int)Math.Log2(paddedTeams.Count);
+            int byeCount = paddedTeams.Count - context.AdvancedTeams.Count;
 
-            // Create seeding pairs using bracket seeding utility
-            var seededPairs = BracketSeedingUtility.CreateSingleEliminationPairs(
-                context.AdvancedTeams,
-                _logger);
+            var seededPairs = BracketSeedingUtility.CreateSingleEliminationPairs(paddedTeams, _logger);
 
-            // Store in context
             context.TotalRounds = totalRounds;
             context.SeededPairs = seededPairs;
 
-            _logger.LogInformation("Created bracket with {TotalRounds} rounds and {PairCount} first-round pairings for tournament {TournamentId}",
-                totalRounds, seededPairs.Count, context.TournamentId);
+            _logger.LogInformation("Bracket: {TeamCount} teams → size {BracketSize} ({ByeCount} BYEs), {TotalRounds} rounds, {PairCount} R1 pairings for tournament {TournamentId}",
+                context.AdvancedTeams.Count, paddedTeams.Count, byeCount, totalRounds, seededPairs.Count, context.TournamentId);
 
             return Task.FromResult(true); // Continue to next step
         }

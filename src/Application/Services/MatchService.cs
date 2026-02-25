@@ -47,8 +47,8 @@ namespace Application.Services
                     StandingId = standingId,
                     Round = round,
                     Seed = seed,
-                    TeamAId = teamA?.Id ?? 0,
-                    TeamBId = teamB?.Id ?? 0,
+                    TeamAId = teamA?.Id,
+                    TeamBId = teamB?.Id,
                     BestOf = defaultBestOf
                 };
             }
