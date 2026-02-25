@@ -12,7 +12,7 @@ namespace Application.Contracts
         DbSet<Player> Players { get; }
         DbSet<Standing> Standings { get; }
         DbSet<Game> Games { get; }
-        DbSet<Group> GroupEntries { get; }
+        DbSet<GroupEntry> GroupEntries { get; }
         DbSet<TournamentTeam> TournamentTeams { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);

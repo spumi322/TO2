@@ -35,7 +35,7 @@ namespace Infrastructure.Persistence
         public DbSet<Player> Players { get; set; }
         public DbSet<Standing> Standings { get; set; }
         public DbSet<Game> Games { get; set; }
-        public DbSet<Group> GroupEntries { get; set; }
+        public DbSet<GroupEntry> GroupEntries { get; set; }
         public DbSet<TournamentTeam> TournamentTeams { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
@@ -118,7 +118,7 @@ namespace Infrastructure.Persistence
             modelBuilder.Entity<Team>().HasQueryFilter(t => t.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<Match>().HasQueryFilter(m => m.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<Standing>().HasQueryFilter(s => s.TenantId == GetCurrentTenantId());
-            modelBuilder.Entity<Group>().HasQueryFilter(g => g.TenantId == GetCurrentTenantId());
+            modelBuilder.Entity<GroupEntry>().HasQueryFilter(g => g.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<Game>().HasQueryFilter(g => g.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<TournamentTeam>().HasQueryFilter(tt => tt.TenantId == GetCurrentTenantId());
 

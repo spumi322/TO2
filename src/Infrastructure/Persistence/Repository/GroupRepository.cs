@@ -4,20 +4,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Persistence.Repository
 {
-    public class GroupRepository : Repository<Group>, IGroupRepository
+    public class GroupRepository : Repository<GroupEntry>, IGroupRepository
     {
         public GroupRepository(TO2DbContext dbContext) : base(dbContext) { }
 
-        public async Task<IReadOnlyList<Group>> GetByStandingIdAsync(long standingId)
+        public async Task<IReadOnlyList<GroupEntry>> GetByStandingIdAsync(long standingId)
             => await _dbSet.Where(g => g.StandingId == standingId).ToListAsync();
 
-        public async Task<IReadOnlyList<Group>> GetByTournamentIdAsync(long tournamentId)
+        public async Task<IReadOnlyList<GroupEntry>> GetByTournamentIdAsync(long tournamentId)
             => await _dbSet.Where(g => g.TournamentId == tournamentId).ToListAsync();
 
-        public async Task<Group?> GetByTeamAndTournamentAsync(long teamId, long tournamentId)
+        public async Task<GroupEntry?> GetByTeamAndTournamentAsync(long teamId, long tournamentId)
             => await _dbSet.FirstOrDefaultAsync(g => g.TeamId == teamId && g.TournamentId == tournamentId);
 
-        public async Task<IReadOnlyList<Group>> GetByStandingIdOrderedAsync(long standingId)
+        public async Task<IReadOnlyList<GroupEntry>> GetByStandingIdOrderedAsync(long standingId)
             => await _dbSet
                 .Where(g => g.StandingId == standingId)
                 .OrderByDescending(g => g.Points)

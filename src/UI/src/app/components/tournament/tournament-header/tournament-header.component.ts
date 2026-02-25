@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Tournament, TournamentStateDTO, TournamentStatus, Format } from '../../../models/tournament';
 import { TournamentStatusLabel } from '../tournament-status-label/tournament-status-label';
 import { FormatConfig } from '../../../utils/format-config';
+import { StatusConfig } from '../../../utils/status-config';
 
 @Component({
   selector: 'app-tournament-header',
@@ -26,23 +27,7 @@ export class TournamentHeaderComponent {
   }
 
   getStatusClass(status: TournamentStatus): string {
-    switch (status) {
-      case TournamentStatus.Setup:
-        return 'status-setup';
-      case TournamentStatus.SeedingGroups:
-      case TournamentStatus.SeedingBracket:
-        return 'status-seeding';
-      case TournamentStatus.GroupsInProgress:
-      case TournamentStatus.GroupsCompleted:
-      case TournamentStatus.BracketInProgress:
-        return 'status-ongoing';
-      case TournamentStatus.Finished:
-        return 'status-finished';
-      case TournamentStatus.Cancelled:
-        return 'status-cancelled';
-      default:
-        return '';
-    }
+    return StatusConfig.getStatusClass(status);
   }
 
   getStatusLabel(status: TournamentStatus): string {

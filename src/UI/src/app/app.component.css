@@ -4,10 +4,12 @@
 
 :host {
   max-width: 1920px;
-  padding: 2rem;
-  text-align: center;
   background-color: var(--bg-dark);
   color: var(--text-primary);
+}
+
+main.with-navbar {
+  padding-top: 64px;
 }
 
 /* Table styling */
@@ -52,6 +54,5 @@ th {
 @media (max-width: 1200px) {
   :host {
     max-width: 100%;
-    padding: 1.5rem;
   }
 }

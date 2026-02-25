@@ -8,8 +8,6 @@ namespace Application.DTOs.Tournament
         bool IsActiveState,
         bool CanScoreMatches,
         bool CanModifyTeams,
-        string StatusDisplayName,
-        string StatusDescription,
         byte[]? RowVersion
     );
 }

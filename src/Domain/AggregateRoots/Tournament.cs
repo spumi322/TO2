@@ -10,7 +10,7 @@ namespace Domain.AggregateRoots
     public class Tournament : AggregateRootBase
     {
         private readonly List<Standing> _standings = new();
-        private readonly List<Group> _tournamentParticipants = new();
+        private readonly List<GroupEntry> _tournamentParticipants = new();
 
         private Tournament() { }
 
@@ -57,6 +57,6 @@ namespace Domain.AggregateRoots
 
         public IReadOnlyList<Standing> Standings => _standings;
 
-        public IReadOnlyList<Group> TournamentParticipants => _tournamentParticipants;
+        public IReadOnlyList<GroupEntry> TournamentParticipants => _tournamentParticipants;
     }
 }

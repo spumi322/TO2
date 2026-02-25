@@ -49,35 +49,7 @@ body {
   margin-bottom: 16px;
 }
 
-/* Snackbar Classes (for backwards compatibility during migration) */
-.success-snackbar {
-  background: var(--p-green-500) !important;
-  color: white !important;
-  font-weight: 600;
-}
 
-.error-snackbar {
-  background: var(--p-red-500) !important;
-  color: white !important;
-  font-weight: 600;
-}
-
-/* Body padding for fixed navbar */
-body {
-  padding-top: 64px;
-}
-
-@media (max-width: 768px) {
-  body {
-    padding-top: 64px;
-  }
-}
-
-@media (max-width: 480px) {
-  body {
-    padding-top: 56px;
-  }
-}
 
 /* PrimeNG Dark Mode Component Overrides - Minimal Global Theming */
 /* Using cleaner approach without excessive !important flags */
@@ -153,14 +125,43 @@ body {
 .p-toast .p-toast-message {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.p-toast .p-toast-message-summary {
+  color: var(--text-primary);
+}
+
+.p-toast .p-toast-message-detail {
+  color: var(--text-muted);
 }
 
 .p-toast .p-toast-message.p-toast-message-success {
   border-left: 4px solid var(--success-color);
 }
+.p-toast .p-toast-message.p-toast-message-success .p-toast-message-icon {
+  color: var(--success-color);
+}
 
 .p-toast .p-toast-message.p-toast-message-error {
   border-left: 4px solid var(--error-color);
+}
+.p-toast .p-toast-message.p-toast-message-error .p-toast-message-icon {
+  color: var(--error-color);
+}
+
+.p-toast .p-toast-message.p-toast-message-warn {
+  border-left: 4px solid var(--warning-color);
+}
+.p-toast .p-toast-message.p-toast-message-warn .p-toast-message-icon {
+  color: var(--warning-color);
+}
+
+.p-toast .p-toast-message.p-toast-message-info {
+  border-left: 4px solid var(--info-color);
+}
+.p-toast .p-toast-message.p-toast-message-info .p-toast-message-icon {
+  color: var(--info-color);
 }
 
 /* Dialog */

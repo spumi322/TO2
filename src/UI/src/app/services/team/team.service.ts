@@ -11,17 +11,13 @@ export class TeamService {
   private apiUrl = `${environment.apiUrl}/teams`;
   constructor(private http: HttpClient) { }
 
-  // GET /api/teams/all
+  // GET /api/teams
   getAllTeams(): Observable<Team[]> {
-    return this.http.get<Team[]>(`${this.apiUrl}/all`);
+    return this.http.get<Team[]>(this.apiUrl);
   }
 
   addTeamToTournament(tournamentId: number, teamId: number): Observable<any> {
-    const request = {
-      TournamentId: tournamentId,
-      TeamId: teamId
-    };
-    return this.http.post(`${this.apiUrl}/tournamentId/teamId`, request);
+    return this.http.post(`${this.apiUrl}/${tournamentId}/teams/${teamId}`, {});
   }
 
   removeTeamFromTournament(teamId: number, tournamentId: number) {

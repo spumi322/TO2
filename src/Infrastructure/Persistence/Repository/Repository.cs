@@ -46,6 +46,13 @@ namespace Infrastructure.Persistence.Repository
         public async Task AddRangeAsync(IEnumerable<TEntity> entities)
             => await _dbSet.AddRangeAsync(entities);
 
+        // A synchronous in-memory operation — it just marks the entity as modified in EF Core's change tracker. No DB call happens here. 
+        //public Task UpdateAsync(TEntity entity)
+        //{
+        //    _dbContext.Entry(entity).State = EntityState.Modified;
+        //    return Task.CompletedTask;
+        //}
+
         public Task DeleteAsync(TEntity entity)
         {
             _dbSet.Remove(entity);

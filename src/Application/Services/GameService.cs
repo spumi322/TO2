@@ -54,13 +54,7 @@ namespace Application.Services
             return new GenerateGamesDTO(true, $"{games.Count} games generated for match {match.Id}");
         }
 
-        public async Task<Game> GetGameAsync(long gameId)
-        {
-            var game = await _gameRepository.GetByIdAsync(gameId)
-                ?? throw new NotFoundException("Game", gameId);
 
-            return game;
-        }
 
         public async Task<List<Game>> GetAllGamesByMatch(long matchId)
         {

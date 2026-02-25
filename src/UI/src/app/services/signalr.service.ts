@@ -94,7 +94,6 @@ export class SignalRService {
 
   async startConnection(getAccessToken: () => string | null): Promise<void> {
     if (this.hubConnection?.state === HubConnectionState.Connected) {
-      console.log('[SignalR] Already connected');
       return;
     }
 
@@ -110,23 +109,19 @@ export class SignalRService {
 
     // Connection lifecycle handlers
     this.hubConnection.onreconnecting(() => {
-      console.log('[SignalR] Reconnecting...');
       this.connectionState$.next(HubConnectionState.Reconnecting);
     });
 
     this.hubConnection.onreconnected(() => {
-      console.log('[SignalR] Reconnected');
       this.connectionState$.next(HubConnectionState.Connected);
     });
 
     this.hubConnection.onclose(() => {
-      console.log('[SignalR] Connection closed');
       this.connectionState$.next(HubConnectionState.Disconnected);
     });
 
     try {
       await this.hubConnection.start();
-      console.log('[SignalR] Connected successfully');
       this.connectionState$.next(HubConnectionState.Connected);
     } catch (err) {
       console.error('[SignalR] Connection failed:', err);
@@ -139,47 +134,38 @@ export class SignalRService {
     if (!this.hubConnection) return;
 
     this.hubConnection.on('TournamentCreated', (data: TournamentUpdateEvent) => {
-      console.log('[SignalR] TournamentCreated:', data);
       this.tournamentCreated$.next(data);
     });
 
     this.hubConnection.on('TournamentUpdated', (data: TournamentUpdateEvent) => {
-      console.log('[SignalR] TournamentUpdated:', data);
       this.tournamentUpdated$.next(data);
     });
 
     this.hubConnection.on('TeamAdded', (data: TeamEvent) => {
-      console.log('[SignalR] TeamAdded:', data);
       this.teamAdded$.next(data);
     });
 
     this.hubConnection.on('TeamRemoved', (data: TeamEvent) => {
-      console.log('[SignalR] TeamRemoved:', data);
       this.teamRemoved$.next(data);
     });
 
     this.hubConnection.on('GameUpdated', (data: GameUpdatedEvent) => {
-      console.log('[SignalR] GameUpdated:', data);
       this.gameUpdated$.next(data);
     });
 
     this.hubConnection.on('MatchUpdated', (data: MatchEvent) => {
-      console.log('[SignalR] MatchUpdated:', data);
       this.matchUpdated$.next(data);
     });
 
     this.hubConnection.on('StandingUpdated', (data: StandingEvent) => {
-      console.log('[SignalR] StandingUpdated:', data);
       this.standingUpdated$.next(data);
     });
 
     this.hubConnection.on('GroupsStarted', (data: TournamentUpdateEvent) => {
-      console.log('[SignalR] GroupsStarted:', data);
       this.groupsStarted$.next(data);
     });
 
     this.hubConnection.on('BracketStarted', (data: TournamentUpdateEvent) => {
-      console.log('[SignalR] BracketStarted:', data);
       this.bracketStarted$.next(data);
     });
   }
@@ -188,7 +174,6 @@ export class SignalRService {
     if (this.hubConnection?.state === HubConnectionState.Connected) {
       try {
         await this.hubConnection.invoke('JoinTournament', tournamentId);
-        console.log(`[SignalR] Joined tournament ${tournamentId}`);
       } catch (err) {
         console.error('[SignalR] Failed to join tournament:', err);
       }
@@ -199,7 +184,6 @@ export class SignalRService {
     if (this.hubConnection?.state === HubConnectionState.Connected) {
       try {
         await this.hubConnection.invoke('LeaveTournament', tournamentId);
-        console.log(`[SignalR] Left tournament ${tournamentId}`);
       } catch (err) {
         console.error('[SignalR] Failed to leave tournament:', err);
       }
@@ -210,7 +194,6 @@ export class SignalRService {
     if (this.hubConnection) {
       try {
         await this.hubConnection.stop();
-        console.log('[SignalR] Connection stopped');
         this.connectionState$.next(HubConnectionState.Disconnected);
       } catch (err) {
         console.error('[SignalR] Failed to stop connection:', err);

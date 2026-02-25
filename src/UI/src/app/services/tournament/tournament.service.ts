@@ -34,9 +34,9 @@ export class TournamentService {
     );
   }
 
-  // GET /api/tournament-list
+  // GET /api/tournaments
   getTournamentList(): Observable<TournamentList[]> {
-    return this.http.get < TournamentList[] >(`${this.apiUrl}/list`);
+    return this.http.get<TournamentList[]>(this.apiUrl);
   }
 
   // POST /api/tournaments

@@ -2,8 +2,8 @@
   <div class="state-content">
     <i class="pi state-icon" [ngClass]="tournamentState.isTransitionState ? 'pi-spin pi-spinner' : 'pi-info-circle'"></i>
     <div class="state-text">
-      <h3>{{ tournamentState.statusDisplayName }}</h3>
-      <p>{{ tournamentState.statusDescription }}</p>
+      <h3>{{ StatusConfig.getStatusLabel(tournamentState.currentStatus) }}</h3>
+      <p>{{ StatusConfig.getStatusDescription(tournamentState.currentStatus) }}</p>
     </div>
   </div>
 </div>

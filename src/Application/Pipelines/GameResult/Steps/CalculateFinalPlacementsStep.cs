@@ -31,8 +31,10 @@ namespace Application.Pipelines.GameResult.Steps
             var tournamentId = context.Tournament.Id;
             var standingId = context.GameResult.StandingId;
 
-            // Calculate final placements based on bracket results
-            var placements = await _standingService.CalculateFinalPlacements(standingId);
+            // Calculate final placements based on format
+            var placements = context.Tournament.Format == Domain.Enums.Format.GroupsOnly
+                ? await _standingService.CalculateGroupOnlyPlacements(tournamentId)
+                : await _standingService.CalculateBracketPlacements(standingId);
 
             // Save final results to database
             await _standingService.SetFinalResults(tournamentId, placements);

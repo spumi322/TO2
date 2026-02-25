@@ -10,12 +10,14 @@ namespace Application.Contracts
     public interface IStandingService
     {
         Task GenerateStanding(long tournamentId, string name, StandingType type, int? teamsPerStanding);
+        Task InitializeStandingsForTournamentAsync(long tournamentId, Format format, int maxTeams, int? teamsPerGroup, int? teamsPerBracket);
         Task<List<Standing>> GetStandingsAsync(long tournamentId);
         /// <summary>
         /// Checks if any standings finished and marks them. Returns true if a standing was just marked finished.
         /// </summary>
         Task<bool> IsGroupFinished(long standingId);
         Task MarkGroupAsFinished(long standingId);
+        Task FinalizeGroupTeams(long standingId);
         /// <summary>
         /// Checks if all groups are finished. Returns true if all groups finished.
         /// </summary>
@@ -36,9 +38,9 @@ namespace Application.Contracts
         /// Teams pre-sorted by points descending.
         /// </summary>
         Task<List<GetGroupsWithDetailsResponseDTO>> GetGroupsWithDetailsAsync(long tournamentId);
-        Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateFinalPlacements(long standingId);
+        Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateBracketPlacements(long standingId);
+        Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateGroupOnlyPlacements(long tournamentId);
         Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements);
-        Task<List<GetTeamWithStatsResponseDTO>> GetTeamsWithStatsAsync(long standingId);
         Task<GetBracketWithDetailsResponseDTO?> GetBracketWithDetailsAsync(long tournamentId);
 
     }

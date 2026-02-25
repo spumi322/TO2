@@ -2,7 +2,6 @@ import { Component, Input } from '@angular/core';
 import { Tournament, Format, TournamentStatus } from '../../../models/tournament';
 import { Standing } from '../../../models/standing';
 import { FormatConfig } from '../../../utils/format-config';
-import { Status } from 'brackets-model';
 
 @Component({
   selector: 'app-tournament-info-card',

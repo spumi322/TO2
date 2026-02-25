@@ -2,9 +2,15 @@
   <app-navbar></app-navbar>
 </header>
 
-<main>
+<main [class.with-navbar]="showNavbar">
   <router-outlet></router-outlet>
 </main>
 
 <footer>
 </footer>
+
+<p-toast
+  position="top-right"
+  [preventDuplicates]="true"
+  [style]="showNavbar ? {'top': '72px'} : {'top': '16px'}">
+</p-toast>

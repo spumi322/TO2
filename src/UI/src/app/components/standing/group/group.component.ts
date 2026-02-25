@@ -1,10 +1,6 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { Standing } from '../../../models/standing';
-import { StandingService } from '../../../services/standing/standing.service';
-import { Observable, catchError, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { Tournament } from '../../../models/tournament';
-import { TeamService } from '../../../services/team/team.service';
-import { MatchService } from '../../../services/match/match.service';
 import { MatchFinishedIds } from '../../../models/matchresult';
 
 @Component({

@@ -6,7 +6,7 @@ namespace Domain.AggregateRoots
     public class Team : AggregateRootBase
     {
         private readonly List<Player> _players = new();
-        private readonly List<Group> _tournamentParticipants = new();
+        private readonly List<GroupEntry> _tournamentParticipants = new();
 
         private Team() { }
 
@@ -24,6 +24,6 @@ namespace Domain.AggregateRoots
 
         public IReadOnlyList<Player> Players => _players;
 
-        public IReadOnlyList<Group> TournamentParticipants => _tournamentParticipants;
+        public IReadOnlyList<GroupEntry> TournamentParticipants => _tournamentParticipants;
     }
 }

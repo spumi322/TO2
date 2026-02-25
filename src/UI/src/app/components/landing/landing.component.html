@@ -1,97 +1,200 @@
 <div class="landing-page">
-  <!-- Hero Section -->
-  <section class="hero-section">
-    <div class="hero-content">
-      <h1 class="hero-title">Tournament Management for Your Organization</h1>
-      <p class="hero-subtitle">
-        Organize professional tournaments with automated brackets, group stages, and real-time tracking.
-        Built for organizations that demand reliability and data security.
-      </p>
-      <p-button label="Get Started Free"
-                severity="primary"
-                styleClass="cta-button"
-                routerLink="/register"></p-button>
-      <p class="hero-note">No credit card required • Setup in minutes</p>
+
+  <!-- ===== HERO ===== -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-inner">
+
+      <!-- Logo spanning both columns, centered -->
+      <div class="hero-logo">
+        <img src="assets/to2_logo.png" alt="TO2" class="logo-img" />
+      </div>
+
+      <div class="hero-text">
+        <div class="hero-badge">
+          <span class="badge-dot"></span>
+          Tournament Management Platform
+        </div>
+        <h1 class="hero-title">
+          Run Tournaments.<br>
+          <span class="accent">Your Rules.</span>
+        </h1>
+        <p class="hero-sub">
+          The complete platform for organizing group stages, bracket playoffs, and everything in between.
+          Real-time updates, automatic seeding, and full data isolation for your organization.
+        </p>
+        <div class="hero-actions">
+          <a routerLink="/register" class="btn-primary">Get Started Free</a>
+          <a routerLink="/login" class="btn-ghost">Sign In <span class="arrow">→</span></a>
+        </div>
+        <p class="hero-note">No credit card required &nbsp;·&nbsp; Setup in minutes</p>
+      </div>
+
+      <div class="hero-visual">
+        <div class="app-preview">
+          <div class="preview-header">
+            <div class="preview-title-row">
+              <span class="live-badge"><span class="pulse-dot"></span>LIVE</span>
+              <span class="preview-tournament-name">Spring Championship</span>
+            </div>
+            <span class="preview-format-label">Groups + Bracket</span>
+          </div>
+          <div class="preview-group">
+            <div class="preview-group-header">
+              <span>Group A</span>
+              <span class="preview-group-stat">Round 3 of 3</span>
+            </div>
+            <div class="preview-row rank-1">
+              <span class="pos">1</span>
+              <span class="pname">Alpha Squad</span>
+              <span class="pw">4</span>
+              <span class="pl">1</span>
+              <span class="advance-badge">→ Bracket</span>
+            </div>
+            <div class="preview-row rank-2">
+              <span class="pos">2</span>
+              <span class="pname">Team Nexus</span>
+              <span class="pw">3</span>
+              <span class="pl">2</span>
+              <span class="advance-badge">→ Bracket</span>
+            </div>
+            <div class="preview-row">
+              <span class="pos">3</span>
+              <span class="pname">Red Wolves</span>
+              <span class="pw">2</span>
+              <span class="pl">3</span>
+            </div>
+            <div class="preview-row">
+              <span class="pos">4</span>
+              <span class="pname">Storm Unit</span>
+              <span class="pw">1</span>
+              <span class="pl">4</span>
+            </div>
+          </div>
+          <div class="preview-match-live">
+            <div class="match-live-label">
+              <span class="pulse-dot small"></span>
+              Match in progress
+            </div>
+            <div class="match-live-teams">
+              <span class="team-a">Alpha Squad</span>
+              <span class="match-score">2 — 1</span>
+              <span class="team-b">Red Wolves</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
-  <!-- Key Features Section -->
-  <section class="features-section">
-    <div class="container">
-      <h2 class="section-title">Everything You Need to Run Professional Tournaments</h2>
-
-      <div class="features-grid">
-        <p-card class="feature-card" *ngFor="let feature of features">
-          <ng-template pTemplate="content">
-            <i class="pi pi-{{feature.icon}} feature-icon"></i>
-            <h3 class="feature-title">{{feature.title}}</h3>
-            <p class="feature-description">{{feature.description}}</p>
-          </ng-template>
-        </p-card>
+  <!-- ===== STATS BAR ===== -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item">
+        <span class="stat-value">3</span>
+        <span class="stat-label">Tournament Formats</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value">Live</span>
+        <span class="stat-label">Real-Time Updates</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value">100%</span>
+        <span class="stat-label">Data Isolation</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value">Free</span>
+        <span class="stat-label">To Get Started</span>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- How It Works Section -->
-  <section class="how-it-works-section">
+  <!-- ===== FORMATS ===== -->
+  <section class="formats-section">
     <div class="container">
-      <h2 class="section-title">How It Works</h2>
-      <p class="section-subtitle">Get your tournament running in three simple steps</p>
-
-      <div class="steps-container">
-        <div class="step-card" *ngFor="let step of steps; let i = index">
-          <div class="step-number">{{step.number}}</div>
-          <h3 class="step-title">{{step.title}}</h3>
-          <p class="step-description">{{step.description}}</p>
-          <i class="pi pi-arrow-right step-arrow" *ngIf="i < steps.length - 1"></i>
+      <div class="section-header">
+        <h2>Choose Your Format</h2>
+        <p>From grassroots to professional. Pick the structure that fits your competition.</p>
+      </div>
+      <div class="formats-grid">
+        <div class="format-card" *ngFor="let f of formats" [class.featured]="f.tag === 'Most Popular'">
+          <div class="format-tag" *ngIf="f.tag">{{ f.tag }}</div>
+          <i class="pi {{ f.icon }} format-icon"></i>
+          <h3 class="format-name">{{ f.name }}</h3>
+          <p class="format-desc">{{ f.description }}</p>
+          <ul class="format-features">
+            <li *ngFor="let feat of f.features">
+              <i class="pi pi-check"></i>
+              {{ feat }}
+            </li>
+          </ul>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Demo/Screenshot Section -->
-  <section class="demo-section">
+  <!-- ===== FEATURES ===== -->
+  <section class="features-section">
     <div class="container">
-      <h2 class="section-title">See It In Action</h2>
-      <p class="section-subtitle">Visualize your tournament brackets in real-time</p>
-
-      <p-card class="demo-card">
-        <ng-template pTemplate="content">
-          <div class="demo-placeholder">
-            <i class="pi pi-sitemap demo-icon"></i>
-            <h3>Interactive Bracket Visualization</h3>
-            <p>
-              Our bracket system automatically generates and updates tournament trees as matches are completed.
-              Support for single/double elimination, group stages, and custom formats.
-            </p>
-            <div class="demo-features">
-              <div class="demo-feature-item">
-                <i class="pi pi-check-circle"></i>
-                <span>Real-time updates</span>
-              </div>
-              <div class="demo-feature-item">
-                <i class="pi pi-check-circle"></i>
-                <span>Multiple formats</span>
-              </div>
-              <div class="demo-feature-item">
-                <i class="pi pi-check-circle"></i>
-                <span>Automatic seeding</span>
-              </div>
-              <div class="demo-feature-item">
-                <i class="pi pi-check-circle"></i>
-                <span>Export results</span>
-              </div>
-            </div>
+      <div class="section-header">
+        <h2>Everything You Need</h2>
+        <p>Built for organizers who need reliability, not workarounds.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card" *ngFor="let f of features">
+          <div class="feature-icon-wrap">
+            <i class="pi {{ f.icon }}"></i>
           </div>
-        </ng-template>
-      </p-card>
+          <h3>{{ f.title }}</h3>
+          <p>{{ f.description }}</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Footer -->
+  <!-- ===== HOW IT WORKS ===== -->
+  <section class="how-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>How It Works</h2>
+        <p>Up and running in minutes.</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card" *ngFor="let s of steps; let i = index">
+          <div class="step-num">{{ s.number }}</div>
+          <h3>{{ s.title }}</h3>
+          <p>{{ s.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== CTA ===== -->
+  <section class="cta-section">
+    <div class="container">
+      <div class="cta-card">
+        <h2>Ready to run your first tournament?</h2>
+        <p>Free to start. No credit card required.</p>
+        <a routerLink="/register" class="btn-primary btn-large">Get Started Free</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FOOTER ===== -->
   <footer class="footer">
     <div class="container">
-      <p>&copy; 2024 TO2 Tournament Organizer. All rights reserved.</p>
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <i class="pi pi-trophy"></i>
+          <span>TO2</span>
+        </div>
+        <p class="footer-copy">&copy; 2025 Tournament Organizer 2. All rights reserved.</p>
+      </div>
     </div>
   </footer>
+
 </div>

@@ -11,11 +11,11 @@ namespace Application.Pipelines.StartGroups.Steps
     public class CreateGroupEntriesStep : IStartGroupsPipelineStep
     {
         private readonly ILogger<CreateGroupEntriesStep> _logger;
-        private readonly IRepository<Group> _groupRepository;
+        private readonly IRepository<GroupEntry> _groupRepository;
 
         public CreateGroupEntriesStep(
             ILogger<CreateGroupEntriesStep> logger,
-            IRepository<Group> groupRepository)
+            IRepository<GroupEntry> groupRepository)
         {
             _logger = logger;
             _groupRepository = groupRepository;
@@ -52,7 +52,7 @@ namespace Application.Pipelines.StartGroups.Steps
                         else
                         {
                             // Create new entry
-                            var groupEntry = new Group(context.TournamentId, standing.Id, team.Id, team.Name);
+                            var groupEntry = new GroupEntry(context.TournamentId, standing.Id, team.Id, team.Name);
                             await _groupRepository.AddAsync(groupEntry);
                             entriesCreated++;
                             _logger.LogInformation("Created GroupEntry for team {TeamName} in {StandingName}",

@@ -9,12 +9,12 @@ namespace Application.Pipelines.GameResult.Steps
     public class UpdateGroupStatsStep : PipeLineBase<UpdateGroupStatsStep>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IRepository<Group> _groupRepository;
+        private readonly IRepository<GroupEntry> _groupRepository;
 
         public UpdateGroupStatsStep(
             ILogger<UpdateGroupStatsStep> logger,
             IUnitOfWork unitOfWork,
-            IRepository<Group> groupRepository) : base(logger)
+            IRepository<GroupEntry> groupRepository) : base(logger)
         {
             _groupRepository = groupRepository;
             _unitOfWork = unitOfWork;
