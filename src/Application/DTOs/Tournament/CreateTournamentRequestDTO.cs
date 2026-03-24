@@ -1,6 +1,6 @@
-﻿using Domain.Enums;
+using Domain.Enums;
 
 namespace Application.DTOs.Tournament
 {
-    public record CreateTournamentRequestDTO(string Name, string Description, int MaxTeams, Format Format, int? TeamsPerGroup, int? TeamsPerBracket);
+    public record CreateTournamentRequestDTO(string Name, string Description, int MaxTeams, Format Format, int? NumberOfGroups, int? AdvancingPerGroup);
 }

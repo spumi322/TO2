@@ -53,13 +53,5 @@ namespace Application.Services
             return _formats[format];
         }
 
-        public int CalculateNumberOfGroups(Format format, int maxTeams, int teamsPerGroup)
-        {
-            var metadata = GetFormatMetadata(format);
-            if (!metadata.RequiresGroups)
-                throw new InvalidOperationException($"Format {format} does not use groups");
-
-            return maxTeams / teamsPerGroup;
-        }
     }
 }

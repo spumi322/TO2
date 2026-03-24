@@ -10,7 +10,7 @@ namespace Application.Contracts
     public interface IStandingService
     {
         Task GenerateStanding(long tournamentId, string name, StandingType type, int? teamsPerStanding);
-        Task InitializeStandingsForTournamentAsync(long tournamentId, Format format, int maxTeams, int? teamsPerGroup, int? teamsPerBracket);
+        Task InitializeStandingsForTournamentAsync(long tournamentId, Format format, int maxTeams, int? numberOfGroups, int? advancingPerGroup);
         Task<List<Standing>> GetStandingsAsync(long tournamentId);
         /// <summary>
         /// Checks if any standings finished and marks them. Returns true if a standing was just marked finished.
@@ -22,7 +22,6 @@ namespace Application.Contracts
         /// Checks if all groups are finished. Returns true if all groups finished.
         /// </summary>
         Task<bool> CheckAllGroupsAreFinished(long tournamentId);
-        Task<List<Team>> GetTeamsForBracket(long tournamentId);
         /// <summary>
         /// Gets teams for bracket based on tournament format.
         /// BracketOnly: Returns all registered teams.

@@ -57,7 +57,7 @@ namespace Infrastructure.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Ignore<AggregateRootBase>();
-            modelBuilder.Ignore<EntityBase>();
+            modelBuilder.Ignore<EntityBase>(); 
             modelBuilder.Ignore<ValueObjectBase>();
             modelBuilder.Ignore<Prize>();
 

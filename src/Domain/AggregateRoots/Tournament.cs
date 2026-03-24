@@ -45,6 +45,8 @@ namespace Domain.AggregateRoots
 
         public bool IsRegistrationOpen { get; set; } = true;
 
+        public int? AdvancingPerGroup { get; set; }
+
         public List<Prize> PrizePool { get; set; }
 
         public long TenantId { get; set; }

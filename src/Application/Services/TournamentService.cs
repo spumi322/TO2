@@ -73,7 +73,7 @@ namespace Application.Services
                 await _unitOfWork.SaveChangesAsync(); // flush to get tournament.Id
 
                 await _standingService.InitializeStandingsForTournamentAsync(
-                    tournament.Id, request.Format, tournament.MaxTeams, request.TeamsPerGroup, request.TeamsPerBracket);
+                    tournament.Id, request.Format, tournament.MaxTeams, request.NumberOfGroups, request.AdvancingPerGroup);
 
                 await _unitOfWork.CommitTransactionAsync(); // saves standings + commits
             }
