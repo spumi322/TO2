@@ -109,7 +109,9 @@ export class CreateTournamentComponent implements OnInit, OnDestroy {
     return this.configService.computeByeCount(this.bracketSize, this.advancingTeamCount);
   }
 
-  readonly SLOT_H = 26; // px per team slot
+  readonly MATCH_GAP = 0.5;  // rem gap between matches
+  private get SLOT_H_CALC(): number { return 2; }
+  get slotH(): number { return this.SLOT_H_CALC - this.MATCH_GAP / 2; } // 1.75rem
 
   get maxTeamsInRange(): boolean {
     return this.maxTeams >= 4 && this.maxTeams <= 32;
@@ -135,6 +137,7 @@ export class CreateTournamentComponent implements OnInit, OnDestroy {
   get bracketRounds(): Array<{
     matches: Array<{ top: string; bottom: string; topBye: boolean; bottomBye: boolean; placeholder: boolean }>;
     connectorHeight: number;
+    matchMargin: number;
     isLast: boolean;
   }> {
     if (!this.bracketPreviewReady || !this.bracketSize) return [];
@@ -146,7 +149,8 @@ export class CreateTournamentComponent implements OnInit, OnDestroy {
 
     for (let r = 0; r < totalRounds; r++) {
       const matchCount = this.bracketSize >> (r + 1);
-      const connectorHeight = this.SLOT_H * Math.pow(2, r);
+      const connectorHeight = this.SLOT_H_CALC * Math.pow(2, r);
+      const matchMargin = this.SLOT_H_CALC * (Math.pow(2, r) - 1) + this.MATCH_GAP / 2;
       const isLast = r === totalRounds - 1;
 
       const matches = r === 0
@@ -161,14 +165,14 @@ export class CreateTournamentComponent implements OnInit, OnDestroy {
             top: '', bottom: '', topBye: false, bottomBye: false, placeholder: true
           }));
 
-      result.push({ matches, connectorHeight, isLast });
+      result.push({ matches, connectorHeight, matchMargin, isLast });
     }
 
     return result;
   }
 
   get bracketTreeHeight(): number {
-    return this.bracketSize * this.SLOT_H;
+    return this.bracketSize * this.SLOT_H_CALC;
   }
 
   get hasUnequalGroups(): boolean {

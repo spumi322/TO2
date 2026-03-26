@@ -81,14 +81,14 @@
   display: grid;
   grid-template-rows: 1fr auto;
   min-height: 0;
-  padding: 1.75rem 2rem;
+  padding: 1.25rem 1.75rem;
   gap: 0;
 }
 
 .col-content {
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
+  gap: 0.75rem;
   overflow-y: auto;
   min-height: 0;
   padding-bottom: 0.75rem;
@@ -179,14 +179,14 @@
 .format-grid {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .format-card {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.7rem 1rem;
+  padding: 0.5rem 0.85rem;
   background: var(--bg-dark);
   border: var(--border-width) solid var(--border-color);
   border-radius: var(--border-radius);
@@ -341,10 +341,10 @@
 
 /* Actions */
 .col-footer {
-  padding: 0.75rem 0 0.75rem;
+  padding: 0.5rem 0 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .form-actions {
@@ -358,7 +358,7 @@
 
 .btn-submit {
   width: 100%;
-  padding: 10px;
+  padding: 13px;
   background: var(--primary-color);
   border: none;
   border-radius: var(--border-radius);
@@ -383,6 +383,7 @@
 .btn-cancel {
   width: 100%;
   padding: 10px;
+  margin-top: 0.3rem;
   background: transparent;
   border: var(--border-width) solid var(--border-color);
   border-radius: var(--border-radius);
@@ -531,6 +532,44 @@
   padding: 3rem 1rem;
 }
 
+/* Format picker cards (ghost state) */
+.fhp-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.fhp-card {
+  background: #1a1f2e;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  padding: 18px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+}
+
+.fhp-dot { display: none; }
+.fhp-card svg { width: 100%; height: auto; display: block; }
+
+.fhp-lbl {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.fhp-dsc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+  margin-top: -4px;
+}
+
 /* Preview sections */
 .preview-section {
   display: flex;
@@ -581,7 +620,7 @@
   padding: 4px 8px;
   font-size: 0.7rem;
   font-weight: 700;
-  color: #0b1120;
+  color: #ffffff;
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -611,12 +650,13 @@
   gap: 1.5rem;
   flex-wrap: wrap;
   align-items: flex-end;
+  justify-content: center;
 }
 
 .bracket-stat {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   gap: 1px;
 }
 
@@ -645,17 +685,18 @@
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  overflow-x: auto;
-  overflow-y: hidden;
-  gap: 0;
+  width: fit-content;
+  max-width: 100%;
+  gap: 1.25rem;
 }
 
 .bt-round {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
-  flex-shrink: 0;
-  width: 110px;
+  justify-content: flex-start;
+  width: 7rem;
+  flex-shrink: 1;
+  min-width: 0;
   position: relative;
 }
 
@@ -669,8 +710,8 @@
 .bt-round:not(.bt-round-last) .bt-match-even::after {
   content: '';
   position: absolute;
-  right: 0;
-  width: 8px;
+  right: -0.625rem;
+  width: 0.625rem;
   border-color: var(--border-color);
   border-style: solid;
   border-width: 0;
@@ -695,18 +736,18 @@
 .bt-round:not(:first-child) .bt-match::before {
   content: '';
   position: absolute;
-  left: 0;
+  left: -0.625rem;
   top: 50%;
-  width: 8px;
+  width: 0.625rem;
   border-top: 1px solid var(--border-color);
   transform: translateY(-50%);
 }
 
 .bt-slot {
-  height: 26px;
+  height: var(--slot-h, 1.75rem);
   display: flex;
   align-items: center;
-  padding: 0 6px 0 14px;
+  padding: 0 0.375rem 0 0.875rem;
   font-size: 0.72rem;
   font-weight: 600;
   color: var(--text-muted);
@@ -729,15 +770,21 @@
 }
 
 .bt-slot.bt-bye {
-  background: #0d1f15;
-  color: #3d7a4a;
+  background: transparent;
+  color: var(--text-muted);
   font-style: italic;
+  opacity: 0.45;
+}
+
+.bt-slot.bt-adv {
+  background: #0d1f15;
+  color: #4a8c57;
+  font-weight: 700;
 }
 
 .bt-slot.bt-ph {
   background: transparent;
-  border-color: transparent;
-  color: transparent;
+  border-color: var(--border-color);
 }
 
 /* Responsive */
