@@ -106,7 +106,18 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
                 .WithMessage("AdvancingPerGroup must be at least 1.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.AdvancingPerGroup));
 
-            // 7. AdvancingPerGroup < floor(MaxTeams / NumberOfGroups) — at least 1 eliminated per group
+            // 7. When NumberOfGroups == 1, AdvancingPerGroup must be >= 2 (bracket needs at least 2 teams)
+            RuleFor(x => x)
+                .Must(dto =>
+                {
+                    if (!dto.AdvancingPerGroup.HasValue || !dto.NumberOfGroups.HasValue) return true;
+                    if (dto.NumberOfGroups.Value != 1) return true;
+                    return dto.AdvancingPerGroup.Value >= 2;
+                })
+                .WithMessage("When using a single group, at least 2 teams must advance to the bracket.")
+                .OverridePropertyName(nameof(CreateTournamentRequestDTO.AdvancingPerGroup));
+
+            // 8. AdvancingPerGroup < floor(MaxTeams / NumberOfGroups) — at least 1 eliminated per group
             RuleFor(x => x)
                 .Must(dto =>
                 {

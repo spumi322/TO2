@@ -81,7 +81,8 @@ export class CreateTournamentComponent implements OnInit, OnDestroy {
     if (!this.maxTeams || !this.numberOfGroups) return [];
     const minGroupSize = Math.floor(this.maxTeams / this.numberOfGroups);
     if (minGroupSize < 3) return [];
-    return Array.from({ length: minGroupSize - 1 }, (_, i) => i + 1);
+    const min = this.numberOfGroups === 1 ? 2 : 1;
+    return Array.from({ length: minGroupSize - min }, (_, i) => i + min);
   }
 
   get groupSizes(): number[] {
@@ -224,7 +225,8 @@ export class CreateTournamentComponent implements OnInit, OnDestroy {
   private onNumberOfGroupsChange(): void {
     if (this.advancingPerGroup && this.numberOfGroups && this.maxTeams) {
       const minGroupSize = Math.floor(this.maxTeams / this.numberOfGroups);
-      if (this.advancingPerGroup >= minGroupSize) {
+      const minAdvancing = this.numberOfGroups === 1 ? 2 : 1;
+      if (this.advancingPerGroup >= minGroupSize || this.advancingPerGroup < minAdvancing) {
         this.form.patchValue({ advancingPerGroup: null }, { emitEvent: false });
       }
     }
