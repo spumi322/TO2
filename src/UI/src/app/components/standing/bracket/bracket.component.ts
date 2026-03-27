@@ -232,10 +232,13 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit, OnDes
     this.isUpdating[matchId] = true;
 
     // Find unfinished game (data already loaded)
-    const gameToUpdate = match.games.find(game => !game.winnerId);
+    const gameToUpdate = match.games?.find(game => !game.winnerId);
 
     if (!gameToUpdate) {
       this.isUpdating[matchId] = false;
+      if (!match.games || match.games.length === 0) {
+        console.warn(`Match ${matchId}: no games yet — both teams must advance before this match can be scored`);
+      }
       return;
     }
 
