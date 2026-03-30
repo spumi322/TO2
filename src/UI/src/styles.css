@@ -126,10 +126,16 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
+  padding: 1.25rem 1.5rem;
+}
+
+.p-toast .p-toast-message-content {
+  gap: 1rem;
 }
 
 .p-toast .p-toast-message-summary {
   color: var(--text-primary);
+  margin-bottom: 0.25rem;
 }
 
 .p-toast .p-toast-message-detail {

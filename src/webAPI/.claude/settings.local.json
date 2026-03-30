@@ -38,7 +38,8 @@
       "Bash({} ;)",
       "Bash(dotnet clean:*)",
       "Bash(xargs grep:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(find G:/Code/TO2/src -type f \\\\\\(-name *.cs -o -name *.ts \\\\\\) -not -path */obj/* -not -path */node_modules/*)"
     ],
     "deny": [],
     "ask": []

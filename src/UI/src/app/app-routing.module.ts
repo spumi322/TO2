@@ -7,6 +7,7 @@ import { LoginComponent } from './components/auth/login/login.component';
 import { RegisterComponent } from './components/auth/register/register.component';
 import { LandingComponent } from './components/landing/landing.component';
 import { AuthGuard } from './guards/auth.guard';
+import { TeamManagementComponent } from './components/tournament/team-management/team-management.component';
 
 const routes: Routes = [
   { path: '', component: LandingComponent },
@@ -14,6 +15,7 @@ const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'tournaments', component: TournamentListComponent, canActivate: [AuthGuard] },
   { path: 'tournament/:id', component: TournamentDetailsComponent, canActivate: [AuthGuard] },
+  { path: 'tournament/:id/team/:teamId', component: TeamManagementComponent, canActivate: [AuthGuard] },
   { path: 'create-tournament', component: CreateTournamentComponent, canActivate: [AuthGuard] }
 ];
 

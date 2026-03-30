@@ -1,11 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { FinalStanding } from '../../../models/final-standing';
 
-interface PlacementTier {
-  label: string;
-  teams: FinalStanding[];
-}
-
 @Component({
   selector: 'app-final-standings-display',
   templateUrl: './final-standings-display.component.html',
@@ -14,46 +9,36 @@ interface PlacementTier {
 export class FinalStandingsDisplayComponent {
   @Input() finalStandings: FinalStanding[] = [];
 
-  groupPlacementsByTier(): PlacementTier[] {
-    if (!this.finalStandings || this.finalStandings.length === 0) {
-      return [];
-    }
+  get champion(): FinalStanding | null {
+    return this.finalStandings.find(s => s.placement === 1) ?? null;
+  }
 
-    const tiers: PlacementTier[] = [];
-    const grouped = new Map<string, FinalStanding[]>();
+  get podiumStandings(): FinalStanding[] {
+    return this.finalStandings
+      .filter(s => s.placement >= 2 && s.placement <= 4)
+      .sort((a, b) => a.placement - b.placement);
+  }
 
-    // Group by placement value
-    this.finalStandings.forEach(standing => {
-      let tierLabel = '';
-      const p = standing.placement;
+  get lowerTiers(): { label: string; standings: FinalStanding[] }[] {
+    const tiers = [
+      { label: 'Top 8', min: 5, max: 8 },
+      { label: 'Top 16', min: 9, max: 16 },
+      { label: 'Top 32', min: 17, max: 32 },
+    ];
+    return tiers
+      .map(t => ({
+        label: t.label,
+        standings: this.finalStandings
+          .filter(s => s.placement >= t.min && s.placement <= t.max)
+          .sort((a, b) => a.placement - b.placement)
+      }))
+      .filter(t => t.standings.length > 0);
+  }
 
-      if (p === 1) {
-        tierLabel = '1st Place';
-      } else if (p === 2) {
-        tierLabel = '2nd Place';
-      } else if (p >= 3 && p <= 4) {
-        tierLabel = '3rd-4th Place';
-      } else if (p >= 5 && p <= 8) {
-        tierLabel = '5th-8th Place';
-      } else if (p >= 9 && p <= 16) {
-        tierLabel = '9th-16th Place';
-      } else if (p >= 17 && p <= 32) {
-        tierLabel = '17th-32nd Place';
-      } else {
-        tierLabel = `${p}th Place`;
-      }
-
-      if (!grouped.has(tierLabel)) {
-        grouped.set(tierLabel, []);
-      }
-      grouped.get(tierLabel)!.push(standing);
-    });
-
-    // Convert to array
-    grouped.forEach((teams, label) => {
-      tiers.push({ label, teams });
-    });
-
-    return tiers;
+  ordinal(n: number): string {
+    if (n === 2) return '2nd';
+    if (n === 3) return '3rd';
+    if (n === 4) return '4th';
+    return `${n}th`;
   }
 }

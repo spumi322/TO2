@@ -10,12 +10,11 @@
       <p *ngIf="isRegistrationOpen" class="muted-text">Add teams using the form above</p>
     </div>
     <div *ngIf="teams?.length" class="teams-grid">
-      <div *ngFor="let team of teams" class="team-card">
-        <div class="team-avatar">{{ team?.name?.charAt(0) }}</div>
-        <div class="team-name">{{ team?.name }}</div>
+      <div *ngFor="let team of teams" class="team-card" (click)="onTeamClick(team)">
+        <app-team-badge [teamName]="team.name"></app-team-badge>
         <button *ngIf="isRegistrationOpen"
                 class="remove-btn"
-                (click)="onRemoveTeam(team)"
+                (click)="onRemoveTeam(team); $event.stopPropagation()"
                 title="Remove team">
           <i class="pi pi-trash"></i>
         </button>

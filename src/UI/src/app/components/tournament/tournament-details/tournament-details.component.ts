@@ -504,6 +504,10 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
+  onTeamSelected(team: Team): void {
+    this.router.navigate(['/tournament', this.tournamentId, 'team', team.id]);
+  }
+
   confirmRemoveTeam(team: Team): void {
     if (confirm(`Are you sure you want to remove team "${team.name}" from this tournament?`)) {
       this.removeTeam(team);

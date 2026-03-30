@@ -10,45 +10,51 @@
       </span>
     </div>
 
-    <!-- Team Standings Table -->
-    <table class="group-standings">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Team</th>
-          <th>W</th>
-          <th>L</th>
-          <th>PTS</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let team of group.teams; let i = index"
-            [ngClass]="{
-              'team-champion': team.status === 4,
-              'team-advanced': team.status === 2,
-              'team-eliminated': team.status === 3
-            }">
-          <td class="team-rank">{{ i + 1 }}</td>
-          <td class="team-name">
-            {{ team.name }}
-            <span *ngIf="team.status === 4" class="badge-champion">Champion</span>
-            <span *ngIf="team.status === 2" class="badge-advanced">Advanced</span>
-            <span *ngIf="team.status === 3" class="badge-eliminated">Eliminated</span>
-          </td>
-          <td>{{ team.wins }}</td>
-          <td>{{ team.losses }}</td>
-          <td>{{ team.points }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="group-body">
+      <!-- Team Standings Box -->
+      <div class="inner-box">
+        <table class="group-standings">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Team</th>
+              <th>W</th>
+              <th>L</th>
+              <th>PTS</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let team of group.teams; let i = index"
+                [ngClass]="{
+                  'team-champion': team.status === 4,
+                  'team-advanced': team.status === 2,
+                  'team-eliminated': team.status === 3
+                }">
+              <td class="team-rank">{{ i + 1 }}</td>
+              <td class="team-name">
+                {{ team.name }}
+                <span *ngIf="team.status === 4" class="badge-champion">Champion</span>
+                <span *ngIf="team.status === 2" class="badge-advanced">Advanced</span>
+                <span *ngIf="team.status === 3" class="badge-eliminated">Eliminated</span>
+              </td>
+              <td>{{ team.wins }}</td>
+              <td>{{ team.losses }}</td>
+              <td>{{ team.points }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-    <!-- Matches for Each Group -->
-    <h4>Matches</h4>
-    <app-matches [matches]="group.matches"
-                 [teams]="group.teams"
-                 [isGroupFinished]="group.isFinished"
-                 [tournamentId]="tournament.id"
-                 (matchFinished)="onMatchFinished($event)">
-    </app-matches>
+      <!-- Matches Box -->
+      <div class="inner-box">
+        <h4>Matches</h4>
+        <app-matches [matches]="group.matches"
+                     [teams]="group.teams"
+                     [isGroupFinished]="group.isFinished"
+                     [tournamentId]="tournament.id"
+                     (matchFinished)="onMatchFinished($event)">
+        </app-matches>
+      </div>
+    </div>
   </div>
 </div>

@@ -53,6 +53,8 @@ import { MessageService } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
 import { LandingComponent } from './components/landing/landing.component';
 import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confirm-dialog.component';
+import { TeamBadgeComponent } from './shared/components/team-badge/team-badge.component';
+import { TeamManagementComponent } from './components/tournament/team-management/team-management.component';
 
 @NgModule({
   declarations: [
@@ -74,7 +76,9 @@ import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confi
     LoginComponent,
     RegisterComponent,
     LandingComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
+    TeamBadgeComponent,
+    TeamManagementComponent
   ],
   imports: [
     BrowserModule,

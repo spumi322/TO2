@@ -5,11 +5,7 @@
 .group-matches {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 8px;
   background: var(--bg-card);
-  border: var(--border-width) solid var(--border-color);
-  border-radius: var(--border-radius);
-  overflow: hidden;
 }
 
 .group-matches th,
@@ -62,18 +58,39 @@
   border-radius: var(--border-radius);
 }
 
-.clickable-team {
+.score-cell {
+  white-space: nowrap;
+}
+
+.score-text {
+  display: inline-block;
+  min-width: 40px;
+}
+
+.score-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  padding-top: 2px;
+  transition: all 0.15s ease;
+  vertical-align: middle;
+  margin: 0 4px;
 }
 
-.clickable-team:hover {
-  background-color: rgba(67, 160, 71, 0.15) !important;
-  color: var(--primary-color);
-}
-
-.clickable-team:active {
-  opacity: 0.75;
+.score-btn:hover {
+  background: var(--primary-color);
+  color: var(--text-dark);
+  border-color: var(--primary-color);
 }
 
 /* Desktop optimized */

@@ -1,40 +1,41 @@
 <div class="results-content" *ngIf="finalStandings.length > 0">
-  <div class="results-header">
-    <i class="trophy-icon pi pi-trophy"></i>
-    <h2>Final Results</h2>
+
+  <!-- Champion -->
+  <div class="champion-section" *ngIf="champion">
+    <div class="champion-crown">
+      <i class="pi pi-trophy"></i>
+      <span>Champion</span>
+    </div>
+    <app-team-badge [teamName]="champion.teamName" size="lg"></app-team-badge>
   </div>
 
-  <!-- Placement Tiers -->
-  <div class="placement-tiers">
-    <p-card *ngFor="let tier of groupPlacementsByTier()" class="tier-card" [ngClass]="{
-      'tier-first': tier.label === '1st Place',
-      'tier-second': tier.label === '2nd Place',
-      'tier-third': tier.label.startsWith('3rd')
-    }">
-      <ng-template pTemplate="header">
-        <div class="tier-label">
-          <i *ngIf="tier.label === '1st Place'" class="tier-icon gold pi pi-trophy"></i>
-          <i *ngIf="tier.label === '2nd Place'" class="tier-icon silver pi pi-star"></i>
-          <i *ngIf="tier.label.startsWith('3rd')" class="tier-icon bronze pi pi-star"></i>
-          <h3>{{ tier.label }}</h3>
-        </div>
-      </ng-template>
-      <ng-template pTemplate="content">
-        <div class="tier-teams">
-          <div *ngFor="let standing of tier.teams" class="team-result">
-            <div class="team-avatar">{{ standing.teamName.charAt(0) }}</div>
-            <div class="team-details">
-              <div class="team-name">{{ standing.teamName }}</div>
-              <div class="team-eliminated" *ngIf="standing.status !== 4 && standing.eliminatedInRound > 0">
-                Eliminated in Round {{ standing.eliminatedInRound }}
-              </div>
-              <div class="team-champion" *ngIf="standing.status === 4">
-                <i class="pi pi-trophy"></i> Champion
-              </div>
-            </div>
-          </div>
-        </div>
-      </ng-template>
-    </p-card>
+  <!-- 2nd, 3rd, 4th -->
+  <div class="podium-row" *ngIf="podiumStandings.length > 0">
+    <div *ngFor="let s of podiumStandings" class="podium-card"
+         [class.silver]="s.placement === 2"
+         [class.bronze]="s.placement >= 3">
+      <span class="podium-rank">{{ ordinal(s.placement) }}</span>
+      <app-team-badge [teamName]="s.teamName" size="md"></app-team-badge>
+    </div>
   </div>
+
+  <!-- 5th+ grouped tiers -->
+  <div class="lower-list" *ngIf="lowerTiers.length > 0">
+    <div class="tier-group" *ngFor="let tier of lowerTiers">
+      <div class="tier-label">{{ tier.label }}</div>
+      <ng-container *ngIf="tier.label === 'Top 8'">
+        <div class="tier-row" *ngFor="let s of tier.standings">
+          <span class="tier-rank">#{{ s.placement }}</span>
+          <app-team-badge [teamName]="s.teamName" size="xs"></app-team-badge>
+        </div>
+      </ng-container>
+      <div class="tier-row tier-row-multi" *ngIf="tier.label !== 'Top 8'">
+        <ng-container *ngFor="let s of tier.standings; let last = last">
+          <app-team-badge [teamName]="s.teamName" size="xs"></app-team-badge>
+          <span class="tier-sep" *ngIf="!last">·</span>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
 </div>

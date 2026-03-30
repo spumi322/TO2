@@ -14,9 +14,6 @@ export class GroupComponent {
   @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
 
   onMatchFinished(matchUpdate: MatchFinishedIds): void {
-    // Groups auto-update via parent's subscription to groups$
     this.matchFinished.emit(matchUpdate);
   }
 }
-
-
