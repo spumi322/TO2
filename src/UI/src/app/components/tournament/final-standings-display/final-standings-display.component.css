@@ -42,6 +42,13 @@
   color: #ffd700;
 }
 
+.champion-teams {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 /* ── Podium (2nd–4th) ── */
 .podium-row {
   display: flex;

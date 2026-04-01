@@ -1,12 +1,14 @@
 <div class="results-content" *ngIf="finalStandings.length > 0">
 
-  <!-- Champion -->
-  <div class="champion-section" *ngIf="champion">
+  <!-- Champion(s) -->
+  <div class="champion-section" *ngIf="champions.length > 0">
     <div class="champion-crown">
       <i class="pi pi-trophy"></i>
-      <span>Champion</span>
+      <span>{{ champions.length === 1 ? 'Champion' : 'Champions' }}</span>
     </div>
-    <app-team-badge [teamName]="champion.teamName" size="lg"></app-team-badge>
+    <div class="champion-teams">
+      <app-team-badge *ngFor="let c of champions" [teamName]="c.teamName" size="lg"></app-team-badge>
+    </div>
   </div>
 
   <!-- 2nd, 3rd, 4th -->

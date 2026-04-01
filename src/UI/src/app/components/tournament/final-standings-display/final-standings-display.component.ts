@@ -9,8 +9,8 @@ import { FinalStanding } from '../../../models/final-standing';
 export class FinalStandingsDisplayComponent {
   @Input() finalStandings: FinalStanding[] = [];
 
-  get champion(): FinalStanding | null {
-    return this.finalStandings.find(s => s.placement === 1) ?? null;
+  get champions(): FinalStanding[] {
+    return this.finalStandings.filter(s => s.placement === 1);
   }
 
   get podiumStandings(): FinalStanding[] {
