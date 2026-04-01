@@ -96,6 +96,10 @@ export class TournamentService {
     );
   }
 
+  deleteTournament(tournamentId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${tournamentId}`);
+  }
+
   // GET /api/tournaments/{id}/final-standings
   getFinalStandings(tournamentId: number): Observable<FinalStanding[]> {
     return this.http.get<FinalStanding[]>(`${this.apiUrl}/${tournamentId}/final-standings`).pipe(

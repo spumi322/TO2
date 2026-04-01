@@ -82,5 +82,12 @@ namespace TO2.SignalR
                 .Group($"tournament-{tournamentId}")
                 .SendAsync("BracketStarted", new { tournamentId, updatedBy });
         }
+
+        public async Task BroadcastTournamentDeleted(long tournamentId, string deletedBy)
+        {
+            await _hubContext.Clients
+                .Group($"tournament-{tournamentId}")
+                .SendAsync("TournamentDeleted", new { tournamentId, updatedBy = deletedBy });
+        }
     }
 }

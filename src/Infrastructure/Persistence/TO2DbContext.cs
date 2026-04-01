@@ -114,6 +114,9 @@ namespace Infrastructure.Persistence
                 entity.Ignore(tt => tt.Id);
             });
 
+            modelBuilder.Entity<Team>().Property(t => t.Name).HasMaxLength(24);
+            modelBuilder.Entity<Tournament>().Property(t => t.Name).HasMaxLength(60);
+
             modelBuilder.Entity<Tournament>().HasQueryFilter(t => t.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<Team>().HasQueryFilter(t => t.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<Match>().HasQueryFilter(m => m.TenantId == GetCurrentTenantId());

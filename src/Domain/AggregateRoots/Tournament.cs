@@ -23,7 +23,7 @@ namespace Domain.AggregateRoots
         }
 
         [Required]
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string Name { get; private set; }
 
         [MaxLength(250)]

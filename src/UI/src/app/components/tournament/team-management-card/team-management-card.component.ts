@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 import { Tournament } from '../../../models/tournament';
@@ -8,7 +8,7 @@ import { Tournament } from '../../../models/tournament';
   templateUrl: './team-management-card.component.html',
   styleUrls: ['./team-management-card.component.css']
 })
-export class TeamManagementCardComponent implements OnInit, OnDestroy {
+export class TeamManagementCardComponent implements OnInit, OnDestroy, OnChanges {
   @Input() tournament: Tournament | null = null;
   @Input() isAddingTeams: boolean = false;
 
@@ -34,6 +34,10 @@ export class TeamManagementCardComponent implements OnInit, OnDestroy {
         this.submitted = false;  // Clear errors when form becomes valid
       }
     });
+  }
+
+  ngOnChanges(): void {
+    this.bulkAddForm?.get('teamNames')?.updateValueAndValidity();
   }
 
   ngOnDestroy(): void {
@@ -86,6 +90,12 @@ export class TeamManagementCardComponent implements OnInit, OnDestroy {
         .map((name: string) => name.trim())
         .filter((name: string) => name.length > 0)
         .map((name: string) => name.toLowerCase());
+
+      // Check each name length
+      const tooLong = teamNames.filter((name: string) => name.length > 24);
+      if (tooLong.length > 0) {
+        return { nameTooLong: { value: tooLong.join(', ') } };
+      }
 
       // Check for internal duplicates
       const uniqueNames = new Set(teamNames);

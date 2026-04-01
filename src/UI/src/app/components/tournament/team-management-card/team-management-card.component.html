@@ -25,6 +25,9 @@
         <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('required') && submitted">
           Team names are required
         </small>
+        <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('nameTooLong') && (submitted || bulkAddForm.get('teamNames')?.touched)">
+          Team names exceed 24 characters: {{ bulkAddForm.get('teamNames')?.errors?.['nameTooLong']?.value }}
+        </small>
         <small class="error-message" *ngIf="bulkAddForm.get('teamNames')?.hasError('duplicateNames') && (submitted || bulkAddForm.get('teamNames')?.touched)">
           Duplicate team names found: {{ bulkAddForm.get('teamNames')?.errors?.['duplicateNames']?.value }}
         </small>

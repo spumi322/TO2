@@ -29,7 +29,7 @@ export class CreateTournamentComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(100)]],
+      name: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(60)]],
       description: ['', [Validators.maxLength(250)]],
       format: [null, Validators.required],
       maxTeams: [null],

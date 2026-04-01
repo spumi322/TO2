@@ -112,5 +112,13 @@ namespace TO2.Controllers
             return result.Success ? Ok() : BadRequest();
         }
 
+        // DELETE: api/tournaments/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(long id)
+        {
+            await _tournamentService.DeleteTournamentAsync(id);
+            return NoContent();
+        }
+
     }
 }

@@ -79,6 +79,10 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.onStartBracket());
 
+    this.tournamentContext.cancelTournament$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onCancelTournament());
+
     // Subscribe to groups/bracket from context service
     this.tournamentContext.groups$
       .pipe(takeUntil(this.destroy$))
@@ -204,6 +208,15 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
           this.showInfo(`Bracket started by ${event.updatedBy}`);
           this.loadTournamentState();
           this.reloadTournamentData();
+        }
+      });
+
+    this.tournamentContext.tournamentDeleted$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.updatedBy !== currentUser) {
+          this.showInfo(`Tournament cancelled by ${event.updatedBy}`);
+          setTimeout(() => this.router.navigate(['/tournaments']), 1500);
         }
       });
   }
@@ -380,6 +393,19 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
       complete: () => {
         this.isReloading = false;
       }
+    });
+  }
+
+  onCancelTournament(): void {
+    if (!this.tournamentId) return;
+    if (!confirm('Delete this tournament? This cannot be undone.')) return;
+
+    this.tournamentService.deleteTournament(this.tournamentId).subscribe({
+      next: () => {
+        this.tournamentContext.clear();
+        this.router.navigate(['/tournaments']);
+      },
+      error: () => this.showError('Error cancelling tournament')
     });
   }
 

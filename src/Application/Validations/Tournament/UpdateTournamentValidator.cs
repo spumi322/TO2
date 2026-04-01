@@ -9,8 +9,8 @@ namespace Application.Validations.Tournament
         {
             RuleFor(x => x.Name)
                 .NotEmpty()
-                .Length(4, 100)
-                .WithMessage("Tournament name must be 4-100 character long!");
+                .Length(4, 60)
+                .WithMessage("Tournament name must be 4-60 characters long!");
 
             RuleFor(x => x.Description)
                 .MaximumLength(250);

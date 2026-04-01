@@ -145,7 +145,10 @@
 
   .navbar-right .p-button-success.navbar-primary,
   .navbar-right .p-button-success.navbar-primary .p-button-label,
-  .navbar-right .p-button-success.navbar-primary .p-button-icon {
+  .navbar-right .p-button-success.navbar-primary .p-button-icon,
+  .navbar-right .p-button-danger.navbar-primary,
+  .navbar-right .p-button-danger.navbar-primary .p-button-label,
+  .navbar-right .p-button-danger.navbar-primary .p-button-icon {
     color: #fff;
   }
 
@@ -164,6 +167,15 @@
 
     .navbar-right .p-button-success.navbar-primary:hover {
       background: var(--primary-hover);
+    }
+
+  .navbar-right .p-button-danger.navbar-primary {
+    background: var(--error-color);
+    border: none;
+  }
+
+    .navbar-right .p-button-danger.navbar-primary:hover {
+      background: #d32f2f;
     }
 
 /* Divider */

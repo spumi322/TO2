@@ -63,6 +63,16 @@
                   (click)="onStartBracket()">
           </button>
 
+          <!-- Cancel Tournament button (Setup stage only) -->
+          <button *ngIf="currentTournament.isRegistrationOpen && tournamentState.currentStatus === TournamentStatus.Setup"
+                  pButton
+                  type="button"
+                  label="Cancel Tournament"
+                  icon="pi pi-times"
+                  class="p-button-danger navbar-primary"
+                  (click)="onCancelTournament()">
+          </button>
+
           <div class="divider" *ngIf="currentTournament.isRegistrationOpen || tournamentState.currentStatus === TournamentStatus.GroupsCompleted"></div>
         </ng-container>
 
