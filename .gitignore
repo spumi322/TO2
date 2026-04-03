@@ -598,3 +598,6 @@ obj/
 # Ignore Claude-related files
 CLAUDE.md
 .claude/
+
+# Local development config with credentials
+appsettings.Development.json
