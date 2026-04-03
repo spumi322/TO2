@@ -58,6 +58,18 @@ export class TournamentListComponent implements OnInit, OnDestroy {
           this.loadTournaments();
         }
       });
+
+    this.tournamentContext.teamAdded$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadTournaments());
+
+    this.tournamentContext.teamRemoved$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadTournaments());
+
+    this.tournamentContext.tournamentDeleted$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadTournaments());
   }
 
   ngOnDestroy(): void {

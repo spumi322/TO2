@@ -71,14 +71,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 1rem;
   font-weight: 700;
   line-height: 1;
   padding-top: 2px;

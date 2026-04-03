@@ -47,6 +47,8 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+  flex: 1;
+  justify-content: center;
 }
 
 /* ── Podium (2nd–4th) ── */
@@ -59,6 +61,7 @@
 .podium-card {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 1rem;
   padding: 0.875rem 1.25rem;
   background: var(--bg-card);
