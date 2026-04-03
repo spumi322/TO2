@@ -11,6 +11,11 @@ export class RegisteredTeamsListComponent {
   @Input() isRegistrationOpen: boolean = false;
 
   @Output() removeTeam = new EventEmitter<Team>();
+  @Output() teamSelected = new EventEmitter<Team>();
+
+  onTeamClick(team: Team): void {
+    this.teamSelected.emit(team);
+  }
 
   onRemoveTeam(team: Team): void {
     this.removeTeam.emit(team);

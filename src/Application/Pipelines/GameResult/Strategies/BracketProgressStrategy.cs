@@ -141,8 +141,12 @@ namespace Application.Pipelines.GameResult.Strategies
                     nextRound, nextSeed, winnerId);
             }
 
-            // Update all games in the next match with the new team IDs
-            await _gameService.UpdateGamesTeamIds(nextMatch.Id, nextMatch.TeamAId, nextMatch.TeamBId);
+            // Generate games once both teams are known; first advancing team is a no-op
+            if (nextMatch.TeamAId.HasValue && nextMatch.TeamBId.HasValue)
+            {
+                await _gameService.GenerateGames(nextMatch);
+                _logger.LogInformation("Both teams known for R{NextRound}S{NextSeed} — games generated", nextRound, nextSeed);
+            }
 
             _logger.LogInformation("Winner advanced to next round successfully");
         }

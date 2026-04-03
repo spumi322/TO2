@@ -23,7 +23,7 @@ namespace Domain.AggregateRoots
         }
 
         [Required]
-        [MaxLength(100)]
+        [MaxLength(60)]
         public string Name { get; private set; }
 
         [MaxLength(250)]
@@ -44,6 +44,8 @@ namespace Domain.AggregateRoots
         public TournamentStatus Status { get; set; } = TournamentStatus.Setup;
 
         public bool IsRegistrationOpen { get; set; } = true;
+
+        public int? AdvancingPerGroup { get; set; }
 
         public List<Prize> PrizePool { get; set; }
 

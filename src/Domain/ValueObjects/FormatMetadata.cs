@@ -18,7 +18,7 @@ namespace Domain.ValueObjects
 
         private FormatMetadata() { } // private constructor ensures controlled creation
 
-        // Static instances (the “typed constants”)
+        // Static instances (the ï¿½typed constantsï¿½)
         public static readonly FormatMetadata GroupsOnly = new FormatMetadata
         {
             Format = Format.GroupsOnly,
@@ -28,7 +28,7 @@ namespace Domain.ValueObjects
             RequiresBracket = false,
             MinTeams = 4,
             MaxTeams = 32,
-            MinTeamsPerGroup = 4,
+            MinTeamsPerGroup = 3,
             MaxTeamsPerGroup = 32
         };
 
@@ -54,7 +54,7 @@ namespace Domain.ValueObjects
             RequiresBracket = true,
             MinTeams = 4,
             MaxTeams = 32,
-            MinTeamsPerGroup = 4,
+            MinTeamsPerGroup = 3,
             MaxTeamsPerGroup = 32,
             MinTeamsPerBracket = 4,
             MaxTeamsPerBracket = 32

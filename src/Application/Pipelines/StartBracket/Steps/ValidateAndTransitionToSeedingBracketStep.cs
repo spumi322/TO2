@@ -61,6 +61,7 @@ namespace Application.Pipelines.StartBracket.Steps
                 // Validate and transition to SeedingBracket using format-aware validation
                 _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingBracket, tournament.Format);
                 tournament.Status = TournamentStatus.SeedingBracket;
+                tournament.IsRegistrationOpen = false;
 
                 // Store in context
                 context.Tournament = tournament;

@@ -123,4 +123,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
   onStartBracket(): void {
     this.tournamentContext.triggerStartBracket();
   }
+
+  onCancelTournament(): void {
+    this.tournamentContext.triggerCancelTournament();
+  }
 }

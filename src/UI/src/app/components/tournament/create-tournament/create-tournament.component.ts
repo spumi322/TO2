@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Format, Tournament } from '../../../models/tournament';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Format } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
+import { TournamentConfigService } from '../../../services/tournament/tournament-config.service';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { MessageService } from 'primeng/api';
 
@@ -11,246 +13,270 @@ import { MessageService } from 'primeng/api';
   templateUrl: './create-tournament.component.html',
   styleUrls: ['./create-tournament.component.css']
 })
-export class CreateTournamentComponent implements OnInit {
+export class CreateTournamentComponent implements OnInit, OnDestroy {
   form!: FormGroup;
   Format = Format;
   isSubmitting = false;
-
-  bracketSizeOptions = [
-    { label: '4 Teams', value: 4 },
-    { label: '8 Teams', value: 8 },
-    { label: '16 Teams', value: 16 },
-    { label: '32 Teams', value: 32 }
-  ];
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
     private tournamentService: TournamentService,
+    private configService: TournamentConfigService,
     private router: Router,
     private messageService: MessageService
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    this.initializeForm();
+    this.form = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(60)]],
+      description: ['', [Validators.maxLength(250)]],
+      format: [null, Validators.required],
+      maxTeams: [null],
+      numberOfGroups: [null],
+      advancingPerGroup: [null],
+    });
+
+    this.form.get('format')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onFormatChange());
+
+    this.form.get('maxTeams')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onMaxTeamsChange());
+
+    this.form.get('numberOfGroups')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.onNumberOfGroupsChange());
   }
 
-  initializeForm(): void {
-    this.form = this.fb.group({
-      name: ['', [
-        Validators.required,
-        Validators.minLength(4),
-        Validators.maxLength(100)
-      ]],
-      description: ['', [
-        Validators.maxLength(250)
-      ]],
-      format: [null, Validators.required],
-      maxTeams: [''],
-      teamsPerGroup: [''],
-      teamsPerBracket: ['']
-    });
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  get format(): Format | null {
+    return this.form.get('format')?.value ?? null;
+  }
+
+  get maxTeams(): number {
+    return +(this.form.get('maxTeams')?.value) || 0;
+  }
+
+  get numberOfGroups(): number {
+    return +(this.form.get('numberOfGroups')?.value) || 0;
+  }
+
+  get advancingPerGroup(): number {
+    return +(this.form.get('advancingPerGroup')?.value) || 0;
+  }
+
+  get numberOfGroupsOptions(): number[] {
+    if (!this.maxTeams || this.maxTeams < 3) return [];
+    const max = Math.floor(this.maxTeams / 3);
+    return Array.from({ length: max }, (_, i) => i + 1);
+  }
+
+  get advancingPerGroupOptions(): number[] {
+    if (!this.maxTeams || !this.numberOfGroups) return [];
+    const minGroupSize = Math.floor(this.maxTeams / this.numberOfGroups);
+    if (minGroupSize < 3) return [];
+    const min = this.numberOfGroups === 1 ? 2 : 1;
+    return Array.from({ length: minGroupSize - min }, (_, i) => i + min);
+  }
+
+  get groupSizes(): number[] {
+    if (!this.maxTeams || !this.numberOfGroups) return [];
+    return this.configService.distributeTeams(this.maxTeams, this.numberOfGroups);
+  }
+
+  get bracketSize(): number {
+    if (!this.format) return 0;
+    return this.configService.computeBracketSize(
+      this.format,
+      this.maxTeams,
+      this.numberOfGroups || undefined,
+      this.advancingPerGroup || undefined
+    );
+  }
+
+  get advancingTeamCount(): number {
+    if (this.format === Format.BracketOnly) return this.maxTeams;
+    return this.numberOfGroups * this.advancingPerGroup;
+  }
+
+  get byeCount(): number {
+    if (!this.bracketSize) return 0;
+    return this.configService.computeByeCount(this.bracketSize, this.advancingTeamCount);
+  }
+
+  readonly MATCH_GAP = 0.5;  // rem gap between matches
+  private get SLOT_H_CALC(): number { return 2; }
+  get slotH(): number { return this.SLOT_H_CALC - this.MATCH_GAP / 2; } // 1.75rem
+
+  get maxTeamsInRange(): boolean {
+    return this.maxTeams >= 4 && this.maxTeams <= 32;
+  }
+
+  get groupPreviewReady(): boolean {
+    return this.maxTeamsInRange
+      && this.numberOfGroups >= 1
+      && Math.floor(this.maxTeams / this.numberOfGroups) >= 3;
+  }
+
+  get bracketPreviewReady(): boolean {
+    if (!this.maxTeamsInRange) return false;
+    if (this.format === Format.BracketOnly) return true;
+    if (this.format === Format.GroupsAndBracket) {
+      return this.groupPreviewReady && this.advancingPerGroup >= 1;
+    }
+    return false;
+  }
+
+  // ── Bracket rounds for visual tree ──────────────────────────────────────
+
+  get bracketRounds(): Array<{
+    matches: Array<{ top: string; bottom: string; topBye: boolean; bottomBye: boolean; placeholder: boolean }>;
+    connectorHeight: number;
+    matchMargin: number;
+    isLast: boolean;
+  }> {
+    if (!this.bracketPreviewReady || !this.bracketSize) return [];
+
+    const totalRounds = Math.log2(this.bracketSize);
+    const firstRound = this.configService.generateMatchups(this.bracketSize);
+    const adv = this.advancingTeamCount;
+    const result = [];
+
+    for (let r = 0; r < totalRounds; r++) {
+      const matchCount = this.bracketSize >> (r + 1);
+      const connectorHeight = this.SLOT_H_CALC * Math.pow(2, r);
+      const matchMargin = this.SLOT_H_CALC * (Math.pow(2, r) - 1) + this.MATCH_GAP / 2;
+      const isLast = r === totalRounds - 1;
+
+      const matches = r === 0
+        ? firstRound.map(([a, b]) => ({
+            top: a > adv ? 'BYE' : `#${a}`,
+            bottom: b > adv ? 'BYE' : `#${b}`,
+            topBye: a > adv,
+            bottomBye: b > adv,
+            placeholder: false
+          }))
+        : Array(matchCount).fill(null).map(() => ({
+            top: '', bottom: '', topBye: false, bottomBye: false, placeholder: true
+          }));
+
+      result.push({ matches, connectorHeight, matchMargin, isLast });
+    }
+
+    return result;
+  }
+
+  get bracketTreeHeight(): number {
+    return this.bracketSize * this.SLOT_H_CALC;
+  }
+
+  get hasUnequalGroups(): boolean {
+    const sizes = this.groupSizes;
+    return sizes.length > 0 && new Set(sizes).size > 1;
+  }
+
+  get showGroupPreview(): boolean {
+    return (this.format === Format.GroupsOnly || this.format === Format.GroupsAndBracket)
+      && this.groupSizes.length > 0;
+  }
+
+  get showBracketPreview(): boolean {
+    return (this.format === Format.BracketOnly || this.format === Format.GroupsAndBracket)
+      && this.bracketSize > 0;
+  }
+
+  get isFormValid(): boolean {
+    const fmt = this.format;
+    if (!fmt || !this.form.get('name')?.valid) return false;
+    if (!this.maxTeams || this.maxTeams < 4 || this.maxTeams > 32) return false;
+    if (fmt === Format.GroupsOnly || fmt === Format.GroupsAndBracket) {
+      if (!this.numberOfGroups || Math.floor(this.maxTeams / this.numberOfGroups) < 3) return false;
+    }
+    if (fmt === Format.GroupsAndBracket) {
+      if (!this.advancingPerGroup) return false;
+      const minGroupSize = Math.floor(this.maxTeams / this.numberOfGroups);
+      if (this.advancingPerGroup >= minGroupSize) return false;
+    }
+    return true;
   }
 
   selectFormat(format: Format): void {
-    this.form.patchValue({ format });
-    this.onFormatChange();
+    this.form.get('format')!.setValue(format);
   }
 
-onFormatChange(): void {
-    const format = this.form.get('format')?.value;
+  private onFormatChange(): void {
+    this.form.patchValue({ maxTeams: null, numberOfGroups: null, advancingPerGroup: null }, { emitEvent: false });
+    this.updateValidators();
+  }
 
-    // Clear all fields
-    this.form.get('maxTeams')?.setValue('');
-    this.form.get('teamsPerGroup')?.setValue('');
-    this.form.get('teamsPerBracket')?.setValue('');
-
-    if (format === Format.BracketOnly) {
-        // BracketOnly: Power of 2 validation, no groups
-        this.form.get('maxTeams')?.setValidators([
-            Validators.required,
-            Validators.min(4),
-            Validators.max(32),
-            this.powerOfTwoValidator()
-        ]);
-
-        this.form.get('teamsPerGroup')?.clearValidators();
-        this.form.get('teamsPerBracket')?.clearValidators();
-        this.form.get('teamsPerGroup')?.setValue(null);
-        this.form.get('teamsPerBracket')?.setValue(null);
-
-    } else if (format === Format.GroupsAndBracket) {
-        // GroupsAndBracket: both groups and bracket required
-        this.form.get('teamsPerGroup')?.setValidators([
-            Validators.required,
-            Validators.min(4),
-            Validators.max(32)
-        ]);
-
-        this.form.get('teamsPerBracket')?.setValidators([
-            Validators.required,
-            Validators.min(4),
-            Validators.max(32),
-            this.powerOfTwoValidator()
-        ]);
-
-        this.form.get('maxTeams')?.setValidators([
-            Validators.required,
-            Validators.min(4),
-            Validators.max(32),
-            this.divisibleByValidator()
-        ]);
-
-    } else if (format === Format.GroupsOnly) {
-        // GroupsOnly: only groups, no bracket
-        this.form.get('teamsPerGroup')?.setValidators([
-            Validators.required,
-            Validators.min(4),
-            Validators.max(32)
-        ]);
-
-        this.form.get('teamsPerBracket')?.clearValidators();
-        this.form.get('teamsPerBracket')?.setValue(null);
-
-        this.form.get('maxTeams')?.setValidators([
-            Validators.required,
-            Validators.min(4),
-            Validators.max(32),
-            this.divisibleByValidator()
-        ]);
+  private onMaxTeamsChange(): void {
+    if (this.numberOfGroups && this.maxTeams && Math.floor(this.maxTeams / this.numberOfGroups) < 3) {
+      this.form.patchValue({ numberOfGroups: null, advancingPerGroup: null }, { emitEvent: false });
     }
-
-    this.form.get('maxTeams')?.updateValueAndValidity();
-    this.form.get('teamsPerGroup')?.updateValueAndValidity();
-    this.form.get('teamsPerBracket')?.updateValueAndValidity();
-}
-
-  // For BracketOnly format, maxTeams must be power of 2
-  powerOfTwoValidator() {
-    return (control: AbstractControl): ValidationErrors | null => {
-      const value = control.value;
-      if (!value) return null;
-
-      const isPowerOfTwo = value > 0 && (value & (value - 1)) === 0;
-      return isPowerOfTwo ? null : { powerOfTwo: true };
-    };
+    this.updateValidators();
   }
 
-  // For GroupsAndBracket and GroupsOnly formats, maxTeams must be divisible by teamsPerGroup
-  divisibleByValidator() {
-    return (control: AbstractControl): ValidationErrors | null => {
-      const maxTeams = control.value;
-      const teamsPerGroup = this.form.get('teamsPerGroup')?.value;
-
-      if (!maxTeams || !teamsPerGroup) return null;
-
-      if (maxTeams % teamsPerGroup !== 0) {
-        return { divisibleBy: true };
+  private onNumberOfGroupsChange(): void {
+    if (this.advancingPerGroup && this.numberOfGroups && this.maxTeams) {
+      const minGroupSize = Math.floor(this.maxTeams / this.numberOfGroups);
+      const minAdvancing = this.numberOfGroups === 1 ? 2 : 1;
+      if (this.advancingPerGroup >= minGroupSize || this.advancingPerGroup < minAdvancing) {
+        this.form.patchValue({ advancingPerGroup: null }, { emitEvent: false });
       }
-
-      return null;
-    };
+    }
   }
 
-  // Handle form submission
-  submit(): void {
-    if (this.form.invalid) {
-      this.markFormGroupTouched(this.form);
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Validation Error',
-        detail: 'Please fix all validation errors before submitting'
-      });
-      return;
+  private updateValidators(): void {
+    const fmt = this.format;
+    const maxTeamsCtrl = this.form.get('maxTeams')!;
+    const groupsCtrl = this.form.get('numberOfGroups')!;
+    const advCtrl = this.form.get('advancingPerGroup')!;
+
+    maxTeamsCtrl.setValidators([Validators.required, Validators.min(4), Validators.max(32)]);
+
+    if (fmt === Format.GroupsOnly || fmt === Format.GroupsAndBracket) {
+      groupsCtrl.setValidators([Validators.required]);
+    } else {
+      groupsCtrl.clearValidators();
     }
+
+    if (fmt === Format.GroupsAndBracket) {
+      advCtrl.setValidators([Validators.required]);
+    } else {
+      advCtrl.clearValidators();
+    }
+
+    maxTeamsCtrl.updateValueAndValidity({ emitEvent: false });
+    groupsCtrl.updateValueAndValidity({ emitEvent: false });
+    advCtrl.updateValueAndValidity({ emitEvent: false });
+  }
+
+  submit(): void {
+    if (!this.isFormValid || this.isSubmitting) return;
 
     this.isSubmitting = true;
+    const request = this.configService.buildCreateRequest(this.form.value);
 
-    const tournament: Tournament = { ...this.form.value };
-
-    // For BracketOnly, teamsPerBracket should equal maxTeams
-    if (tournament.format === Format.BracketOnly) {
-      tournament.teamsPerBracket = tournament.maxTeams;
-    }
-
-    this.tournamentService.createTournament(tournament)
+    this.tournamentService.createTournament(request)
       .pipe(finalize(() => this.isSubmitting = false))
       .subscribe({
         next: (res) => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Success',
-            detail: 'Tournament created successfully!'
-          });
-          setTimeout(() => {
-            this.router.navigate(['/tournament', res.id]);
-          }, 1500);
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Tournament created!' });
+          setTimeout(() => this.router.navigate(['/tournament', res.id]), 1500);
         },
         error: (err) => {
-          console.error('Error creating tournament:', err);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: err.error?.detail || err.error?.message || 'Failed to create tournament. Please try again.'
+            detail: err.error?.detail || err.error?.message || 'Failed to create tournament.'
           });
         }
       });
-  }
-
-  // Utility to mark all form controls as touched to trigger validation messages
-  markFormGroupTouched(formGroup: FormGroup): void {
-    Object.values(formGroup.controls).forEach(control => {
-      control.markAsTouched();
-      if (control instanceof FormGroup) {
-        this.markFormGroupTouched(control);
-      }
-    });
-  }
-
-  // Get error message for tooltip display
-  getErrorMessage(fieldName: string): string | undefined {
-    const control = this.form.get(fieldName);
-
-    if (!control || !control.invalid || !control.touched) {
-      return undefined;
-    }
-
-    let message: string | undefined;
-
-    // Name field errors
-    if (fieldName === 'name') {
-      if (control.hasError('required')) message = 'Tournament name is required';
-      else if (control.hasError('minlength')) message = 'Name must be at least 4 characters';
-      else if (control.hasError('maxlength')) message = 'Name cannot exceed 100 characters';
-    }
-
-    // Description field errors
-    else if (fieldName === 'description') {
-      if (control.hasError('maxlength')) message = 'Description cannot exceed 250 characters';
-    }
-
-    // Format field errors
-    else if (fieldName === 'format') {
-      if (control.hasError('required')) message = 'Please select a tournament format';
-    }
-
-    // MaxTeams field errors (Bracket)
-    else if (fieldName === 'maxTeams') {
-      if (control.hasError('required')) message = 'Tournament size is required';
-      else if (control.hasError('powerOfTwo')) message = 'Must be power of 2 (2, 4, 8, 16, 32)';
-      else if (control.hasError('divisibleBy')) message = 'Must be divisible by group size';
-    }
-
-    // TeamsPerGroup field errors
-    else if (fieldName === 'teamsPerGroup') {
-      if (control.hasError('required')) message = 'Required';
-      else if (control.hasError('min') || control.hasError('max')) message = 'Must be 2-16';
-    }
-
-    // TeamsPerBracket field errors
-    else if (fieldName === 'teamsPerBracket') {
-      if (control.hasError('required')) message = 'Required';
-    }
-
-    return message;
   }
 }

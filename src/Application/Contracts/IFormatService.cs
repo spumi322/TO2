@@ -9,6 +9,5 @@ namespace Application.Contracts
         int GetTotalGames(BestOf bestOf);
         int GetGamesToWin(BestOf bestOf);
         FormatMetadata GetFormatMetadata(Format format);
-        int CalculateNumberOfGroups(Format format, int maxTeams, int teamsPerGroup);
     }
 }

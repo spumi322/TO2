@@ -13,5 +13,6 @@ namespace Application.Contracts
         Task BroadcastTeamRemoved(long tournamentId, long teamId, string updatedBy);
         Task BroadcastGroupsStarted(long tournamentId, string updatedBy);
         Task BroadcastBracketStarted(long tournamentId, string updatedBy);
+        Task BroadcastTournamentDeleted(long tournamentId, string deletedBy);
     }
 }

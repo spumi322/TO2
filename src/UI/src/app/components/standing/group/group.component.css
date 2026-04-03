@@ -5,6 +5,7 @@
 .group-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  align-items: start;
   max-width: 100%;
   gap: 16px;
   padding: 12px;
@@ -59,11 +60,24 @@
   color: inherit;
 }
 
+.group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px;
+}
+
+.inner-box {
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  background: var(--bg-dark);
+}
+
 .group-standings {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
-  background: var(--bg-card);
+  background: transparent;
   color: var(--text-primary);
 }
 
@@ -165,7 +179,8 @@
 
 /* Matches section heading */
 .group-card h4 {
-  margin: 10px 12px 6px 12px;
+  margin: 0;
+  padding: 8px 12px 6px;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text-primary);

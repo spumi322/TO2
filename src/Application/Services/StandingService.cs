@@ -58,24 +58,40 @@ namespace Application.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        private static int NextPowerOfTwo(int n)
+        {
+            if (n <= 1) return 2;
+            int p = 1;
+            while (p < n) p <<= 1;
+            return p;
+        }
+
         public async Task InitializeStandingsForTournamentAsync(
-            long tournamentId, Format format, int maxTeams, int? teamsPerGroup, int? teamsPerBracket)
+            long tournamentId, Format format, int maxTeams, int? numberOfGroups, int? advancingPerGroup)
         {
             var metadata = _formatService.GetFormatMetadata(format);
 
             if (metadata.RequiresBracket)
             {
-                var standing = new Standing("Main Bracket", teamsPerBracket, StandingType.Bracket);
+                int bracketSize = format == Format.BracketOnly
+                    ? NextPowerOfTwo(maxTeams)
+                    : NextPowerOfTwo(numberOfGroups!.Value * advancingPerGroup!.Value);
+
+                var standing = new Standing("Main Bracket", bracketSize, StandingType.Bracket);
                 standing.TournamentId = tournamentId;
                 await _standingRepository.AddAsync(standing);
             }
 
-            if (metadata.RequiresGroups && teamsPerGroup.HasValue)
+            if (metadata.RequiresGroups && numberOfGroups.HasValue)
             {
-                int groupCount = _formatService.CalculateNumberOfGroups(format, maxTeams, teamsPerGroup.Value);
-                for (int i = 0; i < groupCount; i++)
+                int groups = numberOfGroups.Value;
+                int baseSize = maxTeams / groups;
+                int extra = maxTeams % groups;
+
+                for (int i = 0; i < groups; i++)
                 {
-                    var standing = new Standing($"Group {i + 1}", teamsPerGroup, StandingType.Group);
+                    int groupSize = baseSize + (i < extra ? 1 : 0);
+                    var standing = new Standing($"Group {i + 1}", groupSize, StandingType.Group);
                     standing.TournamentId = tournamentId;
                     await _standingRepository.AddAsync(standing);
                 }
@@ -144,6 +160,12 @@ namespace Application.Services
             return allGroupsFinished;
         }
 
+        private static double WinRate(GroupEntry e) =>
+            e.Wins + e.Losses == 0 ? 0.0 : (double)e.Wins / (e.Wins + e.Losses);
+
+
+        // NOTED N+1 PROBLEM EXAMPLE, LEAVE IT FOR EDUCATIONAL PURPOSE
+        // var teams = await _teamRepository.FindAllAsync(t => teamIds.Contains(t.Id));
         public async Task<List<Team>> GetTeamsForBracketByFormat(long tournamentId)
         {
             var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
@@ -159,18 +181,11 @@ namespace Application.Services
                 var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(tt => tt.TournamentId == tournamentId);
                 var teamIds = tournamentTeams.Select(tt => tt.TeamId).ToList();
 
-                var teams = new List<Team>();
-                foreach (var teamId in teamIds)
-                {
-                    var team = await _teamRepository.GetByIdAsync(teamId);
-                    if (team != null)
-                    {
-                        teams.Add(team);
-                    }
-                }
+                var teams = await _teamRepository.FindAllAsync(t => teamIds.Contains(t.Id));
 
                 _logger.LogInformation("{Count} registered teams selected for bracket", teams.Count);
-                return teams;
+
+                return teams.ToList();
             }
 
             // BracketAndGroup: Advanced teams from groups
@@ -178,115 +193,44 @@ namespace Application.Services
 
             var standings = await GetStandingsAsync(tournamentId);
             var groups = standings.Where(s => s.StandingType == StandingType.Group).ToList();
-            var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket)
-                ?? throw new NotFoundException("Bracket standing not found");
-
             if (groups.Count == 0)
                 throw new NotFoundException("No groups found for BracketAndGroup tournament");
 
-            int teamsAdvancingPerGroup = bracket.MaxTeams / groups.Count;
-            var advancedTeams = new List<Team>();
+            int teamsAdvancingPerGroup = tournament.AdvancingPerGroup
+                ?? throw new InvalidOperationException("AdvancingPerGroup not set on tournament.");
 
-            _logger.LogInformation("Teams advancing per group: {TeamsPerGroup} (Bracket: {BracketSize}, Groups: {GroupCount})",
-                teamsAdvancingPerGroup, bracket.MaxTeams, groups.Count);
+            _logger.LogInformation("Teams advancing per group: {TeamsPerGroup} (Groups: {GroupCount})",
+                teamsAdvancingPerGroup, groups.Count);
+
+            var allGroupIds = groups.Select(g => g.Id).ToList();
+            var allGroupEntries = await _groupRepository.FindAllAsync(g => allGroupIds.Contains(g.StandingId));
 
             foreach (var group in groups)
             {
-                var groupEntries = await _groupRepository.FindAllAsync(g => g.StandingId == group.Id);
-                var rankedTeams = groupEntries
-                    .OrderByDescending(g => g.Points)
+                var ranked = allGroupEntries
+                    .Where(g => g.StandingId == group.Id)
+                    .OrderByDescending(g => WinRate(g))
                     .ThenByDescending(g => g.Wins)
                     .ThenBy(g => g.Losses)
-                    .Take(teamsAdvancingPerGroup)
                     .ToList();
 
-                foreach (var groupEntry in rankedTeams)
-                {
-                    groupEntry.Status = TeamStatus.Advanced;
+                ranked.Take(teamsAdvancingPerGroup).ToList()
+                    .ForEach(e => e.Status = TeamStatus.Advanced);
 
-                    var team = await _teamRepository.GetByIdAsync(groupEntry.TeamId);
-                    if (team != null)
-                    {
-                        advancedTeams.Add(team);
-                        _logger.LogInformation("Team {TeamName} advanced from {GroupName}", team.Name, group.Name);
-                    }
-                }
-
-                // Mark eliminated teams
-                var eliminatedEntries = groupEntries
-                    .OrderByDescending(g => g.Points)
-                    .ThenByDescending(g => g.Wins)
-                    .ThenBy(g => g.Losses)
-                    .Skip(teamsAdvancingPerGroup)
-                    .ToList();
-
-                foreach (var groupEntry in eliminatedEntries)
-                {
-                    groupEntry.Status = TeamStatus.Eliminated;
-                    groupEntry.Eliminated = true;
-                    _logger.LogInformation("Team {TeamName} eliminated from {GroupName}", groupEntry.TeamName, group.Name);
-                }
+                ranked.Skip(teamsAdvancingPerGroup).ToList()
+                    .ForEach(e => { e.Status = TeamStatus.Eliminated; e.Eliminated = true; });
             }
+
+            // 1 query for all advancing teams
+            var advancingTeamIds = allGroupEntries
+                .Where(e => e.Status == TeamStatus.Advanced)
+                .Select(e => e.TeamId)
+                .ToList();
+
+            var advancedTeams = await _teamRepository.FindAllAsync(t => advancingTeamIds.Contains(t.Id));
 
             _logger.LogInformation("{Count} teams advanced from {GroupCount} groups", advancedTeams.Count, groups.Count);
-            return advancedTeams;
-        }
-
-        // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ MARK FOR REFACTOR
-        [Obsolete("Use GetTeamsForBracketByFormat instead")]
-        public async Task<List<Team>> GetTeamsForBracket(long tournamentId)
-        {
-            var advancingTeams = new List<Team>();
-            var standings = await GetStandingsAsync(tournamentId);
-            var groups = standings.Where(s => s.StandingType == StandingType.Group).ToList();
-            var bracket = standings.FirstOrDefault(s => s.StandingType == StandingType.Bracket)
-                ?? throw new NotFoundException("Bracket standing not found");
-
-            if (groups.Count == 0)
-                throw new NotFoundException("No groups found");
-
-            // Calculate how many teams advance per group
-            int teamsAdvancingPerGroup = bracket.MaxTeams / groups.Count;
-
-            _logger.LogInformation($"Teams advancing per group: {teamsAdvancingPerGroup} (Bracket: {bracket.MaxTeams}, Groups: {groups.Count})");
-
-            foreach (var group in groups)
-            {
-                // Get group entries using repository and sort in memory
-                var allGroupEntries = await _groupRepository.FindAllAsync(ge => ge.StandingId == group.Id);
-                var groupEntries = allGroupEntries
-                    .OrderByDescending(g => g.Points)
-                    .ThenByDescending(g => g.Wins)
-                    .ThenBy(g => g.Losses)
-                    .ToList();
-
-                // Top X teams advance
-                var advancing = groupEntries.Take(teamsAdvancingPerGroup).ToList();
-                var eliminated = groupEntries.Skip(teamsAdvancingPerGroup).ToList();
-
-                foreach (var groupEntry in advancing)
-                {
-                    groupEntry.Status = TeamStatus.Advanced;
-
-                    // Fetch Team entity using repository
-                    var team = await _teamRepository.GetByIdAsync(groupEntry.TeamId);
-
-                    if (team != null)
-                    {
-                        advancingTeams.Add(team);
-                        _logger.LogInformation($"Team {team.Name} advanced from {group.Name}");
-                    }
-                }
-
-                foreach (var groupEntry in eliminated)
-                {
-                    groupEntry.Status = TeamStatus.Eliminated;
-                    groupEntry.Eliminated = true;
-                    _logger.LogInformation($"Team {groupEntry.TeamName} eliminated from {group.Name}");
-                }
-            }
-
-            return advancingTeams;
+            return advancedTeams.ToList();
         }
 
         public async Task<List<TeamPlacementDTO>> GetFinalResultsAsync(long tournamentId)

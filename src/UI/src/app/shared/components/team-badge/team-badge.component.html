@@ -1,0 +1,6 @@
+<div class="team-badge">
+  <div class="shield" [class.shield-lg]="size === 'lg'" [class.shield-sm]="size === 'sm'" [class.shield-xs]="size === 'xs'" [ngStyle]="shieldStyle">
+    <span class="initials">{{ initials }}</span>
+  </div>
+  <span class="badge-name" [class.badge-name-lg]="size === 'lg'" [class.badge-name-sm]="size === 'sm'" [class.badge-name-xs]="size === 'xs'">{{ teamName }}</span>
+</div>

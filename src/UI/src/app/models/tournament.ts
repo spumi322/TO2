@@ -1,5 +1,14 @@
 import { Team } from "./team";
 
+export interface CreateTournamentRequest {
+  name: string;
+  description: string;
+  maxTeams: number;
+  format: Format;
+  numberOfGroups?: number;
+  advancingPerGroup?: number;
+}
+
 export interface Tournament {
   id: number;
   name: string;

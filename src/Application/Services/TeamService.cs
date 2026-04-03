@@ -5,6 +5,7 @@ using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Exceptions;
+using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Services
@@ -19,6 +20,7 @@ namespace Application.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ISignalRService _signalRService;
         private readonly ITenantService _tenantService;
+        private readonly ITournamentStateMachine _stateMachine;
 
         public TeamService(IRepository<Team> teamRepository,
                            IRepository<Tournament> tournamentRepository,
@@ -27,7 +29,8 @@ namespace Application.Services
                            ILogger<TeamService> logger,
                            IUnitOfWork unitOfWork,
                            ISignalRService signalRService,
-                           ITenantService tenantService)
+                           ITenantService tenantService,
+                           ITournamentStateMachine stateMachine)
         {
             _teamRepository = teamRepository;
             _tournamentRepository = tournamentRepository;
@@ -37,6 +40,7 @@ namespace Application.Services
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
             _tenantService = tenantService;
+            _stateMachine = stateMachine;
         }
 
         public async Task<CreateTeamResponseDTO> CreateTeamAsync(CreateTeamRequestDTO request)
@@ -90,8 +94,7 @@ namespace Application.Services
             var tournament = await _tournamentRepository.GetByIdAsync(request.TournamentId)
                 ?? throw new NotFoundException("Tournament", request.TournamentId);
 
-            // Check registration open
-            if (!tournament.IsRegistrationOpen)
+            if (!_stateMachine.CanModifyTeams(tournament.Status))
                 throw new ForbiddenException("Tournament registration is closed");
 
             if (await _tournamentTeamRepository.ExistsInTournamentAsync(request.TeamId, request.TournamentId))
@@ -121,8 +124,7 @@ namespace Application.Services
             var existingTournament = await _tournamentRepository.GetByIdAsync(tournamentId)
                 ?? throw new NotFoundException("Tournament", tournamentId);
 
-            // Check if registration is still open
-            if (!existingTournament.IsRegistrationOpen)
+            if (!_stateMachine.CanModifyTeams(existingTournament.Status))
                 throw new ForbiddenException("Cannot remove teams after tournament has started");
 
             var tournamentTeam = await _tournamentTeamRepository.GetByTeamAndTournamentAsync(teamId, tournamentId)

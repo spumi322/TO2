@@ -15,6 +15,7 @@ namespace Application.Services
     public class TournamentService : ITournamentService
     {
         private readonly ITournamentRepository _tournamentRepository;
+        private readonly IRepository<Team> _teamRepository;
         private readonly IStandingService _standingService;
         private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
@@ -24,6 +25,7 @@ namespace Application.Services
         private readonly IUnitOfWork _unitOfWork;
 
         public TournamentService(ITournamentRepository tournamentRepository,
+                                 IRepository<Team> teamRepository,
                                  IStandingService standingService,
                                  IMapper mapper,
                                  ILogger<TournamentService> logger,
@@ -33,6 +35,7 @@ namespace Application.Services
                                  ITenantService tenantService)
         {
             _tournamentRepository = tournamentRepository;
+            _teamRepository = teamRepository;
             _standingService = standingService;
             _mapper = mapper;
             _logger = logger;
@@ -73,7 +76,7 @@ namespace Application.Services
                 await _unitOfWork.SaveChangesAsync(); // flush to get tournament.Id
 
                 await _standingService.InitializeStandingsForTournamentAsync(
-                    tournament.Id, request.Format, tournament.MaxTeams, request.TeamsPerGroup, request.TeamsPerBracket);
+                    tournament.Id, request.Format, tournament.MaxTeams, request.NumberOfGroups, request.AdvancingPerGroup);
 
                 await _unitOfWork.CommitTransactionAsync(); // saves standings + commits
             }
@@ -128,6 +131,28 @@ namespace Application.Services
             existingTournament.Status = TournamentStatus.Cancelled;
 
             await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task DeleteTournamentAsync(long id)
+        {
+            var tournament = await _tournamentRepository.GetWithTeamsAsync(id)
+                ?? throw new NotFoundException("Tournament", id);
+
+            if (tournament.Status != TournamentStatus.Setup)
+                throw new InvalidOperationException("Only Setup-stage tournaments can be deleted.");
+
+            var exclusiveTeams = tournament.TournamentTeams
+                .Where(tt => tt.Team.TournamentParticipations.Count == 1)
+                .Select(tt => tt.Team)
+                .ToList();
+
+            foreach (var team in exclusiveTeams)
+                await _teamRepository.DeleteAsync(team);
+
+            await _tournamentRepository.DeleteAsync(tournament);
+            await _unitOfWork.SaveChangesAsync();
+
+            await _signalRService.BroadcastTournamentDeleted(id, _tenantService.GetCurrentUserName());
         }
 
         public async Task SetTournamentStatusAsync(long id, TournamentStatus status)

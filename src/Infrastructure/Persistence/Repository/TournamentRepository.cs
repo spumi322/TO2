@@ -21,6 +21,7 @@ namespace Infrastructure.Persistence.Repository
             => await _dbSet
                 .Include(t => t.TournamentTeams)
                     .ThenInclude(tt => tt.Team)
+                        .ThenInclude(t => t.TournamentParticipations)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
         public async Task<IReadOnlyList<Tournament>> GetAllForListAsync()

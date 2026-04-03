@@ -57,15 +57,17 @@ namespace TO2.SignalR
 
         public async Task BroadcastTeamAdded(long tournamentId, long teamId, string updatedBy)
         {
+            var tenantId = tenantService.GetCurrentTenantId();
             await _hubContext.Clients
-                .Group($"tournament-{tournamentId}")
+                .Group($"tenant-{tenantId}")
                 .SendAsync("TeamAdded", new { tournamentId, teamId, updatedBy });
         }
 
         public async Task BroadcastTeamRemoved(long tournamentId, long teamId, string updatedBy)
         {
+            var tenantId = tenantService.GetCurrentTenantId();
             await _hubContext.Clients
-                .Group($"tournament-{tournamentId}")
+                .Group($"tenant-{tenantId}")
                 .SendAsync("TeamRemoved", new { tournamentId, teamId, updatedBy });
         }
 
@@ -81,6 +83,14 @@ namespace TO2.SignalR
             await _hubContext.Clients
                 .Group($"tournament-{tournamentId}")
                 .SendAsync("BracketStarted", new { tournamentId, updatedBy });
+        }
+
+        public async Task BroadcastTournamentDeleted(long tournamentId, string deletedBy)
+        {
+            var tenantId = tenantService.GetCurrentTenantId();
+            await _hubContext.Clients
+                .Group($"tenant-{tenantId}")
+                .SendAsync("TournamentDeleted", new { tournamentId, updatedBy = deletedBy });
         }
     }
 }

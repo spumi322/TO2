@@ -40,7 +40,8 @@
           <app-registered-teams-list
             [teams]="tournament?.teams || []"
             [isRegistrationOpen]="tournament?.isRegistrationOpen || false"
-            (removeTeam)="confirmRemoveTeam($event)">
+            (removeTeam)="confirmRemoveTeam($event)"
+            (teamSelected)="onTeamSelected($event)">
           </app-registered-teams-list>
         </div>
       </p-tabPanel>

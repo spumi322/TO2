@@ -1,0 +1,17 @@
+<div class="tm-container">
+  <button class="back-btn" (click)="goBack()">
+    <i class="pi pi-arrow-left"></i> Back to Tournament
+  </button>
+
+  <div class="tm-card" *ngIf="team">
+    <div class="tm-header">
+      <app-team-badge [teamName]="team.name" size="md"></app-team-badge>
+    </div>
+
+    <div class="tm-placeholder">
+      <i class="pi pi-wrench"></i>
+      <p class="placeholder-title">Coming Soon</p>
+      <p class="placeholder-sub">Team management features are under construction.</p>
+    </div>
+  </div>
+</div>

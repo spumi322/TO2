@@ -1,198 +1,356 @@
-<div class="create-tournament-container">
-  <div class="create-tournament-card">
-    <div class="tournament-header">
-      <h2>Create Tournament</h2>
+<div class="configurator-container">
+  <div class="configurator-card">
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="config-form">
+
+      <!-- ── COL 1: Basic info ─────────────────── -->
+      <div class="form-col col-info">
+        <div class="col-header">
+          <h2>Create Tournament</h2>
+        </div>
+        <div class="col-body">
+          <div class="col-content">
+
+          <div class="field">
+            <label for="name">Name</label>
+            <input id="name" type="text" formControlName="name"
+                   [class.invalid]="form.get('name')?.invalid && form.get('name')?.touched"
+                   placeholder="Tournament name" maxlength="60" />
+          </div>
+
+          <div class="field">
+            <label for="description">Description</label>
+            <textarea id="description" formControlName="description" rows="3"
+                      placeholder="Optional description, prizepool, etc."></textarea>
+          </div>
+
+
+          <div class="field field-disabled">
+            <label>Date <span class="coming-soon">coming soon</span></label>
+            <div class="mini-cal">
+              <div class="mini-cal-lock">
+                <i class="pi pi-lock"></i>
+                <span>Coming Soon</span>
+              </div>
+              <div class="mini-cal-header">
+                <span class="mini-cal-nav">&#8249;</span>
+                <span class="mini-cal-month">April 2026</span>
+                <span class="mini-cal-nav">&#8250;</span>
+              </div>
+              <div class="mini-cal-grid">
+                <span class="mini-cal-dow">Mo</span><span class="mini-cal-dow">Tu</span><span class="mini-cal-dow">We</span><span class="mini-cal-dow">Th</span><span class="mini-cal-dow">Fr</span><span class="mini-cal-dow">Sa</span><span class="mini-cal-dow">Su</span>
+                <span class="mini-cal-empty"></span><span class="mini-cal-empty"></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span>
+                <span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span>
+                <span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span>
+                <span>27</span><span>28</span><span>29</span><span>30</span>
+              </div>
+            </div>
+          </div>
+
+          </div><!-- /col-content -->
+          <div class="form-actions">
+            <button type="submit" class="btn-submit" [disabled]="!isFormValid || isSubmitting">
+              {{ isSubmitting ? 'Creating…' : 'Create Tournament' }}
+            </button>
+            <button type="button" class="btn-cancel" routerLink="/tournaments">Cancel</button>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── COL 2: Format config + actions ────── -->
+      <div class="form-col col-params">
+        <div class="col-header">
+          <span class="col-header-title">Configuration</span>
+        </div>
+        <div class="col-body">
+          <div class="col-content">
+
+          <div class="field">
+            <label>Format</label>
+            <div class="format-grid">
+              <label class="format-card" [class.active]="format === Format.GroupsAndBracket">
+                <input type="radio" formControlName="format" [value]="Format.GroupsAndBracket" />
+                <div class="format-card-text">
+                  <span class="format-card-name">Group Stage and Bracket</span>
+                  <span class="format-card-desc">Round-robin groups then playoffs</span>
+                </div>
+              </label>
+              <label class="format-card" [class.active]="format === Format.GroupsOnly">
+                <input type="radio" formControlName="format" [value]="Format.GroupsOnly" />
+                <div class="format-card-text">
+                  <span class="format-card-name">Group Stage</span>
+                  <span class="format-card-desc">Round-robin groups</span>
+                </div>
+              </label>
+              <label class="format-card" [class.active]="format === Format.BracketOnly">
+                <input type="radio" formControlName="format" [value]="Format.BracketOnly" />
+                <div class="format-card-text">
+                  <span class="format-card-name">Bracket Only</span>
+                  <span class="format-card-desc">Single-elimination knockout</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <div class="field-divider"></div>
+
+          <ng-container *ngIf="format !== null">
+
+            <div class="field">
+              <label for="maxTeams">Max Teams</label>
+              <input id="maxTeams" type="number" formControlName="maxTeams"
+                     placeholder="4 – 32" min="4" max="32"
+                     [class.invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched" />
+            </div>
+
+            <div class="field" *ngIf="format === Format.GroupsOnly || format === Format.GroupsAndBracket">
+              <label for="numberOfGroups">Number of Groups</label>
+              <select id="numberOfGroups" formControlName="numberOfGroups"
+                      [class.invalid]="form.get('numberOfGroups')?.invalid && form.get('numberOfGroups')?.touched">
+                <option [ngValue]="null" disabled>— select —</option>
+                <option *ngFor="let n of numberOfGroupsOptions" [value]="n">{{ n }}</option>
+              </select>
+            </div>
+
+            <div class="field" *ngIf="format === Format.GroupsAndBracket">
+              <label for="advancingPerGroup">Advancing Per Group</label>
+              <select id="advancingPerGroup" formControlName="advancingPerGroup"
+                      [class.invalid]="form.get('advancingPerGroup')?.invalid && form.get('advancingPerGroup')?.touched"
+                      [attr.disabled]="numberOfGroups ? null : ''">
+                <option [ngValue]="null" disabled>— select —</option>
+                <option *ngFor="let n of advancingPerGroupOptions" [value]="n">{{ n }}</option>
+              </select>
+            </div>
+
+          </ng-container>
+
+          </div><!-- /col-content -->
+
+          <div class="col-footer">
+            <div class="field-divider"></div>
+            <div class="field field-disabled">
+              <label>Games Per Match <span class="coming-soon">coming soon</span></label>
+              <select disabled>
+                <option>Best of 3</option>
+              </select>
+              <span class="field-hint">Each match is played until a team wins 2 games</span>
+            </div>
+            <div class="field field-disabled">
+              <label>Seeding <span class="coming-soon">coming soon</span></label>
+              <select disabled>
+                <option>Random</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </form>
+
+    <!-- ── COL 3: Live preview ───────────────── -->
+    <div class="preview-panel">
+      <div class="preview-panel-title">Structure Preview</div>
+
+      <div class="fhp-cards" *ngIf="!maxTeams">
+
+        <!-- Groups + Bracket -->
+        <div class="fhp-card">
+          <div class="fhp-dot"></div>
+          <svg viewBox="0 0 148 88">
+            <rect x="3" y="8" width="28" height="72" rx="3" fill="#1a1f2e" stroke="#374151" stroke-width="0.8"/>
+            <line x1="4"  y1="26" x2="30" y2="26" stroke="#374151" stroke-width="0.4"/>
+            <line x1="4"  y1="44" x2="30" y2="44" stroke="#374151" stroke-width="0.4"/>
+            <line x1="4"  y1="62" x2="30" y2="62" stroke="#374151" stroke-width="0.4"/>
+            <circle cx="11.5" cy="17" r="4"   fill="#43a047"/>
+            <rect x="18" y="15" width="10" height="4" rx="1.5" fill="#4a5568"/>
+            <circle cx="11.5" cy="35" r="4"   fill="#43a047" opacity="0.6"/>
+            <rect x="18" y="33" width="8"  height="4" rx="1.5" fill="#4a5568"/>
+            <circle cx="11.5" cy="53" r="4"   fill="#374151"/>
+            <rect x="18" y="51" width="9"  height="4" rx="1.5" fill="#374151" opacity="0.65"/>
+            <circle cx="11.5" cy="71" r="4"   fill="#374151" opacity="0.4"/>
+            <rect x="18" y="69" width="7"  height="4" rx="1.5" fill="#374151" opacity="0.4"/>
+            <rect x="36" y="8" width="28" height="72" rx="3" fill="#1a1f2e" stroke="#374151" stroke-width="0.8"/>
+            <line x1="37" y1="26" x2="63" y2="26" stroke="#374151" stroke-width="0.4"/>
+            <line x1="37" y1="44" x2="63" y2="44" stroke="#374151" stroke-width="0.4"/>
+            <line x1="37" y1="62" x2="63" y2="62" stroke="#374151" stroke-width="0.4"/>
+            <circle cx="44.5" cy="17" r="4"   fill="#43a047"/>
+            <rect x="51" y="15" width="10" height="4" rx="1.5" fill="#4a5568"/>
+            <circle cx="44.5" cy="35" r="4"   fill="#43a047" opacity="0.6"/>
+            <rect x="51" y="33" width="8"  height="4" rx="1.5" fill="#4a5568"/>
+            <circle cx="44.5" cy="53" r="4"   fill="#374151"/>
+            <rect x="51" y="51" width="9"  height="4" rx="1.5" fill="#374151" opacity="0.65"/>
+            <circle cx="44.5" cy="71" r="4"   fill="#374151" opacity="0.4"/>
+            <rect x="51" y="69" width="7"  height="4" rx="1.5" fill="#374151" opacity="0.4"/>
+            <line x1="67" y1="24" x2="75" y2="24" stroke="#43a047" stroke-width="1.2" opacity="0.8"/>
+            <polygon points="75,21.5 79,24 75,26.5" fill="#43a047" opacity="0.8"/>
+            <line x1="67" y1="62" x2="75" y2="62" stroke="#43a047" stroke-width="1.2" opacity="0.8"/>
+            <polygon points="75,59.5 79,62 75,64.5" fill="#43a047" opacity="0.8"/>
+            <rect x="82" y="13" width="17" height="8" rx="2" fill="#242938" stroke="#374151" stroke-width="0.7"/>
+            <rect x="82" y="25" width="17" height="8" rx="2" fill="#242938" stroke="#374151" stroke-width="0.7"/>
+            <rect x="82" y="54" width="17" height="8" rx="2" fill="#242938" stroke="#374151" stroke-width="0.7"/>
+            <rect x="82" y="66" width="17" height="8" rx="2" fill="#242938" stroke="#374151" stroke-width="0.7"/>
+            <polyline points="99,17 105,17 105,29 99,29" fill="none" stroke="#4a5568" stroke-width="0.7"/>
+            <line x1="105" y1="23"   x2="108" y2="23"   stroke="#4a5568" stroke-width="0.7"/>
+            <polyline points="99,58 105,58 105,70 99,70" fill="none" stroke="#4a5568" stroke-width="0.7"/>
+            <line x1="105" y1="64"   x2="108" y2="64"   stroke="#4a5568" stroke-width="0.7"/>
+            <rect x="108" y="19" width="16" height="8" rx="2" fill="#242938" stroke="#374151" stroke-width="0.7"/>
+            <rect x="108" y="60" width="16" height="8" rx="2" fill="#242938" stroke="#374151" stroke-width="0.7"/>
+            <polyline points="124,23 130,23 130,64 124,64" fill="none" stroke="#4a5568" stroke-width="0.7"/>
+            <line x1="130" y1="43.5" x2="133" y2="43.5" stroke="#43a047" stroke-width="0.8"/>
+            <rect x="131" y="38.5" width="14" height="10" rx="2" fill="#162016" stroke="#43a047" stroke-width="1"/>
+            <circle cx="138" cy="43.5" r="2.5" fill="#43a047"/>
+          </svg>
+          <div class="fhp-lbl">Groups + Bracket</div>
+          <div class="fhp-dsc">Group stage first,<br/>top teams advance.</div>
+        </div>
+
+        <!-- Groups Only -->
+        <div class="fhp-card">
+          <div class="fhp-dot"></div>
+          <svg viewBox="0 0 148 86">
+            <rect x="5" y="4" width="62" height="78" rx="4" fill="#1a1f2e" stroke="#374151" stroke-width="1"/>
+            <line x1="6"  y1="23.5" x2="66"  y2="23.5" stroke="#374151" stroke-width="0.5"/>
+            <line x1="6"  y1="43"   x2="66"  y2="43"   stroke="#374151" stroke-width="0.5"/>
+            <line x1="6"  y1="62.5" x2="66"  y2="62.5" stroke="#374151" stroke-width="0.5"/>
+            <circle cx="18" cy="14"   r="5.5" fill="#43a047"/>
+            <rect x="27" y="11.5" width="24" height="5" rx="2" fill="#4a5568"/>
+            <rect x="55" y="11.5" width="9"  height="5" rx="2" fill="#43a047" opacity="0.45"/>
+            <circle cx="18" cy="33.5" r="5.5" fill="#43a047" opacity="0.6"/>
+            <rect x="27" y="31"   width="18" height="5" rx="2" fill="#4a5568"/>
+            <rect x="55" y="31"   width="9"  height="5" rx="2" fill="#374151" opacity="0.8"/>
+            <circle cx="18" cy="53"   r="5.5" fill="#374151"/>
+            <rect x="27" y="50.5" width="21" height="5" rx="2" fill="#374151"/>
+            <rect x="55" y="50.5" width="9"  height="5" rx="2" fill="#374151" opacity="0.6"/>
+            <circle cx="18" cy="72.5" r="5.5" fill="#374151" opacity="0.45"/>
+            <rect x="27" y="70"   width="15" height="5" rx="2" fill="#374151" opacity="0.45"/>
+            <rect x="55" y="70"   width="9"  height="5" rx="2" fill="#374151" opacity="0.35"/>
+            <rect x="81" y="4" width="62" height="78" rx="4" fill="#1a1f2e" stroke="#374151" stroke-width="1"/>
+            <line x1="82" y1="23.5" x2="142" y2="23.5" stroke="#374151" stroke-width="0.5"/>
+            <line x1="82" y1="43"   x2="142" y2="43"   stroke="#374151" stroke-width="0.5"/>
+            <line x1="82" y1="62.5" x2="142" y2="62.5" stroke="#374151" stroke-width="0.5"/>
+            <circle cx="94" cy="14"   r="5.5" fill="#43a047"/>
+            <rect x="103" y="11.5" width="24" height="5" rx="2" fill="#4a5568"/>
+            <rect x="131" y="11.5" width="9"  height="5" rx="2" fill="#43a047" opacity="0.45"/>
+            <circle cx="94" cy="33.5" r="5.5" fill="#43a047" opacity="0.6"/>
+            <rect x="103" y="31"   width="18" height="5" rx="2" fill="#4a5568"/>
+            <rect x="131" y="31"   width="9"  height="5" rx="2" fill="#374151" opacity="0.8"/>
+            <circle cx="94" cy="53"   r="5.5" fill="#374151"/>
+            <rect x="103" y="50.5" width="21" height="5" rx="2" fill="#374151"/>
+            <rect x="131" y="50.5" width="9"  height="5" rx="2" fill="#374151" opacity="0.6"/>
+            <circle cx="94" cy="72.5" r="5.5" fill="#374151" opacity="0.45"/>
+            <rect x="103" y="70"   width="15" height="5" rx="2" fill="#374151" opacity="0.45"/>
+            <rect x="131" y="70"   width="9"  height="5" rx="2" fill="#374151" opacity="0.35"/>
+          </svg>
+          <div class="fhp-lbl">Groups only</div>
+          <div class="fhp-dsc">Everyone plays everyone.<br/>Final standings decide.</div>
+        </div>
+
+        <!-- Bracket Only -->
+        <div class="fhp-card">
+          <div class="fhp-dot"></div>
+          <svg viewBox="0 0 148 88">
+            <rect x="4" y="10" width="30" height="11" rx="3" fill="#242938" stroke="#374151" stroke-width="0.8"/>
+            <rect x="4" y="25" width="30" height="11" rx="3" fill="#242938" stroke="#374151" stroke-width="0.8"/>
+            <rect x="4" y="52" width="30" height="11" rx="3" fill="#242938" stroke="#374151" stroke-width="0.8"/>
+            <rect x="4" y="67" width="30" height="11" rx="3" fill="#242938" stroke="#374151" stroke-width="0.8"/>
+            <polyline points="34,15.5 45,15.5 45,30.5 34,30.5" fill="none" stroke="#4a5568" stroke-width="0.8"/>
+            <line x1="45" y1="23"   x2="52" y2="23"   stroke="#4a5568" stroke-width="0.8"/>
+            <polyline points="34,57.5 45,57.5 45,72.5 34,72.5" fill="none" stroke="#4a5568" stroke-width="0.8"/>
+            <line x1="45" y1="65"   x2="52" y2="65"   stroke="#4a5568" stroke-width="0.8"/>
+            <rect x="52" y="17" width="30" height="11" rx="3" fill="#242938" stroke="#374151" stroke-width="0.8"/>
+            <rect x="52" y="59" width="30" height="11" rx="3" fill="#242938" stroke="#374151" stroke-width="0.8"/>
+            <polyline points="82,22.5 93,22.5 93,64.5 82,64.5" fill="none" stroke="#4a5568" stroke-width="0.8"/>
+            <line x1="93" y1="43.5" x2="100" y2="43.5" stroke="#43a047" stroke-width="0.9"/>
+            <rect x="98" y="37" width="46" height="13" rx="4" fill="#43a047" opacity="0.08"/>
+            <rect x="100" y="38" width="42" height="11" rx="3" fill="#162016" stroke="#43a047" stroke-width="1.2"/>
+            <circle cx="121" cy="43.5" r="3.5" fill="#43a047"/>
+            <circle cx="121" cy="43.5" r="5.5" fill="none" stroke="#43a047" stroke-width="0.5" opacity="0.4"/>
+          </svg>
+          <div class="fhp-lbl">Bracket only</div>
+          <div class="fhp-dsc">Single elimination.<br/>Lose once, you're out.</div>
+        </div>
+
+      </div>
+
+
+      <ng-container *ngIf="format !== null && maxTeams > 0">
+
+        <div class="preview-empty-state" *ngIf="!maxTeamsInRange">
+          Max teams must be between 4 and 32
+        </div>
+
+        <ng-container *ngIf="maxTeamsInRange">
+
+          <div class="preview-section" *ngIf="format === Format.GroupsOnly || format === Format.GroupsAndBracket">
+            <div class="preview-empty-state" style="padding: 0.5rem 0;" *ngIf="!numberOfGroups">
+              Select number of groups
+            </div>
+
+            <ng-container *ngIf="groupPreviewReady">
+              <div class="unequal-badge" *ngIf="hasUnequalGroups">Unequal groups</div>
+              <div class="group-cards-grid">
+                <div class="preview-group-card" *ngFor="let size of groupSizes; let i = index">
+                  <div class="preview-group-card-header">Group {{ i + 1 }}</div>
+                  <div class="preview-group-card-body">
+                    <div class="preview-group-size">{{ size }}</div>
+                    <div class="preview-group-label">teams</div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+
+          <div class="preview-section" *ngIf="format === Format.BracketOnly || format === Format.GroupsAndBracket">
+            <div class="preview-empty-state" style="padding: 0.5rem 0;"
+                 *ngIf="format === Format.GroupsAndBracket && !bracketPreviewReady">
+              Select advancing teams to compute bracket
+            </div>
+
+            <ng-container *ngIf="bracketPreviewReady && bracketSize > 0">
+              <div class="bracket-stats">
+                <div class="bracket-stat">
+                  <div class="bracket-stat-val">{{ bracketSize }}</div>
+                  <div class="bracket-stat-lbl">Bracket size</div>
+                </div>
+                <div class="bracket-stat">
+                  <div class="bracket-stat-val">{{ advancingTeamCount }}</div>
+                  <div class="bracket-stat-lbl">Teams</div>
+                </div>
+                <div class="bracket-stat" *ngIf="byeCount > 0">
+                  <div class="bracket-stat-val bye">{{ byeCount }}</div>
+                  <div class="bracket-stat-lbl">BYEs</div>
+                </div>
+              </div>
+
+              <div class="bt-bracket" [style]="{'height': bracketTreeHeight + 'rem', '--slot-h': slotH + 'rem'}">
+                <div class="bt-round"
+                     *ngFor="let round of bracketRounds; let rIdx = index"
+                     [class.bt-round-last]="round.isLast"
+                     [style]="{'--conn-h': round.connectorHeight + 'rem'}">
+                  <div class="bt-match"
+                       *ngFor="let m of round.matches; let mIdx = index"
+                       [class.bt-match-odd]="mIdx % 2 === 0"
+                       [class.bt-match-even]="mIdx % 2 === 1"
+                       [style.margin-top]="round.matchMargin + 'rem'"
+                       [style.margin-bottom]="round.matchMargin + 'rem'">
+                    <div class="bt-slot" [class.bt-bye]="m.topBye" [class.bt-adv]="m.bottomBye" [class.bt-ph]="m.placeholder">
+                      <span *ngIf="!m.placeholder">{{ m.top }}</span>
+                    </div>
+                    <div class="bt-slot" [class.bt-bye]="m.bottomBye" [class.bt-adv]="m.topBye" [class.bt-ph]="m.placeholder">
+                      <span *ngIf="!m.placeholder">{{ m.bottom }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+
+        </ng-container>
+      </ng-container>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="submit()" class="tournament-form">
-      <!-- Tournament Name -->
-      <div class="field">
-        <label for="name">Tournament Name</label>
-        <input id="name"
-               type="text"
-               formControlName="name"
-               [class.invalid]="form.get('name')?.invalid && form.get('name')?.touched"
-               [pTooltip]="getErrorMessage('name')"
-               tooltipPosition="right"
-               [showDelay]="0"
-               tooltipStyleClass="error-tooltip" />
-      </div>
-
-      <!-- Description -->
-      <div class="field">
-        <label for="description">Description</label>
-        <textarea id="description"
-                  formControlName="description"
-                  rows="1"
-                  [class.invalid]="form.get('description')?.invalid && form.get('description')?.touched"
-                  [pTooltip]="getErrorMessage('description')"
-                  tooltipPosition="right"
-                  [showDelay]="0"
-                  tooltipStyleClass="error-tooltip"></textarea>
-      </div>
-
-      <!-- Tournament Format -->
-      <div class="field">
-        <label>Tournament Format</label>
-        <div class="format-options">
-          <div class="format-option"
-               [class.selected]="form.get('format')?.value === Format.BracketOnly"
-               (click)="selectFormat(Format.BracketOnly)">
-            <input type="radio"
-                   [value]="Format.BracketOnly"
-                   formControlName="format"
-                   id="format-bracket" />
-            <div class="format-details">
-              <span class="format-name">Bracket Only</span>
-              <span class="format-desc">Single-elimination knockout</span>
-            </div>
-          </div>
-
-          <div class="format-option"
-               [class.selected]="form.get('format')?.value === Format.GroupsAndBracket"
-               (click)="selectFormat(Format.GroupsAndBracket)">
-            <input type="radio"
-                   [value]="Format.GroupsAndBracket"
-                   formControlName="format"
-                   id="format-groups-bracket" />
-            <div class="format-details">
-              <span class="format-name">Groups + Bracket</span>
-              <span class="format-desc">Groups then playoffs Bracket</span>
-            </div>
-          </div>
-
-          <div class="format-option"
-               [class.selected]="form.get('format')?.value === Format.GroupsOnly"
-               (click)="selectFormat(Format.GroupsOnly)">
-            <input type="radio"
-                   [value]="Format.GroupsOnly"
-                   formControlName="format"
-                   id="format-groups" />
-            <div class="format-details">
-              <span class="format-name">Groups Only</span>
-              <span class="format-desc">Round-robin Groups</span>
-            </div>
-          </div>
-        </div>
-        <small class="error-message" *ngIf="form.get('format')?.invalid && form.get('format')?.touched">
-          Please select a tournament format
-        </small>
-      </div>
-
-      <!-- Bracket Only Config -->
-      <div *ngIf="form.get('format')?.value === Format.BracketOnly">
-        <div class="field">
-          <label for="maxTeamsBracket">Tournament Size</label>
-          <select id="maxTeamsBracket"
-                  formControlName="maxTeams"
-                  [class.invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
-                  [pTooltip]="getErrorMessage('maxTeams')"
-                  tooltipPosition="right"
-                  [showDelay]="0"
-                  tooltipStyleClass="error-tooltip">
-            <option value="" disabled selected>Select team count</option>
-            <option *ngFor="let option of bracketSizeOptions" [value]="option.value">
-              {{ option.label }}
-            </option>
-          </select>
-        </div>
-      </div>
-      <!-- Groups Only Config -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsOnly">
-        <div class="field-row">
-          <div class="field">
-            <label for="maxTeamsGB">Total Teams</label>
-            <input id="maxTeamsGB"
-                   type="number"
-                   formControlName="maxTeams"
-                   placeholder="2-32"
-                   min="2"
-                   max="32"
-                   [class.invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
-                   [pTooltip]="getErrorMessage('maxTeams')"
-                   tooltipPosition="right"
-                   [showDelay]="0"
-                   tooltipStyleClass="error-tooltip" />
-          </div>
-          <div class="field">
-            <label for="teamsPerGroup">Teams per Group</label>
-            <input id="teamsPerGroup"
-                   type="number"
-                   formControlName="teamsPerGroup"
-                   placeholder="2-16"
-                   min="2"
-                   max="16"
-                   [class.invalid]="form.get('teamsPerGroup')?.invalid && form.get('teamsPerGroup')?.touched"
-                   [pTooltip]="getErrorMessage('teamsPerGroup')"
-                   tooltipPosition="right"
-                   [showDelay]="0"
-                   tooltipStyleClass="error-tooltip" />
-        </div>
-      </div>
-      </div>
-
-      <!-- Groups + Bracket Config -->
-      <div *ngIf="form.get('format')?.value === Format.GroupsAndBracket">
-        <div class="field-row">
-          <div class="field">
-            <label for="maxTeamsGB">Total Teams</label>
-            <input id="maxTeamsGB"
-                   type="number"
-                   formControlName="maxTeams"
-                   placeholder="2-32"
-                   min="2"
-                   max="32"
-                   [class.invalid]="form.get('maxTeams')?.invalid && form.get('maxTeams')?.touched"
-                   [pTooltip]="getErrorMessage('maxTeams')"
-                   tooltipPosition="right"
-                   [showDelay]="0"
-                   tooltipStyleClass="error-tooltip" />
-          </div>
-          <div class="field">
-            <label for="teamsPerGroup">Teams per Group</label>
-            <input id="teamsPerGroup"
-                   type="number"
-                   formControlName="teamsPerGroup"
-                   placeholder="2-16"
-                   min="2"
-                   max="16"
-                   [class.invalid]="form.get('teamsPerGroup')?.invalid && form.get('teamsPerGroup')?.touched"
-                   [pTooltip]="getErrorMessage('teamsPerGroup')"
-                   tooltipPosition="right"
-                   [showDelay]="0"
-                   tooltipStyleClass="error-tooltip" />
-          </div>
-          <div class="field">
-            <label for="teamsPerBracket">Bracket Size</label>
-            <input id="teamsPerBracket"
-                   type="number"
-                   formControlName="teamsPerBracket"
-                   placeholder="2-32"
-                   min="2"
-                   max="32"
-                   [class.invalid]="form.get('teamsPerBracket')?.invalid && form.get('teamsPerBracket')?.touched"
-                   [pTooltip]="getErrorMessage('teamsPerBracket')"
-                   tooltipPosition="right"
-                   [showDelay]="0"
-                   tooltipStyleClass="error-tooltip" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Submit Button -->
-      <button type="submit"
-              class="submit-button"
-              [disabled]="form.invalid || isSubmitting">
-        <span *ngIf="!isSubmitting">Create Tournament</span>
-        <span *ngIf="isSubmitting">Creating...</span>
-      </button>
-
-      <!-- Cancel Button -->
-      <button type="button"
-              class="cancel-button"
-              routerLink="/tournaments">
-        Cancel
-      </button>
-    </form>
   </div>
 </div>

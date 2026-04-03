@@ -119,6 +119,7 @@ namespace Application.Services
             return new MatchWinner(winnerId.Value, loserId.Value);
         }
 
+        // TODO: cleanup — no longer called after lazy game generation refactor
         public async Task UpdateGamesTeamIds(long matchId, long? teamAId, long? teamBId)
         {
             var games = await _gameRepository.FindAllAsync(g => g.MatchId == matchId);
