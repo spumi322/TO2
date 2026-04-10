@@ -10,11 +10,11 @@ Full-stack tournament management application supporting group stages, single-eli
 
 ## Tournament Formats
 
+All formats accept 4–32 teams with best-of-3 series per phase.
+
 - **BracketOnly** — Single-elimination bracket. Teams randomly seeded.
 - **GroupsOnly** — Round-robin groups. Final placements from group standings.
 - **GroupsAndBracket** — Round-robin groups into a seeded bracket. Configurable advancement slots per group. Unequal group sizes supported.
-
-All formats accept 4–32 teams with configurable best-of series per phase.
 
 ## Architecture
 
