@@ -6,7 +6,7 @@ Full-stack tournament management application supporting group stages, single-eli
 
 ---
 
-<!-- TODO: Screenshot or GIF of the tournament configurator -->
+![Tournament Configurator](docs/t_config_preview.png)
 
 ## Tournament Formats
 
