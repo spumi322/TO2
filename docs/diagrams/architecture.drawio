@@ -1,0 +1,45 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Architecture" id="8nEqw-t2oI3Woc6deDw9">
+    <mxGraphModel dx="587" dy="751" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="light-dark(#FFFFFF,#000000)" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="RMQ9aZpRHts_rYk6yI1K-32" parent="1" style="rounded=1;arcSize=20;fillColor=#FAECE7;strokeColor=#993C1D;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#4A1B0C;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="WebAPI&#xa;Controllers, SignalR hub, DI root" vertex="1">
+          <mxGeometry height="60" width="300" x="1090" y="800" as="geometry" />
+        </mxCell>
+        <mxCell id="RMQ9aZpRHts_rYk6yI1K-33" parent="1" style="rounded=1;arcSize=20;fillColor=#E6F1FB;strokeColor=#185FA5;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#042C53;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="Infrastructure&#xa;EF Core, Repositories, Interceptors" vertex="1">
+          <mxGeometry height="60" width="300" x="1090" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="RMQ9aZpRHts_rYk6yI1K-34" parent="1" style="rounded=1;arcSize=20;fillColor=#E1F5EE;strokeColor=#0F6E56;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#04342C;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="Application&#xa;Pipelines, Services, DTOs, Validation" vertex="1">
+          <mxGeometry height="60" width="300" x="1090" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="RMQ9aZpRHts_rYk6yI1K-35" parent="1" style="rounded=1;arcSize=20;fillColor=#EEEDFE;strokeColor=#534AB7;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#26215C;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="Domain&#xa;Entities, Aggregate roots, State machine" vertex="1">
+          <mxGeometry height="60" width="300" x="1090" y="1100" as="geometry" />
+        </mxCell>
+        <mxCell id="RMQ9aZpRHts_rYk6yI1K-36" parent="1" style="rounded=1;arcSize=20;fillColor=#FAEEDA;strokeColor=#854F0B;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#412402;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="UI&#xa;Angular 17, PrimeNG, SignalR &#xa;" vertex="1">
+          <mxGeometry height="60" width="241" x="1119.5" y="680" as="geometry" />
+        </mxCell>
+        <mxCell id="RMQ9aZpRHts_rYk6yI1K-37" edge="1" parent="1" source="RMQ9aZpRHts_rYk6yI1K-32" style="endArrow=open;endSize=8;strokeColor=#888888;strokeWidth=2;" target="RMQ9aZpRHts_rYk6yI1K-33">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RMQ9aZpRHts_rYk6yI1K-38" edge="1" parent="1" source="RMQ9aZpRHts_rYk6yI1K-33" style="endArrow=open;endSize=8;strokeColor=#888888;strokeWidth=2;" target="RMQ9aZpRHts_rYk6yI1K-34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RMQ9aZpRHts_rYk6yI1K-39" edge="1" parent="1" source="RMQ9aZpRHts_rYk6yI1K-34" style="endArrow=open;endSize=8;strokeColor=#888888;strokeWidth=2;" target="RMQ9aZpRHts_rYk6yI1K-35">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="RMQ9aZpRHts_rYk6yI1K-40" edge="1" parent="1" source="RMQ9aZpRHts_rYk6yI1K-33" style="endArrow=open;endSize=8;strokeColor=#888888;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="RMQ9aZpRHts_rYk6yI1K-35">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1050" y="930" />
+              <mxPoint x="1050" y="1130" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="RMQ9aZpRHts_rYk6yI1K-41" edge="1" parent="1" source="RMQ9aZpRHts_rYk6yI1K-36" style="endArrow=open;endSize=8;strokeColor=#888888;strokeWidth=2;dashed=1;dashPattern=6 3;fontSize=11;fontColor=#888888;" target="RMQ9aZpRHts_rYk6yI1K-32" value="HTTP / SignalR">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
