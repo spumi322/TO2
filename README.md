@@ -16,13 +16,13 @@ All formats accept 4–32 teams with best-of-3 series per phase.
 - **GroupsOnly** — Round-robin groups. Final placements from group standings.
 - **GroupsAndBracket** — Round-robin groups into a seeded bracket. Configurable advancement slots per group. Unequal group sizes supported.
 
-## Architecture
+## Architecture - How is it look like?
 
 ![Architecture](docs/diagrams/architecture.svg)
 
-## Tournament State Machine
+## Tournament Life Cycle - How we play a full tournament?
 
-![State Machine](docs/diagrams/state-machine.svg)
+![State Machine](docs/diagrams/tournament-lifecycle.svg)
 
 ## Request Lifecycle — Scoring a Game
 

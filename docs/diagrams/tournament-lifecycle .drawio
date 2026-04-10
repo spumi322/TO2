@@ -1,0 +1,71 @@
+<mxfile host="app.diagrams.net">
+  <diagram name="Tournament Lifecycle" id="AKkspGvK0Zin4huHrCb2">
+    <mxGraphModel dx="587" dy="751" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="0" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#ffffff" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-65" parent="1" style="rounded=1;arcSize=20;fillColor=light-dark(#444441,#FFFF99);strokeColor=#B4B2A9;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=light-dark(#D3D1C7,#666600);whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="Create Tournament&#xa;&#xa;  &#xa;Configurator&#xa;Live structural preview" vertex="1">
+          <mxGeometry height="127.5" width="220" x="1200" y="762.5" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-66" parent="1" style="rounded=1;arcSize=20;fillColor=light-dark(#444441,#CCE5FF);strokeColor=#B4B2A9;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=light-dark(#000000,#004C99);whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="Register Teams&#xa;&#xa;&#xa;Add and remove teams&#xa;Registration stays open" vertex="1">
+          <mxGeometry height="140" width="200" x="1210" y="990" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-67" parent="1" style="rounded=1;arcSize=20;fillColor=#633806;strokeColor=#EF9F27;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#FAC775;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="Start groups&#xa;&#xa;Close registration&#xa;Seed groups, generate all matches" vertex="1">
+          <mxGeometry height="120" width="220" x="1510" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-68" parent="1" style="rounded=1;arcSize=20;fillColor=#085041;strokeColor=#5DCAA5;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#9FE1CB;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="Score group matches&#xa;&#xa;&#xa;Record results, standings updated" vertex="1">
+          <mxGeometry height="130" width="220" x="1510" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-69" parent="1" style="rounded=1;arcSize=20;fillColor=#633806;strokeColor=#EF9F27;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#FAC775;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="Start bracket&#xa;&#xa;&#xa;Seed bracket, generate r1 matches, place BYEs" vertex="1">
+          <mxGeometry height="120" width="210" x="1840" y="760" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-70" parent="1" style="rounded=1;arcSize=20;fillColor=#085041;strokeColor=#5DCAA5;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#9FE1CB;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="Score bracket matches&#xa;&#xa;&#xa;Record results, teams eliminated, next match gets games" vertex="1">
+          <mxGeometry height="130" width="210" x="1840" y="1000" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-71" parent="1" style="rounded=1;arcSize=20;fillColor=#27500A;strokeColor=#97C459;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#C0DD97;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="Final results&#xa;&#xa;Placements calculated&#xa;Podium displayed" vertex="1">
+          <mxGeometry height="117.5" width="200" x="2150" y="762.5" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-72" edge="1" parent="1" source="DbMHLAxss2QhSUQF5qIz-65" style="endArrow=open;endSize=8;strokeColor=#666666;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="DbMHLAxss2QhSUQF5qIz-66">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-73" edge="1" parent="1" source="DbMHLAxss2QhSUQF5qIz-66" style="endArrow=open;endSize=8;strokeColor=#666666;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;fontSize=13;" target="DbMHLAxss2QhSUQF5qIz-67" value="Admin starts">
+          <mxGeometry relative="1" x="0.0024" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-74" edge="1" parent="1" source="DbMHLAxss2QhSUQF5qIz-67" style="endArrow=open;endSize=8;strokeColor=#666666;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="DbMHLAxss2QhSUQF5qIz-68">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-82" connectable="0" parent="DbMHLAxss2QhSUQF5qIz-74" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Groups in progress&lt;/font&gt;" vertex="1">
+          <mxGeometry relative="1" x="-0.1623" y="1" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-75" edge="1" parent="1" source="DbMHLAxss2QhSUQF5qIz-68" style="endArrow=open;endSize=8;strokeColor=#666666;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=1;entryDx=0;entryDy=0;" target="DbMHLAxss2QhSUQF5qIz-69">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-83" connectable="0" parent="DbMHLAxss2QhSUQF5qIz-75" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;All groups complete&lt;/font&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.1468" y="-5" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-76" edge="1" parent="1" source="DbMHLAxss2QhSUQF5qIz-69" style="endArrow=open;endSize=8;strokeColor=#666666;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="DbMHLAxss2QhSUQF5qIz-70">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-84" connectable="0" parent="DbMHLAxss2QhSUQF5qIz-76" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Bracket in progress&lt;/font&gt;" vertex="1">
+          <mxGeometry relative="1" x="-0.1538" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-77" edge="1" parent="1" source="DbMHLAxss2QhSUQF5qIz-70" style="endArrow=open;endSize=8;strokeColor=#666666;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.05;entryY=0.957;entryDx=0;entryDy=0;entryPerimeter=0;" target="DbMHLAxss2QhSUQF5qIz-71">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="DbMHLAxss2QhSUQF5qIz-86" connectable="0" parent="DbMHLAxss2QhSUQF5qIz-77" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;font style=&quot;font-size: 13px;&quot;&gt;Final match scored&lt;/font&gt;" vertex="1">
+          <mxGeometry relative="1" x="0.0707" y="2" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
