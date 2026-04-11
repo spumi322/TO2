@@ -6,29 +6,34 @@ Full-stack tournament management application supporting group stages, single-eli
 
 ---
 
+*The configurator: live preview of the structural layout as you type:*
+
 ![Tournament Configurator](docs/t_config_preview.png)
 
 
 ## Tournament Formats
 
-All formats accept 4–32 teams with best-of-3 series per phase.
-
 - **BracketOnly** — Single-elimination bracket. Teams randomly seeded.
 - **GroupsOnly** — Round-robin groups. Final placements from group standings.
 - **GroupsAndBracket** — Round-robin groups into a seeded bracket. Configurable advancement slots per group. Unequal group sizes supported.
 
+All formats accept 4–32 teams with best-of-3 series per phase.
 
-## Architecture - How is it look like?
+
+## Architecture - How does it look?
+
 
 ![Architecture](docs/diagrams/architecture.svg)
 
 
-## Tournament Life Cycle - How we play a full tournament?
+## Tournament Life Cycle - How a tournament is played?
+
 
 ![State Machine](docs/diagrams/tournament-lifecycle.svg)
 
 
-## Game Result Pipeline — What is happening, when we score a game?
+## Game Result Pipeline — What happens when a game is scored?
+
 
 ![Pipeline](docs/diagrams/game-result-pipeline.svg)
 
