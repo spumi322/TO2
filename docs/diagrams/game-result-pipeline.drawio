@@ -1,0 +1,488 @@
+<mxfile host="app.diagrams.net" pages="4">
+  <diagram name="1. Architecture" id="p4_GFCJLo0R9MDGzFe6e">
+    <mxGraphModel dx="214" dy="-949" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="850" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-28" parent="1" style="rounded=1;arcSize=20;fillColor=#0C447C;strokeColor=#85B7EB;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#B5D4F4;whiteSpace=wrap;fontStyle=1;" value="Client&#xa;POST /api/games/{id}/result" vertex="1">
+          <mxGeometry height="60" width="200" x="1280.0005882352941" y="2219.764705882353" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-29" parent="1" style="rounded=1;arcSize=20;fillColor=#4A1B0C;strokeColor=#F0997B;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#F5C4B3;whiteSpace=wrap;fontStyle=1;" value="GameController&#xa;Validates DTO" vertex="1">
+          <mxGeometry height="60" width="200" x="1280.0005882352941" y="2057.764705882353" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-30" parent="1" style="rounded=1;arcSize=20;fillColor=#3C3489;strokeColor=#AFA9EC;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#CECBF6;whiteSpace=wrap;fontStyle=1;" value="WorkflowService&#xa;Dispatches to pipeline" vertex="1">
+          <mxGeometry height="60" width="200" x="1280.0005882352941" y="1917.7647058823532" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-31" parent="1" style="rounded=1;arcSize=10;fillColor=none;strokeColor=light-dark(#0FFF47, #99ff99);strokeWidth=1.5;dashed=1;fontFamily=sans-serif;fontSize=14;fontColor=light-dark(#0FFF47,#99FF99);verticalAlign=top;fontStyle=1;labelBackgroundColor=none;whiteSpace=wrap;textShadow=0;" value="&#xa;GameResultPipeline — UoW transaction" vertex="1">
+          <mxGeometry height="627" width="340" x="1532.4705882352941" y="1777.7647058823532" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-32" parent="1" style="rounded=1;arcSize=20;fillColor=#085041;strokeColor=#5DCAA5;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#9FE1CB;fontStyle=1;" value="1. ScoreGameStep" vertex="1">
+          <mxGeometry height="44" width="280" x="1562.4705882352941" y="1847.7647058823532" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-33" parent="1" style="rounded=1;arcSize=20;fillColor=#085041;strokeColor=#5DCAA5;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#9FE1CB;fontStyle=1;" value="2. CheckMatchCompletionStep" vertex="1">
+          <mxGeometry height="44" width="280" x="1562.4705882352941" y="1917.7647058823532" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-34" parent="1" style="rounded=1;arcSize=20;fillColor=#085041;strokeColor=#5DCAA5;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#9FE1CB;fontStyle=1;" value="3. UpdateGroupStatsStep" vertex="1">
+          <mxGeometry height="44" width="280" x="1562.4705882352941" y="1987.7647058823532" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-35" parent="1" style="rounded=1;arcSize=20;fillColor=#085041;strokeColor=#5DCAA5;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#9FE1CB;fontStyle=1;" value="4. HandleStandingProgressStep" vertex="1">
+          <mxGeometry height="44" width="280" x="1562.4705882352941" y="2065.764705882353" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-36" parent="1" style="rounded=1;arcSize=20;fillColor=#085041;strokeColor=#5DCAA5;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#9FE1CB;fontStyle=1;" value="5. TransitionTournamentStateStep" vertex="1">
+          <mxGeometry height="44" width="280" x="1562.4705882352941" y="2147.764705882353" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-37" parent="1" style="rounded=1;arcSize=20;fillColor=#085041;strokeColor=#5DCAA5;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#9FE1CB;fontStyle=1;" value="6. CalculateFinalPlacementsStep" vertex="1">
+          <mxGeometry height="44" width="280" x="1562.4705882352941" y="2227.764705882353" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-38" parent="1" style="rounded=1;arcSize=20;fillColor=#085041;strokeColor=#5DCAA5;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#9FE1CB;fontStyle=1;" value="7. BuildResponseStep" vertex="1">
+          <mxGeometry height="44" width="280" x="1562.4705882352941" y="2307.764705882353" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-39" parent="1" style="rounded=1;arcSize=20;fillColor=#633806;strokeColor=#EF9F27;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#FAC775;whiteSpace=wrap;fontStyle=1;" value="UoW commit&#xa;Interceptors fire" vertex="1">
+          <mxGeometry height="60" width="200" x="1922.4705882352941" y="2057.764705882353" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-40" parent="1" style="rounded=1;arcSize=20;fillColor=#633806;strokeColor=#EF9F27;strokeWidth=1.5;fontFamily=sans-serif;fontSize=12;fontColor=#FAC775;whiteSpace=wrap;fontStyle=1;" value="SignalR broadcast&#xa;GameUpdated event" vertex="1">
+          <mxGeometry height="60" width="200" x="1922.4705882352941" y="2219.764705882353" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-41" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-28" style="endArrow=open;strokeColor=#666666;strokeWidth=2;" target="ljLoAMv6Jboe8GKNREH3-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-42" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-29" style="endArrow=open;strokeColor=#666666;strokeWidth=2;" target="ljLoAMv6Jboe8GKNREH3-30">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-43" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-30" style="endArrow=open;strokeColor=#666666;strokeWidth=2;exitX=0.5;exitY=0;entryX=0;entryY=0.5;exitDx=0;exitDy=0;" target="ljLoAMv6Jboe8GKNREH3-32">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1380" y="1870" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-44" connectable="0" parent="ljLoAMv6Jboe8GKNREH3-43" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Begin transaction + Load tournament" vertex="1">
+          <mxGeometry relative="1" x="-0.129" as="geometry">
+            <mxPoint x="-22" y="-22" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-45" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-32" style="endArrow=open;strokeColor=#666666;strokeWidth=2;" target="ljLoAMv6Jboe8GKNREH3-33">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-46" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-33" style="endArrow=open;strokeColor=#666666;strokeWidth=2;" target="ljLoAMv6Jboe8GKNREH3-34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-47" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-34" style="endArrow=open;strokeColor=#666666;strokeWidth=2;" target="ljLoAMv6Jboe8GKNREH3-35">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-48" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-35" style="endArrow=open;strokeColor=#666666;strokeWidth=2;" target="ljLoAMv6Jboe8GKNREH3-36">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-49" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-36" style="endArrow=open;strokeColor=#AAAAAA;strokeWidth=2;" target="ljLoAMv6Jboe8GKNREH3-37">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-50" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-37" style="endArrow=open;strokeColor=#666666;strokeWidth=2;" target="ljLoAMv6Jboe8GKNREH3-38">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-51" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-38" style="endArrow=open;strokeColor=#666666;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ljLoAMv6Jboe8GKNREH3-39">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1882.4705882352941" y="2329.764705882353" />
+              <mxPoint x="1882.4705882352941" y="2087.764705882353" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-52" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-39" style="endArrow=open;strokeColor=#666666;strokeWidth=2;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="ljLoAMv6Jboe8GKNREH3-40">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="2182.470588235294" y="2277.764705882353" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-53" connectable="0" parent="ljLoAMv6Jboe8GKNREH3-52" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="&lt;br&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;" vertex="1">
+          <mxGeometry relative="1" x="-0.3913" y="5" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-54" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-40" style="endArrow=open;strokeColor=#666666;strokeWidth=2;dashed=1;fontSize=11;fontColor=default;verticalAlign=bottom;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="ljLoAMv6Jboe8GKNREH3-28" value="HTTP response + SignalR push">
+          <mxGeometry relative="1" x="-0.041" y="30" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="2022.4705882352941" y="2397.764705882353" />
+              <mxPoint x="2022.4705882352941" y="2437.764705882353" />
+              <mxPoint x="1692.4705882352941" y="2437.764705882353" />
+              <mxPoint x="1380" y="2440" />
+            </Array>
+            <mxPoint x="1977.4705882352941" y="2347.764705882353" as="sourcePoint" />
+            <mxPoint x="1287.4705882352941" y="2237.764705882353" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-56" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=light-dark(#A20025,#FF7A7A);fontColor=#FAC775;strokeColor=#6F0000;fontFamily=sans-serif;fontSize=12;fontStyle=1;align=center;verticalAlign=middle;" value="Rollback transaction" vertex="1">
+          <mxGeometry height="60" width="197.53" x="1922.47" y="1909.76" as="geometry" />
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-57" edge="1" parent="1" source="ljLoAMv6Jboe8GKNREH3-31" style="endArrow=classic;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;exitX=1.004;exitY=0.369;exitDx=0;exitDy=0;fillColor=#a20025;strokeColor=light-dark(#A20025,#FF7A7A);exitPerimeter=0;curved=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;endFill=0;" target="ljLoAMv6Jboe8GKNREH3-56" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <Array as="points">
+              <mxPoint x="2021" y="2010" />
+            </Array>
+            <mxPoint x="1890" y="2050" as="sourcePoint" />
+            <mxPoint x="2020" y="1990" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljLoAMv6Jboe8GKNREH3-58" connectable="0" parent="ljLoAMv6Jboe8GKNREH3-57" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="On exception" vertex="1">
+          <mxGeometry relative="1" x="-0.1231" y="1" as="geometry">
+            <mxPoint x="4" y="11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="2. Domain Model" id="88CHwX9NAa-NKuCMMKCb">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="d-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" value="TO2 – Domain Model" vertex="1">
+          <mxGeometry height="28" width="350" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="d-tenant" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;" value="&lt;b&gt;Tenant&lt;/b&gt;&#xa;id · name" vertex="1">
+          <mxGeometry height="55" width="140" x="40" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="d-tournament" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" value="&lt;b&gt;Tournament&lt;/b&gt;&#xa;name · format · status&#xa;maxTeams · advancingPerGroup" vertex="1">
+          <mxGeometry height="65" width="175" x="270" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="d-tt" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" value="«join»&#xa;&lt;b&gt;TournamentTeam&lt;/b&gt;&#xa;registration record" vertex="1">
+          <mxGeometry height="60" width="175" x="270" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="d-team" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="&lt;b&gt;Team&lt;/b&gt;&#xa;name" vertex="1">
+          <mxGeometry height="55" width="175" x="270" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="d-player" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;" value="&lt;b&gt;Player&lt;/b&gt;&#xa;name" vertex="1">
+          <mxGeometry height="55" width="175" x="270" y="470" as="geometry" />
+        </mxCell>
+        <mxCell id="d-standing" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="&lt;b&gt;Standing&lt;/b&gt;&#xa;type: group | bracket&#xa;isSeeded" vertex="1">
+          <mxGeometry height="65" width="175" x="540" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="d-group" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" value="«join»&#xa;&lt;b&gt;Group&lt;/b&gt;&#xa;wins · losses · points" vertex="1">
+          <mxGeometry height="60" width="175" x="540" y="220" as="geometry" />
+        </mxCell>
+        <mxCell id="d-match" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="&lt;b&gt;Match&lt;/b&gt;&#xa;teamAId · teamBId · winnerId&#xa;bestOf · round · seed" vertex="1">
+          <mxGeometry height="65" width="185" x="810" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="d-game" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="&lt;b&gt;Game&lt;/b&gt;&#xa;winnerId" vertex="1">
+          <mxGeometry height="65" width="150" x="1090" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="de-t-tour" edge="1" parent="1" source="d-tenant" style="edgeStyle=elbowEdgeStyle;html=1;exitX=0.7;exitY=0;exitFixed=1;endArrow=open;endFill=0;fontSize=10;" target="d-tournament" value="1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de-t-team" edge="1" parent="1" source="d-tenant" style="edgeStyle=elbowEdgeStyle;html=1;exitX=0.7;exitY=1;exitFixed=1;endArrow=open;endFill=0;fontSize=10;" target="d-team" value="1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de-tour-tt" edge="1" parent="1" source="d-tournament" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;endFill=0;fontSize=10;" target="d-tt" value="1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de-team-tt" edge="1" parent="1" source="d-team" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;endFill=0;fontSize=10;" target="d-tt" value="1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de-tour-standing" edge="1" parent="1" source="d-tournament" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;endFill=0;fontSize=10;" target="d-standing" value="1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de-standing-group" edge="1" parent="1" source="d-standing" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;endFill=0;fontSize=10;" target="d-group" value="1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de-standing-match" edge="1" parent="1" source="d-standing" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;endFill=0;fontSize=10;" target="d-match" value="1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de-match-game" edge="1" parent="1" source="d-match" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;endFill=0;fontSize=10;" target="d-game" value="1..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="de-team-player" edge="1" parent="1" source="d-team" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=open;endFill=0;fontSize=10;" target="d-player" value="0..*">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d-mt-note" parent="1" style="text;html=1;strokeColor=#9673a6;fillColor=#e1d5e7;align=left;verticalAlign=middle;spacingLeft=8;fontSize=10;" value="All aggregate roots carry TenantId — enforced automatically by TenantSaveChangesInterceptor." vertex="1">
+          <mxGeometry height="28" width="550" x="40" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="d-leg-h" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=11;" value="Legend" vertex="1">
+          <mxGeometry height="20" width="80" x="40" y="648" as="geometry" />
+        </mxCell>
+        <mxCell id="d-leg1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10;" value="Aggregate Root" vertex="1">
+          <mxGeometry height="28" width="140" x="40" y="672" as="geometry" />
+        </mxCell>
+        <mxCell id="d-leg2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;" value="Entity" vertex="1">
+          <mxGeometry height="28" width="120" x="195" y="672" as="geometry" />
+        </mxCell>
+        <mxCell id="d-leg3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;" value="Join / Association" vertex="1">
+          <mxGeometry height="28" width="140" x="330" y="672" as="geometry" />
+        </mxCell>
+        <mxCell id="d-leg4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;" value="Cross-cutting (Tenant)" vertex="1">
+          <mxGeometry height="28" width="155" x="485" y="672" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="3. State Machine" id="TVMUHBDNH3ntrZz0p2tJ">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1100" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="s-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" value="TO2 – Tournament State Machine" vertex="1">
+          <mxGeometry height="28" width="500" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="s-init" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#000000;" value="" vertex="1">
+          <mxGeometry height="22" width="22" x="140" y="72" as="geometry" />
+        </mxCell>
+        <mxCell id="s-setup" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#555555;fontSize=12;" value="&lt;b&gt;Setup&lt;/b&gt;&#xa;Registration open" vertex="1">
+          <mxGeometry height="52" width="185" x="70" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="s-sg" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="&lt;b&gt;SeedingGroups&lt;/b&gt;&#xa;Distributing teams into groups" vertex="1">
+          <mxGeometry height="52" width="185" x="70" y="210" as="geometry" />
+        </mxCell>
+        <mxCell id="s-gip" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="&lt;b&gt;GroupsInProgress&lt;/b&gt;&#xa;Scoring group matches" vertex="1">
+          <mxGeometry height="52" width="185" x="70" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="s-gc" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=12;" value="&lt;b&gt;GroupsCompleted&lt;/b&gt;&#xa;Awaiting bracket start" vertex="1">
+          <mxGeometry height="52" width="185" x="70" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="s-sb" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;" value="&lt;b&gt;SeedingBracket&lt;/b&gt;&#xa;Building bracket draw" vertex="1">
+          <mxGeometry height="52" width="185" x="70" y="495" as="geometry" />
+        </mxCell>
+        <mxCell id="s-bip" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;" value="&lt;b&gt;BracketInProgress&lt;/b&gt;&#xa;Scoring bracket matches" vertex="1">
+          <mxGeometry height="52" width="185" x="70" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="s-fin" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#82b366;strokeColor=#6c8ebf;fontColor=#ffffff;fontSize=12;" value="&lt;b&gt;Finished&lt;/b&gt;&#xa;Final standings declared" vertex="1">
+          <mxGeometry height="52" width="185" x="70" y="685" as="geometry" />
+        </mxCell>
+        <mxCell id="s-cancel" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;" value="&lt;b&gt;Cancelled&lt;/b&gt;&#xa;Terminal state" vertex="1">
+          <mxGeometry height="52" width="185" x="360" y="400" as="geometry" />
+        </mxCell>
+        <mxCell id="s-final" parent="1" style="ellipse;whiteSpace=wrap;html=1;aspect=fixed;fillColor=#000000;strokeColor=#000000;strokeWidth=4;" value="" vertex="1">
+          <mxGeometry height="22" width="22" x="150" y="752" as="geometry" />
+        </mxCell>
+        <mxCell id="se-init-setup" edge="1" parent="1" source="s-init" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s-setup" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se-setup-sg" edge="1" parent="1" source="s-setup" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;align=right;" target="s-sg" value="GroupsOnly / GroupsAndBracket">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se-setup-sb" edge="1" parent="1" source="s-setup" style="edgeStyle=elbowEdgeStyle;html=1;exitX=0;exitY=0.5;entryX=0;entryY=0.5;fontSize=9;" target="s-sb" value="BracketOnly">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="25" y="141" />
+              <mxPoint x="25" y="521" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="se-sg-gip" edge="1" parent="1" source="s-sg" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s-gip" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se-gip-gc" edge="1" parent="1" source="s-gip" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s-gc" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se-gip-fin" edge="1" parent="1" source="s-gip" style="edgeStyle=elbowEdgeStyle;html=1;exitX=1;exitY=0.5;entryX=1;entryY=0.5;fontSize=9;" target="s-fin" value="GroupsOnly">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="295" y="331" />
+              <mxPoint x="295" y="711" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="se-gc-sb" edge="1" parent="1" source="s-gc" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s-sb" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se-sb-bip" edge="1" parent="1" source="s-sb" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s-bip" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se-bip-fin" edge="1" parent="1" source="s-bip" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s-fin" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se-fin-marker" edge="1" parent="1" source="s-fin" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="s-final" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="se-any-cancel" edge="1" parent="1" source="s-gc" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;fontColor=#b85450;fontSize=9;" target="s-cancel" value="any non-terminal">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="s-cancel-note" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;fontSize=10;fontStyle=2;fontColor=#b85450;" value="Any non-terminal state&#xa;can transition to Cancelled" vertex="1">
+          <mxGeometry height="36" width="200" x="355" y="465" as="geometry" />
+        </mxCell>
+        <mxCell id="s-leg-h" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;fontSize=12;" value="State Types" vertex="1">
+          <mxGeometry height="22" width="140" x="600" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="s-leg1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#555555;fontSize=11;" value="Initial / Default" vertex="1">
+          <mxGeometry height="35" width="200" x="600" y="145" as="geometry" />
+        </mxCell>
+        <mxCell id="s-leg2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="Transition (system seeding)" vertex="1">
+          <mxGeometry height="35" width="200" x="600" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="s-leg3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="Active (match scoring open)" vertex="1">
+          <mxGeometry height="35" width="200" x="600" y="235" as="geometry" />
+        </mxCell>
+        <mxCell id="s-leg4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11;" value="Waiting (admin approval)" vertex="1">
+          <mxGeometry height="35" width="200" x="600" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="s-leg5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#82b366;strokeColor=#6c8ebf;fontColor=#ffffff;fontSize=11;" value="Terminal — success" vertex="1">
+          <mxGeometry height="35" width="200" x="600" y="325" as="geometry" />
+        </mxCell>
+        <mxCell id="s-leg6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" value="Terminal — cancelled" vertex="1">
+          <mxGeometry height="35" width="200" x="600" y="370" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram name="4. Pipelines" id="RybYsAxyNlXBf6r58WKF">
+    <mxGraphModel grid="1" page="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="1400" pageHeight="950" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="pi-title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=18;fontStyle=1;" value="TO2 – Pipeline Pattern" vertex="1">
+          <mxGeometry height="28" width="400" x="40" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="pi-concept" parent="1" style="text;html=1;strokeColor=#d6b656;fillColor=#fff2cc;align=left;verticalAlign=middle;spacingLeft=10;fontSize=11;" value="Pipelines replace god-method services with sequential, single-responsibility steps sharing a typed context object. Any step can halt the chain. All DB writes go through a single UnitOfWork.SaveChanges() — atomicity guaranteed." vertex="1">
+          <mxGeometry height="40" width="830" x="40" y="58" as="geometry" />
+        </mxCell>
+        <mxCell id="gr-hdr" parent="1" style="text;html=1;strokeColor=#82b366;fillColor=#d5e8d4;align=center;verticalAlign=middle;fontSize=12;" value="&lt;b&gt;GameResultPipeline&lt;/b&gt;&#xa;Triggered: every game score submission" vertex="1">
+          <mxGeometry height="52" width="295" x="40" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="gr1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="1.  ScoreGame" vertex="1">
+          <mxGeometry height="36" width="295" x="40" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="gr2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="2.  CheckMatchCompletion" vertex="1">
+          <mxGeometry height="36" width="295" x="40" y="236" as="geometry" />
+        </mxCell>
+        <mxCell id="gr3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="3.  UpdateGroupStats" vertex="1">
+          <mxGeometry height="36" width="295" x="40" y="282" as="geometry" />
+        </mxCell>
+        <mxCell id="gr4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="4.  HandleStandingProgress  ←  Strategy" vertex="1">
+          <mxGeometry height="36" width="295" x="40" y="328" as="geometry" />
+        </mxCell>
+        <mxCell id="gr5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="5.  TransitionTournamentState" vertex="1">
+          <mxGeometry height="36" width="295" x="40" y="374" as="geometry" />
+        </mxCell>
+        <mxCell id="gr6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="6.  CalculateFinalPlacements" vertex="1">
+          <mxGeometry height="36" width="295" x="40" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="gr7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" value="7.  BuildResponse" vertex="1">
+          <mxGeometry height="36" width="295" x="40" y="466" as="geometry" />
+        </mxCell>
+        <mxCell id="gr-e1" edge="1" parent="1" source="gr1" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="gr2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gr-e2" edge="1" parent="1" source="gr2" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="gr3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gr-e3" edge="1" parent="1" source="gr3" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="gr4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gr-e4" edge="1" parent="1" source="gr4" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="gr5" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gr-e5" edge="1" parent="1" source="gr5" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="gr6" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="gr-e6" edge="1" parent="1" source="gr6" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="gr7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-hdr" parent="1" style="text;html=1;strokeColor=#d6b656;fillColor=#fff2cc;align=center;verticalAlign=middle;fontSize=12;" value="&lt;b&gt;StartGroupsPipeline&lt;/b&gt;&#xa;Triggered: admin starts group stage" vertex="1">
+          <mxGeometry height="52" width="295" x="385" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="sg1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="1.  ValidateAndTransitionToSeedingGroups" vertex="1">
+          <mxGeometry height="36" width="295" x="385" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="sg2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="2.  ValidateStandingsNotSeeded" vertex="1">
+          <mxGeometry height="36" width="295" x="385" y="236" as="geometry" />
+        </mxCell>
+        <mxCell id="sg3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="3.  DistributeTeamsIntoGroups" vertex="1">
+          <mxGeometry height="36" width="295" x="385" y="282" as="geometry" />
+        </mxCell>
+        <mxCell id="sg4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="4.  CreateGroupEntries" vertex="1">
+          <mxGeometry height="36" width="295" x="385" y="328" as="geometry" />
+        </mxCell>
+        <mxCell id="sg5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="5.  GenerateRoundRobinMatches" vertex="1">
+          <mxGeometry height="36" width="295" x="385" y="374" as="geometry" />
+        </mxCell>
+        <mxCell id="sg6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="6.  MarkStandingsAsSeeded" vertex="1">
+          <mxGeometry height="36" width="295" x="385" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="sg7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="7.  TransitionToGroupsInProgress" vertex="1">
+          <mxGeometry height="36" width="295" x="385" y="466" as="geometry" />
+        </mxCell>
+        <mxCell id="sg8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" value="8.  BuildResponse" vertex="1">
+          <mxGeometry height="36" width="295" x="385" y="512" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-e1" edge="1" parent="1" source="sg1" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sg2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-e2" edge="1" parent="1" source="sg2" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sg3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-e3" edge="1" parent="1" source="sg3" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sg4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-e4" edge="1" parent="1" source="sg4" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sg5" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-e5" edge="1" parent="1" source="sg5" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sg6" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-e6" edge="1" parent="1" source="sg6" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sg7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sg-e7" edge="1" parent="1" source="sg7" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sg8" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sb-hdr" parent="1" style="text;html=1;strokeColor=#9673a6;fillColor=#e1d5e7;align=center;verticalAlign=middle;fontSize=12;" value="&lt;b&gt;StartBracketPipeline&lt;/b&gt;&#xa;Triggered: admin starts bracket stage" vertex="1">
+          <mxGeometry height="52" width="295" x="730" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="sb1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="1.  ValidateAndTransitionToSeedingBracket" vertex="1">
+          <mxGeometry height="36" width="295" x="730" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="sb2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="2.  LoadAndValidateTournamentData" vertex="1">
+          <mxGeometry height="36" width="295" x="730" y="236" as="geometry" />
+        </mxCell>
+        <mxCell id="sb3" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="3.  AdvanceTeamsFromGroups / RandomSeedTeams" vertex="1">
+          <mxGeometry height="36" width="295" x="730" y="282" as="geometry" />
+        </mxCell>
+        <mxCell id="sb4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="4.  CreateBracketStanding" vertex="1">
+          <mxGeometry height="36" width="295" x="730" y="328" as="geometry" />
+        </mxCell>
+        <mxCell id="sb5" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="5.  DetermineSeededPairs" vertex="1">
+          <mxGeometry height="36" width="295" x="730" y="374" as="geometry" />
+        </mxCell>
+        <mxCell id="sb6" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="6.  GenerateBracketMatches" vertex="1">
+          <mxGeometry height="36" width="295" x="730" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="sb7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="7.  MarkBracketAsSeeded" vertex="1">
+          <mxGeometry height="36" width="295" x="730" y="466" as="geometry" />
+        </mxCell>
+        <mxCell id="sb8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="8.  TransitionToBracketInProgress" vertex="1">
+          <mxGeometry height="36" width="295" x="730" y="512" as="geometry" />
+        </mxCell>
+        <mxCell id="sb9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" value="9.  BuildResponse" vertex="1">
+          <mxGeometry height="36" width="295" x="730" y="558" as="geometry" />
+        </mxCell>
+        <mxCell id="sb-e1" edge="1" parent="1" source="sb1" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sb2" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sb-e2" edge="1" parent="1" source="sb2" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sb3" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sb-e3" edge="1" parent="1" source="sb3" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sb4" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sb-e4" edge="1" parent="1" source="sb4" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sb5" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sb-e5" edge="1" parent="1" source="sb5" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sb6" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sb-e6" edge="1" parent="1" source="sb6" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sb7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sb-e7" edge="1" parent="1" source="sb7" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sb8" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sb-e8" edge="1" parent="1" source="sb8" style="edgeStyle=orthogonalEdgeStyle;html=1;" target="sb9" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pi-note-strategy" parent="1" style="text;html=1;strokeColor=#6c8ebf;fillColor=#dae8fc;align=left;verticalAlign=middle;spacingLeft=10;fontSize=11;" value="&lt;b&gt;Strategy Pattern&lt;/b&gt; — Step 4 (HandleStandingProgress) dispatches to IStandingProgressStrategy:&#xa;GroupProgressStrategy (advances standings within groups) · BracketProgressStrategy (eliminates losers, advances winners)" vertex="1">
+          <mxGeometry height="45" width="750" x="40" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="pi-note-step3" parent="1" style="text;html=1;strokeColor=#9673a6;fillColor=#e1d5e7;align=left;verticalAlign=middle;spacingLeft=10;fontSize=11;" value="Step 3 (StartBracket): AdvanceTeamsFromGroups for GroupsAndBracket format; RandomSeedTeams for BracketOnly format." vertex="1">
+          <mxGeometry height="36" width="750" x="40" y="706" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
