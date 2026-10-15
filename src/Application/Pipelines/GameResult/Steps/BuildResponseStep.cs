@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 namespace Application.Pipelines.GameResult.Steps
 {
     /// <summary>
-    /// Step 8: Final step that ensures response data is properly set.
+    /// Step 7: Final step that ensures response data is properly set.
     /// This step always executes and ensures we have a message for the response.
     /// The actual DTO is built by the pipeline executor from the context.
     /// </summary>

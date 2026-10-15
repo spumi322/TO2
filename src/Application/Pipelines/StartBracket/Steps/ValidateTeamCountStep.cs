@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 namespace Application.Pipelines.StartBracket.Steps
 {
     /// <summary>
-    /// Step 4: Validates that team count is a power of 2.
-    /// Required for single elimination bracket structure.
+    /// Step 4: Validates that at least 2 teams advance.
+    /// Non-power-of-2 counts are fine: the bracket is padded with BYEs.
     /// </summary>
     public class ValidateTeamCountStep : IStartBracketPipelineStep
     {

@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace Application.Pipelines.GameResult.Steps
 {
     /// <summary>
-    /// Step 7: Calculates and saves final tournament placements.
+    /// Step 6: Calculates and saves final tournament placements.
     /// Only executes if tournament has finished.
     /// </summary>
     public class CalculateFinalPlacementsStep : PipeLineBase<CalculateFinalPlacementsStep>

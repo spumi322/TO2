@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 namespace Application.Pipelines.StartBracket.Steps
 {
     /// <summary>
-    /// Step 9: Builds the final response message and broadcasts updates.
+    /// Step 9: Builds the final response message (broadcast happens in the pipeline after commit).
     /// This step always executes and ensures we have a message for the response.
     /// </summary>
     public class BuildResponseStep : IStartBracketPipelineStep

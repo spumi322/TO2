@@ -78,7 +78,7 @@ namespace TO2
             builder.Services.AddScoped<IGameService, GameService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
 
-            // STEP 2: Lifecycle Service - Replaces domain event handlers
+            // Workflow orchestration (delegates to the pipelines below)
             builder.Services.AddScoped<IWorkFlowService, WorkFlowService>();
             // Game Result Pipeline - SOLID refactoring of ProcessGameResult
             builder.Services.AddScoped<IGameResultPipeline, GameResultPipeline>();

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Application.Pipelines.GameResult.Steps
 {
     /// <summary>
-    /// Step 6: Transitions tournament state when all groups finish or tournament finishes.
+    /// Step 5: Transitions tournament state when all groups finish or tournament finishes.
     /// Only executes if a state transition is needed (indicated by context flags).
     /// </summary>
     public class TransitionTournamentStateStep : PipeLineBase<TransitionTournamentStateStep>

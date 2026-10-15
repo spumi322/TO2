@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 namespace Application.Pipelines.StartGroups.Steps
 {
     /// <summary>
-    /// Step 8: Builds the final response message and broadcasts updates.
+    /// Step 8: Builds the final response message (broadcast happens in the pipeline after commit).
     /// This step always executes and ensures we have a message for the response.
     /// </summary>
     public class BuildResponseStep : IStartGroupsPipelineStep
