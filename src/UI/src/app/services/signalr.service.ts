@@ -49,6 +49,7 @@ export class SignalRService {
   private groupsStarted$ = new Subject<TournamentUpdateEvent>();
   private bracketStarted$ = new Subject<TournamentUpdateEvent>();
   private tournamentDeleted$ = new Subject<TournamentUpdateEvent>();
+  private tournamentCancelled$ = new Subject<TournamentUpdateEvent>();
 
   constructor() {}
 
@@ -95,6 +96,10 @@ export class SignalRService {
 
   get tournamentDeleted(): Observable<TournamentUpdateEvent> {
     return this.tournamentDeleted$.asObservable();
+  }
+
+  get tournamentCancelled(): Observable<TournamentUpdateEvent> {
+    return this.tournamentCancelled$.asObservable();
   }
 
   async startConnection(getAccessToken: () => string | null): Promise<void> {
@@ -176,6 +181,10 @@ export class SignalRService {
 
     this.hubConnection.on('TournamentDeleted', (data: TournamentUpdateEvent) => {
       this.tournamentDeleted$.next(data);
+    });
+
+    this.hubConnection.on('TournamentCancelled', (data: TournamentUpdateEvent) => {
+      this.tournamentCancelled$.next(data);
     });
   }
 

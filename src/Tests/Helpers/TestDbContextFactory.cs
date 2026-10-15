@@ -1,5 +1,6 @@
 using Application.Contracts;
 using Infrastructure.Persistence;
+using Infrastructure.Persistence.Interceptors;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -34,9 +35,10 @@ namespace Tests.Helpers
             _connection = new SqliteConnection("DataSource=:memory:");
             _connection.Open();
 
-            // Configure DbContext to use in-memory SQLite
+            // Configure DbContext to use in-memory SQLite (tenant interceptor mirrors Program.cs)
             _options = new DbContextOptionsBuilder<TO2DbContext>()
                 .UseSqlite(_connection)
+                .AddInterceptors(new TenantSaveChangesInterceptor(_tenantService))
                 .Options;
 
             // Create database schema

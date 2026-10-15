@@ -8,6 +8,8 @@ namespace Application.DTOs.Tournament
         bool IsActiveState,
         bool CanScoreMatches,
         bool CanModifyTeams,
+        bool CanCancel,
+        bool CanDelete,
         byte[]? RowVersion
     );
 }

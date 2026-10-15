@@ -26,11 +26,13 @@ export class TournamentContextService {
   private startTournamentSubject = new Subject<void>();
   private startBracketSubject = new Subject<void>();
   private cancelTournamentSubject = new Subject<void>();
+  private deleteTournamentSubject = new Subject<void>();
 
   startGroups$ = this.startGroupsSubject.asObservable();
   startTournament$ = this.startTournamentSubject.asObservable();
   startBracket$ = this.startBracketSubject.asObservable();
   cancelTournament$ = this.cancelTournamentSubject.asObservable();
+  deleteTournament$ = this.deleteTournamentSubject.asObservable();
 
   private signalRInitialized = false;
 
@@ -65,6 +67,7 @@ export class TournamentContextService {
   get groupsStarted$() { return this.signalRService.groupsStarted; }
   get bracketStarted$() { return this.signalRService.bracketStarted; }
   get tournamentDeleted$() { return this.signalRService.tournamentDeleted; }
+  get tournamentCancelled$() { return this.signalRService.tournamentCancelled; }
   get connectionState$() { return this.signalRService.connectionState; }
 
   setTournament(tournament: Tournament | null): void {
@@ -150,6 +153,10 @@ export class TournamentContextService {
 
   triggerCancelTournament(): void {
     this.cancelTournamentSubject.next();
+  }
+
+  triggerDeleteTournament(): void {
+    this.deleteTournamentSubject.next();
   }
 
   handleGameUpdated(event: GameUpdatedEvent): void {

@@ -4,7 +4,6 @@ using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using AutoMapper;
 using Domain.AggregateRoots;
-using Domain.Enums;
 using Domain.Exceptions;
 using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
@@ -56,16 +55,14 @@ namespace Application.Services
                 IsActiveState: _stateMachine.IsActiveState(tournament.Status),
                 CanScoreMatches: _stateMachine.CanScoreMatches(tournament.Status),
                 CanModifyTeams: _stateMachine.CanModifyTeams(tournament.Status),
+                CanCancel: _stateMachine.CanCancel(tournament.Status),
+                CanDelete: _stateMachine.CanDelete(tournament.Status),
                 RowVersion: tournament.RowVersion
             );
         }
 
         public async Task<CreateTournamentResponseDTO> CreateTournamentAsync(CreateTournamentRequestDTO request)
         {
-            var existing = await _tournamentRepository.GetByNameAsync(request.Name);
-            if (existing != null)
-                throw new ConflictException($"A tournament named \"{request.Name}\" already exists.");
-
             var tournament = _mapper.Map<Tournament>(request);
             tournament.IsRegistrationOpen = true;
 
@@ -121,25 +118,30 @@ namespace Application.Services
             return _mapper.Map<UpdateTournamentResponseDTO>(existingTournament);
         }
 
-        //public async Task SoftDeleteTournamentAsync(long id)
-        //{
-        //    var existingTournament = await _tournamentRepository.GetByIdAsync(id)
-        //        ?? throw new NotFoundException("Tournament", id);
+        public async Task CancelTournamentAsync(long id, CancelTournamentRequestDTO request)
+        {
+            var tournament = await _tournamentRepository.GetByIdAsync(id)
+                ?? throw new NotFoundException("Tournament", id);
 
-        //    // Validate transition before setting
-        //    _stateMachine.ValidateTransition(existingTournament.Status, TournamentStatus.Cancelled);
-        //    existingTournament.Status = TournamentStatus.Cancelled;
+            if (!_stateMachine.CanCancel(tournament.Status))
+                throw new ConflictException($"A tournament in {tournament.Status} state cannot be cancelled.");
 
-        //    await _unitOfWork.SaveChangesAsync();
-        //}
+            var cancelledBy = _tenantService.GetCurrentUserName();
+            var reason = string.IsNullOrWhiteSpace(request.Reason) ? null : request.Reason.Trim();
+
+            tournament.Cancel(cancelledBy, DateTime.UtcNow, reason);
+            await _unitOfWork.SaveChangesAsync();
+
+            await _signalRService.BroadcastTournamentCancelled(id, cancelledBy);
+        }
 
         public async Task DeleteTournamentAsync(long id)
         {
             var tournament = await _tournamentRepository.GetWithTeamsAsync(id)
                 ?? throw new NotFoundException("Tournament", id);
 
-            if (tournament.Status != TournamentStatus.Setup)
-                throw new InvalidOperationException("Only Setup-stage tournaments can be deleted.");
+            if (!_stateMachine.CanDelete(tournament.Status))
+                throw new ConflictException($"A tournament in {tournament.Status} state cannot be deleted.");
 
             var exclusiveTeams = tournament.TournamentTeams
                 .Where(tt => tt.Team.TournamentParticipations.Count == 1)
@@ -153,18 +155,6 @@ namespace Application.Services
             await _unitOfWork.SaveChangesAsync();
 
             await _signalRService.BroadcastTournamentDeleted(id, _tenantService.GetCurrentUserName());
-        }
-
-        public async Task SetTournamentStatusAsync(long id, TournamentStatus status)
-        {
-            var existingTournament = await _tournamentRepository.GetByIdAsync(id)
-                ?? throw new NotFoundException("Tournament", id);
-
-            // Validate transition before setting
-            _stateMachine.ValidateTransition(existingTournament.Status, status, existingTournament.Format);
-            existingTournament.Status = status;
-
-            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<List<GetTeamResponseDTO>> GetTeamsByTournamentAsync(long tournamentId)

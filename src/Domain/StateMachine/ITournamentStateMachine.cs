@@ -48,5 +48,15 @@ namespace Domain.StateMachine
         /// Checks if teams can be added/removed in the given state.
         /// </summary>
         bool CanModifyTeams(TournamentStatus status);
+
+        /// <summary>
+        /// Checks if the tournament can be cancelled (started, not yet Finished/Cancelled).
+        /// </summary>
+        bool CanCancel(TournamentStatus status);
+
+        /// <summary>
+        /// Checks if the tournament can be deleted (Setup only).
+        /// </summary>
+        bool CanDelete(TournamentStatus status);
     }
 }

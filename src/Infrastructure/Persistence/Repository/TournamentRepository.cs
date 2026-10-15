@@ -9,9 +9,6 @@ namespace Infrastructure.Persistence.Repository
     {
         public TournamentRepository(TO2DbContext dbContext) : base(dbContext) { }
 
-        public async Task<Tournament?> GetByNameAsync(string name)
-            => await _dbSet.FirstOrDefaultAsync(t => t.Name == name);
-
         public async Task<Tournament?> GetWithStandingsAsync(long id)
             => await _dbSet
                 .Include(t => t.Standings)

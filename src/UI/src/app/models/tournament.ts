@@ -17,6 +17,9 @@ export interface Tournament {
   format: Format;
   status: TournamentStatus;
   isRegistrationOpen: boolean;
+  cancelledAt?: string | null;
+  cancelledBy?: string | null;
+  cancellationReason?: string | null;
   teamsPerGroup?: number;
   teamsPerBracket?: number;
   teams: Team[];
@@ -45,6 +48,8 @@ export interface TournamentStateDTO {
   isActiveState: boolean;
   canScoreMatches: boolean;
   canModifyTeams: boolean;
+  canCancel: boolean;
+  canDelete: boolean;
 }
 export interface TournamentList {
   id: number;

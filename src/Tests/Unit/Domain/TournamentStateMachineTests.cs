@@ -273,5 +273,32 @@ namespace Tests.Unit.Domain
         }
 
         #endregion
+
+        #region Allowed Actions (Cancel / Delete)
+
+        [Theory]
+        [InlineData(TournamentStatus.Setup, false, true)]
+        [InlineData(TournamentStatus.SeedingGroups, true, false)]
+        [InlineData(TournamentStatus.GroupsInProgress, true, false)]
+        [InlineData(TournamentStatus.GroupsCompleted, true, false)]
+        [InlineData(TournamentStatus.SeedingBracket, true, false)]
+        [InlineData(TournamentStatus.BracketInProgress, true, false)]
+        [InlineData(TournamentStatus.Finished, false, false)]
+        [InlineData(TournamentStatus.Cancelled, false, false)]
+        public void Should_ExposeAllowedActions_PerStatus(TournamentStatus status, bool canCancel, bool canDelete)
+        {
+            // Act & Assert
+            _stateMachine.CanCancel(status).Should().Be(canCancel);
+            _stateMachine.CanDelete(status).Should().Be(canDelete);
+        }
+
+        [Fact]
+        public void Should_CoverEveryStatus_InAllowedActionsTest()
+        {
+            // Guards the theory above: a new status must get an explicit cancel/delete rule
+            Enum.GetValues<TournamentStatus>().Should().HaveCount(8);
+        }
+
+        #endregion
     }
 }

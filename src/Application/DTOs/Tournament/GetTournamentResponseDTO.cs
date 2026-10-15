@@ -2,5 +2,6 @@
 
 namespace Application.DTOs.Tournament
 {
-    public record GetTournamentResponseDTO(long Id, string Name, string Description, int MaxTeams, Format Format, TournamentStatus Status, bool IsRegistrationOpen, byte[]? RowVersion);
+    public record GetTournamentResponseDTO(long Id, string Name, string Description, int MaxTeams, Format Format, TournamentStatus Status, bool IsRegistrationOpen, byte[]? RowVersion,
+        DateTime? CancelledAt, string? CancelledBy, string? CancellationReason);
 }

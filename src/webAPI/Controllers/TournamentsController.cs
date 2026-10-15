@@ -1,9 +1,7 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Tournament;
-using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace TO2.Controllers
 {
@@ -94,13 +92,12 @@ namespace TO2.Controllers
             return result.Success ? Ok(result) : BadRequest(result);
         }
 
-        // PUT: api/tournaments/5/status
-        [HttpPut("{id}/status")]
-        public async Task<IActionResult> Put(long id, [FromBody][Required] TournamentStatus status)
+        // POST: api/tournaments/5/cancel
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> Cancel(long id, [FromBody] CancelTournamentRequestDTO request)
         {
-            await _tournamentService.SetTournamentStatusAsync(id, status);
-
-            return Ok();
+            await _tournamentService.CancelTournamentAsync(id, request);
+            return NoContent();
         }
 
         // PUT: api/Tournament/5/start

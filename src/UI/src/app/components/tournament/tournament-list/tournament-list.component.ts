@@ -15,6 +15,7 @@ interface GroupedTournaments {
   upcoming: TournamentList[];
   ongoing: TournamentList[];
   finished: TournamentList[];
+  cancelled: TournamentList[];
 }
 
 @Component({
@@ -70,6 +71,10 @@ export class TournamentListComponent implements OnInit, OnDestroy {
     this.tournamentContext.tournamentDeleted$
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.loadTournaments());
+
+    this.tournamentContext.tournamentCancelled$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.loadTournaments());
   }
 
   ngOnDestroy(): void {
@@ -87,11 +92,12 @@ export class TournamentListComponent implements OnInit, OnDestroy {
     return {
       upcoming: tournaments.filter(t => this.getStatusCategory(t.status) === 'upcoming'),
       ongoing: tournaments.filter(t => this.getStatusCategory(t.status) === 'ongoing'),
-      finished: tournaments.filter(t => this.getStatusCategory(t.status) === 'finished')
+      finished: tournaments.filter(t => this.getStatusCategory(t.status) === 'finished'),
+      cancelled: tournaments.filter(t => this.getStatusCategory(t.status) === 'cancelled')
     };
   }
 
-  private getStatusCategory(status: TournamentStatus): 'upcoming' | 'ongoing' | 'finished' {
+  private getStatusCategory(status: TournamentStatus): 'upcoming' | 'ongoing' | 'finished' | 'cancelled' {
     return StatusConfig.getStatusCategory(status);
   }
 

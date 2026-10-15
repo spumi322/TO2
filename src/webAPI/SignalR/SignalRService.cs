@@ -92,5 +92,13 @@ namespace TO2.SignalR
                 .Group($"tenant-{tenantId}")
                 .SendAsync("TournamentDeleted", new { tournamentId, updatedBy = deletedBy });
         }
+
+        public async Task BroadcastTournamentCancelled(long tournamentId, string cancelledBy)
+        {
+            var tenantId = tenantService.GetCurrentTenantId();
+            await _hubContext.Clients
+                .Group($"tenant-{tenantId}")
+                .SendAsync("TournamentCancelled", new { tournamentId, updatedBy = cancelledBy });
+        }
     }
 }

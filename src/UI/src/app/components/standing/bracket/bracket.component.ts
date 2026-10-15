@@ -68,8 +68,12 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    // Only reload if tournament changes (not on every input change)
-    if (changes['tournament'] && !changes['tournament'].firstChange && this.viewInitialized) {
+    // Only reload if tournament changes or scoring gets enabled/disabled (e.g. cancelled)
+    const stateChange = changes['tournamentState'];
+    const scoringChanged = stateChange && !stateChange.firstChange &&
+      stateChange.previousValue?.canScoreMatches !== stateChange.currentValue?.canScoreMatches;
+
+    if (((changes['tournament'] && !changes['tournament'].firstChange) || scoringChanged) && this.viewInitialized) {
       this.loadBracket();
     }
   }
@@ -123,10 +127,11 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit, OnDes
   }
 
   async renderBracket() {
-    // Only render when bracket is actually in progress or finished (use tournament state)
+    // Only render when bracket is actually in progress, finished or cancelled (use tournament state)
     if (!this.tournamentState ||
         (this.tournamentState.currentStatus !== TournamentStatus.BracketInProgress &&
-         this.tournamentState.currentStatus !== TournamentStatus.Finished)) {
+         this.tournamentState.currentStatus !== TournamentStatus.Finished &&
+         this.tournamentState.currentStatus !== TournamentStatus.Cancelled)) {
       return;
     }
 
@@ -180,7 +185,7 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       return;
     }
 
-    const isTournamentFinished = this.tournamentState?.currentStatus === TournamentStatus.Finished;
+    const canScore = this.tournamentState?.canScoreMatches ?? false;
     const containerElement = this.bracketContainer.nativeElement;
     const participantElements = containerElement.querySelectorAll('.participant');
 
@@ -199,8 +204,8 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       }
 
       const match = this.matches.find(m => m.id === parseInt(matchId));
-      if (!match || match.winnerId || isTournamentFinished) {
-        // Match already has winner or tournament is finished - don't add click handler
+      if (!match || match.winnerId || !canScore) {
+        // Match already has winner or scoring not allowed (finished/cancelled) - don't add click handler
         htmlElement.style.cursor = 'default';
         return;
       }

@@ -100,6 +100,11 @@ export class TournamentService {
     return this.http.delete<void>(`${this.apiUrl}/${tournamentId}`);
   }
 
+  // POST /api/tournaments/{id}/cancel
+  cancelTournament(tournamentId: number, reason?: string): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/${tournamentId}/cancel`, { reason: reason || null });
+  }
+
   // GET /api/tournaments/{id}/final-standings
   getFinalStandings(tournamentId: number): Observable<FinalStanding[]> {
     return this.http.get<FinalStanding[]>(`${this.apiUrl}/${tournamentId}/final-standings`).pipe(

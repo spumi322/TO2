@@ -11,6 +11,7 @@ import { MatchFinishedIds } from '../../../models/matchresult';
 export class GroupComponent {
   @Input() tournament!: Tournament;
   @Input() groups: Standing[] = [];
+  @Input() canScoreMatches = true;
   @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
 
   onMatchFinished(matchUpdate: MatchFinishedIds): void {

@@ -29,9 +29,10 @@ export class StatusConfig {
     }
   }
 
-  static getStatusCategory(status: TournamentStatus): 'upcoming' | 'ongoing' | 'finished' {
+  static getStatusCategory(status: TournamentStatus): 'upcoming' | 'ongoing' | 'finished' | 'cancelled' {
     if (status === TournamentStatus.Setup) return 'upcoming';
-    if (status === TournamentStatus.Finished || status === TournamentStatus.Cancelled) return 'finished';
+    if (status === TournamentStatus.Finished) return 'finished';
+    if (status === TournamentStatus.Cancelled) return 'cancelled';
     return 'ongoing';
   }
 
@@ -39,7 +40,8 @@ export class StatusConfig {
     const category = this.getStatusCategory(status);
     if (category === 'upcoming') return '#3b82f6';  // Blue
     if (category === 'ongoing') return '#f59e0b';   // Orange
-    return status === TournamentStatus.Cancelled ? '#ef4444' : '#10b981';  // Red or Green
+    if (category === 'cancelled') return '#ef4444'; // Red
+    return '#10b981';  // Green
   }
 
   static getStatusClass(status: TournamentStatus): string {

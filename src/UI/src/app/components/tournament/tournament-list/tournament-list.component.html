@@ -37,6 +37,16 @@
           </ng-container>
         </div>
       </section>
+
+      <!-- Cancelled Section -->
+      <section class="tournament-section" *ngIf="tournaments.cancelled.length">
+        <h3 class="section-title">Cancelled Tournaments</h3>
+        <div class="tournament-grid">
+          <ng-container *ngFor="let tournament of tournaments.cancelled; trackBy: trackByTournament">
+            <ng-container *ngTemplateOutlet="tournamentCard; context: { $implicit: tournament }"></ng-container>
+          </ng-container>
+        </div>
+      </section>
     </div>
   </div>
 </div>

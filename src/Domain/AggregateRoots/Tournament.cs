@@ -47,6 +47,14 @@ namespace Domain.AggregateRoots
 
         public int? AdvancingPerGroup { get; set; }
 
+        public DateTime? CancelledAt { get; private set; }
+
+        [MaxLength(100)]
+        public string? CancelledBy { get; private set; }
+
+        [MaxLength(250)]
+        public string? CancellationReason { get; private set; }
+
         public List<Prize> PrizePool { get; set; }
 
         public long TenantId { get; set; }
@@ -60,5 +68,14 @@ namespace Domain.AggregateRoots
         public IReadOnlyList<Standing> Standings => _standings;
 
         public IReadOnlyList<GroupEntry> TournamentParticipants => _tournamentParticipants;
+
+        // Caller must check ITournamentStateMachine.CanCancel first
+        public void Cancel(string cancelledBy, DateTime cancelledAt, string? reason)
+        {
+            Status = TournamentStatus.Cancelled;
+            CancelledBy = cancelledBy;
+            CancelledAt = cancelledAt;
+            CancellationReason = reason;
+        }
     }
 }

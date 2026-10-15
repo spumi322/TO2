@@ -89,6 +89,32 @@ body {
   color: var(--text-muted);
 }
 
+/* Navbar tournament actions menu */
+.p-menu.tournament-actions-menu {
+  min-width: 12rem;
+  padding: 0.25rem;
+  border-radius: var(--border-radius);
+}
+
+.p-menu.tournament-actions-menu .p-menuitem-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.p-menu.tournament-actions-menu .menu-item-danger .p-menuitem-link:hover {
+  background: rgba(244, 67, 54, 0.12);
+}
+
+/* Destructive menu item (e.g. Delete / Cancel tournament) */
+.p-menu .menu-item-danger .p-menuitem-text,
+.p-menu .menu-item-danger .p-menuitem-icon {
+  color: var(--error-color);
+}
+
 .p-menu .p-submenu-header {
   background: transparent;
   color: var(--text-muted);
@@ -186,7 +212,6 @@ body {
   background: var(--bg-card);
   color: var(--text-primary);
 }
-
 /* PrimeNG TabView Dark Mode Overrides */
 .p-tabview .p-tabview-nav {
   background: var(--bg-card);

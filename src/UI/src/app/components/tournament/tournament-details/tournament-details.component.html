@@ -7,6 +7,16 @@
       [isRegistrationOpen]="tournament?.isRegistrationOpen || false">
     </app-tournament-state-banner>-->
 
+    <!-- Cancelled notice -->
+    <div class="cancelled-notice" *ngIf="tournament.status === TournamentStatus.Cancelled">
+      <i class="pi pi-ban"></i>
+      <div>
+        <strong>Tournament cancelled</strong>
+        <span> by {{ tournament.cancelledBy }} on {{ tournament.cancelledAt | date:'medium' }}</span>
+        <p *ngIf="tournament.cancellationReason" class="cancelled-reason">Reason: {{ tournament.cancellationReason }}</p>
+      </div>
+    </div>
+
     <!-- Tabs Container -->
     <div class="tabs-container">
       <p-tabView [(activeIndex)]="activeTabIndex">
@@ -51,13 +61,14 @@
         <div class="tab-content">
           <app-standing-group
             [tournament]="tournament"
-            [groups]="groups">
+            [groups]="groups"
+            [canScoreMatches]="tournamentState?.canScoreMatches ?? false">
           </app-standing-group>
         </div>
       </p-tabPanel>
 
-      <!-- Bracket Tab (only show when bracket is seeded and in progress or finished) -->
-      <p-tabPanel header="Bracket" *ngIf="brackets.length > 0 && (tournamentState?.currentStatus === TournamentStatus.BracketInProgress || tournamentState?.currentStatus === TournamentStatus.Finished)">
+      <!-- Bracket Tab (only show when bracket is seeded and in progress, finished or cancelled) -->
+      <p-tabPanel header="Bracket" *ngIf="brackets.length > 0 && brackets[0].isSeeded && (tournamentState?.currentStatus === TournamentStatus.BracketInProgress || tournamentState?.currentStatus === TournamentStatus.Finished || tournamentState?.currentStatus === TournamentStatus.Cancelled)">
         <div class="tab-content">
           <app-standing-bracket
             [tournament]="tournament"
@@ -79,6 +90,10 @@
     </p-tabView>
     </div>
   </div>
+
+  <!-- Delete / Cancel confirmations (opened from navbar actions) -->
+  <app-confirm-dialog #deleteDialog (confirmed)="deleteTournament()"></app-confirm-dialog>
+  <app-confirm-dialog #cancelDialog (confirmed)="cancelTournament($event)"></app-confirm-dialog>
 
   <!-- Loading Overlay -->
   <div class="loading-overlay" *ngIf="isReloading">

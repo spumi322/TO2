@@ -127,11 +127,6 @@ namespace Infrastructure.Persistence
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(Tournament).Assembly);
 
-            modelBuilder.Entity<Tournament>()
-                .HasIndex(e => e.Name)
-                .IsUnique();
-
-
         }
 
         /// <summary>

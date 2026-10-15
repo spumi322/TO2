@@ -171,6 +171,17 @@ namespace Infrastructure.Migrations
                     b.Property<int?>("AdvancingPerGroup")
                         .HasColumnType("integer");
 
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CancelledBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
@@ -215,9 +226,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.HasIndex("TenantId");
 

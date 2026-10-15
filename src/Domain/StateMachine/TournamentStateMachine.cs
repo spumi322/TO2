@@ -113,5 +113,10 @@ namespace Domain.StateMachine
         public bool CanScoreMatches(TournamentStatus status) => IsActiveState(status);
 
         public bool CanModifyTeams(TournamentStatus status) => status == TournamentStatus.Setup;
+
+        public bool CanCancel(TournamentStatus status) =>
+            status != TournamentStatus.Setup && !IsTerminalState(status);
+
+        public bool CanDelete(TournamentStatus status) => status == TournamentStatus.Setup;
     }
 }

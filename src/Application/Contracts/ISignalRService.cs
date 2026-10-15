@@ -14,5 +14,6 @@ namespace Application.Contracts
         Task BroadcastGroupsStarted(long tournamentId, string updatedBy);
         Task BroadcastBracketStarted(long tournamentId, string updatedBy);
         Task BroadcastTournamentDeleted(long tournamentId, string deletedBy);
+        Task BroadcastTournamentCancelled(long tournamentId, string cancelledBy);
     }
 }

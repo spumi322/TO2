@@ -27,6 +27,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   // Tournament context
   currentTournament: Tournament | null = null;
   tournamentState: TournamentStateDTO | null = null;
+  tournamentMenuItems: MenuItem[] = [];
   private tournamentSubscription?: Subscription;
   private stateSubscription?: Subscription;
 
@@ -54,7 +55,19 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     this.stateSubscription = this.tournamentContext.state$.subscribe(state => {
       this.tournamentState = state;
+      this.setupTournamentMenu();
     });
+  }
+
+  private setupTournamentMenu(): void {
+    const items: MenuItem[] = [];
+    if (this.tournamentState?.canDelete) {
+      items.push({ label: 'Delete tournament', icon: 'pi pi-trash', styleClass: 'menu-item-danger', command: () => this.onDeleteTournament() });
+    }
+    if (this.tournamentState?.canCancel) {
+      items.push({ label: 'Cancel tournament', icon: 'pi pi-ban', styleClass: 'menu-item-danger', command: () => this.onCancelTournament() });
+    }
+    this.tournamentMenuItems = items;
   }
 
   private setupUserMenu(): void {
@@ -126,5 +139,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   onCancelTournament(): void {
     this.tournamentContext.triggerCancelTournament();
+  }
+
+  onDeleteTournament(): void {
+    this.tournamentContext.triggerDeleteTournament();
   }
 }

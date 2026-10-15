@@ -18,7 +18,7 @@
 
       <!-- Score -->
       <td [class.score-updating]="isUpdating[match.id]" class="score-cell">
-        <ng-container *ngIf="!match.winnerId && !isUpdating[match.id] && !isGroupFinished; else scoreOnly">
+        <ng-container *ngIf="!match.winnerId && !isUpdating[match.id] && !isGroupFinished && canScore; else scoreOnly">
           <button class="score-btn" (click)="updateMatchScore(match.id, match.teamAId)">+</button>
           <span class="score-text">{{ match.teamAWins }} - {{ match.teamBWins }}</span>
           <button class="score-btn" (click)="updateMatchScore(match.id, match.teamBId)">+</button>

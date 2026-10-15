@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Format, Tournament, TournamentStatus, TournamentStateDTO } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { MatchService } from '../../../services/match/match.service';
 import { FinalStanding } from '../../../models/final-standing';
 import { TournamentContextService } from '../../../services/tournament-context.service';
 import { AuthService } from '../../../services/auth/auth.service';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-tournament-details',
@@ -20,6 +21,9 @@ import { AuthService } from '../../../services/auth/auth.service';
   styleUrls: ['./tournament-details.component.css']
 })
 export class TournamentDetailsComponent implements OnInit, OnDestroy {
+  @ViewChild('deleteDialog') deleteDialog!: ConfirmDialogComponent;
+  @ViewChild('cancelDialog') cancelDialog!: ConfirmDialogComponent;
+
   private destroy$ = new Subject<void>();
   tournament$: Observable<Tournament | null> = of(null);
   tournament: Tournament | null = null;
@@ -81,7 +85,11 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
 
     this.tournamentContext.cancelTournament$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.onCancelTournament());
+      .subscribe(() => this.openCancelDialog());
+
+    this.tournamentContext.deleteTournament$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.openDeleteDialog());
 
     // Subscribe to groups/bracket from context service
     this.tournamentContext.groups$
@@ -211,12 +219,22 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
         }
       });
 
+    // Deleted/Cancelled are tenant-wide broadcasts: only react to this tournament
     this.tournamentContext.tournamentDeleted$
       .pipe(takeUntil(this.destroy$))
       .subscribe((event) => {
-        if (event.updatedBy !== currentUser) {
-          this.showInfo(`Tournament cancelled by ${event.updatedBy}`);
+        if (event.tournamentId === this.tournamentId && event.updatedBy !== currentUser) {
+          this.showInfo(`Tournament deleted by ${event.updatedBy}`);
           setTimeout(() => this.router.navigate(['/tournaments']), 1500);
+        }
+      });
+
+    this.tournamentContext.tournamentCancelled$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        if (event.tournamentId === this.tournamentId && event.updatedBy !== currentUser) {
+          this.showInfo(`Tournament cancelled by ${event.updatedBy}`);
+          this.reloadTournamentData();
         }
       });
   }
@@ -396,14 +414,42 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
     });
   }
 
-  onCancelTournament(): void {
+  openDeleteDialog(): void {
+    this.deleteDialog.open({
+      title: 'Delete tournament',
+      message: 'This permanently deletes the tournament and its teams that are not in other tournaments. This cannot be undone.',
+      confirmLabel: 'Delete'
+    });
+  }
+
+  openCancelDialog(): void {
+    this.cancelDialog.open({
+      title: 'Cancel tournament',
+      message: 'Cancelling is final and cannot be undone. No more matches can be played. Results played so far stay viewable.',
+      confirmLabel: 'Cancel tournament',
+      withReason: true
+    });
+  }
+
+  deleteTournament(): void {
     if (!this.tournamentId) return;
-    if (!confirm('Delete this tournament? This cannot be undone.')) return;
 
     this.tournamentService.deleteTournament(this.tournamentId).subscribe({
       next: () => {
         this.tournamentContext.clear();
         this.router.navigate(['/tournaments']);
+      },
+      error: () => this.showError('Error deleting tournament')
+    });
+  }
+
+  cancelTournament(reason?: string): void {
+    if (!this.tournamentId) return;
+
+    this.tournamentService.cancelTournament(this.tournamentId, reason).subscribe({
+      next: () => {
+        this.showSuccess('Tournament cancelled');
+        this.reloadTournamentData();
       },
       error: () => this.showError('Error cancelling tournament')
     });

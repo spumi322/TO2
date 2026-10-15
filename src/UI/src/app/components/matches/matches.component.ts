@@ -17,6 +17,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
   @Input() matches: Match[] = [];
   @Input() teams: Team[] = [];
   @Input() isGroupFinished: boolean = false;
+  @Input() canScore: boolean = true;
   @Input() tournamentId!: number;
   @Output() matchFinished = new EventEmitter<MatchFinishedIds>();
 
