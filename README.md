@@ -10,7 +10,7 @@ Full-stack tournament management application supporting group stages, single-eli
 
 ## Tournament Formats
 
-All formats accept 4–32 teams with best-of-3 series per phase.
+Tournaments are sized for 4–32 teams (a tournament can start with as few as 2 registered teams). Matches are best-of-3.
 
 - **BracketOnly** — Single-elimination bracket. Teams randomly seeded.
 - **GroupsOnly** — Round-robin groups. Final placements from group standings.
@@ -20,27 +20,31 @@ All formats accept 4–32 teams with best-of-3 series per phase.
 
 ![Architecture](docs/diagrams/architecture.svg)
 
-## Tournament State Machine
+## Tournament Lifecycle
 
-![State Machine](docs/diagrams/state-machine.svg)
+```
+Setup → SeedingGroups → GroupsInProgress → GroupsCompleted → SeedingBracket → BracketInProgress → Finished
+```
 
-## Request Lifecycle — Scoring a Game
+Each format uses its own subset (BracketOnly skips the group states, GroupsOnly finishes after the groups).
 
-![Pipeline](docs/diagrams/game-result-pipeline.svg)
+- **Delete** — only in `Setup`. Removes the tournament and teams that are in no other tournament.
+- **Cancel** — any started state before `Finished`. Final (no un-cancel); records who/when/optional reason. Played data stays viewable, scoring is blocked.
+- `Finished` and `Cancelled` are terminal.
 
 ## Technical Decisions
 
 **Pipeline pattern.** Scoring a game can cascade into match completion, standing updates, state transitions, and placement calculation. `GameResultPipeline` breaks this into 7 sequential steps with a shared context that short-circuits on failure.
 
-**State machine in the domain layer.** Tournament lifecycle rules are enforced by `TournamentStateMachine` with explicit transition dictionaries and format-specific overloads. Every state change goes through `ValidateTransition()` — no scattered guard clauses.
+**State machine in the domain layer.** Tournament lifecycle rules are enforced by `TournamentStateMachine` with explicit transition dictionaries and format-specific overloads. Pipelines validate every stage transition with `ValidateTransition()`; which user actions are allowed per state (`CanScoreMatches`, `CanCancel`, `CanDelete`, …) is also decided there and exposed to the UI, so the frontend never re-implements status rules.
 
-**EF Core interceptors.** Tenant isolation and audit timestamps are handled by `SaveChangesInterceptor` implementations, not a base entity class. No entity needs to inherit from anything or remember to set fields manually.
+**EF Core interceptors.** `TenantId` and audit fields (`CreatedBy/Date`, `LastModifiedBy/Date`, declared on `EntityBase`) are filled in by `SaveChangesInterceptor` implementations, and global query filters scope every read to the current tenant. Business code never sets them manually.
 
 **BYE system.** Brackets accept non-power-of-two team counts by padding to the next power of two and auto-resolving BYE matches. An organizer can run 11 teams through 3 groups and advance 6 into an 8-slot bracket without workarounds.
 
 **Single SaveChanges per request.** The pipeline mutates entities in memory across multiple steps; `UnitOfWork` commits once at the end. If any step fails, nothing is persisted.
 
-**Optimistic concurrency.** Core entities carry `[Timestamp]` RowVersion columns. In concurrent scoring scenarios, the first write wins — the second gets a concurrency exception rather than silently overwriting.
+**Optimistic concurrency (not yet effective).** Core entities declare `[Timestamp]` RowVersion columns, but PostgreSQL does not generate `bytea` row versions, so the values stay `NULL` and concurrent writes are not detected yet (fix: Npgsql `xmin` concurrency token).
 
 ## Running Locally
 
@@ -61,7 +65,7 @@ dotnet run
 # Frontend (separate terminal)
 cd src/UI
 npm install
-ng serve
+npm start
 ```
 
-Backend: `https://localhost:7268` — Frontend: `https://127.0.0.1:4200`
+Backend: `http://localhost:5161` (`dotnet run --launch-profile https` adds `https://localhost:7221`) — Frontend: `https://127.0.0.1:4200` (dev build calls `http://localhost:5161/api`)
