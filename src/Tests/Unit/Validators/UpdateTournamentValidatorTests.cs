@@ -1,6 +1,5 @@
 using Application.DTOs.Tournament;
 using Application.Validations.Tournament;
-using Domain.Enums;
 using FluentValidation.TestHelper;
 
 namespace Tests.Unit.Validators
@@ -16,13 +15,11 @@ namespace Tests.Unit.Validators
 
         private UpdateTournamentRequestDTO CreateValidDTO(
             string? name = null,
-            string? description = null,
-            TournamentStatus? status = null)
+            string? description = null)
         {
             return new UpdateTournamentRequestDTO(
                 Name: name ?? "Test Tournament",
                 Description: description ?? "Test Description",
-                status: status ?? TournamentStatus.Setup,
                 RowVersion: null
             );
         }

@@ -9,6 +9,7 @@ using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
+using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Pipelines.GameResult
@@ -22,6 +23,9 @@ namespace Application.Pipelines.GameResult
         private readonly ILogger<GameResultPipeline> _logger;
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly IRepository<Standing> _standingRepository;
+        private readonly IRepository<Match> _matchRepository;
+        private readonly IRepository<Game> _gameRepository;
+        private readonly ITournamentStateMachine _stateMachine;
         private readonly IEnumerable<IGameResultPipelineStep> _steps;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ISignalRService _signalRService;
@@ -33,6 +37,9 @@ namespace Application.Pipelines.GameResult
             ILogger<GameResultPipeline> logger,
             IRepository<Tournament> tournamentRepository,
             IRepository<Standing> standingRepository,
+            IRepository<Match> matchRepository,
+            IRepository<Game> gameRepository,
+            ITournamentStateMachine stateMachine,
             IEnumerable<IGameResultPipelineStep> steps,
             IUnitOfWork unitOfWork,
             ISignalRService signalRService,
@@ -43,6 +50,9 @@ namespace Application.Pipelines.GameResult
             _logger = logger;
             _tournamentRepository = tournamentRepository;
             _standingRepository = standingRepository;
+            _matchRepository = matchRepository;
+            _gameRepository = gameRepository;
+            _stateMachine = stateMachine;
             _steps = steps;
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
@@ -68,6 +78,8 @@ namespace Application.Pipelines.GameResult
             // Load tournament (required for all steps)
             context.Tournament = await _tournamentRepository.GetByIdAsync(gameResult.TournamentId)
                 ?? throw new NotFoundException("Tournament", gameResult.TournamentId);
+
+            await ValidateCanScoreAsync(gameResult, context.Tournament);
 
             // Begin transaction - all changes will be atomic
             await _unitOfWork.BeginTransactionAsync();
@@ -210,6 +222,29 @@ namespace Application.Pipelines.GameResult
                 FinalStandings: context.FinalStandings,
                 NewTournamentStatus: context.NewTournamentStatus
             );
+        }
+
+        /// <summary>
+        /// Rejects scoring when the body IDs don't match the game's real match/standing/tournament
+        /// (otherwise a client could pair an active tournament's ID with another tournament's game),
+        /// or when the tournament's state doesn't allow scoring (e.g. Cancelled, Finished).
+        /// </summary>
+        private async Task ValidateCanScoreAsync(SetGameResultDTO gameResult, Tournament tournament)
+        {
+            var game = await _gameRepository.GetByIdAsync(gameResult.gameId)
+                ?? throw new NotFoundException("Game", gameResult.gameId);
+            var match = await _matchRepository.GetByIdAsync(game.MatchId)
+                ?? throw new NotFoundException("Match", game.MatchId);
+            var standing = await _standingRepository.GetByIdAsync(match.StandingId)
+                ?? throw new NotFoundException("Standing", match.StandingId);
+
+            if (match.Id != gameResult.MatchId
+                || standing.Id != gameResult.StandingId
+                || standing.TournamentId != gameResult.TournamentId)
+                throw new ValidationException("Game does not belong to the given match, standing and tournament.");
+
+            if (!_stateMachine.CanScoreMatches(tournament.Status))
+                throw new ConflictException($"Matches cannot be scored while the tournament is {tournament.Status}.");
         }
     }
 }

@@ -114,6 +114,13 @@ namespace Infrastructure.Persistence
                 entity.Ignore(tt => tt.Id);
             });
 
+            // Players belong to their team: deleting a team (e.g. Setup tournament delete) removes them too
+            modelBuilder.Entity<Team>()
+                .HasMany(t => t.Players)
+                .WithOne(p => p.Team)
+                .HasForeignKey("TeamId")
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Team>().Property(t => t.Name).HasMaxLength(24);
             modelBuilder.Entity<Tournament>().Property(t => t.Name).HasMaxLength(60);
 

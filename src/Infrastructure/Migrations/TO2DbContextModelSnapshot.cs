@@ -839,7 +839,8 @@ namespace Infrastructure.Migrations
                 {
                     b.HasOne("Domain.AggregateRoots.Team", "Team")
                         .WithMany("Players")
-                        .HasForeignKey("TeamId");
+                        .HasForeignKey("TeamId")
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Team");
                 });

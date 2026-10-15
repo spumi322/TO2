@@ -150,6 +150,45 @@ namespace Tests.Unit.Services
             (await DbContext.Tournaments.AnyAsync(t => t.Id == id)).Should().BeFalse();
         }
 
+        [Fact]
+        public async Task Delete_Should_RemoveExclusiveTeamAndItsPlayers()
+        {
+            var id = await SeedTournamentAsync(TournamentStatus.Setup);
+            var team = TestDataBuilder.Teams.CreateDefault("Alpha Squad");
+            DbContext.Teams.Add(team);
+            await DbContext.SaveChangesAsync();
+            DbContext.TournamentTeams.Add(TestDataBuilder.TournamentTeams.Create(id, team.Id));
+            await DbContext.SaveChangesAsync();
+
+            // No app code creates players yet; insert one directly
+            await DbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"INSERT INTO Players (Name, TeamId, CreatedDate, LastModifiedDate, CreatedBy, LastModifiedBy) VALUES ('Player 1', {team.Id}, {DateTime.UtcNow}, {DateTime.UtcNow}, '', '')");
+            DbContext.ChangeTracker.Clear();
+
+            await _service.DeleteTournamentAsync(id);
+
+            DbContext.ChangeTracker.Clear();
+            (await DbContext.Teams.AnyAsync(t => t.Id == team.Id)).Should().BeFalse();
+            (await DbContext.Players.AnyAsync()).Should().BeFalse();
+        }
+
+        #endregion
+
+        #region Update
+
+        [Fact]
+        public async Task Update_Should_NotChangeStatus()
+        {
+            // PUT /tournaments/{id} must not be a back door to un-cancel / jump states
+            var id = await SeedTournamentAsync(TournamentStatus.Cancelled);
+
+            await _service.UpdateTournamentAsync(id, new UpdateTournamentRequestDTO("Winter Cup", "Desc", null));
+
+            var tournament = await ReloadAsync(id);
+            tournament.Name.Should().Be("Winter Cup");
+            tournament.Status.Should().Be(TournamentStatus.Cancelled);
+        }
+
         #endregion
 
         #region Create

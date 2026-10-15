@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using TO2.Hubs;
 using TO2.SignalR;
@@ -178,7 +179,9 @@ namespace TO2
                     ValidIssuer = jwtSettings?.Issuer,
                     ValidAudience = jwtSettings?.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtSettings?.SecretKey ?? throw new InvalidOperationException("JWT SecretKey not configured")))
+                        Encoding.UTF8.GetBytes(jwtSettings?.SecretKey ?? throw new InvalidOperationException("JWT SecretKey not configured"))),
+                    // AuthService puts the username in the "name" claim; without this User.Identity.Name is null
+                    NameClaimType = JwtRegisteredClaimNames.Name
                 };
 
                 // Configure SignalR authentication from query string

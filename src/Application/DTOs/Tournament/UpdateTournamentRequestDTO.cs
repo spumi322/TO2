@@ -1,6 +1,4 @@
-﻿using Domain.Enums;
-
-namespace Application.DTOs.Tournament
+﻿namespace Application.DTOs.Tournament
 {
-    public record UpdateTournamentRequestDTO(string Name, string Description, TournamentStatus status, byte[]? RowVersion);
+    public record UpdateTournamentRequestDTO(string Name, string Description, byte[]? RowVersion);
 }
