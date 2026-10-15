@@ -15,73 +15,23 @@ namespace Tests.Unit.Domain
 
         #region Valid Transitions
 
-        [Fact]
-        public void Should_AllowTransition_From_Setup_To_SeedingGroups()
+        [Theory]
+        [InlineData(Format.BracketOnly, TournamentStatus.Setup, TournamentStatus.SeedingBracket)]
+        [InlineData(Format.BracketOnly, TournamentStatus.SeedingBracket, TournamentStatus.BracketInProgress)]
+        [InlineData(Format.BracketOnly, TournamentStatus.BracketInProgress, TournamentStatus.Finished)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.Setup, TournamentStatus.SeedingGroups)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.SeedingGroups, TournamentStatus.GroupsInProgress)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.GroupsInProgress, TournamentStatus.Finished)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.Setup, TournamentStatus.SeedingGroups)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.SeedingGroups, TournamentStatus.GroupsInProgress)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.GroupsInProgress, TournamentStatus.GroupsCompleted)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.GroupsCompleted, TournamentStatus.SeedingBracket)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.SeedingBracket, TournamentStatus.BracketInProgress)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.BracketInProgress, TournamentStatus.Finished)]
+        public void Should_AllowValidTransitions_PerFormat(Format format, TournamentStatus from, TournamentStatus to)
         {
             // Act
-            var isValid = _stateMachine.IsTransitionValid(
-                TournamentStatus.Setup,
-                TournamentStatus.SeedingGroups);
-
-            // Assert
-            isValid.Should().BeTrue();
-        }
-
-        [Fact]
-        public void Should_AllowTransition_From_SeedingGroups_To_GroupsInProgress()
-        {
-            // Act
-            var isValid = _stateMachine.IsTransitionValid(
-                TournamentStatus.SeedingGroups,
-                TournamentStatus.GroupsInProgress);
-
-            // Assert
-            isValid.Should().BeTrue();
-        }
-
-        [Fact]
-        public void Should_AllowTransition_From_GroupsInProgress_To_GroupsCompleted()
-        {
-            // Act
-            var isValid = _stateMachine.IsTransitionValid(
-                TournamentStatus.GroupsInProgress,
-                TournamentStatus.GroupsCompleted);
-
-            // Assert
-            isValid.Should().BeTrue();
-        }
-
-        [Fact]
-        public void Should_AllowTransition_From_GroupsCompleted_To_SeedingBracket()
-        {
-            // Act
-            var isValid = _stateMachine.IsTransitionValid(
-                TournamentStatus.GroupsCompleted,
-                TournamentStatus.SeedingBracket);
-
-            // Assert
-            isValid.Should().BeTrue();
-        }
-
-        [Fact]
-        public void Should_AllowTransition_From_SeedingBracket_To_BracketInProgress()
-        {
-            // Act
-            var isValid = _stateMachine.IsTransitionValid(
-                TournamentStatus.SeedingBracket,
-                TournamentStatus.BracketInProgress);
-
-            // Assert
-            isValid.Should().BeTrue();
-        }
-
-        [Fact]
-        public void Should_AllowTransition_From_BracketInProgress_To_Finished()
-        {
-            // Act
-            var isValid = _stateMachine.IsTransitionValid(
-                TournamentStatus.BracketInProgress,
-                TournamentStatus.Finished);
+            var isValid = _stateMachine.IsTransitionValid(from, to, format);
 
             // Assert
             isValid.Should().BeTrue();
@@ -92,16 +42,24 @@ namespace Tests.Unit.Domain
         #region Invalid Transitions
 
         [Theory]
-        [InlineData(TournamentStatus.Setup, TournamentStatus.GroupsInProgress)]
-        [InlineData(TournamentStatus.Setup, TournamentStatus.Finished)]
-        [InlineData(TournamentStatus.GroupsInProgress, TournamentStatus.Setup)]
-        [InlineData(TournamentStatus.GroupsInProgress, TournamentStatus.SeedingGroups)]
-        [InlineData(TournamentStatus.Finished, TournamentStatus.Setup)]
-        [InlineData(TournamentStatus.Finished, TournamentStatus.BracketInProgress)]
-        public void Should_NotAllowInvalidTransitions(TournamentStatus from, TournamentStatus to)
+        // Generic invalid moves (skipping or going backwards)
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.Setup, TournamentStatus.GroupsInProgress)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.Setup, TournamentStatus.Finished)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.GroupsInProgress, TournamentStatus.Setup)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.GroupsInProgress, TournamentStatus.SeedingGroups)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.Finished, TournamentStatus.Setup)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.Finished, TournamentStatus.BracketInProgress)]
+        // Format-specific: path belongs to another format
+        [InlineData(Format.BracketOnly, TournamentStatus.Setup, TournamentStatus.SeedingGroups)]
+        [InlineData(Format.BracketOnly, TournamentStatus.GroupsInProgress, TournamentStatus.GroupsCompleted)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.GroupsInProgress, TournamentStatus.GroupsCompleted)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.Setup, TournamentStatus.SeedingBracket)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.Setup, TournamentStatus.SeedingBracket)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.GroupsInProgress, TournamentStatus.Finished)]
+        public void Should_NotAllowInvalidTransitions_PerFormat(Format format, TournamentStatus from, TournamentStatus to)
         {
             // Act
-            var isValid = _stateMachine.IsTransitionValid(from, to);
+            var isValid = _stateMachine.IsTransitionValid(from, to, format);
 
             // Assert
             isValid.Should().BeFalse();
@@ -113,11 +71,25 @@ namespace Tests.Unit.Domain
             // Act
             Action act = () => _stateMachine.ValidateTransition(
                 TournamentStatus.Setup,
-                TournamentStatus.Finished);
+                TournamentStatus.SeedingGroups,
+                Format.BracketOnly);
 
             // Assert
             act.Should().Throw<InvalidOperationException>()
-                .WithMessage("*Invalid state transition*");
+                .WithMessage("*Invalid state transition for BracketOnly*");
+        }
+
+        [Fact]
+        public void ValidateTransition_Should_NotThrow_For_ValidTransition()
+        {
+            // Act
+            Action act = () => _stateMachine.ValidateTransition(
+                TournamentStatus.GroupsInProgress,
+                TournamentStatus.Finished,
+                Format.GroupsOnly);
+
+            // Assert
+            act.Should().NotThrow();
         }
 
         #endregion
@@ -125,29 +97,35 @@ namespace Tests.Unit.Domain
         #region Cancelled State
 
         [Theory]
-        [InlineData(TournamentStatus.Setup)]
-        [InlineData(TournamentStatus.SeedingGroups)]
-        [InlineData(TournamentStatus.GroupsInProgress)]
-        [InlineData(TournamentStatus.GroupsCompleted)]
-        [InlineData(TournamentStatus.SeedingBracket)]
-        [InlineData(TournamentStatus.BracketInProgress)]
-        public void Should_AllowTransition_To_Cancelled_From_AnyState(TournamentStatus from)
+        [InlineData(Format.BracketOnly, TournamentStatus.Setup)]
+        [InlineData(Format.BracketOnly, TournamentStatus.SeedingBracket)]
+        [InlineData(Format.BracketOnly, TournamentStatus.BracketInProgress)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.Setup)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.SeedingGroups)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.GroupsInProgress)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.Setup)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.SeedingGroups)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.GroupsInProgress)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.GroupsCompleted)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.SeedingBracket)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.BracketInProgress)]
+        public void Should_AllowTransition_To_Cancelled_From_AnyNonTerminalState(Format format, TournamentStatus from)
         {
             // Act
-            var isValid = _stateMachine.IsTransitionValid(from, TournamentStatus.Cancelled);
+            var isValid = _stateMachine.IsTransitionValid(from, TournamentStatus.Cancelled, format);
 
             // Assert
             isValid.Should().BeTrue();
         }
 
         [Theory]
-        [InlineData(TournamentStatus.Setup)]
-        [InlineData(TournamentStatus.GroupsInProgress)]
-        [InlineData(TournamentStatus.Finished)]
-        public void Should_NotAllowTransition_From_Cancelled_To_AnyState(TournamentStatus to)
+        [InlineData(Format.BracketOnly, TournamentStatus.Setup)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.GroupsInProgress)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.Finished)]
+        public void Should_NotAllowTransition_From_Cancelled_To_AnyState(Format format, TournamentStatus to)
         {
             // Act
-            var isValid = _stateMachine.IsTransitionValid(TournamentStatus.Cancelled, to);
+            var isValid = _stateMachine.IsTransitionValid(TournamentStatus.Cancelled, to, format);
 
             // Assert
             isValid.Should().BeFalse();
@@ -254,25 +232,41 @@ namespace Tests.Unit.Domain
 
         #region GetAllowedTransitions
 
-        [Fact]
-        public void GetAllowedTransitions_Should_ReturnCorrectTransitions_ForSetup()
+        [Theory]
+        [InlineData(Format.BracketOnly, TournamentStatus.SeedingBracket)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.SeedingGroups)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.SeedingGroups)]
+        public void GetAllowedTransitions_Should_ReturnCorrectTransitions_ForSetup(Format format, TournamentStatus expectedNext)
         {
             // Act
-            var transitions = _stateMachine.GetAllowedTransitions(TournamentStatus.Setup);
+            var transitions = _stateMachine.GetAllowedTransitions(TournamentStatus.Setup, format);
 
             // Assert
             transitions.Should().BeEquivalentTo(new[]
             {
-                TournamentStatus.SeedingGroups,
+                expectedNext,
                 TournamentStatus.Cancelled
             });
         }
 
-        [Fact]
-        public void GetAllowedTransitions_Should_ReturnEmptyList_ForFinished()
+        [Theory]
+        [InlineData(Format.BracketOnly)]
+        [InlineData(Format.GroupsOnly)]
+        [InlineData(Format.GroupsAndBracket)]
+        public void GetAllowedTransitions_Should_ReturnEmptyList_ForFinished(Format format)
         {
             // Act
-            var transitions = _stateMachine.GetAllowedTransitions(TournamentStatus.Finished);
+            var transitions = _stateMachine.GetAllowedTransitions(TournamentStatus.Finished, format);
+
+            // Assert
+            transitions.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void GetAllowedTransitions_Should_ReturnEmptyList_ForStateNotInFormat()
+        {
+            // Act
+            var transitions = _stateMachine.GetAllowedTransitions(TournamentStatus.GroupsInProgress, Format.BracketOnly);
 
             // Assert
             transitions.Should().BeEmpty();

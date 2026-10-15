@@ -34,7 +34,7 @@ namespace Application.Pipelines.StartGroups.Steps
             try
             {
                 // Validate and transition to GroupsInProgress
-                _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.GroupsInProgress);
+                _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.GroupsInProgress, context.Tournament.Format);
                 context.Tournament.Status = TournamentStatus.GroupsInProgress;
 
                 // Store in context

@@ -121,17 +121,17 @@ namespace Application.Services
             return _mapper.Map<UpdateTournamentResponseDTO>(existingTournament);
         }
 
-        public async Task SoftDeleteTournamentAsync(long id)
-        {
-            var existingTournament = await _tournamentRepository.GetByIdAsync(id)
-                ?? throw new NotFoundException("Tournament", id);
+        //public async Task SoftDeleteTournamentAsync(long id)
+        //{
+        //    var existingTournament = await _tournamentRepository.GetByIdAsync(id)
+        //        ?? throw new NotFoundException("Tournament", id);
 
-            // Validate transition before setting
-            _stateMachine.ValidateTransition(existingTournament.Status, TournamentStatus.Cancelled);
-            existingTournament.Status = TournamentStatus.Cancelled;
+        //    // Validate transition before setting
+        //    _stateMachine.ValidateTransition(existingTournament.Status, TournamentStatus.Cancelled);
+        //    existingTournament.Status = TournamentStatus.Cancelled;
 
-            await _unitOfWork.SaveChangesAsync();
-        }
+        //    await _unitOfWork.SaveChangesAsync();
+        //}
 
         public async Task DeleteTournamentAsync(long id)
         {
@@ -161,7 +161,7 @@ namespace Application.Services
                 ?? throw new NotFoundException("Tournament", id);
 
             // Validate transition before setting
-            _stateMachine.ValidateTransition(existingTournament.Status, status);
+            _stateMachine.ValidateTransition(existingTournament.Status, status, existingTournament.Format);
             existingTournament.Status = status;
 
             await _unitOfWork.SaveChangesAsync();

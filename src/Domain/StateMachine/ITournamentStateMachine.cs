@@ -9,22 +9,6 @@ namespace Domain.StateMachine
     public interface ITournamentStateMachine
     {
         /// <summary>
-        /// Checks if a state transition is valid according to the state machine rules.
-        /// </summary>
-        bool IsTransitionValid(TournamentStatus currentState, TournamentStatus nextState);
-
-        /// <summary>
-        /// Validates a state transition and throws InvalidOperationException if invalid.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when transition is not allowed</exception>
-        void ValidateTransition(TournamentStatus currentState, TournamentStatus nextState);
-
-        /// <summary>
-        /// Gets all valid transition states from the current state.
-        /// </summary>
-        IEnumerable<TournamentStatus> GetAllowedTransitions(TournamentStatus currentState);
-
-        /// <summary>
         /// Checks if a state transition is valid according to format-specific rules.
         /// </summary>
         bool IsTransitionValid(TournamentStatus currentState, TournamentStatus nextState, Format format);
