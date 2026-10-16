@@ -5,9 +5,9 @@ using Microsoft.Extensions.Logging;
 namespace Application.Pipelines.StartBracket.Steps
 {
     /// <summary>
-    /// Step 3: Gets teams for bracket based on format.
+    /// Step 3: Gets the teams entering the bracket (unordered; seeding happens in step 5).
     /// - BracketOnly: All registered teams
-    /// - BracketAndGroup: Teams advancing from groups (also updates GroupEntry statuses)
+    /// - GroupsAndBracket: Teams advancing from groups, with group placement (also updates GroupEntry statuses)
     /// </summary>
     public class GetAdvancedTeamsStep : IStartBracketPipelineStep
     {
@@ -29,7 +29,7 @@ namespace Application.Pipelines.StartBracket.Steps
 
             try
             {
-                // Format-aware team selection (all teams for BracketOnly, advanced teams for BracketAndGroup)
+                // Format-aware team selection (all teams for BracketOnly, advanced teams for GroupsAndBracket)
                 var teams = await _standingService.GetTeamsForBracketByFormat(context.TournamentId);
 
                 if (teams == null || teams.Count == 0)

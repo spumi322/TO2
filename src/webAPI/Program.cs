@@ -7,6 +7,7 @@ using Application.Pipelines.GameResult.Steps;
 using Application.Pipelines.GameResult.Strategies;
 using Application.Pipelines.StartBracket;
 using Application.Pipelines.StartBracket.Contracts;
+using Application.Pipelines.StartBracket.Strategies;
 using Application.Pipelines.StartGroups;
 using Application.Pipelines.StartGroups.Contracts;
 using Application.Services;
@@ -89,7 +90,7 @@ namespace TO2
             builder.Services.AddScoped<IGameResultPipelineStep, HandleStandingProgressStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, TransitionTournamentStateStep>();
             builder.Services.AddScoped<IGameResultPipelineStep, CalculateFinalPlacementsStep>();
-            // BroadcastUpdatesStep removed - broadcasting now happens after transaction commit in pipeline executor
+            // Broadcasting happens in the pipeline executor after transaction commit, not in a step
             builder.Services.AddScoped<IGameResultPipelineStep, BuildResponseStep>();
             // Standing Progress Strategies
             builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
@@ -113,13 +114,15 @@ namespace TO2
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateAndTransitionToSeedingBracketStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateBracketNotSeededStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.GetAdvancedTeamsStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.RandomSeedTeamsStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateTeamCountStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.CalculateBracketStructureStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.GenerateBracketMatchesStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.MarkBracketAsSeededStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.TransitionToBracketInProgressStep>();
             builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.BuildResponseStep>();
+            // Bracket Seeding Strategies (one per format with a bracket)
+            builder.Services.AddScoped<IBracketSeedingStrategy, RandomSeedingStrategy>();
+            builder.Services.AddScoped<IBracketSeedingStrategy, GroupResultSeedingStrategy>();
 
             // Deps
             builder.Services.AddAutoMapper(typeof(MappingProfile));

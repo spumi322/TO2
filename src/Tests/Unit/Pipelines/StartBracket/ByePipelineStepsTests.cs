@@ -1,7 +1,9 @@
 using Application.Contracts;
 using Application.DTOs.Game;
+using Application.DTOs.Standing;
 using Application.Pipelines.StartBracket.Contracts;
 using Application.Pipelines.StartBracket.Steps;
+using Application.Pipelines.StartBracket.Strategies;
 using Application.Pipelines.StartBracket.Utilities;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -69,7 +71,7 @@ namespace Tests.Unit.Pipelines.StartBracket
         {
             TournamentId = 1,
             AdvancedTeams = Enumerable.Range(1, teamCount)
-                .Select(i => new Team($"Team {i}") { Id = i })
+                .Select(i => new BracketEntrant(new Team($"Team {i}") { Id = i }, null, null))
                 .ToList()
         };
     }
@@ -83,7 +85,33 @@ namespace Tests.Unit.Pipelines.StartBracket
         public CalculateBracketStructureStepTests()
         {
             var (_, logger) = CreateLogger<CalculateBracketStructureStep>();
-            _step = new CalculateBracketStructureStep(logger);
+            var strategies = new IBracketSeedingStrategy[]
+            {
+                new RandomSeedingStrategy(CreateLogger<RandomSeedingStrategy>().Logger),
+                new GroupResultSeedingStrategy(CreateLogger<GroupResultSeedingStrategy>().Logger)
+            };
+            _step = new CalculateBracketStructureStep(logger, strategies);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_GroupsAndBracket_PairsTeamsInSeedOrder()
+        {
+            var context = MakeContext(4, Format.GroupsAndBracket);
+            await _step.ExecuteAsync(context);
+
+            // Seed 1 vs 4, seed 2 vs 3
+            context.SeededPairs.Select(p => (p.teamA!.Id, p.teamB!.Id))
+                .Should().Equal((1L, 4L), (2L, 3L));
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_FormatWithoutBracket_Throws()
+        {
+            var context = MakeContext(4, Format.GroupsOnly);
+
+            var act = () => _step.ExecuteAsync(context);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [Fact]
@@ -141,12 +169,18 @@ namespace Tests.Unit.Pipelines.StartBracket
             context.SeededPairs.Should().HaveCount(1);
         }
 
-        private static StartBracketContext MakeContext(int teamCount) => new()
+        /// <summary>
+        /// GroupsAndBracket: every team is the winner of its own group (group id = team id).
+        /// </summary>
+        private static StartBracketContext MakeContext(int teamCount, Format format = Format.BracketOnly) => new()
         {
             TournamentId = 1,
+            Tournament = TestDataBuilder.Tournaments.CreateDefault(format: format),
             BracketStanding = TestDataBuilder.Standings.CreateBracket(1),
             AdvancedTeams = Enumerable.Range(1, teamCount)
-                .Select(i => new Team($"Team {i}") { Id = i })
+                .Select(i => format == Format.GroupsAndBracket
+                    ? new BracketEntrant(new Team($"Team {i}") { Id = i }, i, 1)
+                    : new BracketEntrant(new Team($"Team {i}") { Id = i }, null, null))
                 .ToList()
         };
     }

@@ -1,3 +1,4 @@
+using Application.DTOs.Standing;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -17,7 +18,7 @@ namespace Application.Pipelines.StartBracket.Contracts
         public Tournament Tournament { get; set; } = null!;
         public List<Standing> Standings { get; set; } = new();
         public Standing BracketStanding { get; set; } = null!;
-        public List<Team> AdvancedTeams { get; set; } = new();
+        public List<BracketEntrant> AdvancedTeams { get; set; } = new();
 
         // Computed data
         public List<(Team? teamA, Team? teamB)> SeededPairs { get; set; } = new();

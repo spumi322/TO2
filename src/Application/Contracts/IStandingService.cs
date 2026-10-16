@@ -23,13 +23,13 @@ namespace Application.Contracts
         /// </summary>
         Task<bool> CheckAllGroupsAreFinished(long tournamentId);
         /// <summary>
-        /// Gets teams for bracket based on tournament format.
-        /// BracketOnly: Returns all registered teams.
-        /// BracketAndGroup: Returns teams advancing from groups.
+        /// Gets the teams entering the bracket, unordered (seeding is done by the bracket seeding strategy).
+        /// BracketOnly: all registered teams.
+        /// GroupsAndBracket: teams advancing from groups, with group id and placement; marks group entries Advanced/Eliminated.
         /// </summary>
-        Task<List<Team>> GetTeamsForBracketByFormat(long tournamentId);
+        Task<List<BracketEntrant>> GetTeamsForBracketByFormat(long tournamentId);
         /// <summary>
-        /// Advances the match winner to the next round by populating the appropriate team slot.
+        /// Gets the final placements of a finished tournament (empty list if not finished).
         /// </summary>
         Task<List<TeamPlacementDTO>> GetFinalResultsAsync(long tournamentId);
         /// <summary>

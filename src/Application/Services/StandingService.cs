@@ -166,7 +166,7 @@ namespace Application.Services
 
         // NOTED N+1 PROBLEM EXAMPLE, LEAVE IT FOR EDUCATIONAL PURPOSE
         // var teams = await _teamRepository.FindAllAsync(t => teamIds.Contains(t.Id));
-        public async Task<List<Team>> GetTeamsForBracketByFormat(long tournamentId)
+        public async Task<List<BracketEntrant>> GetTeamsForBracketByFormat(long tournamentId)
         {
             var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
                 ?? throw new NotFoundException("Tournament", tournamentId);
@@ -185,16 +185,16 @@ namespace Application.Services
 
                 _logger.LogInformation("{Count} registered teams selected for bracket", teams.Count);
 
-                return teams.ToList();
+                return teams.Select(t => new BracketEntrant(t, null, null)).ToList();
             }
 
-            // BracketAndGroup: Advanced teams from groups
+            // GroupsAndBracket: Advanced teams from groups
             _logger.LogInformation("Selecting advanced teams from groups for tournament {Id}", tournamentId);
 
             var standings = await GetStandingsAsync(tournamentId);
             var groups = standings.Where(s => s.StandingType == StandingType.Group).ToList();
             if (groups.Count == 0)
-                throw new NotFoundException("No groups found for BracketAndGroup tournament");
+                throw new NotFoundException("No groups found for GroupsAndBracket tournament");
 
             int teamsAdvancingPerGroup = tournament.AdvancingPerGroup
                 ?? throw new InvalidOperationException("AdvancingPerGroup not set on tournament.");
@@ -205,8 +205,8 @@ namespace Application.Services
             var allGroupIds = groups.Select(g => g.Id).ToList();
             var allGroupEntries = await _groupRepository.FindAllAsync(g => allGroupIds.Contains(g.StandingId));
 
-            // Advancing entries per group, best first: advancingPerGroup[group][place]
-            var advancingPerGroup = new List<List<GroupEntry>>();
+            // Advancing group entries with their placement in the group (1 = group winner)
+            var advancing = new List<(GroupEntry Entry, int Placement)>();
 
             foreach (var group in groups)
             {
@@ -217,38 +217,27 @@ namespace Application.Services
                     .ThenBy(g => g.Losses)
                     .ToList();
 
-                var advancing = ranked.Take(teamsAdvancingPerGroup).ToList();
-                advancing.ForEach(e => e.Status = TeamStatus.Advanced);
-                advancingPerGroup.Add(advancing);
+                var groupAdvancing = ranked.Take(teamsAdvancingPerGroup).ToList();
+                groupAdvancing.ForEach(e => e.Status = TeamStatus.Advanced);
+                advancing.AddRange(groupAdvancing.Select((entry, index) => (entry, index + 1)));
 
                 ranked.Skip(teamsAdvancingPerGroup).ToList()
                     .ForEach(e => { e.Status = TeamStatus.Eliminated; e.Eliminated = true; });
             }
 
-            // Seeding order: all group winners first, then all runners-up, then 3rd places...
-            // The bracket pairs seed 1 vs last, seed 2 vs second-to-last, etc. (BYEs fill the last seeds),
-            // so group winners face runners-up or BYEs in round 1, never each other.
-            // (Only unavoidable when more than half of the bracket slots are group winners, e.g. 1 team advancing per group.)
-            var seededTeamIds = new List<long>();
-            for (int place = 0; place < teamsAdvancingPerGroup; place++)
-            {
-                foreach (var advancing in advancingPerGroup)
-                {
-                    if (place < advancing.Count) // group may have fewer teams than advancing spots
-                        seededTeamIds.Add(advancing[place].TeamId);
-                }
-            }
-
             // 1 query for all advancing teams
-            var advancedTeams = await _teamRepository.FindAllAsync(t => seededTeamIds.Contains(t.Id));
+            var advancingTeamIds = advancing.Select(a => a.Entry.TeamId).ToList();
+            var advancedTeams = await _teamRepository.FindAllAsync(t => advancingTeamIds.Contains(t.Id));
 
-            // The DB returns teams in random order — put them back in seeding order
-            var seededTeams = seededTeamIds
-                .Select(id => advancedTeams.First(t => t.Id == id))
+            var entrants = advancing
+                .Select(a => new BracketEntrant(
+                    advancedTeams.First(t => t.Id == a.Entry.TeamId),
+                    a.Entry.StandingId,
+                    a.Placement))
                 .ToList();
 
-            _logger.LogInformation("{Count} teams advanced from {GroupCount} groups", seededTeams.Count, groups.Count);
-            return seededTeams;
+            _logger.LogInformation("{Count} teams advanced from {GroupCount} groups", entrants.Count, groups.Count);
+            return entrants;
         }
 
         public async Task<List<TeamPlacementDTO>> GetFinalResultsAsync(long tournamentId)

@@ -107,6 +107,48 @@ namespace Tests.Unit.Pipelines.StartBracket
             pairs[0].teamB.Should().NotBeNull();
         }
 
+        // ── SeparateSameGroupPairs ──────────────────────────────────────────
+
+        [Fact]
+        public void SeparateSameGroupPairs_SwapsLowerSeededTeams()
+        {
+            var t = MakeTeams(4);
+            var pairs = new List<(Team?, Team?)> { (t[0], t[1]), (t[2], t[3]) };
+            var groupOf = new Dictionary<long, long> { [1] = 1, [2] = 1, [3] = 2, [4] = 2 };
+
+            var unresolved = BracketSeedingUtility.SeparateSameGroupPairs(pairs, groupOf);
+
+            unresolved.Should().Be(0);
+            pairs.Should().Equal((t[0], t[3]), (t[2], t[1]));
+        }
+
+        [Fact]
+        public void SeparateSameGroupPairs_ByePairsUntouched()
+        {
+            var t = MakeTeams(3);
+            var pairs = new List<(Team?, Team?)> { (t[0], null), (t[1], t[2]) };
+            var groupOf = new Dictionary<long, long> { [1] = 1, [2] = 2, [3] = 2 };
+
+            var unresolved = BracketSeedingUtility.SeparateSameGroupPairs(pairs, groupOf);
+
+            // Only one real match: the same-group match cannot be separated
+            unresolved.Should().Be(1);
+            pairs.Should().Equal((t[0], null), (t[1], t[2]));
+        }
+
+        [Fact]
+        public void SeparateSameGroupPairs_SingleGroup_ReturnsUnresolvedCount()
+        {
+            var t = MakeTeams(4);
+            var pairs = new List<(Team?, Team?)> { (t[0], t[3]), (t[1], t[2]) };
+            var groupOf = t.ToDictionary(team => team.Id, _ => 1L);
+
+            var unresolved = BracketSeedingUtility.SeparateSameGroupPairs(pairs, groupOf);
+
+            unresolved.Should().Be(2);
+            pairs.Should().Equal((t[0], t[3]), (t[1], t[2]));
+        }
+
         // ── helpers ─────────────────────────────────────────────────────────
 
         private static List<Team> MakeTeams(int count) =>
