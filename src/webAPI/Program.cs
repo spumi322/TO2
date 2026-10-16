@@ -3,7 +3,6 @@ using Application.Contracts;
 using Application.Contracts.Repositories;
 using Application.Pipelines.GameResult;
 using Application.Pipelines.GameResult.Contracts;
-using Application.Pipelines.GameResult.Steps;
 using Application.Pipelines.GameResult.Strategies;
 using Application.Pipelines.StartBracket;
 using Application.Pipelines.StartBracket.Contracts;
@@ -83,43 +82,24 @@ namespace TO2
             builder.Services.AddScoped<IWorkFlowService, WorkFlowService>();
             // Game Result Pipeline - SOLID refactoring of ProcessGameResult
             builder.Services.AddScoped<IGameResultPipeline, GameResultPipeline>();
-            // Pipeline Steps (registered in execution order)
-            builder.Services.AddScoped<IGameResultPipelineStep, ScoreGameStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, CheckMatchCompletionStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, UpdateGroupStatsStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, HandleStandingProgressStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, TransitionTournamentStateStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, CalculateFinalPlacementsStep>();
-            // Broadcasting happens in the pipeline executor after transaction commit, not in a step
-            builder.Services.AddScoped<IGameResultPipelineStep, BuildResponseStep>();
+            // Pipeline Steps (order defined in GameResultPipeline.StepOrder)
+            foreach (var step in GameResultPipeline.StepOrder)
+                builder.Services.AddScoped(typeof(IGameResultPipelineStep), step);
             // Standing Progress Strategies
             builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
             builder.Services.AddScoped<IStandingProgressStrategy, BracketProgressStrategy>();
 
             // Start Groups Pipeline - Tournament group stage initialization
             builder.Services.AddScoped<IStartGroupsPipeline, StartGroupsPipeline>();
-            // Pipeline Steps (registered in execution order)
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.ValidateAndTransitionToSeedingGroupsStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.ValidateStandingsNotSeededStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.DistributeTeamsIntoGroupsStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.CreateGroupEntriesStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.GenerateRoundRobinMatchesStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.MarkStandingsAsSeededStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.TransitionToGroupsInProgressStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.BuildResponseStep>();
+            // Pipeline Steps (order defined in StartGroupsPipeline.StepOrder)
+            foreach (var step in StartGroupsPipeline.StepOrder)
+                builder.Services.AddScoped(typeof(IStartGroupsPipelineStep), step);
 
             // Start Bracket Pipeline - Tournament bracket stage initialization
             builder.Services.AddScoped<IStartBracketPipeline, StartBracketPipeline>();
-            // Pipeline Steps (registered in execution order)
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateAndTransitionToSeedingBracketStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateBracketNotSeededStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.GetAdvancedTeamsStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateTeamCountStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.CalculateBracketStructureStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.GenerateBracketMatchesStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.MarkBracketAsSeededStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.TransitionToBracketInProgressStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.BuildResponseStep>();
+            // Pipeline Steps (order defined in StartBracketPipeline.StepOrder)
+            foreach (var step in StartBracketPipeline.StepOrder)
+                builder.Services.AddScoped(typeof(IStartBracketPipelineStep), step);
             // Bracket Seeding Strategies (one per format with a bracket)
             builder.Services.AddScoped<IBracketSeedingStrategy, RandomSeedingStrategy>();
             builder.Services.AddScoped<IBracketSeedingStrategy, GroupResultSeedingStrategy>();
