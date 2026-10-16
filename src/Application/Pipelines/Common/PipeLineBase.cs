@@ -5,7 +5,8 @@ namespace Application.Pipelines.Common
 {
     /// <summary>
     /// Base class for all pipeline steps.
-    /// Provides common functionality like logging and error handling.
+    /// Provides step logging. Exceptions propagate to the pipeline, which rolls back the transaction
+    /// and lets GlobalExceptionHandler map them to an HTTP status.
     /// </summary>
     public abstract class PipeLineBase<TLogger> : IGameResultPipelineStep
     {
@@ -18,20 +19,10 @@ namespace Application.Pipelines.Common
 
         public async Task<bool> ExecuteAsync(GameResultContext context)
         {
-            try
-            {
-                Logger.LogInformation("Executing step: {StepName}", GetType().Name);
-                var result = await ExecuteStepAsync(context);
-                Logger.LogInformation("Completed step: {StepName}. Continue: {Continue}", GetType().Name, result);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError(ex, "Error in step: {StepName}. Error: {Message}", GetType().Name, ex.Message);
-                context.Success = false;
-                context.Message = $"Error in {GetType().Name}: {ex.Message}";
-                return false; // Stop pipeline on error
-            }
+            Logger.LogInformation("Executing step: {StepName}", GetType().Name);
+            var result = await ExecuteStepAsync(context);
+            Logger.LogInformation("Completed step: {StepName}. Continue: {Continue}", GetType().Name, result);
+            return result;
         }
 
         /// <summary>

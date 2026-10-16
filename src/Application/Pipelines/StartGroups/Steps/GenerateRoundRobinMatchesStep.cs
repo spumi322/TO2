@@ -29,7 +29,6 @@ namespace Application.Pipelines.StartGroups.Steps
             _logger.LogInformation("Step 5: Generating round-robin matches for tournament {TournamentId}",
                 context.TournamentId);
 
-            bool allMatchesGenerated = true;
             int totalMatchesGenerated = 0;
 
             foreach (var (standing, teamsInGroup) in context.GroupAssignments)
@@ -41,47 +40,21 @@ namespace Application.Pipelines.StartGroups.Steps
                 {
                     for (int j = i + 1; j < teamsInGroup.Count; j++)
                     {
-                        try
-                        {
-                            var match = await _matchService.GenerateMatch(
-                                teamsInGroup[i],
-                                teamsInGroup[j],
-                                round: i + 1,
-                                seed: j,
-                                standingId: standing.Id
-                            );
+                        var match = await _matchService.GenerateMatch(
+                            teamsInGroup[i],
+                            teamsInGroup[j],
+                            round: i + 1,
+                            seed: j,
+                            standingId: standing.Id
+                        );
 
-                            var gameResult = await _gameService.GenerateGames(match);
+                        await _gameService.GenerateGames(match);
 
-                            if (!gameResult.Success)
-                            {
-                                _logger.LogError("Failed to generate games for match: {Message}", gameResult.Message);
-                                allMatchesGenerated = false;
-                            }
-                            else
-                            {
-                                totalMatchesGenerated++;
-                                _logger.LogInformation("Generated match: {TeamA} vs {TeamB}",
-                                    teamsInGroup[i].Name, teamsInGroup[j].Name);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error generating match between teams {TeamIdA} and {TeamIdB}: {Message}",
-                                teamsInGroup[i].Id, teamsInGroup[j].Id, ex.Message);
-                            allMatchesGenerated = false;
-                        }
+                        totalMatchesGenerated++;
+                        _logger.LogInformation("Generated match: {TeamA} vs {TeamB}",
+                            teamsInGroup[i].Name, teamsInGroup[j].Name);
                     }
                 }
-            }
-
-            if (!allMatchesGenerated)
-            {
-                context.Success = false;
-                context.Message = "Some matches failed to generate";
-                _logger.LogWarning("Some matches failed to generate for tournament {TournamentId}",
-                    context.TournamentId);
-                return false;
             }
 
             _logger.LogInformation("Generated {MatchCount} matches successfully for tournament {TournamentId}",

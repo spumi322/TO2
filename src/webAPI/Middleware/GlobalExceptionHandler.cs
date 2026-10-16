@@ -61,6 +61,9 @@ namespace webAPI.Middleware
                 ValidationException => (StatusCodes.Status400BadRequest, "Validation Failed"),
                 ConflictException => (StatusCodes.Status409Conflict, "Conflict Occurred"),
                 ForbiddenException => (StatusCodes.Status403Forbidden, "Operation Forbidden"),
+                UnauthorizedException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
+                // Thrown by HttpContextTenantService when the request has no tenantId claim
+                UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
                 DomainException => (StatusCodes.Status400BadRequest, "Domain Error"),
                 _ => (StatusCodes.Status500InternalServerError, "Internal Server Error")
             };

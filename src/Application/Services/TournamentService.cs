@@ -170,19 +170,13 @@ namespace Application.Services
             var existingTournament = await _tournamentRepository.GetByIdAsync(tournamentId)
                 ?? throw new NotFoundException("Tournament", tournamentId);
 
-            if (existingTournament.IsRegistrationOpen)
-            {
-                existingTournament.IsRegistrationOpen = false;
-                await _unitOfWork.SaveChangesAsync();
+            if (!existingTournament.IsRegistrationOpen)
+                throw new ConflictException("Tournament already started");
 
-                return new StartTournamentDTO("Tournament succesfully started", true, existingTournament.RowVersion);
-            }
-            else
-            {
-                _logger.LogInformation("Tournament already started");
+            existingTournament.IsRegistrationOpen = false;
+            await _unitOfWork.SaveChangesAsync();
 
-                return new StartTournamentDTO("Tournament already started", false, existingTournament.RowVersion);
-            }
+            return new StartTournamentDTO("Tournament succesfully started", true, existingTournament.RowVersion);
         }
     }
 }

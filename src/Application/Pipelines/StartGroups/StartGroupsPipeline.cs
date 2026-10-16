@@ -1,6 +1,7 @@
 using Application.Contracts;
 using Application.DTOs.Tournament;
 using Application.Pipelines.StartGroups.Contracts;
+using Application.Pipelines.StartGroups.Steps;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Pipelines.StartGroups
@@ -11,6 +12,21 @@ namespace Application.Pipelines.StartGroups
     /// </summary>
     public class StartGroupsPipeline : IStartGroupsPipeline
     {
+        /// <summary>
+        /// Step execution order. The constructor sorts the injected steps by it, so DI registration order doesn't matter.
+        /// </summary>
+        public static readonly Type[] StepOrder =
+        {
+            typeof(ValidateAndTransitionToSeedingGroupsStep),
+            typeof(ValidateStandingsNotSeededStep),
+            typeof(DistributeTeamsIntoGroupsStep),
+            typeof(CreateGroupEntriesStep),
+            typeof(GenerateRoundRobinMatchesStep),
+            typeof(MarkStandingsAsSeededStep),
+            typeof(TransitionToGroupsInProgressStep),
+            typeof(BuildResponseStep),
+        };
+
         private readonly ILogger<StartGroupsPipeline> _logger;
         private readonly IEnumerable<IStartGroupsPipelineStep> _steps;
         private readonly IUnitOfWork _unitOfWork;
@@ -25,7 +41,7 @@ namespace Application.Pipelines.StartGroups
             ITenantService tenantService)
         {
             _logger = logger;
-            _steps = steps;
+            _steps = steps.OrderBy(s => Array.IndexOf(StepOrder, s.GetType())).ToList();
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
             _tenantService = tenantService;
@@ -57,7 +73,7 @@ namespace Application.Pipelines.StartGroups
                 {
                     var shouldContinue = await step.ExecuteAsync(context);
 
-                    if (!shouldContinue || !context.Success)
+                    if (!shouldContinue)
                     {
                         _logger.LogInformation("Pipeline stopped at step: {StepName}", step.GetType().Name);
                         break;
@@ -68,10 +84,7 @@ namespace Application.Pipelines.StartGroups
                 await _unitOfWork.CommitTransactionAsync();
 
                 // Broadcast SignalR events AFTER transaction commit
-                var updatedBy = _tenantService.GetCurrentUserName();
-                await _signalRService.BroadcastGroupsStarted(context.TournamentId, updatedBy);
-                await _signalRService.BroadcastTournamentUpdated(context.TournamentId, updatedBy);
-                _logger.LogInformation("Broadcasted GroupsStarted and TournamentUpdated for TournamentId: {TournamentId}", context.TournamentId);
+                await BroadcastUpdatesAsync(context.TournamentId);
 
                 // Return the result
                 var result = new StartGroupsResponseDTO(
@@ -91,6 +104,25 @@ namespace Application.Pipelines.StartGroups
                 await _unitOfWork.RollbackTransactionAsync();
                 _logger.LogError(ex, "Pipeline execution failed, changes rolled back: {Message}", ex.Message);
                 throw; // Let middleware handle the exception
+            }
+        }
+
+        /// <summary>
+        /// Broadcasts SignalR updates after transaction commits.
+        /// Broadcast failure doesn't fail the request: the groups are already started.
+        /// </summary>
+        private async Task BroadcastUpdatesAsync(long tournamentId)
+        {
+            try
+            {
+                var updatedBy = _tenantService.GetCurrentUserName();
+                await _signalRService.BroadcastGroupsStarted(tournamentId, updatedBy);
+                await _signalRService.BroadcastTournamentUpdated(tournamentId, updatedBy);
+                _logger.LogInformation("Broadcasted GroupsStarted and TournamentUpdated for TournamentId: {TournamentId}", tournamentId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to broadcast GroupsStarted for TournamentId: {TournamentId}. Users can refresh manually.", tournamentId);
             }
         }
     }

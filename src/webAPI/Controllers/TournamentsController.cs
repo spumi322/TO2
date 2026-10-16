@@ -80,16 +80,14 @@ namespace TO2.Controllers
         [HttpPost("{id}/start-groups")]
         public async Task<IActionResult> StartGroups(long id)
         {
-            var result = await _workFlowService.StartGroups(id);
-            return result.Success ? Ok(result) : BadRequest(result);
+            return Ok(await _workFlowService.StartGroups(id));
         }
 
         // POST: api/Tournament/5/start-bracket
         [HttpPost("{id}/start-bracket")]
         public async Task<IActionResult> StartBracket(long id)
         {
-            var result = await _workFlowService.StartBracket(id);
-            return result.Success ? Ok(result) : BadRequest(result);
+            return Ok(await _workFlowService.StartBracket(id));
         }
 
         // POST: api/tournaments/5/cancel
@@ -104,9 +102,8 @@ namespace TO2.Controllers
         [HttpPut("{id}/start")]
         public async Task<IActionResult> StartTournament(long id)
         {
-            var result = await _tournamentService.StartTournament(id);
-
-            return result.Success ? Ok() : BadRequest();
+            await _tournamentService.StartTournament(id);
+            return Ok();
         }
 
         // DELETE: api/tournaments/5

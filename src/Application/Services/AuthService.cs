@@ -135,10 +135,10 @@ namespace Application.Services
 
             var tenant = await _tenantRepository.GetByIdAsync(user.TenantId);
             if (tenant == null)
-                throw new NotFoundException("Tenant", user.TenantId);
+                throw new UnauthorizedException("Invalid email or password");
 
             if (!tenant.IsActive)
-                throw new UnauthorizedException("Tenant account is inactive");
+                throw new ForbiddenException("Tenant account is inactive");
 
             _logger.LogInformation("User {Email} logged in successfully", request.Email);
 
@@ -155,11 +155,11 @@ namespace Application.Services
 
             var user = await _userManager.FindByIdAsync(refreshToken.UserId.ToString());
             if (user == null)
-                throw new NotFoundException("User", refreshToken.UserId);
+                throw new UnauthorizedException("Invalid or expired refresh token");
 
             var tenant = await _tenantRepository.GetByIdAsync(user.TenantId);
             if (tenant == null)
-                throw new NotFoundException("Tenant", user.TenantId);
+                throw new UnauthorizedException("Invalid or expired refresh token");
 
             // Revoke old refresh token
             refreshToken.Revoked = DateTime.UtcNow;

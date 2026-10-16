@@ -95,7 +95,7 @@ namespace Application.Services
                 ?? throw new NotFoundException("Tournament", request.TournamentId);
 
             if (!_stateMachine.CanModifyTeams(tournament.Status))
-                throw new ForbiddenException("Tournament registration is closed");
+                throw new ConflictException("Tournament registration is closed");
 
             if (await _tournamentTeamRepository.ExistsInTournamentAsync(request.TeamId, request.TournamentId))
                 throw new ConflictException("Team is already in the tournament!");
@@ -106,7 +106,7 @@ namespace Application.Services
             var currentParticipantsCount = await _tournamentTeamRepository.GetCountByTournamentAsync(request.TournamentId);
 
             if (currentParticipantsCount >= tournament.MaxTeams)
-                throw new ValidationException("Tournament is at maximum capacity");
+                throw new ConflictException("Tournament is at maximum capacity");
 
             // Create and save
             var tournamentTeam = new TournamentTeam(request.TournamentId, request.TeamId);
@@ -125,7 +125,7 @@ namespace Application.Services
                 ?? throw new NotFoundException("Tournament", tournamentId);
 
             if (!_stateMachine.CanModifyTeams(existingTournament.Status))
-                throw new ForbiddenException("Cannot remove teams after tournament has started");
+                throw new ConflictException("Cannot remove teams after tournament has started");
 
             var tournamentTeam = await _tournamentTeamRepository.GetByTeamAndTournamentAsync(teamId, tournamentId)
                 ?? throw new NotFoundException("Team is not registered in this tournament");

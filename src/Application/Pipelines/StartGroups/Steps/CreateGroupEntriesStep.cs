@@ -2,6 +2,7 @@ using Application.Contracts;
 using Application.Pipelines.StartGroups.Contracts;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Domain.Exceptions;
 
 namespace Application.Pipelines.StartGroups.Steps
 {
@@ -36,37 +37,18 @@ namespace Application.Pipelines.StartGroups.Steps
             {
                 foreach (var team in teamsInGroup)
                 {
-                    try
-                    {
-                        // Check if entry already exists
-                        var existingEntry = allGroupEntries.FirstOrDefault(ge => ge.TeamId == team.Id);
+                    // Check if entry already exists
+                    var existingEntry = allGroupEntries.FirstOrDefault(ge => ge.TeamId == team.Id);
 
-                        if (existingEntry != null)
-                        {
-                            context.Success = false;
-                            context.Message = $"Group entry already exists on tournament: {existingEntry.TournamentId}, team: {existingEntry.TeamId}";
-                            _logger.LogInformation("GroupEntry for team {TeamName} in {StandingName} already exists",
-                                team.Name, standing.Name);
-                            return false;
-                        }
-                        else
-                        {
-                            // Create new entry
-                            var groupEntry = new GroupEntry(context.TournamentId, standing.Id, team.Id, team.Name);
-                            await _groupRepository.AddAsync(groupEntry);
-                            entriesCreated++;
-                            _logger.LogInformation("Created GroupEntry for team {TeamName} in {StandingName}",
-                                team.Name, standing.Name);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        context.Success = false;
-                        context.Message = $"Failed to create group entry for team {team.Name}";
-                        _logger.LogError(ex, "Failed to create/update GroupEntry for team {TeamId}: {Message}",
-                            team.Id, ex.Message);
-                        return false;
-                    }
+                    if (existingEntry != null)
+                        throw new ConflictException($"Group entry already exists on tournament: {existingEntry.TournamentId}, team: {existingEntry.TeamId}");
+
+                    // Create new entry
+                    var groupEntry = new GroupEntry(context.TournamentId, standing.Id, team.Id, team.Name);
+                    await _groupRepository.AddAsync(groupEntry);
+                    entriesCreated++;
+                    _logger.LogInformation("Created GroupEntry for team {TeamName} in {StandingName}",
+                        team.Name, standing.Name);
                 }
             }
 

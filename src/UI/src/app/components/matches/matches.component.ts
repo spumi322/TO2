@@ -113,20 +113,19 @@ export class MatchesComponent implements OnInit, OnDestroy {
           match.teamBWins = previousTeamBWins;
           this.isUpdating[matchId] = false;
 
-          // Handle 409 Conflict (concurrent update)
+          // 409: game can't be scored now (wrong tournament state, teams not determined, concurrent update)
           if (err.status === 409) {
             this.messageService.add({
               severity: 'warn',
-              summary: 'Conflict Detected',
-              detail: 'Game was modified by another user. Reloading...',
+              summary: 'Cannot Score Game',
+              detail: err.error?.detail || 'Game could not be scored. Please refresh and try again.',
               life: 5000
             });
-            // Parent component will reload via SignalR events
           } else {
             this.messageService.add({
               severity: 'error',
               summary: 'Update Failed',
-              detail: err.error?.message || 'Failed to update match score. Please try again.'
+              detail: err.error?.detail || err.error?.message || 'Failed to update match score. Please try again.'
             });
           }
         }

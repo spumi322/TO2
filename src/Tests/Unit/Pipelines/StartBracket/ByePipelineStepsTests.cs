@@ -13,6 +13,7 @@ using FluentAssertions;
 using Moq;
 using Tests.Base;
 using Tests.Helpers;
+using Domain.Exceptions;
 
 namespace Tests.Unit.Pipelines.StartBracket
 {
@@ -29,14 +30,11 @@ namespace Tests.Unit.Pipelines.StartBracket
         }
 
         [Fact]
-        public async Task ExecuteAsync_1Team_ReturnsFalse()
+        public async Task ExecuteAsync_1Team_ThrowsConflict()
         {
-            var context = MakeContext(1);
-            var result = await _step.ExecuteAsync(context);
+            var act = () => _step.ExecuteAsync(MakeContext(1));
 
-            result.Should().BeFalse();
-            context.Success.Should().BeFalse();
-            context.Message.Should().Contain("2");
+            await act.Should().ThrowAsync<ConflictException>().WithMessage("*At least 2 teams*");
         }
 
         [Fact]

@@ -3,6 +3,7 @@ using Application.Pipelines.StartGroups.Contracts;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Domain.Exceptions;
 
 namespace Application.Pipelines.StartGroups.Steps
 {
@@ -46,13 +47,7 @@ namespace Application.Pipelines.StartGroups.Steps
             }
 
             if (teams.Count < context.GroupStandings.Count)
-            {
-                context.Success = false;
-                context.Message = $"Not enough teams ({teams.Count}) for {context.GroupStandings.Count} groups";
-                _logger.LogWarning("Not enough teams for tournament {TournamentId}: {TeamCount} teams for {GroupCount} groups",
-                    context.TournamentId, teams.Count, context.GroupStandings.Count);
-                return false;
-            }
+                throw new ConflictException($"Not enough teams ({teams.Count}) for {context.GroupStandings.Count} groups");
 
             // Shuffle teams into equal groups
             var groupAssignments = ShuffleTeamsIntoEqualGroups(teams, context.GroupStandings);

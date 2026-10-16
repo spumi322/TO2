@@ -8,6 +8,7 @@ using Moq;
 using System.Linq.Expressions;
 using Tests.Base;
 using Tests.Helpers;
+using Domain.Exceptions;
 
 namespace Tests.Unit.Pipelines.StartGroups
 {
@@ -115,7 +116,7 @@ namespace Tests.Unit.Pipelines.StartGroups
         }
 
         [Fact]
-        public async Task ExecuteAsync_Should_ReturnFalse_WhenNotEnoughTeams()
+        public async Task ExecuteAsync_Should_ThrowConflict_WhenNotEnoughTeams()
         {
             // Arrange
             var teams = TestDataBuilder.Teams.CreateMultiple(3);
@@ -149,12 +150,10 @@ namespace Tests.Unit.Pipelines.StartGroups
             }
 
             // Act
-            var result = await _step.ExecuteAsync(context);
+            var act = () => _step.ExecuteAsync(context);
 
             // Assert
-            result.Should().BeFalse("not enough teams for all groups");
-            context.Success.Should().BeFalse();
-            context.Message.Should().Contain("Not enough teams");
+            await act.Should().ThrowAsync<ConflictException>().WithMessage("Not enough teams*");
         }
     }
 }

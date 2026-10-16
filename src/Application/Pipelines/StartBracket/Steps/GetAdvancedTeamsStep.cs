@@ -1,6 +1,7 @@
 using Application.Contracts;
 using Application.Pipelines.StartBracket.Contracts;
 using Microsoft.Extensions.Logging;
+using Domain.Exceptions;
 
 namespace Application.Pipelines.StartBracket.Steps
 {
@@ -27,36 +28,19 @@ namespace Application.Pipelines.StartBracket.Steps
             _logger.LogInformation("Step 3: Getting teams for bracket in tournament {TournamentId}",
                 context.TournamentId);
 
-            try
-            {
-                // Format-aware team selection (all teams for BracketOnly, advanced teams for GroupsAndBracket)
-                var teams = await _standingService.GetTeamsForBracketByFormat(context.TournamentId);
+            // Format-aware team selection (all teams for BracketOnly, advanced teams for GroupsAndBracket)
+            var teams = await _standingService.GetTeamsForBracketByFormat(context.TournamentId);
 
-                if (teams == null || teams.Count == 0)
-                {
-                    context.Success = false;
-                    context.Message = "No teams available to advance to bracket";
-                    _logger.LogWarning("No teams available for bracket in tournament {TournamentId}",
-                        context.TournamentId);
-                    return false;
-                }
+            if (teams == null || teams.Count == 0)
+                throw new ConflictException("No teams available to advance to bracket");
 
-                // Store in context
-                context.AdvancedTeams = teams;
+            // Store in context
+            context.AdvancedTeams = teams;
 
-                _logger.LogInformation("{TeamCount} teams advanced to bracket for tournament {TournamentId}",
-                    teams.Count, context.TournamentId);
+            _logger.LogInformation("{TeamCount} teams advanced to bracket for tournament {TournamentId}",
+                teams.Count, context.TournamentId);
 
-                return true; // Continue to next step
-            }
-            catch (Exception ex)
-            {
-                context.Success = false;
-                context.Message = $"Failed to get advancing teams: {ex.Message}";
-                _logger.LogError(ex, "Error getting advancing teams for tournament {TournamentId}: {Message}",
-                    context.TournamentId, ex.Message);
-                return false;
-            }
+            return true; // Continue to next step
         }
     }
 }

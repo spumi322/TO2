@@ -2,6 +2,7 @@ using Application.Contracts;
 using Application.Pipelines.StartGroups.Contracts;
 using Domain.Enums;
 using Microsoft.Extensions.Logging;
+using Domain.Exceptions;
 
 namespace Application.Pipelines.StartGroups.Steps
 {
@@ -32,25 +33,14 @@ namespace Application.Pipelines.StartGroups.Steps
 
             // Check if any standings are already seeded
             if (standings.Any(standing => standing.IsSeeded))
-            {
-                context.Success = false;
-                context.Message = "Standings are already seeded!";
-                _logger.LogWarning("Standings for tournament {TournamentId} are already seeded",
-                    context.TournamentId);
-                return false;
-            }
+                throw new ConflictException("Standings are already seeded.");
 
             // Filter to group standings
             var groupStandings = standings.Where(s => s.StandingType == StandingType.Group).ToList();
 
+            // Group standings are created with the tournament, so none means broken data (500)
             if (groupStandings.Count == 0)
-            {
-                context.Success = false;
-                context.Message = "No group standings found for this tournament";
-                _logger.LogWarning("No group standings found for tournament {TournamentId}",
-                    context.TournamentId);
-                return false;
-            }
+                throw new InvalidOperationException($"No group standings found for tournament {context.TournamentId}");
 
             // Store in context
             context.Standings = standings.ToList();

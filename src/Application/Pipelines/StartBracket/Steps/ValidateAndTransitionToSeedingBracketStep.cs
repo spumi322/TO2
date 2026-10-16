@@ -4,6 +4,7 @@ using Domain.AggregateRoots;
 using Domain.Enums;
 using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
+using Domain.Exceptions;
 
 namespace Application.Pipelines.StartBracket.Steps
 {
@@ -36,50 +37,28 @@ namespace Application.Pipelines.StartBracket.Steps
                 context.TournamentId);
 
             // Load tournament
-            var tournament = await _tournamentRepository.GetByIdAsync(context.TournamentId);
-            if (tournament == null)
-            {
-                context.Success = false;
-                context.Message = "Tournament not found";
-                _logger.LogWarning("Tournament {TournamentId} not found", context.TournamentId);
-                return false;
-            }
+            var tournament = await _tournamentRepository.GetByIdAsync(context.TournamentId)
+                ?? throw new NotFoundException("Tournament", context.TournamentId);
 
             // Validate format supports bracket
             var metadata = _formatService.GetFormatMetadata(tournament.Format);
             if (!metadata.RequiresBracket)
-            {
-                context.Success = false;
-                context.Message = $"Cannot start bracket for {metadata.DisplayName} format";
-                _logger.LogWarning("Tournament {TournamentId} has format {Format} which does not use bracket",
-                    context.TournamentId, tournament.Format);
-                return false;
-            }
+                throw new ConflictException($"Cannot start bracket for {metadata.DisplayName} format");
 
-            try
-            {
-                // Validate and transition to SeedingBracket using format-aware validation
-                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingBracket, tournament.Format);
-                tournament.Status = TournamentStatus.SeedingBracket;
-                tournament.IsRegistrationOpen = false;
+            if (!_stateMachine.IsTransitionValid(tournament.Status, TournamentStatus.SeedingBracket, tournament.Format))
+                throw new ConflictException($"Bracket cannot be started while the tournament is {tournament.Status}.");
 
-                // Store in context
-                context.Tournament = tournament;
-                context.NewStatus = TournamentStatus.SeedingBracket;
+            tournament.Status = TournamentStatus.SeedingBracket;
+            tournament.IsRegistrationOpen = false;
 
-                _logger.LogInformation("Tournament {TournamentId} transitioned to SeedingBracket",
-                    context.TournamentId);
+            // Store in context
+            context.Tournament = tournament;
+            context.NewStatus = TournamentStatus.SeedingBracket;
 
-                return true; // Continue to next step
-            }
-            catch (InvalidOperationException ex)
-            {
-                context.Success = false;
-                context.Message = $"Invalid state transition: {ex.Message}";
-                _logger.LogWarning("Invalid state transition for tournament {TournamentId}: {Message}",
-                    context.TournamentId, ex.Message);
-                return false; // Stop pipeline
-            }
+            _logger.LogInformation("Tournament {TournamentId} transitioned to SeedingBracket",
+                context.TournamentId);
+
+            return true; // Continue to next step
         }
     }
 }

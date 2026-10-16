@@ -4,6 +4,7 @@ using Application.DTOs.Orchestration;
 using Application.DTOs.SignalR;
 using Application.DTOs.Standing;
 using Application.Pipelines.GameResult.Contracts;
+using Application.Pipelines.GameResult.Steps;
 using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -20,6 +21,20 @@ namespace Application.Pipelines.GameResult
     /// </summary>
     public class GameResultPipeline : IGameResultPipeline
     {
+        /// <summary>
+        /// Step execution order. The constructor sorts the injected steps by it, so DI registration order doesn't matter.
+        /// </summary>
+        public static readonly Type[] StepOrder =
+        {
+            typeof(ScoreGameStep),
+            typeof(CheckMatchCompletionStep),
+            typeof(UpdateGroupStatsStep),
+            typeof(HandleStandingProgressStep),
+            typeof(TransitionTournamentStateStep),
+            typeof(CalculateFinalPlacementsStep),
+            typeof(BuildResponseStep),
+        };
+
         private readonly ILogger<GameResultPipeline> _logger;
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly IRepository<Standing> _standingRepository;
@@ -53,7 +68,7 @@ namespace Application.Pipelines.GameResult
             _matchRepository = matchRepository;
             _gameRepository = gameRepository;
             _stateMachine = stateMachine;
-            _steps = steps;
+            _steps = steps.OrderBy(s => Array.IndexOf(StepOrder, s.GetType())).ToList();
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
             _tenantService = tenantService;
@@ -91,7 +106,7 @@ namespace Application.Pipelines.GameResult
                 {
                     var shouldContinue = await step.ExecuteAsync(context);
 
-                    if (!shouldContinue || !context.Success)
+                    if (!shouldContinue)
                     {
                         _logger.LogInformation("Pipeline stopped at step: {StepName}", step.GetType().Name);
                         break;

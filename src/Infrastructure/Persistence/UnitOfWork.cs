@@ -80,13 +80,13 @@ namespace Infrastructure.Persistence
 
         /// <summary>
         /// Rolls back the current transaction, discarding all changes.
+        /// No-op without an active transaction (e.g. a failed commit already rolled back),
+        /// so a caller's catch block doesn't hide the original exception.
         /// </summary>
         public async Task RollbackTransactionAsync()
         {
             if (_currentTransaction == null)
-            {
-                throw new InvalidOperationException("No active transaction to rollback.");
-            }
+                return;
 
             try
             {

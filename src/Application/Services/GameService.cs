@@ -78,7 +78,7 @@ namespace Application.Services
 
             // Validate both teams are known (not TBD)
             if (teamAId == 0 || teamBId == 0)
-                throw new ValidationException("Cannot score game until both teams are determined. Wait for previous round matches to complete.");
+                throw new ConflictException("Cannot score game until both teams are determined. Wait for previous round matches to complete.");
 
 
             if (teamAScore >= 0 || teamBScore >= 0)
@@ -111,7 +111,7 @@ namespace Application.Services
 
             var loserId = winnerId == match.TeamAId ? match.TeamBId : match.TeamAId;
             if (loserId is null)
-                throw new ValidationException("Missing team Id!");
+                throw new InvalidOperationException($"Match {matchId} has a winner but no opponent team");
 
             match.WinnerId = winnerId;
             match.LoserId = loserId;

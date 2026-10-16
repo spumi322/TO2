@@ -31,28 +31,17 @@ namespace Application.Pipelines.StartGroups.Steps
             _logger.LogInformation("Step 7: Transitioning tournament {TournamentId} to GroupsInProgress",
                 context.TournamentId);
 
-            try
-            {
-                // Validate and transition to GroupsInProgress
-                _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.GroupsInProgress, context.Tournament.Format);
-                context.Tournament.Status = TournamentStatus.GroupsInProgress;
+            // Step 1 already moved to SeedingGroups, so an invalid transition here is a bug (500)
+            _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.GroupsInProgress, context.Tournament.Format);
+            context.Tournament.Status = TournamentStatus.GroupsInProgress;
 
-                // Store in context
-                context.NewStatus = TournamentStatus.GroupsInProgress;
+            // Store in context
+            context.NewStatus = TournamentStatus.GroupsInProgress;
 
-                _logger.LogInformation("Tournament {TournamentId} transitioned to GroupsInProgress successfully",
-                    context.TournamentId);
+            _logger.LogInformation("Tournament {TournamentId} transitioned to GroupsInProgress successfully",
+                context.TournamentId);
 
-                return true; // Continue to next step
-            }
-            catch (InvalidOperationException ex)
-            {
-                context.Success = false;
-                context.Message = $"Invalid state transition: {ex.Message}";
-                _logger.LogWarning("Invalid state transition for tournament {TournamentId}: {Message}",
-                    context.TournamentId, ex.Message);
-                return false; // Stop pipeline
-            }
+            return true; // Continue to next step
         }
     }
 }

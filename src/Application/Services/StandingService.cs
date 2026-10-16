@@ -194,7 +194,7 @@ namespace Application.Services
             var standings = await GetStandingsAsync(tournamentId);
             var groups = standings.Where(s => s.StandingType == StandingType.Group).ToList();
             if (groups.Count == 0)
-                throw new NotFoundException("No groups found for GroupsAndBracket tournament");
+                throw new InvalidOperationException($"No groups found for GroupsAndBracket tournament {tournamentId}");
 
             int teamsAdvancingPerGroup = tournament.AdvancingPerGroup
                 ?? throw new InvalidOperationException("AdvancingPerGroup not set on tournament.");

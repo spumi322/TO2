@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Format, Tournament, TournamentStatus, TournamentStateDTO } from '../../../models/tournament';
 import { TournamentService } from '../../../services/tournament/tournament.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, catchError, finalize, of, from, Subject } from 'rxjs';
+import { Observable, catchError, finalize, of, from, Subject, EMPTY } from 'rxjs';
 import { concatMap, switchMap, tap, map, toArray, takeUntil, debounceTime } from 'rxjs/operators';
 import { Standing } from '../../../models/standing';
 import { StandingService } from '../../../services/standing/standing.service';
@@ -405,7 +405,7 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        this.showError('Error starting bracket');
+        this.showError(err.error?.detail || 'Error starting bracket');
         console.error('Error starting bracket:', err);
       },
       complete: () => {
@@ -633,9 +633,9 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
     this.isReloading = true;
     this.tournamentService.startTournament(this.tournamentId).pipe(
       catchError(error => {
-        this.showError('Error starting tournament');
+        this.showError(error.error?.detail || 'Error starting tournament');
         console.error('Error in tournament starting process:', error);
-        return of(null);
+        return EMPTY;
       }),
       finalize(() => {
         this.isReloading = false;
@@ -671,7 +671,7 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        this.showError('Error starting groups');
+        this.showError(err.error?.detail || 'Error starting groups');
         console.error('Error starting groups:', err);
       },
       complete: () => {
