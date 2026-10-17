@@ -34,7 +34,7 @@ namespace Tests.Unit.Pipelines.GameResult
                     MatchId: 1,
                     StandingId: 1,
                     TournamentId: 1,
-                    RowVersion: null
+                    Version: 0
                 )
             };
 
@@ -65,7 +65,7 @@ namespace Tests.Unit.Pipelines.GameResult
             // Arrange
             var context = new GameResultContext
             {
-                GameResult = new SetGameResultDTO(1, 10, 15, 10, 1, 1, 1, null)
+                GameResult = new SetGameResultDTO(1, 10, 15, 10, 1, 1, 1, 0)
             };
 
             _mockGameService

@@ -53,11 +53,6 @@ namespace Infrastructure.Migrations
                     b.Property<int?>("Round")
                         .HasColumnType("integer");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
-
                     b.Property<int?>("Seed")
                         .HasColumnType("integer");
 
@@ -71,6 +66,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
                         .HasColumnType("bigint");
 
                     b.Property<long?>("WinnerId")
@@ -115,6 +114,10 @@ namespace Infrastructure.Migrations
                     b.Property<long>("TenantId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId");
@@ -151,6 +154,10 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
 
                     b.HasKey("Id");
 
@@ -214,15 +221,14 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("character varying(60)");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -260,11 +266,6 @@ namespace Infrastructure.Migrations
                     b.Property<long>("MatchId")
                         .HasColumnType("bigint");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
-
                     b.Property<long?>("TeamAId")
                         .HasColumnType("bigint");
 
@@ -278,6 +279,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
                         .HasColumnType("bigint");
 
                     b.Property<long?>("WinnerId")
@@ -342,6 +347,10 @@ namespace Infrastructure.Migrations
                     b.Property<long>("TournamentId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
                     b.Property<int>("Wins")
                         .HasColumnType("integer");
 
@@ -387,6 +396,10 @@ namespace Infrastructure.Migrations
                     b.Property<long?>("TeamId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TeamId");
@@ -427,6 +440,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text");
 
                     b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -471,11 +488,6 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
-
                     b.Property<int>("StandingType")
                         .HasColumnType("integer");
 
@@ -483,6 +495,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<long>("TournamentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
                         .HasColumnType("bigint");
 
                     b.HasKey("Id");
@@ -526,6 +542,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
                         .HasColumnType("bigint");
 
                     b.HasKey("TournamentId", "TeamId");

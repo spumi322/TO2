@@ -242,7 +242,8 @@ namespace Application.Pipelines.GameResult
         /// <summary>
         /// Rejects scoring when the body IDs don't match the game's real match/standing/tournament
         /// (otherwise a client could pair an active tournament's ID with another tournament's game),
-        /// or when the tournament's state doesn't allow scoring (e.g. Cancelled, Finished).
+        /// when the tournament's state doesn't allow scoring (e.g. Cancelled, Finished),
+        /// or when the client's game Version is stale (someone scored the game since the client loaded it).
         /// </summary>
         private async Task ValidateCanScoreAsync(SetGameResultDTO gameResult, Tournament tournament)
         {
@@ -260,6 +261,9 @@ namespace Application.Pipelines.GameResult
 
             if (!_stateMachine.CanScoreMatches(tournament.Status))
                 throw new ConflictException($"Matches cannot be scored while the tournament is {tournament.Status}.");
+
+            if (game.Version != gameResult.Version)
+                throw new ConflictException("Game was modified by another user. Reload and try again.");
         }
     }
 }

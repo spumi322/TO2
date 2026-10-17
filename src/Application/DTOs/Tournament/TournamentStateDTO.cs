@@ -10,6 +10,6 @@ namespace Application.DTOs.Tournament
         bool CanModifyTeams,
         bool CanCancel,
         bool CanDelete,
-        byte[]? RowVersion
+        long Version
     );
 }

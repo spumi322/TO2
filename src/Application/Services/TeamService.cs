@@ -73,6 +73,9 @@ namespace Application.Services
             var existingTeam = await _teamRepository.GetByIdAsync(id)
                 ?? throw new NotFoundException("Team", id);
 
+            if (existingTeam.Version != request.Version)
+                throw new ConflictException("Team was modified by another user. Reload and try again.");
+
             _mapper.Map(request, existingTeam);
 
             await _unitOfWork.SaveChangesAsync();

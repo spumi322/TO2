@@ -57,7 +57,7 @@ namespace Application.Services
                 CanModifyTeams: _stateMachine.CanModifyTeams(tournament.Status),
                 CanCancel: _stateMachine.CanCancel(tournament.Status),
                 CanDelete: _stateMachine.CanDelete(tournament.Status),
-                RowVersion: tournament.RowVersion
+                Version: tournament.Version
             );
         }
 
@@ -66,26 +66,13 @@ namespace Application.Services
             var tournament = _mapper.Map<Tournament>(request);
             tournament.IsRegistrationOpen = true;
 
-            await _unitOfWork.BeginTransactionAsync();
-            try
-            {
-                await _tournamentRepository.AddAsync(tournament);
-                await _unitOfWork.SaveChangesAsync(); // flush to get tournament.Id
-
-                await _standingService.InitializeStandingsForTournamentAsync(
-                    tournament.Id, request.Format, tournament.MaxTeams, request.NumberOfGroups, request.AdvancingPerGroup);
-
-                await _unitOfWork.CommitTransactionAsync(); // saves standings + commits
-            }
-            catch
-            {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw;
-            }
+            await _tournamentRepository.AddAsync(tournament);
+            await _standingService.InitializeStandingsForTournamentAsync(tournament, request.NumberOfGroups);
+            await _unitOfWork.SaveChangesAsync(); // single save: tournament + standings atomically
 
             await _signalRService.BroadcastTournamentCreated(tournament.Id, _tenantService.GetCurrentUserName());
 
-            return new CreateTournamentResponseDTO(tournament.Id, tournament.RowVersion);
+            return new CreateTournamentResponseDTO(tournament.Id, tournament.Version);
         }
 
         public async Task<GetTournamentResponseDTO> GetTournamentAsync(long id)
@@ -109,6 +96,9 @@ namespace Application.Services
         {
             var existingTournament = await _tournamentRepository.GetByIdAsync(id)
                 ?? throw new NotFoundException("Tournament", id);
+
+            if (existingTournament.Version != request.Version)
+                throw new ConflictException("Tournament was modified by another user. Reload and try again.");
 
             _mapper.Map(request, existingTournament);
 
@@ -176,7 +166,7 @@ namespace Application.Services
             existingTournament.IsRegistrationOpen = false;
             await _unitOfWork.SaveChangesAsync();
 
-            return new StartTournamentDTO("Tournament succesfully started", true, existingTournament.RowVersion);
+            return new StartTournamentDTO("Tournament succesfully started", true, existingTournament.Version);
         }
     }
 }

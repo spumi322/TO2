@@ -174,7 +174,7 @@ namespace Tests.Unit.Validators
         [Fact]
         public void Should_NotHaveError_When_MaxTeams_NotPowerOfTwo_ForBracketOnly()
         {
-            // Non-power-of-2 values are now valid for BracketOnly
+            // Non-power-of-2 values are valid for BracketOnly (padded with BYEs)
             var request = CreateValidDTO(format: Format.BracketOnly, maxTeams: 6);
             var result = _validator.TestValidate(request);
             result.ShouldNotHaveValidationErrorFor(x => x.MaxTeams);

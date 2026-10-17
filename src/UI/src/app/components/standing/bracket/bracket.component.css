@@ -68,4 +68,4 @@
   opacity: 0.7;
 }
 
-/* Bracket styles moved to global styles.css - no more ::ng-deep needed! */
+/* Bracket styles live in global styles.css */

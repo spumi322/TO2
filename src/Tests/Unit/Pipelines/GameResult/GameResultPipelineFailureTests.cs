@@ -73,7 +73,7 @@ namespace Tests.Unit.Pipelines.GameResult
             DbContext.Games.Add(game);
             await SaveAndDetachAsync();
 
-            var request = new SetGameResultDTO(game.Id, 1, null, null, match.Id, standing.Id, tournament.Id, null);
+            var request = new SetGameResultDTO(game.Id, 1, null, null, match.Id, standing.Id, tournament.Id, game.Version);
 
             var act = () => _pipeline.ExecuteAsync(request);
 

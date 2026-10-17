@@ -16,12 +16,14 @@ namespace Infrastructure.Profiles
             CreateMap<Tournament, CreateTournamentResponseDTO>();
             CreateMap<Tournament, GetTournamentResponseDTO>();
             CreateMap<Tournament, UpdateTournamentResponseDTO>();
-            CreateMap<UpdateTournamentRequestDTO, Tournament>();
+            CreateMap<UpdateTournamentRequestDTO, Tournament>()
+                .ForMember(d => d.Version, o => o.Ignore()); // checked by the service, incremented by the interceptor
             CreateMap<CreateTeamRequestDTO, Team>();
             CreateMap<Team, CreateTeamResponseDTO>();
             CreateMap<Team, GetTeamResponseDTO>();
             CreateMap<Team, UpdateTeamResponseDTO>();
-            CreateMap<UpdateTeamRequestDTO, Team>();
+            CreateMap<UpdateTeamRequestDTO, Team>()
+                .ForMember(d => d.Version, o => o.Ignore());
             CreateMap<Team, GetAllTeamsResponseDTO>();
             CreateMap<GetTeamResponseDTO, Team>();
             CreateMap<GroupEntry, GroupTeamDTO>()

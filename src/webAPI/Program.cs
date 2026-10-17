@@ -43,7 +43,8 @@ namespace TO2
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
                        .AddInterceptors(
                            serviceProvider.GetRequiredService<TenantSaveChangesInterceptor>(),
-                           serviceProvider.GetRequiredService<AuditInterceptor>()
+                           serviceProvider.GetRequiredService<AuditInterceptor>(),
+                           serviceProvider.GetRequiredService<ConcurrencyVersionInterceptor>()
                        );
             });
 
@@ -66,9 +67,10 @@ namespace TO2
             builder.Services.AddSignalR();
             builder.Services.AddScoped<ISignalRService, SignalRService>();
 
-            // EF Core Interceptors (Modern approach for tenant isolation and auditing)
+            // EF Core interceptors: tenant isolation, auditing, concurrency versions
             builder.Services.AddScoped<TenantSaveChangesInterceptor>();
             builder.Services.AddScoped<AuditInterceptor>();
+            builder.Services.AddScoped<ConcurrencyVersionInterceptor>();
 
             // Application Services
             builder.Services.AddScoped<ITournamentService, TournamentService>();

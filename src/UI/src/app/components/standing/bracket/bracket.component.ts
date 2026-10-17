@@ -224,7 +224,7 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         }
       };
 
-      // Hover effects now handled by CSS (no inline styles needed)
+      // Hover effects are handled by CSS
     });
   }
 
@@ -254,7 +254,8 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit, OnDes
       teamBScore: undefined,
       matchId: matchId,
       standingId: match.standingId,
-      tournamentId: this.tournament.id
+      tournamentId: this.tournament.id,
+      version: gameToUpdate.version
     };
 
     this.matchService.setGameResult(gameResult).subscribe({
@@ -279,7 +280,7 @@ export class BracketComponent implements OnInit, OnChanges, AfterViewInit, OnDes
         console.error('Error scoring game:', err);
         this.isUpdating[matchId] = false;
 
-        // 409: game can't be scored now (wrong tournament state, teams not determined, concurrent update)
+        // 409: game can't be scored (wrong tournament state, teams not determined, game changed since load)
         if (err.status === 409) {
           this.messageService.add({
             severity: 'warn',

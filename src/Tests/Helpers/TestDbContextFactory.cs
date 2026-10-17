@@ -35,10 +35,12 @@ namespace Tests.Helpers
             _connection = new SqliteConnection("DataSource=:memory:");
             _connection.Open();
 
-            // Configure DbContext to use in-memory SQLite (tenant interceptor mirrors Program.cs)
+            // Configure DbContext to use in-memory SQLite (tenant + version interceptors mirror Program.cs)
             _options = new DbContextOptionsBuilder<TO2DbContext>()
                 .UseSqlite(_connection)
-                .AddInterceptors(new TenantSaveChangesInterceptor(_tenantService))
+                .AddInterceptors(
+                    new TenantSaveChangesInterceptor(_tenantService),
+                    new ConcurrencyVersionInterceptor())
                 .Options;
 
             // Create database schema

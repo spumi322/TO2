@@ -13,8 +13,6 @@ namespace Application.DTOs.Orchestration
         bool TournamentFinished = false,
         TournamentStatus? NewTournamentStatus = null,
         List<TeamPlacementDTO>? FinalStandings = null,
-        string? Message = null,
-        byte[]? GameRowVersion = null,
-        byte[]? MatchRowVersion = null
+        string? Message = null
     );
 }

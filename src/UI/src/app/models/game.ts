@@ -6,4 +6,5 @@ export interface Game {
   teamBId: number;
   teamBScore: number;
   winnerId: number;
+  version: number;
 }

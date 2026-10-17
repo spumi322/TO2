@@ -8,7 +8,7 @@ export interface GameResult {
   matchId: number;
   standingId: number;
   tournamentId: number;
-  rowVersion?: string | null;
+  version: number;
 }
 
 /**

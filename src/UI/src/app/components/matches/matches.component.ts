@@ -83,7 +83,8 @@ export class MatchesComponent implements OnInit, OnDestroy {
       teamBScore: undefined,
       matchId: matchId,
       standingId: match.standingId,
-      tournamentId: this.tournamentId
+      tournamentId: this.tournamentId,
+      version: gameToUpdate.version
     };
 
     this.matchService.setGameResult(gameResult)
@@ -113,7 +114,7 @@ export class MatchesComponent implements OnInit, OnDestroy {
           match.teamBWins = previousTeamBWins;
           this.isUpdating[matchId] = false;
 
-          // 409: game can't be scored now (wrong tournament state, teams not determined, concurrent update)
+          // 409: game can't be scored (wrong tournament state, teams not determined, game changed since load)
           if (err.status === 409) {
             this.messageService.add({
               severity: 'warn',

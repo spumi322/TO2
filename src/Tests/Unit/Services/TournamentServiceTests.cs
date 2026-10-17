@@ -3,6 +3,7 @@ using Application.DTOs.Tournament;
 using Application.Services;
 using AutoMapper;
 using Domain.AggregateRoots;
+using Domain.Entities;
 using Domain.Enums;
 using Domain.Exceptions;
 using Domain.StateMachine;
@@ -33,14 +34,28 @@ namespace Tests.Unit.Services
 
             var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
 
+            var unitOfWork = new UnitOfWork(DbContext);
+
+            var standingService = new StandingService(
+                new StandingRepository(DbContext),
+                new MatchRepository(DbContext),
+                new Repository<Tournament>(DbContext),
+                new GroupRepository(DbContext),
+                new Repository<Team>(DbContext),
+                new Repository<TournamentTeam>(DbContext),
+                new FormatService(),
+                new Mock<ILogger<StandingService>>().Object,
+                mapper,
+                unitOfWork);
+
             _service = new TournamentService(
                 new TournamentRepository(DbContext),
                 new Repository<Team>(DbContext),
-                new Mock<IStandingService>().Object,
+                standingService,
                 mapper,
                 new Mock<ILogger<TournamentService>>().Object,
                 new TournamentStateMachine(),
-                new UnitOfWork(DbContext),
+                unitOfWork,
                 _signalRMock.Object,
                 tenantMock.Object);
 
@@ -162,7 +177,7 @@ namespace Tests.Unit.Services
 
             // No app code creates players yet; insert one directly
             await DbContext.Database.ExecuteSqlInterpolatedAsync(
-                $"INSERT INTO Players (Name, TeamId, CreatedDate, LastModifiedDate, CreatedBy, LastModifiedBy) VALUES ('Player 1', {team.Id}, {DateTime.UtcNow}, {DateTime.UtcNow}, '', '')");
+                $"INSERT INTO Players (Name, TeamId, CreatedDate, LastModifiedDate, CreatedBy, LastModifiedBy, Version) VALUES ('Player 1', {team.Id}, {DateTime.UtcNow}, {DateTime.UtcNow}, '', '', 0)");
             DbContext.ChangeTracker.Clear();
 
             await _service.DeleteTournamentAsync(id);
@@ -182,11 +197,37 @@ namespace Tests.Unit.Services
             // PUT /tournaments/{id} must not be a back door to un-cancel / jump states
             var id = await SeedTournamentAsync(TournamentStatus.Cancelled);
 
-            await _service.UpdateTournamentAsync(id, new UpdateTournamentRequestDTO("Winter Cup", "Desc", null));
+            await _service.UpdateTournamentAsync(id, new UpdateTournamentRequestDTO("Winter Cup", "Desc", 0));
 
             var tournament = await ReloadAsync(id);
             tournament.Name.Should().Be("Winter Cup");
             tournament.Status.Should().Be(TournamentStatus.Cancelled);
+        }
+
+        [Fact]
+        public async Task Update_Should_ReturnIncrementedVersion()
+        {
+            var id = await SeedTournamentAsync(TournamentStatus.Setup);
+
+            var response = await _service.UpdateTournamentAsync(id, new UpdateTournamentRequestDTO("Winter Cup", "Desc", 0));
+
+            response.Version.Should().Be(1);
+            (await ReloadAsync(id)).Version.Should().Be(1);
+        }
+
+        [Fact]
+        public async Task Update_Should_ThrowConflict_When_VersionStale()
+        {
+            // Client edits data it loaded before someone else's update
+            var id = await SeedTournamentAsync(TournamentStatus.Setup);
+            await _service.UpdateTournamentAsync(id, new UpdateTournamentRequestDTO("Winter Cup", "Desc", 0));
+            DbContext.ChangeTracker.Clear();
+
+            var act = () => _service.UpdateTournamentAsync(id, new UpdateTournamentRequestDTO("Spring Cup", "Desc", 0));
+
+            await act.Should().ThrowAsync<ConflictException>();
+            (await ReloadAsync(id)).Name.Should().Be("Winter Cup");
+            _signalRMock.Verify(x => x.BroadcastTournamentUpdated(id, It.IsAny<string>()), Times.Once);
         }
 
         #endregion
@@ -204,6 +245,20 @@ namespace Tests.Unit.Services
             second.Id.Should().NotBe(first.Id);
             DbContext.ChangeTracker.Clear();
             (await DbContext.Tournaments.CountAsync(t => t.Name == "Summer Cup")).Should().Be(2);
+        }
+
+        [Fact]
+        public async Task Create_Should_PersistTournamentAndStandings()
+        {
+            var request = new CreateTournamentRequestDTO("Summer Cup", "Desc", 8, Format.GroupsAndBracket, 2, 2);
+
+            var result = await _service.CreateTournamentAsync(request);
+
+            DbContext.ChangeTracker.Clear();
+            var standings = await DbContext.Standings.Where(s => s.TournamentId == result.Id).ToListAsync();
+            standings.Should().HaveCount(3);
+            standings.Count(s => s.StandingType == StandingType.Group).Should().Be(2);
+            standings.Should().ContainSingle(s => s.StandingType == StandingType.Bracket && s.MaxTeams == 4);
         }
 
         #endregion

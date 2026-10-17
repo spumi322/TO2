@@ -66,37 +66,36 @@ namespace Application.Services
             return p;
         }
 
-        public async Task InitializeStandingsForTournamentAsync(
-            long tournamentId, Format format, int maxTeams, int? numberOfGroups, int? advancingPerGroup)
+        public async Task InitializeStandingsForTournamentAsync(Tournament tournament, int? numberOfGroups)
         {
-            var metadata = _formatService.GetFormatMetadata(format);
+            var metadata = _formatService.GetFormatMetadata(tournament.Format);
 
             if (metadata.RequiresBracket)
             {
-                int bracketSize = format == Format.BracketOnly
-                    ? NextPowerOfTwo(maxTeams)
-                    : NextPowerOfTwo(numberOfGroups!.Value * advancingPerGroup!.Value);
+                int bracketSize = tournament.Format == Format.BracketOnly
+                    ? NextPowerOfTwo(tournament.MaxTeams)
+                    : NextPowerOfTwo(numberOfGroups!.Value * tournament.AdvancingPerGroup!.Value);
 
                 var standing = new Standing("Main Bracket", bracketSize, StandingType.Bracket);
-                standing.TournamentId = tournamentId;
+                standing.Tournament = tournament;
                 await _standingRepository.AddAsync(standing);
             }
 
             if (metadata.RequiresGroups && numberOfGroups.HasValue)
             {
                 int groups = numberOfGroups.Value;
-                int baseSize = maxTeams / groups;
-                int extra = maxTeams % groups;
+                int baseSize = tournament.MaxTeams / groups;
+                int extra = tournament.MaxTeams % groups;
 
                 for (int i = 0; i < groups; i++)
                 {
                     int groupSize = baseSize + (i < extra ? 1 : 0);
                     var standing = new Standing($"Group {i + 1}", groupSize, StandingType.Group);
-                    standing.TournamentId = tournamentId;
+                    standing.Tournament = tournament;
                     await _standingRepository.AddAsync(standing);
                 }
             }
-            // No SaveChangesAsync — caller controls persistence
+            // No SaveChangesAsync — caller controls persistence; FK resolved via navigation (tournament may be unsaved)
         }
 
         public async Task<List<Standing>> GetStandingsAsync(long tournamentId)
@@ -533,6 +532,7 @@ namespace Application.Services
                     Name = standing.Name,
                     IsFinished = standing.IsFinished,
                     IsSeeded = standing.IsSeeded,
+                    Version = standing.Version,
                     Teams = _mapper.Map<List<GroupTeamDTO>>(groupEntries),
                     Matches = matches
                 };
@@ -565,6 +565,7 @@ namespace Application.Services
                 Name = bracketStanding.Name,
                 IsFinished = bracketStanding.IsFinished,
                 IsSeeded = bracketStanding.IsSeeded,
+                Version = bracketStanding.Version,
                 Matches = matches
             };
         }

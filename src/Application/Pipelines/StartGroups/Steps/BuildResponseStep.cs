@@ -30,7 +30,7 @@ namespace Application.Pipelines.StartGroups.Steps
 
             _logger.LogInformation("Response prepared: {Message}", context.Message);
 
-            // Broadcasting moved to pipeline executor after transaction commit
+            // SignalR broadcast happens in the pipeline after commit, not in this step
             await Task.CompletedTask;
 
             // Always return true (this is the final step)

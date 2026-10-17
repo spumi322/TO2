@@ -1,4 +1,4 @@
 ﻿namespace Application.DTOs.Tournament
 {
-    public record UpdateTournamentRequestDTO(string Name, string Description, byte[]? RowVersion);
+    public record UpdateTournamentRequestDTO(string Name, string Description, long Version);
 }

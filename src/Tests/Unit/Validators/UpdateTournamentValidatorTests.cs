@@ -20,7 +20,7 @@ namespace Tests.Unit.Validators
             return new UpdateTournamentRequestDTO(
                 Name: name ?? "Test Tournament",
                 Description: description ?? "Test Description",
-                RowVersion: null
+                Version: 0
             );
         }
 

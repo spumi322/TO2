@@ -471,7 +471,7 @@ export class TournamentDetailsComponent implements OnInit, OnDestroy {
   addBulkTeams(teamNames: string[]): void {
     if (!this.tournamentId || !this.tournament) return;
 
-    // Validation moved to team-management-card component, but we still validate capacity here
+    // Input validation lives in team-management-card; capacity is checked here
     const remainingSlots = this.tournament.maxTeams - (this.tournament.teams?.length || 0);
     if (teamNames.length > remainingSlots) {
       this.showError(`Can only add ${remainingSlots} more teams. You're trying to add ${teamNames.length}.`);

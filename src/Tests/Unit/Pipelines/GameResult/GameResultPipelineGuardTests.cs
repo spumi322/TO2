@@ -65,7 +65,7 @@ namespace Tests.Unit.Pipelines.GameResult
             DbContext.Games.Add(game);
             await SaveAndDetachAsync();
 
-            return new SetGameResultDTO(game.Id, 1, null, null, match.Id, standing.Id, tournament.Id, null);
+            return new SetGameResultDTO(game.Id, 1, null, null, match.Id, standing.Id, tournament.Id, game.Version);
         }
 
         [Theory]
@@ -117,6 +117,21 @@ namespace Tests.Unit.Pipelines.GameResult
             var act = () => _pipeline.ExecuteAsync(request with { MatchId = other.MatchId });
 
             await act.Should().ThrowAsync<ValidationException>();
+        }
+
+        [Fact]
+        public async Task Should_Reject_When_GameVersionStale()
+        {
+            // Another admin scored the game after this client loaded it
+            var request = await SeedGameAsync(TournamentStatus.GroupsInProgress);
+            var game = await DbContext.Games.FindAsync(request.gameId);
+            game!.WinnerId = 2;
+            await SaveAndDetachAsync();
+
+            var act = () => _pipeline.ExecuteAsync(request);
+
+            await act.Should().ThrowAsync<ConflictException>();
+            _stepMock.Verify(s => s.ExecuteAsync(It.IsAny<GameResultContext>()), Times.Never);
         }
     }
 }

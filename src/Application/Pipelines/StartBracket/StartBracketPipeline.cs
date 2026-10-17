@@ -92,7 +92,7 @@ namespace Application.Pipelines.StartBracket
                     context.Success,
                     context.Message,
                     context.NewStatus,
-                    context.Tournament.RowVersion
+                    context.Tournament.Version
                 );
 
                 _logger.LogInformation("Pipeline completed successfully for tournament {TournamentId}. Success: {Success}",

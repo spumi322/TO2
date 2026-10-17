@@ -63,10 +63,14 @@ namespace Infrastructure.Persistence
 
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Tournament>().Property(e => e.RowVersion).IsRowVersion();
-            modelBuilder.Entity<Match>().Property(e => e.RowVersion).IsRowVersion();
-            modelBuilder.Entity<Game>().Property(e => e.RowVersion).IsRowVersion();
-            modelBuilder.Entity<Standing>().Property(e => e.RowVersion).IsRowVersion();
+            // App-managed optimistic concurrency (incremented by ConcurrencyVersionInterceptor)
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+                         .Where(t => typeof(EntityBase).IsAssignableFrom(t.ClrType)))
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(EntityBase.Version))
+                    .IsConcurrencyToken();
+            }
 
             modelBuilder.Entity<Tenant>(entity =>
             {
@@ -138,8 +142,7 @@ namespace Infrastructure.Persistence
 
         /// <summary>
         /// Gets the current tenant ID for query filters.
-        /// Note: TenantId is now auto-set on new entities by TenantSaveChangesInterceptor,
-        /// and audit fields are set by AuditInterceptor.
+        /// New entities get TenantId from TenantSaveChangesInterceptor (not from here).
         /// </summary>
         private long GetCurrentTenantId()
         {
