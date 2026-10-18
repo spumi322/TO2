@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Persistence
 {
-    public class TO2DbContext : IdentityDbContext<User, IdentityRole<long>, long>, ITO2DbContext
+    public class TO2DbContext : IdentityDbContext<User, IdentityRole<long>, long>
     {
         private readonly IConfiguration _configuration;
         private readonly ITenantService? _tenantService;

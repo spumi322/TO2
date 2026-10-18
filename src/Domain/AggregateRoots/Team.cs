@@ -17,6 +17,11 @@ namespace Domain.AggregateRoots
 
         public string Name { get; private set; }
 
+        public void Rename(string name)
+        {
+            Name = name;
+        }
+
         public long TenantId { get; set; }
         public Tenant Tenant { get; set; } = null!;
 

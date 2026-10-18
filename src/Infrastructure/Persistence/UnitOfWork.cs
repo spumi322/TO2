@@ -1,4 +1,6 @@
 using Application.Contracts;
+using Domain.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Infrastructure.Persistence
@@ -25,10 +27,18 @@ namespace Infrastructure.Persistence
         /// <summary>
         /// Saves all pending changes to the database.
         /// This is the SINGLE point where SaveChanges should be called.
+        /// A row changed since it was loaded (Version mismatch) surfaces as ConflictException (409).
         /// </summary>
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            return await _dbContext.SaveChangesAsync(cancellationToken);
+            try
+            {
+                return await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ConflictException("Data has been modified by another user. Reload and try again.", ex);
+            }
         }
 
         /// <summary>
@@ -59,7 +69,7 @@ namespace Infrastructure.Persistence
             try
             {
                 // Save changes before committing the transaction
-                await _dbContext.SaveChangesAsync();
+                await SaveChangesAsync();
                 await _currentTransaction.CommitAsync();
             }
             catch

@@ -1,6 +1,8 @@
 using Domain.AggregateRoots;
 using Domain.Enums;
+using Domain.Exceptions;
 using FluentAssertions;
+using Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Tests.Base;
 using Tests.Helpers;
@@ -95,6 +97,24 @@ namespace Tests.Unit.Persistence
             var act = () => otherContext.SaveChangesAsync();
 
             await act.Should().ThrowAsync<DbUpdateConcurrencyException>();
+        }
+
+        [Fact]
+        public async Task Should_ThrowConflictException_When_UnitOfWorkSavesRowChangedSinceLoad()
+        {
+            var id = await SeedTournamentAsync();
+            using var otherContext = DbFactory.CreateContext();
+
+            var first = await DbContext.Tournaments.SingleAsync(t => t.Id == id);
+            var second = await otherContext.Tournaments.SingleAsync(t => t.Id == id);
+
+            first.Description = "From first";
+            await DbContext.SaveChangesAsync();
+
+            second.Description = "From second";
+            var act = () => new UnitOfWork(otherContext).SaveChangesAsync();
+
+            await act.Should().ThrowAsync<ConflictException>();
         }
     }
 }

@@ -1,7 +1,6 @@
 using Application.Contracts;
 using Application.DTOs.Tournament;
 using Application.Services;
-using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -10,7 +9,6 @@ using Domain.StateMachine;
 using FluentAssertions;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repository;
-using Infrastructure.Profiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -32,8 +30,6 @@ namespace Tests.Unit.Services
             tenantMock.Setup(x => x.GetCurrentTenantId()).Returns(1L);
             tenantMock.Setup(x => x.GetCurrentUserName()).Returns(CurrentUser);
 
-            var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
-
             var unitOfWork = new UnitOfWork(DbContext);
 
             var standingService = new StandingService(
@@ -45,14 +41,12 @@ namespace Tests.Unit.Services
                 new Repository<TournamentTeam>(DbContext),
                 new FormatService(),
                 new Mock<ILogger<StandingService>>().Object,
-                mapper,
                 unitOfWork);
 
             _service = new TournamentService(
                 new TournamentRepository(DbContext),
                 new Repository<Team>(DbContext),
                 standingService,
-                mapper,
                 new Mock<ILogger<TournamentService>>().Object,
                 new TournamentStateMachine(),
                 unitOfWork,

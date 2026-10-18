@@ -1,7 +1,6 @@
 using Domain.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace webAPI.Middleware
 {
@@ -56,7 +55,6 @@ namespace webAPI.Middleware
         {
             return exception switch
             {
-                DbUpdateConcurrencyException => (StatusCodes.Status409Conflict, "Data has been modified by another user"),
                 NotFoundException => (StatusCodes.Status404NotFound, "Resource Not Found"),
                 ValidationException => (StatusCodes.Status400BadRequest, "Validation Failed"),
                 ConflictException => (StatusCodes.Status409Conflict, "Conflict Occurred"),

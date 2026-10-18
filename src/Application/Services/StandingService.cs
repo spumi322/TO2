@@ -3,7 +3,7 @@ using Application.Contracts.Repositories;
 using Application.DTOs.Standing;
 using Application.DTOs.Team;
 using Application.DTOs.Tournament;
-using AutoMapper;
+using Application.Mappings;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -22,7 +22,6 @@ namespace Application.Services
         private readonly IRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly IFormatService _formatService;
         private readonly ILogger<StandingService> _logger;
-        private readonly IMapper _mapper;
 
         private readonly IUnitOfWork _unitOfWork;
 
@@ -34,7 +33,6 @@ namespace Application.Services
                                IRepository<TournamentTeam> tournamentTeamRepository,
                                IFormatService formatService,
                                ILogger<StandingService> logger,
-                               IMapper mapper,
                                IUnitOfWork unitOfWork)
         {
             _standingRepository = standingRepository;
@@ -45,7 +43,6 @@ namespace Application.Services
             _tournamentTeamRepository = tournamentTeamRepository;
             _formatService = formatService;
             _logger = logger;
-            _mapper = mapper;
             _unitOfWork = unitOfWork;
         }
 
@@ -530,14 +527,10 @@ namespace Application.Services
 
             if (bracketStanding == null) return null;
 
-            var matches = bracketStanding.Matches.Select(m =>
+            var matches = bracketStanding.Matches.Select(m => m.ToStandingMatchDTO() with
             {
-                var dto = _mapper.Map<StandingMatchDTO>(m);
-                return dto with
-                {
-                    TeamAWins = CalculateTeamWins(m, m.TeamAId),
-                    TeamBWins = CalculateTeamWins(m, m.TeamBId)
-                };
+                TeamAWins = CalculateTeamWins(m, m.TeamAId),
+                TeamBWins = CalculateTeamWins(m, m.TeamBId)
             }).ToList();
 
             return new GetBracketWithDetailsResponseDTO
@@ -559,14 +552,10 @@ namespace Application.Services
                 .ThenBy(e => e.Losses)
                 .ToList();
 
-            var matches = standing.Matches.Select(m =>
+            var matches = standing.Matches.Select(m => m.ToStandingMatchDTO() with
             {
-                var dto = _mapper.Map<StandingMatchDTO>(m);
-                return dto with
-                {
-                    TeamAWins = CalculateTeamWins(m, m.TeamAId),
-                    TeamBWins = CalculateTeamWins(m, m.TeamBId)
-                };
+                TeamAWins = CalculateTeamWins(m, m.TeamAId),
+                TeamBWins = CalculateTeamWins(m, m.TeamBId)
             }).ToList();
 
             return new GetGroupsWithDetailsResponseDTO
@@ -576,7 +565,7 @@ namespace Application.Services
                 IsFinished = standing.IsFinished,
                 IsSeeded = standing.IsSeeded,
                 Version = standing.Version,
-                Teams = _mapper.Map<List<GroupTeamDTO>>(groupEntries),
+                Teams = groupEntries.Select(e => e.ToGroupTeamDTO()).ToList(),
                 Matches = matches
             };
         }

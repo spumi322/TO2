@@ -1,12 +1,10 @@
 using Application.Services;
-using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
 using FluentAssertions;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Repository;
-using Infrastructure.Profiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -24,8 +22,6 @@ namespace Tests.Unit.Services
 
         public StandingServiceBracketEntrantsTests()
         {
-            var mapper = new MapperConfiguration(cfg => cfg.AddProfile<MappingProfile>()).CreateMapper();
-
             _service = new StandingService(
                 new StandingRepository(DbContext),
                 new MatchRepository(DbContext),
@@ -35,7 +31,6 @@ namespace Tests.Unit.Services
                 new TournamentTeamRepository(DbContext),
                 new FormatService(),
                 new Mock<ILogger<StandingService>>().Object,
-                mapper,
                 new UnitOfWork(DbContext));
 
             DbContext.Tenants.Add(new Tenant { Id = 1, Name = "Org1" });

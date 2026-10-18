@@ -14,7 +14,7 @@ namespace Domain.AggregateRoots
 
         private Tournament() { }
 
-        public Tournament(string name, string description, int maxTeams, Format format)
+        public Tournament(string name, string? description, int maxTeams, Format format)
         {
             Name = name;
             Description = description;
@@ -65,6 +65,12 @@ namespace Domain.AggregateRoots
         public IReadOnlyList<Standing> Standings => _standings;
 
         public IReadOnlyList<GroupEntry> TournamentParticipants => _tournamentParticipants;
+
+        public void UpdateDetails(string name, string? description)
+        {
+            Name = name;
+            Description = description;
+        }
 
         // Caller must check ITournamentStateMachine.CanCancel first
         public void Cancel(string cancelledBy, DateTime cancelledAt, string? reason)

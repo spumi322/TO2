@@ -2,7 +2,6 @@ using Application.Contracts;
 using Application.DTOs.Game;
 using Application.Pipelines.GameResult;
 using Application.Pipelines.GameResult.Contracts;
-using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -40,7 +39,6 @@ namespace Tests.Unit.Pipelines.GameResult
                 new UnitOfWork(DbContext),
                 new Mock<ISignalRService>().Object,
                 new Mock<ITenantService>().Object,
-                new Mock<IMapper>().Object,
                 new Mock<IStandingService>().Object);
 
             DbContext.Tenants.Add(new Tenant { Id = 1, Name = "Org1" });

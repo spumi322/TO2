@@ -1,7 +1,7 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Repositories;
 using Application.DTOs.Team;
-using AutoMapper;
+using Application.Mappings;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Exceptions;
@@ -15,7 +15,6 @@ namespace Application.Services
         private readonly IRepository<Team> _teamRepository;
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentTeamRepository _tournamentTeamRepository;
-        private readonly IMapper _mapper;
         private readonly ILogger<TeamService> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ISignalRService _signalRService;
@@ -25,7 +24,6 @@ namespace Application.Services
         public TeamService(IRepository<Team> teamRepository,
                            IRepository<Tournament> tournamentRepository,
                            ITournamentTeamRepository tournamentTeamRepository,
-                           IMapper mapper,
                            ILogger<TeamService> logger,
                            IUnitOfWork unitOfWork,
                            ISignalRService signalRService,
@@ -35,7 +33,6 @@ namespace Application.Services
             _teamRepository = teamRepository;
             _tournamentRepository = tournamentRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
-            _mapper = mapper;
             _logger = logger;
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
@@ -45,7 +42,7 @@ namespace Application.Services
 
         public async Task<CreateTeamResponseDTO> CreateTeamAsync(CreateTeamRequestDTO request)
         {
-            var team = _mapper.Map<Team>(request);
+            var team = new Team(request.Name);
 
             await _teamRepository.AddAsync(team);
             await _unitOfWork.SaveChangesAsync();
@@ -57,7 +54,7 @@ namespace Application.Services
         {
             var teams = await _teamRepository.GetAllAsync();
 
-            return _mapper.Map<List<GetAllTeamsResponseDTO>>(teams);
+            return teams.Select(t => t.ToGetAllTeamsResponseDTO()).ToList();
         }
 
         public async Task<GetTeamResponseDTO> GetTeamAsync(long teamId)
@@ -65,7 +62,7 @@ namespace Application.Services
             var existingTeam = await _teamRepository.GetByIdAsync(teamId)
                 ?? throw new NotFoundException("Team", teamId);
 
-            return _mapper.Map<GetTeamResponseDTO>(existingTeam);
+            return existingTeam.ToGetTeamResponseDTO();
         }
 
         public async Task<UpdateTeamResponseDTO> UpdateTeamAsync(long id, UpdateTeamRequestDTO request)
@@ -76,11 +73,11 @@ namespace Application.Services
             if (existingTeam.Version != request.Version)
                 throw new ConflictException("Team was modified by another user. Reload and try again.");
 
-            _mapper.Map(request, existingTeam);
+            existingTeam.Rename(request.Name);
 
             await _unitOfWork.SaveChangesAsync();
 
-            return _mapper.Map<UpdateTeamResponseDTO>(existingTeam);
+            return existingTeam.ToUpdateTeamResponseDTO();
         }
 
         public async Task DeleteTeamAsync(long teamId)

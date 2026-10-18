@@ -7,7 +7,7 @@ namespace Infrastructure.Persistence.Interceptors;
 /// <summary>
 /// EF Core interceptor that increments Version on every modified entity inheriting from EntityBase.
 /// Version is a concurrency token, so EF adds "WHERE Version = @loaded" to UPDATE/DELETE and throws
-/// DbUpdateConcurrencyException (→ 409) when another write got there first.
+/// DbUpdateConcurrencyException when another write got there first (UnitOfWork turns it into ConflictException → 409).
 /// App-managed, so it works on any EF provider.
 /// </summary>
 public class ConcurrencyVersionInterceptor : SaveChangesInterceptor

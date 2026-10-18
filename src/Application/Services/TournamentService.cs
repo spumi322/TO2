@@ -2,7 +2,7 @@
 using Application.Contracts.Repositories;
 using Application.DTOs.Team;
 using Application.DTOs.Tournament;
-using AutoMapper;
+using Application.Mappings;
 using Domain.AggregateRoots;
 using Domain.Exceptions;
 using Domain.StateMachine;
@@ -16,7 +16,6 @@ namespace Application.Services
         private readonly ITournamentRepository _tournamentRepository;
         private readonly IRepository<Team> _teamRepository;
         private readonly IStandingService _standingService;
-        private readonly IMapper _mapper;
         private readonly ILogger<TournamentService> _logger;
         private readonly ITournamentStateMachine _stateMachine;
         private readonly ISignalRService _signalRService;
@@ -26,7 +25,6 @@ namespace Application.Services
         public TournamentService(ITournamentRepository tournamentRepository,
                                  IRepository<Team> teamRepository,
                                  IStandingService standingService,
-                                 IMapper mapper,
                                  ILogger<TournamentService> logger,
                                  ITournamentStateMachine stateMachine,
                                  IUnitOfWork unitOfWork,
@@ -36,7 +34,6 @@ namespace Application.Services
             _tournamentRepository = tournamentRepository;
             _teamRepository = teamRepository;
             _standingService = standingService;
-            _mapper = mapper;
             _logger = logger;
             _stateMachine = stateMachine;
             _unitOfWork = unitOfWork;
@@ -63,7 +60,7 @@ namespace Application.Services
 
         public async Task<CreateTournamentResponseDTO> CreateTournamentAsync(CreateTournamentRequestDTO request)
         {
-            var tournament = _mapper.Map<Tournament>(request);
+            var tournament = request.ToTournament();
             tournament.IsRegistrationOpen = true;
 
             await _tournamentRepository.AddAsync(tournament);
@@ -80,7 +77,7 @@ namespace Application.Services
             var existingTournament = await _tournamentRepository.GetByIdAsync(id)
                 ?? throw new NotFoundException("Tournament", id);
 
-            return _mapper.Map<GetTournamentResponseDTO>(existingTournament);
+            return existingTournament.ToGetTournamentResponseDTO();
         }
 
         public async Task<List<GetTournamentListResponseDTO>> GetTournamentListAsync()
@@ -88,7 +85,7 @@ namespace Application.Services
             var tournaments = await _tournamentRepository.GetAllWithTeamCountAsync();
 
             return tournaments
-                .Select(x => _mapper.Map<GetTournamentListResponseDTO>(x.Tournament) with { CurrentTeams = x.TeamCount })
+                .Select(x => x.Tournament.ToGetTournamentListResponseDTO(x.TeamCount))
                 .ToList();
         }
 
@@ -100,12 +97,12 @@ namespace Application.Services
             if (existingTournament.Version != request.Version)
                 throw new ConflictException("Tournament was modified by another user. Reload and try again.");
 
-            _mapper.Map(request, existingTournament);
+            existingTournament.UpdateDetails(request.Name, request.Description);
 
             await _unitOfWork.SaveChangesAsync();
             await _signalRService.BroadcastTournamentUpdated(id, _tenantService.GetCurrentUserName());
 
-            return _mapper.Map<UpdateTournamentResponseDTO>(existingTournament);
+            return existingTournament.ToUpdateTournamentResponseDTO();
         }
 
         public async Task CancelTournamentAsync(long id, CancelTournamentRequestDTO request)
@@ -153,7 +150,7 @@ namespace Application.Services
                 .FindAllAsync(t => t.TournamentParticipations
                 .Any(tp => tp.TournamentId == tournamentId));
 
-            return _mapper.Map<List<GetTeamResponseDTO>>(teams);
+            return teams.Select(t => t.ToGetTeamResponseDTO()).ToList();
         }
 
         public async Task<StartTournamentDTO> StartTournament(long tournamentId)

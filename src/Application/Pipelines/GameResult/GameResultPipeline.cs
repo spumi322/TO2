@@ -5,7 +5,6 @@ using Application.DTOs.SignalR;
 using Application.DTOs.Standing;
 using Application.Pipelines.GameResult.Contracts;
 using Application.Pipelines.GameResult.Steps;
-using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -45,7 +44,6 @@ namespace Application.Pipelines.GameResult
         private readonly IUnitOfWork _unitOfWork;
         private readonly ISignalRService _signalRService;
         private readonly ITenantService _tenantService;
-        private readonly IMapper _mapper;
         private readonly IStandingService _standingService;
 
         public GameResultPipeline(
@@ -59,7 +57,6 @@ namespace Application.Pipelines.GameResult
             IUnitOfWork unitOfWork,
             ISignalRService signalRService,
             ITenantService tenantService,
-            IMapper mapper,
             IStandingService standingService)
         {
             _logger = logger;
@@ -72,7 +69,6 @@ namespace Application.Pipelines.GameResult
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
             _tenantService = tenantService;
-            _mapper = mapper;
             _standingService = standingService;
         }
 

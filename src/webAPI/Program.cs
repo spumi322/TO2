@@ -17,7 +17,6 @@ using FluentValidation.AspNetCore;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Persistence.Repository;
-using Infrastructure.Profiles;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -49,7 +48,6 @@ namespace TO2
             });
 
             // UoW, Repos
-            builder.Services.AddScoped<ITO2DbContext, TO2DbContext>();
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
@@ -107,7 +105,6 @@ namespace TO2
             builder.Services.AddScoped<IBracketSeedingStrategy, GroupResultSeedingStrategy>();
 
             // Deps
-            builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddValidatorsFromAssemblyContaining<CreateTournamentValidator>();
             builder.Services.AddFluentValidationAutoValidation();
 

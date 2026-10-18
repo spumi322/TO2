@@ -4,7 +4,6 @@ using Application.Pipelines.GameResult;
 using Application.Pipelines.GameResult.Contracts;
 using Application.Pipelines.GameResult.Steps;
 using Application.Services;
-using AutoMapper;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -45,7 +44,6 @@ namespace Tests.Unit.Pipelines.GameResult
                 new UnitOfWork(DbContext),
                 _signalRMock.Object,
                 new Mock<ITenantService>().Object,
-                new Mock<IMapper>().Object,
                 new Mock<IStandingService>().Object);
 
             DbContext.Tenants.Add(new Tenant { Id = 1, Name = "Org1" });
