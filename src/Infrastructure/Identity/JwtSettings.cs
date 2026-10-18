@@ -1,4 +1,4 @@
-﻿namespace Application.Configurations
+﻿namespace Infrastructure.Identity
 {
     public class JwtSettings
     {

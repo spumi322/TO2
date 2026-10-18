@@ -1,4 +1,3 @@
-using Application.Configurations;
 using Application.Contracts;
 using Application.Contracts.Repositories;
 using Application.Pipelines.GameResult;
@@ -14,6 +13,7 @@ using Domain.Entities;
 using Domain.StateMachine;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Persistence.Repository;
@@ -77,6 +77,8 @@ namespace TO2
             builder.Services.AddScoped<IMatchService, MatchService>();
             builder.Services.AddScoped<IGameService, GameService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IIdentityService, IdentityService>();
+            builder.Services.AddScoped<ITokenService, JwtTokenService>();
 
             // Workflow orchestration (delegates to the pipelines below)
             builder.Services.AddScoped<IWorkFlowService, WorkFlowService>();

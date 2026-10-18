@@ -1,31 +1,23 @@
 # Clean Architecture leaks plan
 
-Remaining layer leaks between Domain, Application, Infrastructure and WebAPI. Each phase builds, keeps all tests green and ends with a browser check (register, login, token refresh, one tournament page).
+Remaining layer leaks between Domain, Application and Infrastructure. Each phase builds, keeps all tests green and ends with a browser check (register, login, token refresh, one tournament page).
+
+`Program.cs` registering Infrastructure types (DbContext, repositories, interceptors) is accepted: it is the composition root, the one place allowed to know every layer.
 
 ## Leaks covered
 
 | # | Leak | Where |
 |---|---|---|
-| A | WebAPI wires EF Core/Npgsql itself and references both packages | `webAPI/Program.cs` (DbContext, interceptors, repositories, UoW, Identity stores), `TO2.csproj` |
-| B | Application calls ASP.NET Identity and builds JWTs | `AuthService`: `UserManager<User>`, `JwtSecurityTokenHandler`, `SymmetricSecurityKey`; `Application.csproj` references `System.IdentityModel.Tokens.Jwt` |
-| C | Domain depends on ASP.NET Identity | `Domain/Entities/User.cs` (`User : IdentityUser<long>`), `Domain.csproj` references `Microsoft.Extensions.Identity.Stores`; `Tenant.Users`, `RefreshToken.User` navigations |
+| A | Application calls ASP.NET Identity and builds JWTs | `AuthService`: `UserManager<User>`, `JwtSecurityTokenHandler`, `SymmetricSecurityKey`; `Application.csproj` references `System.IdentityModel.Tokens.Jwt` |
+| B | Domain depends on ASP.NET Identity | `Domain/Entities/User.cs` (`User : IdentityUser<long>`), `Domain.csproj` references `Microsoft.Extensions.Identity.Stores`; `Tenant.Users`, `RefreshToken.User` navigations |
 
 ## Out of scope
 
 - Behavior changes: auth flow, claims, token lifetimes, tenant join rules, SignalR group checks stay as they are.
 - DataAnnotations on entities, `Expression<Func<T,bool>>` in `IRepository` (minor, kept).
-- Schema changes. Phase 3 may add a migration that only updates the model snapshot; any real column/table change = stop and ask.
+- Schema changes. Phase 2 may add a migration that only updates the model snapshot; any real column/table change = stop and ask.
 
-## Phase 1 - Infrastructure registers itself (A)
-
-- `Infrastructure/DependencyInjection.cs`: `AddInfrastructure(this IServiceCollection services, IConfiguration configuration)` registers DbContext + interceptors, `IUnitOfWork`, `IRepository<>` and specialized repositories, `ITenantService`, Identity EF stores (`AddEntityFrameworkStores<TO2DbContext>`).
-- `Program.cs` calls `builder.Services.AddInfrastructure(builder.Configuration)`; Identity options stay in `Program.cs` only if the stores call needs them there, otherwise move with it.
-- `TO2.csproj` drops `Microsoft.EntityFrameworkCore` and `Npgsql.EntityFrameworkCore.PostgreSQL`; keeps `Microsoft.EntityFrameworkCore.Design` (needed by `dotnet ef --startup-project ../webAPI`).
-- Check `dotnet ef migrations list --startup-project ../webAPI` still works.
-
-CONFIRM: Program.cs has no EF/Npgsql code, migrations tooling works, tests green.
-
-## Phase 2 - Identity and JWT behind Application interfaces (B)
+## Phase 1 - Identity and JWT behind Application interfaces (A)
 
 - `Application/Contracts/ITokenService`: `string CreateAccessToken(long userId, string email, string userName, Tenant tenant)` (claims unchanged: `sub`, `email`, `name`, `tenantId`, `tenantName`, `jti`) + `string CreateRefreshTokenValue()`.
 - `Application/Contracts/IIdentityService`: `FindByEmailAsync`, `FindByIdAsync`, `CreateUserAsync(email, userName, password, tenantId)`, `CheckPasswordAsync`; returns a small Application record (`IdentityUserInfo(Id, Email, UserName, TenantId)`), not the Identity type.
@@ -36,7 +28,7 @@ CONFIRM: Program.cs has no EF/Npgsql code, migrations tooling works, tests green
 
 CONFIRM: AuthService has no `Microsoft.AspNetCore.Identity`/`IdentityModel` usings, login/register/refresh behave the same.
 
-## Phase 3 - Identity user out of Domain (C)
+## Phase 2 - Identity user out of Domain (B)
 
 Recommended: Identity user type lives in Infrastructure.
 - `Infrastructure/Identity/ApplicationUser : IdentityUser<long>` with `TenantId`; `TO2DbContext : IdentityDbContext<ApplicationUser, IdentityRole<long>, long>`.
@@ -57,5 +49,5 @@ CONFIRM: Domain has no package references, migration SQL empty, existing users c
 
 ## Open questions
 
-1. Phase 3: move user to Infrastructure, or keep in Domain + document?
-2. Phase 2: `JwtSettings` to Infrastructure ok?
+1. Phase 2: move user to Infrastructure, or keep in Domain + document?
+2. Phase 1: `JwtSettings` to Infrastructure ok?

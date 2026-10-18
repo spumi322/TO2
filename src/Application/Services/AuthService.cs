@@ -1,50 +1,41 @@
-﻿using Application.Configurations;
-using Application.Contracts;
+﻿using Application.Contracts;
 using Application.DTOs.Auth;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Exceptions;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace Application.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly UserManager<User> _userManager;
+        private readonly IIdentityService _identityService;
+        private readonly ITokenService _tokenService;
         private readonly IRepository<Tenant> _tenantRepository;
         private readonly IRepository<RefreshToken> _refreshTokenRepository;
         private readonly IUnitOfWork _unitOfWork;
-        private readonly JwtSettings _jwtSettings;
         private readonly ILogger<AuthService> _logger;
 
         public AuthService(
-            UserManager<User> userManager,
+            IIdentityService identityService,
+            ITokenService tokenService,
             IRepository<Tenant> tenantRepository,
             IRepository<RefreshToken> refreshTokenRepository,
             IUnitOfWork unitOfWork,
-            IOptions<JwtSettings> jwtSettings,
             ILogger<AuthService> logger)
         {
-            _userManager = userManager;
+            _identityService = identityService;
+            _tokenService = tokenService;
             _tenantRepository = tenantRepository;
             _refreshTokenRepository = refreshTokenRepository;
             _unitOfWork = unitOfWork;
-            _jwtSettings = jwtSettings.Value;
             _logger = logger;
         }
 
         public async Task<AuthResponse> RegisterAsync(RegisterRequest request)
         {
             // Check if user already exists
-            var existingUser = await _userManager.FindByEmailAsync(request.Email);
-            if (existingUser != null)
+            if (await _identityService.EmailExistsAsync(request.Email))
                 throw new ConflictException("User with this email already exists");
 
             try
@@ -82,28 +73,13 @@ namespace Application.Services
                 // Validate tenant is active
                 if (!tenant.IsActive)
                 {
-                    await _unitOfWork.RollbackTransactionAsync();
                     throw new ValidationException(
                         "This organization is currently inactive. Please contact support."
                     );
                 }
 
                 // Create user with existing or new tenant
-                var user = new User
-                {
-                    UserName = request.UserName,
-                    Email = request.Email,
-                    TenantId = tenant.Id,
-                    EmailConfirmed = true // Auto-confirm for development
-                };
-
-                var result = await _userManager.CreateAsync(user, request.Password);
-                if (!result.Succeeded)
-                {
-                    await _unitOfWork.RollbackTransactionAsync();
-                    var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                    throw new ValidationException($"User creation failed: {errors}");
-                }
+                var user = await _identityService.CreateUserAsync(request.UserName, request.Email, request.Password, tenant.Id);
 
                 await _unitOfWork.CommitTransactionAsync();
 
@@ -125,13 +101,8 @@ namespace Application.Services
 
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
-            var user = await _userManager.FindByEmailAsync(request.Email);
-            if (user == null)
-                throw new UnauthorizedException("Invalid email or password");
-
-            var isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
-            if (!isPasswordValid)
-                throw new UnauthorizedException("Invalid email or password");
+            var user = await _identityService.ValidateCredentialsAsync(request.Email, request.Password)
+                ?? throw new UnauthorizedException("Invalid email or password");
 
             var tenant = await _tenantRepository.GetByIdAsync(user.TenantId);
             if (tenant == null)
@@ -153,7 +124,7 @@ namespace Application.Services
             if (refreshToken == null || !refreshToken.IsActive)
                 throw new UnauthorizedException("Invalid or expired refresh token");
 
-            var user = await _userManager.FindByIdAsync(refreshToken.UserId.ToString());
+            var user = await _identityService.FindByIdAsync(refreshToken.UserId);
             if (user == null)
                 throw new UnauthorizedException("Invalid or expired refresh token");
 
@@ -199,72 +170,24 @@ namespace Application.Services
             return token != null && token.IsActive;
         }
 
-        // Private helper methods
-
-        private async Task<AuthResponse> GenerateAuthResponseAsync(User user, Tenant tenant)
+        private async Task<AuthResponse> GenerateAuthResponseAsync(AuthUser user, Tenant tenant)
         {
-            var accessToken = GenerateAccessToken(user, tenant);
-            var refreshToken = await GenerateRefreshTokenAsync(user.Id);
+            var accessToken = _tokenService.CreateAccessToken(user, tenant);
 
-            return new AuthResponse(
-                UserId: user.Id,
-                UserName: user.UserName!,
-                Email: user.Email!,
-                TenantId: tenant.Id,
-                TenantName: tenant.Name,
-                AccessToken: accessToken,
-                RefreshToken: refreshToken.Token,
-                ExpiresAt: DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes)
-            );
-        }
-
-        private string GenerateAccessToken(User user, Tenant tenant)
-        {
-            var claims = new[]
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email!),
-                new Claim(JwtRegisteredClaimNames.Name, user.UserName!),
-                new Claim("tenantId", tenant.Id.ToString()),
-                new Claim("tenantName", tenant.Name),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: _jwtSettings.Issuer,
-                audience: _jwtSettings.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
-                signingCredentials: credentials
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private async Task<RefreshToken> GenerateRefreshTokenAsync(long userId)
-        {
-            var refreshToken = new RefreshToken
-            {
-                Token = GenerateSecureRandomToken(),
-                Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays),
-                UserId = userId
-            };
-
+            var refreshToken = _tokenService.CreateRefreshToken(user.Id);
             await _refreshTokenRepository.AddAsync(refreshToken);
             await _unitOfWork.SaveChangesAsync();
 
-            return refreshToken;
-        }
-
-        private static string GenerateSecureRandomToken()
-        {
-            var randomBytes = new byte[64];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomBytes);
-            return Convert.ToBase64String(randomBytes);
+            return new AuthResponse(
+                UserId: user.Id,
+                UserName: user.UserName,
+                Email: user.Email,
+                TenantId: tenant.Id,
+                TenantName: tenant.Name,
+                AccessToken: accessToken.Token,
+                RefreshToken: refreshToken.Token,
+                ExpiresAt: accessToken.ExpiresAt
+            );
         }
     }
 }
