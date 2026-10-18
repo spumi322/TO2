@@ -7,8 +7,8 @@ namespace Application.Contracts.Repositories
     {
         Task<Tournament?> GetWithStandingsAsync(long id);
         Task<Tournament?> GetWithTeamsAsync(long id);
-        Task<IReadOnlyList<Tournament>> GetAllForListAsync();
         Task<IReadOnlyList<Tournament>> GetActiveAsync();
         Task<IReadOnlyList<Tournament>> GetByStatusAsync(TournamentStatus status);
+        Task<IReadOnlyList<(Tournament Tournament, int TeamCount)>> GetAllWithTeamCountAsync();
     }
 }

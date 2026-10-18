@@ -32,12 +32,14 @@ namespace Application.Services
             if (match == null)
                 throw new ArgumentNullException(nameof(match));
 
-            var gamesAlreadyGenerated = await _gameRepository.FindAllAsync(g => g.MatchId == match.Id);
-
-            if (gamesAlreadyGenerated.Count > 0)
+            if (match.Id != 0)
             {
-                _logger.LogWarning("Attempted to generate games for match {MatchId}, but games already exist.", match.Id);
-                throw new ConflictException("Games already generated for this match");
+                var gamesAlreadyGenerated = await _gameRepository.FindAllAsync(g => g.MatchId == match.Id);
+                if (gamesAlreadyGenerated.Count > 0)
+                {
+                    _logger.LogWarning("Attempted to generate games for match {MatchId}, but games already exist.", match.Id);
+                    throw new ConflictException("Games already generated for this match");
+                }
             }
 
             var games = new List<Game>();

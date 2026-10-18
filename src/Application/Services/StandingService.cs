@@ -271,11 +271,10 @@ namespace Application.Services
                 .Where(id => id.HasValue)
                 .Select(id => id.Value)
                 .Distinct()
-                .ToHashSet();
+                .ToList();
 
             // Get all teams from repository and filter to bracket participants
-            var allTeams = await _teamRepository.GetAllAsync();
-            var bracketTeams = allTeams.Where(t => teamIds.Contains(t.Id)).ToList();
+            var bracketTeams = await _teamRepository.FindAllAsync(t => teamIds.Contains(t.Id));
             var teamNameLookup = bracketTeams.ToDictionary(t => t.Id, t => t.Name);
 
             // Calculate total rounds
@@ -353,9 +352,9 @@ namespace Application.Services
             var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(
                 tt => tt.TournamentId == tournamentId && tt.FinalPlacement != null);
 
-            var teamIds = tournamentTeams.Select(tt => tt.TeamId).ToHashSet();
-            var allTeams = await _teamRepository.GetAllAsync();
-            var teamNameLookup = allTeams.Where(t => teamIds.Contains(t.Id)).ToDictionary(t => t.Id, t => t.Name);
+            var teamIds = tournamentTeams.Select(tt => tt.TeamId).ToList();
+            var teams = await _teamRepository.FindAllAsync(t => teamIds.Contains(t.Id));
+            var teamNameLookup = teams.ToDictionary(t => t.Id, t => t.Name);
 
             return tournamentTeams
                 .OrderBy(tt => tt.FinalPlacement)
@@ -506,41 +505,23 @@ namespace Application.Services
             return match.Games.Count(g => g.WinnerId == teamId);
         }
 
+        public async Task<GetGroupsWithDetailsResponseDTO?> GetGroupWithDetailsByStandingIdAsync(long standingId)
+        {
+            var standing = await _standingRepository.GetGroupWithMatchesByStandingIdAsync(standingId);
+            if (standing == null) return null;
+
+            var entries = await _groupRepository.FindAllAsync(e => e.StandingId == standingId);
+
+            return BuildGroupDTO(standing, entries);
+        }
+
         public async Task<List<GetGroupsWithDetailsResponseDTO>> GetGroupsWithDetailsAsync(long tournamentId)
         {
             var standings = await _standingRepository.GetGroupsWithMatchesAsync(tournamentId);
 
-            var result = new List<GetGroupsWithDetailsResponseDTO>();
+            var entriesByStanding = (await _groupRepository.FindAllAsync(g => g.TournamentId == tournamentId)).ToLookup(e => e.StandingId);
 
-            foreach (var standing in standings)
-            {
-                var groupEntries = await _groupRepository.GetByStandingIdOrderedAsync(standing.Id);
-
-                var matches = standing.Matches.Select(m =>
-                {
-                    var dto = _mapper.Map<StandingMatchDTO>(m);
-                    return dto with
-                    {
-                        TeamAWins = CalculateTeamWins(m, m.TeamAId),
-                        TeamBWins = CalculateTeamWins(m, m.TeamBId)
-                    };
-                }).ToList();
-
-                var dto = new GetGroupsWithDetailsResponseDTO
-                {
-                    Id = standing.Id,
-                    Name = standing.Name,
-                    IsFinished = standing.IsFinished,
-                    IsSeeded = standing.IsSeeded,
-                    Version = standing.Version,
-                    Teams = _mapper.Map<List<GroupTeamDTO>>(groupEntries),
-                    Matches = matches
-                };
-
-                result.Add(dto);
-            }
-
-            return result;
+            return standings.Select(s => BuildGroupDTO(s, entriesByStanding[s.Id])).ToList();
         }
 
         public async Task<GetBracketWithDetailsResponseDTO?> GetBracketWithDetailsAsync(long tournamentId)
@@ -566,6 +547,36 @@ namespace Application.Services
                 IsFinished = bracketStanding.IsFinished,
                 IsSeeded = bracketStanding.IsSeeded,
                 Version = bracketStanding.Version,
+                Matches = matches
+            };
+        }
+
+        private GetGroupsWithDetailsResponseDTO BuildGroupDTO(Standing standing, IEnumerable<GroupEntry> entries)
+        {
+            var groupEntries = entries
+                .OrderByDescending(e => e.Points)
+                .ThenByDescending(e => e.Wins)
+                .ThenBy(e => e.Losses)
+                .ToList();
+
+            var matches = standing.Matches.Select(m =>
+            {
+                var dto = _mapper.Map<StandingMatchDTO>(m);
+                return dto with
+                {
+                    TeamAWins = CalculateTeamWins(m, m.TeamAId),
+                    TeamBWins = CalculateTeamWins(m, m.TeamBId)
+                };
+            }).ToList();
+
+            return new GetGroupsWithDetailsResponseDTO
+            {
+                Id = standing.Id,
+                Name = standing.Name,
+                IsFinished = standing.IsFinished,
+                IsSeeded = standing.IsSeeded,
+                Version = standing.Version,
+                Teams = _mapper.Map<List<GroupTeamDTO>>(groupEntries),
                 Matches = matches
             };
         }

@@ -44,7 +44,7 @@ Each format uses its own subset (BracketOnly skips the group states, GroupsOnly 
 
 **Single SaveChanges per request.** The pipeline mutates entities in memory across multiple steps; `UnitOfWork` commits once at the end. If any step fails, nothing is persisted.
 
-**Optimistic concurrency (not yet effective).** Core entities declare `[Timestamp]` RowVersion columns, but PostgreSQL does not generate `bytea` row versions, so the values stay `NULL` and concurrent writes are not detected yet (fix: Npgsql `xmin` concurrency token).
+**Optimistic concurrency (app-managed, provider-agnostic).** Every entity has a `Version` concurrency token that an EF interceptor increments on each update. EF checks the loaded version in the `UPDATE`/`DELETE` `WHERE` clause, so a write that lost a race fails with 409 instead of silently overwriting. Tournament updates and game results carry the `Version` the client loaded; a stale one is rejected with 409, so one admin can't silently overwrite another's result. No database-specific row-version feature is used.
 
 ## Running Locally
 

@@ -14,7 +14,6 @@ namespace Application.Pipelines.StartGroups.Steps
     public class DistributeTeamsIntoGroupsStep : IStartGroupsPipelineStep
     {
         private readonly ILogger<DistributeTeamsIntoGroupsStep> _logger;
-        private readonly IRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly IRepository<Team> _teamRepository;
 
         public DistributeTeamsIntoGroupsStep(
@@ -23,7 +22,6 @@ namespace Application.Pipelines.StartGroups.Steps
             IRepository<Team> teamRepository)
         {
             _logger = logger;
-            _tournamentTeamRepository = tournamentTeamRepository;
             _teamRepository = teamRepository;
         }
 
@@ -32,19 +30,10 @@ namespace Application.Pipelines.StartGroups.Steps
             _logger.LogInformation("Step 3: Distributing teams into groups for tournament {TournamentId}",
                 context.TournamentId);
 
-            // Get all TournamentTeam records
-            var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(tt => tt.TournamentId == context.TournamentId);
-
-            // Get Team entities for each TournamentTeam
-            var teams = new List<Team>();
-            foreach (var tt in tournamentTeams)
-            {
-                var team = await _teamRepository.GetByIdAsync(tt.TeamId);
-                if (team != null)
-                {
-                    teams.Add(team);
-                }
-            }
+            var teams = (await _teamRepository
+                .FindAllAsync(t => t.TournamentParticipations
+                .Any(tp => tp.TournamentId == context.TournamentId)))
+                .ToList();
 
             if (teams.Count < context.GroupStandings.Count)
                 throw new ConflictException($"Not enough teams ({teams.Count}) for {context.GroupStandings.Count} groups");

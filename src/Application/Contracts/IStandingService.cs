@@ -37,6 +37,7 @@ namespace Application.Contracts
         /// Teams pre-sorted by points descending.
         /// </summary>
         Task<List<GetGroupsWithDetailsResponseDTO>> GetGroupsWithDetailsAsync(long tournamentId);
+        Task<GetGroupsWithDetailsResponseDTO?> GetGroupWithDetailsByStandingIdAsync(long standingId);
         Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateBracketPlacements(long standingId);
         Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateGroupOnlyPlacements(long tournamentId);
         Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements);

@@ -188,8 +188,7 @@ namespace Application.Pipelines.GameResult
             // We'll use standing service to get properly mapped DTOs
             if (standing.StandingType == StandingType.Group)
             {
-                var allGroups = await _standingService.GetGroupsWithDetailsAsync(context.Tournament.Id);
-                updatedGroup = allGroups.FirstOrDefault(g => g.Id == context.GameResult.StandingId);
+                updatedGroup = await _standingService.GetGroupWithDetailsByStandingIdAsync(context.GameResult.StandingId);
             }
             else
             {

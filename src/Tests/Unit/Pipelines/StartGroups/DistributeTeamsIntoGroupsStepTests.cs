@@ -46,20 +46,9 @@ namespace Tests.Unit.Pipelines.StartGroups
                 GroupStandings = groupStandings
             };
 
-            var tournamentTeams = teams.Select((t, i) =>
-                TestDataBuilder.TournamentTeams.Create(1, i + 1)).ToList();
-
-            _mockTournamentTeamRepo
-                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<TournamentTeam, bool>>>()))
-                .ReturnsAsync(tournamentTeams);
-
-            for (int i = 0; i < teams.Count; i++)
-            {
-                var team = teams[i];
-                _mockTeamRepo
-                    .Setup(x => x.GetByIdAsync(i + 1))
-                    .ReturnsAsync(team);
-            }
+            _mockTeamRepo
+                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<Team, bool>>>()))
+                .ReturnsAsync(teams);
 
             // Act
             var result = await _step.ExecuteAsync(context);
@@ -90,20 +79,9 @@ namespace Tests.Unit.Pipelines.StartGroups
                 GroupStandings = groupStandings
             };
 
-            var tournamentTeams = teams.Select((t, i) =>
-                TestDataBuilder.TournamentTeams.Create(1, i + 1)).ToList();
-
-            _mockTournamentTeamRepo
-                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<TournamentTeam, bool>>>()))
-                .ReturnsAsync(tournamentTeams);
-
-            for (int i = 0; i < teams.Count; i++)
-            {
-                var team = teams[i];
-                _mockTeamRepo
-                    .Setup(x => x.GetByIdAsync(i + 1))
-                    .ReturnsAsync(team);
-            }
+            _mockTeamRepo
+                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<Team, bool>>>()))
+                .ReturnsAsync(teams);
 
             // Act
             var result = await _step.ExecuteAsync(context);
@@ -134,20 +112,9 @@ namespace Tests.Unit.Pipelines.StartGroups
                 GroupStandings = groupStandings
             };
 
-            var tournamentTeams = teams.Select((t, i) =>
-                TestDataBuilder.TournamentTeams.Create(1, i + 1)).ToList();
-
-            _mockTournamentTeamRepo
-                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<TournamentTeam, bool>>>()))
-                .ReturnsAsync(tournamentTeams);
-
-            for (int i = 0; i < teams.Count; i++)
-            {
-                var team = teams[i];
-                _mockTeamRepo
-                    .Setup(x => x.GetByIdAsync(i + 1))
-                    .ReturnsAsync(team);
-            }
+            _mockTeamRepo
+                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<Team, bool>>>()))
+                .ReturnsAsync(teams);
 
             // Act
             var act = () => _step.ExecuteAsync(context);

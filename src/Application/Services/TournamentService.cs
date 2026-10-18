@@ -85,10 +85,10 @@ namespace Application.Services
 
         public async Task<List<GetTournamentListResponseDTO>> GetTournamentListAsync()
         {
-            var tournaments = await _tournamentRepository.GetAllForListAsync();
+            var tournaments = await _tournamentRepository.GetAllWithTeamCountAsync();
 
             return tournaments
-                .Select(t => _mapper.Map<GetTournamentListResponseDTO>(t) with { CurrentTeams = t.TournamentTeams.Count })
+                .Select(x => _mapper.Map<GetTournamentListResponseDTO>(x.Tournament) with { CurrentTeams = x.TeamCount })
                 .ToList();
         }
 
@@ -149,8 +149,9 @@ namespace Application.Services
 
         public async Task<List<GetTeamResponseDTO>> GetTeamsByTournamentAsync(long tournamentId)
         {
-            var tournament = await _tournamentRepository.GetWithTeamsAsync(tournamentId);
-            var teams = tournament?.TournamentTeams.Select(tt => tt.Team).ToList() ?? new();
+            var teams = await _teamRepository
+                .FindAllAsync(t => t.TournamentParticipations
+                .Any(tp => tp.TournamentId == tournamentId));
 
             return _mapper.Map<List<GetTeamResponseDTO>>(teams);
         }
