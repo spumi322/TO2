@@ -1,6 +1,7 @@
 using Application.Contracts;
 using Application.Contracts.Repositories;
 using Application.DTOs.Tournament;
+using Application.Utilities;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -93,7 +94,7 @@ namespace Application.Services
 
             foreach (var group in groupStandings)
             {
-                var teams = await _groupRepository.GetByStandingIdOrderedAsync(group.Id);
+                var teams = GroupRanking.Rank(await _groupRepository.GetByStandingIdAsync(group.Id));
                 int position = 1;
 
                 foreach (var team in teams)
@@ -110,6 +111,36 @@ namespace Application.Services
             }
 
             _logger.LogInformation($"Calculated {placements.Count} group-only placements");
+            return placements;
+        }
+
+        public async Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateGroupStageKnockoutPlacements(long tournamentId)
+        {
+            var entries = await _groupRepository.GetByTournamentIdAsync(tournamentId);
+
+            // Group position of each knocked-out team (Eliminated was set when the bracket started)
+            var knockedOut = entries
+                .GroupBy(e => e.StandingId)
+                .SelectMany(group => GroupRanking.Rank(group).Select((entry, index) => (Entry: entry, GroupPosition: index + 1)))
+                .Where(x => x.Entry.Eliminated)
+                .ToList();
+
+            var placements = new List<(long TeamId, int Placement, int? EliminatedInRound)>();
+
+            // Below every team that reached the bracket; teams with the same group position share a rank
+            int rank = entries.Count(e => !e.Eliminated) + 1;
+
+            foreach (var samePosition in knockedOut.GroupBy(x => x.GroupPosition).OrderBy(g => g.Key))
+            {
+                foreach (var x in samePosition)
+                {
+                    placements.Add((x.Entry.TeamId, rank, null));
+                    _logger.LogInformation($"  Team {x.Entry.TeamId} = {rank} place (group position {samePosition.Key})");
+                }
+
+                rank += samePosition.Count();
+            }
+
             return placements;
         }
 

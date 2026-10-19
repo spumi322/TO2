@@ -117,6 +117,7 @@ namespace Tests.Unit.Services
                     var entry = TestDataBuilder.Groups.CreateWithIds(tournament.Id, group.Id, team.Id, team.Name);
                     entry.Wins = groupSize - place;
                     entry.Losses = place - 1;
+                    entry.Points = entry.Wins * 3;
                     DbContext.GroupEntries.Add(entry);
                 }
             }

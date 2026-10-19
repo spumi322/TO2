@@ -327,6 +327,12 @@ namespace Infrastructure.Migrations
                     b.Property<bool>("Eliminated")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("GameLosses")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GameWins")
+                        .HasColumnType("integer");
+
                     b.Property<string>("LastModifiedBy")
                         .IsRequired()
                         .HasColumnType("text");

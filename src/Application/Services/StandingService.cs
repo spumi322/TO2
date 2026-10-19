@@ -4,6 +4,7 @@ using Application.DTOs.Standing;
 using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using Application.Mappings;
+using Application.Utilities;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -118,7 +119,7 @@ namespace Application.Services
 
         public async Task FinalizeGroupTeams(long standingId)
         {
-            var groupEntries = await _groupRepository.GetByStandingIdOrderedAsync(standingId);
+            var groupEntries = GroupRanking.Rank(await _groupRepository.GetByStandingIdAsync(standingId));
             int position = 1;
             foreach (var entry in groupEntries)
             {
@@ -195,12 +196,7 @@ namespace Application.Services
 
             foreach (var group in groups)
             {
-                var ranked = allGroupEntries
-                    .Where(g => g.StandingId == group.Id)
-                    .OrderByDescending(g => WinRate(g))
-                    .ThenByDescending(g => g.Wins)
-                    .ThenBy(g => g.Losses)
-                    .ToList();
+                var ranked = GroupRanking.Rank(allGroupEntries.Where(g => g.StandingId == group.Id));
 
                 var groupAdvancing = ranked.Take(teamsAdvancingPerGroup).ToList();
                 groupAdvancing.ForEach(e => e.Status = TeamStatus.Advanced);
@@ -224,9 +220,6 @@ namespace Application.Services
             _logger.LogInformation("{Count} teams advanced from {GroupCount} groups", entrants.Count, groups.Count);
             return entrants;
         }
-
-        private static double WinRate(GroupEntry e) =>
-            e.Wins + e.Losses == 0 ? 0.0 : (double)e.Wins / (e.Wins + e.Losses);
 
         // Read models (UI)
 
@@ -279,11 +272,7 @@ namespace Application.Services
 
         private GetGroupsWithDetailsResponseDTO BuildGroupDTO(Standing standing, IEnumerable<GroupEntry> entries)
         {
-            var groupEntries = entries
-                .OrderByDescending(e => e.Points)
-                .ThenByDescending(e => e.Wins)
-                .ThenBy(e => e.Losses)
-                .ToList();
+            var groupEntries = GroupRanking.Rank(entries);
 
             var matches = standing.Matches.Select(m => m.ToStandingMatchDTO() with
             {

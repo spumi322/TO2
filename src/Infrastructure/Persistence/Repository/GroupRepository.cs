@@ -16,13 +16,5 @@ namespace Infrastructure.Persistence.Repository
 
         public async Task<GroupEntry?> GetByTeamAndTournamentAsync(long teamId, long tournamentId)
             => await _dbSet.FirstOrDefaultAsync(g => g.TeamId == teamId && g.TournamentId == tournamentId);
-
-        public async Task<IReadOnlyList<GroupEntry>> GetByStandingIdOrderedAsync(long standingId)
-            => await _dbSet
-                .Where(g => g.StandingId == standingId)
-                .OrderByDescending(g => g.Points)
-                .ThenByDescending(g => g.Wins)
-                .ThenBy(g => g.Losses)
-                .ToListAsync();
     }
 }

@@ -45,5 +45,8 @@ namespace Domain.Entities
         public int Wins { get; set; } = 0;
         public int Losses { get; set; } = 0;
         public int Points { get; set; } = 0;
+        // Games won/lost in finished group matches (tie-break when points are equal, see GroupRanking)
+        public int GameWins { get; set; } = 0;
+        public int GameLosses { get; set; } = 0;
     }
 }

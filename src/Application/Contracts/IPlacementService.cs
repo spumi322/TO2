@@ -9,6 +9,10 @@ namespace Application.Contracts
     {
         Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateBracketPlacements(long standingId);
         Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateGroupOnlyPlacements(long tournamentId);
+        /// <summary>
+        /// GroupsAndBracket: placements of the teams knocked out in the group stage, ranked below all bracket teams.
+        /// </summary>
+        Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateGroupStageKnockoutPlacements(long tournamentId);
         Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements);
         /// <summary>
         /// Gets the final placements of a finished tournament (empty list if not finished).

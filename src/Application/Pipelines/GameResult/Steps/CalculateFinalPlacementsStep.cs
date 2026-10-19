@@ -36,6 +36,12 @@ namespace Application.Pipelines.GameResult.Steps
                 ? await _placementService.CalculateGroupOnlyPlacements(tournamentId)
                 : await _placementService.CalculateBracketPlacements(standingId);
 
+            // GroupsAndBracket: teams knocked out in the groups are placed below the bracket teams
+            if (context.Tournament.Format == Domain.Enums.Format.GroupsAndBracket)
+            {
+                placements.AddRange(await _placementService.CalculateGroupStageKnockoutPlacements(tournamentId));
+            }
+
             // Save final results to database
             await _placementService.SetFinalResults(tournamentId, placements);
 
