@@ -33,7 +33,7 @@ namespace webAPI.Middleware
             {
                 Status = statusCode,
                 Title = title,
-                Detail = exception.Message,
+                Detail = GetClientDetail(exception),
                 Instance = httpContext.Request.Path,
                 Type = $"https://httpstatuses.io/{statusCode}"
             };
@@ -64,6 +64,21 @@ namespace webAPI.Middleware
                 UnauthorizedAccessException => (StatusCodes.Status401Unauthorized, "Unauthorized"),
                 DomainException => (StatusCodes.Status400BadRequest, "Domain Error"),
                 _ => (StatusCodes.Status500InternalServerError, "Internal Server Error")
+            };
+        }
+
+        /// <summary>
+        /// Only domain exceptions carry messages written for users. Any other message (EF/Npgsql errors,
+        /// internal InvalidOperationException, ...) can contain SQL, table names, hosts or ids, so the client
+        /// gets a fixed text; the full exception is in the log under the response's traceId.
+        /// </summary>
+        private static string GetClientDetail(Exception exception)
+        {
+            return exception switch
+            {
+                DomainException => exception.Message,
+                UnauthorizedAccessException => "Authentication required.",
+                _ => "An unexpected error occurred. Quote the traceId when reporting it."
             };
         }
 
