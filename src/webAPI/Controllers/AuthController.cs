@@ -61,6 +61,7 @@ namespace TO2.Controllers
         /// </summary>
         [HttpPost("refresh")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         public async Task<ActionResult<AuthResponse>> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             var response = await _authService.RefreshTokenAsync(request);

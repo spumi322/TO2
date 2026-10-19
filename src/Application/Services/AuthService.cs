@@ -79,7 +79,11 @@ namespace Application.Services
                         throw new ConflictException("This organization already exists. Enter an invite code from one of its members to join.");
 
                     if (!tenant.IsInviteCodeValid(InviteCode.Hash(request.InviteCode!), DateTime.UtcNow))
+                    {
+                        _logger.LogWarning("Invalid invite code from {Email} for tenant '{TenantName}' (Id: {TenantId})",
+                            request.Email, tenant.Name, tenant.Id);
                         throw new ValidationException("Invalid or expired invite code.");
+                    }
 
                     _logger.LogInformation(
                         "User {Email} joining existing tenant '{TenantName}' (Id: {TenantId}) with an invite code",
@@ -118,8 +122,12 @@ namespace Application.Services
 
         public async Task<AuthResponse> LoginAsync(LoginRequest request)
         {
-            var user = await _identityService.ValidateCredentialsAsync(request.Email, request.Password)
-                ?? throw new UnauthorizedException("Invalid email or password");
+            var user = await _identityService.ValidateCredentialsAsync(request.Email, request.Password);
+            if (user == null)
+            {
+                _logger.LogWarning("Failed login for {Email}", request.Email);
+                throw new UnauthorizedException("Invalid email or password");
+            }
 
             var tenant = await _tenantRepository.GetByIdAsync(user.TenantId);
             if (tenant == null)

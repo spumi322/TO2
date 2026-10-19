@@ -2,5 +2,5 @@
 
 namespace Application.DTOs.Auth
 {
-    public record RefreshTokenRequest([Required] string RefreshToken);
+    public record RefreshTokenRequest([Required][MaxLength(200)] string RefreshToken);
 }

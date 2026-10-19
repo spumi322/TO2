@@ -26,7 +26,7 @@ namespace webAPI.Middleware
             var (statusCode, title) = MapExceptionToStatusCode(exception);
 
             // Log the exception with appropriate level
-            LogException(exception, statusCode);
+            LogException(exception, statusCode, httpContext);
 
             // Create RFC 7807-compliant ProblemDetails response
             var problemDetails = new ProblemDetails
@@ -82,20 +82,18 @@ namespace webAPI.Middleware
             };
         }
 
-        private void LogException(Exception exception, int statusCode)
+        private void LogException(Exception exception, int statusCode, HttpContext httpContext)
         {
-            // Log with appropriate level based on status code
+            // 500s keep the stack trace; 4xx are expected outcomes, so one line with who (IP) and where (path)
             if (statusCode >= 500)
             {
                 _logger.LogError(exception, "Internal server error: {Message}", exception.Message);
             }
-            else if (statusCode >= 400)
-            {
-                _logger.LogWarning(exception, "Client error ({StatusCode}): {Message}", statusCode, exception.Message);
-            }
             else
             {
-                _logger.LogInformation(exception, "Request error ({StatusCode}): {Message}", statusCode, exception.Message);
+                _logger.LogWarning("Client error ({StatusCode}) on {Method} {Path} from {ClientIp}: {Message}",
+                    statusCode, httpContext.Request.Method, httpContext.Request.Path,
+                    httpContext.Connection.RemoteIpAddress, exception.Message);
             }
         }
     }

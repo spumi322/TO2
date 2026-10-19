@@ -217,12 +217,20 @@ namespace TO2
                             Window = TimeSpan.FromMinutes(1)
                         }));
                 options.OnRejected = (context, cancellationToken) =>
-                    new ValueTask(context.HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+                {
+                    var httpContext = context.HttpContext;
+                    httpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+                        .CreateLogger(nameof(RateLimitPolicies))
+                        .LogWarning("Rate limit hit on {Method} {Path} from {ClientIp}",
+                            httpContext.Request.Method, httpContext.Request.Path, httpContext.Connection.RemoteIpAddress);
+
+                    return new ValueTask(httpContext.Response.WriteAsJsonAsync(new ProblemDetails
                     {
                         Status = StatusCodes.Status429TooManyRequests,
                         Title = "Too Many Requests",
                         Detail = "Too many attempts. Try again in a minute."
                     }, cancellationToken));
+                };
             });
 
             var app = builder.Build();
