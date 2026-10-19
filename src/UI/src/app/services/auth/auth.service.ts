@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { User } from '../../models/auth/user.model';
 import { LoginRequest } from '../../models/auth/login-request.model';
 import { LoginResponse } from '../../models/auth/login-response.model';
 import { RegisterRequest } from '../../models/auth/register-request.model';
+import { InviteCodeResponse } from '../../models/auth/invite-code-response.model';
 import { jwtDecode } from 'jwt-decode';
 
 interface JwtPayload {
@@ -52,8 +53,8 @@ export class AuthService {
   /**
    * Register new user and create tenant
    */
-  register(userName: string, email: string, password: string, tenantName: string): Observable<LoginResponse> {
-    const request: RegisterRequest = { userName, email, password, tenantName };
+  register(userName: string, email: string, password: string, tenantName: string, inviteCode?: string): Observable<LoginResponse> {
+    const request: RegisterRequest = { userName, email, password, tenantName, inviteCode };
 
     return this.http.post<LoginResponse>(`${this.apiUrl}/register`, request).pipe(
       tap(response => {
@@ -62,6 +63,22 @@ export class AuthService {
         this.currentUserSubject.next(user);
       })
     );
+  }
+
+  /**
+   * Whether an organization name is taken (joining it needs an invite code)
+   */
+  organizationExists(name: string): Observable<boolean> {
+    return this.http
+      .get<{ exists: boolean }>(`${this.apiUrl}/organizations/exists`, { params: { name } })
+      .pipe(map(response => response.exists));
+  }
+
+  /**
+   * New invite code for the current user's organization (replaces the previous one)
+   */
+  createInviteCode(): Observable<InviteCodeResponse> {
+    return this.http.post<InviteCodeResponse>(`${environment.apiUrl}/tenant/invite-code`, {});
   }
 
   /**

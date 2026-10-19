@@ -1,5 +1,6 @@
 ﻿using Application.Contracts;
 using Application.DTOs.Auth;
+using Application.Utilities;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Exceptions;
@@ -42,20 +43,30 @@ namespace Application.Services
             {
                 await _unitOfWork.BeginTransactionAsync();
 
-                // Check if tenant exists
-                var tenantName = request.TenantName.Trim();
-                var tenant = await _tenantRepository.FindAsync(t => t.Name == tenantName);
+                var tenant = await FindTenantByNameAsync(request.TenantName);
+                var hasInviteCode = !string.IsNullOrWhiteSpace(request.InviteCode);
 
-                // Create tenant only if not found
+                // New name: create the organization. Existing name: join only with its valid invite code
                 if (tenant == null)
                 {
+                    if (hasInviteCode)
+                        throw new ValidationException("Organization not found. Check the name, or leave the invite code empty to create it.");
+
                     tenant = new Tenant
                     {
-                        Name = tenantName,
+                        Name = request.TenantName,
                         IsActive = true
                     };
                     await _tenantRepository.AddAsync(tenant);
-                    await _unitOfWork.SaveChangesAsync();
+                    try
+                    {
+                        await _unitOfWork.SaveChangesAsync();
+                    }
+                    catch (ConflictException)
+                    {
+                        // Unique NormalizedName index: another registration created this name a moment ago
+                        throw new ConflictException("This organization name was just taken. Enter an invite code to join it, or choose another name.");
+                    }
 
                     _logger.LogInformation(
                         "Created new tenant '{TenantName}' for user {Email}",
@@ -64,8 +75,14 @@ namespace Application.Services
                 }
                 else
                 {
+                    if (!hasInviteCode)
+                        throw new ConflictException("This organization already exists. Enter an invite code from one of its members to join.");
+
+                    if (!tenant.IsInviteCodeValid(InviteCode.Hash(request.InviteCode!), DateTime.UtcNow))
+                        throw new ValidationException("Invalid or expired invite code.");
+
                     _logger.LogInformation(
-                        "User {Email} joining existing tenant '{TenantName}' (Id: {TenantId})",
+                        "User {Email} joining existing tenant '{TenantName}' (Id: {TenantId}) with an invite code",
                         request.Email, tenant.Name, tenant.Id
                     );
                 }
@@ -165,6 +182,17 @@ namespace Application.Services
             var token = await FindRefreshTokenAsync(refreshToken);
 
             return token != null && token.IsActive;
+        }
+
+        public async Task<OrganizationExistsResponse> OrganizationExistsAsync(string name)
+        {
+            return new OrganizationExistsResponse(await FindTenantByNameAsync(name) != null);
+        }
+
+        private Task<Tenant?> FindTenantByNameAsync(string name)
+        {
+            var normalizedName = Tenant.NormalizeName(name);
+            return _tenantRepository.FindAsync(t => t.NormalizedName == normalizedName);
         }
 
         private Task<RefreshToken?> FindRefreshTokenAsync(string refreshToken)

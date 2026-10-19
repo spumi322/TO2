@@ -19,12 +19,17 @@ using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Persistence.Repository;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Threading.RateLimiting;
 using TO2.Hubs;
+using TO2.RateLimiting;
 using TO2.SignalR;
 using webAPI.Middleware;
 
@@ -79,6 +84,7 @@ namespace TO2
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IIdentityService, IdentityService>();
             builder.Services.AddScoped<ITokenService, JwtTokenService>();
+            builder.Services.AddScoped<ITenantInviteService, TenantInviteService>();
 
             // Workflow orchestration (delegates to the pipelines below)
             builder.Services.AddScoped<IWorkFlowService, WorkFlowService>();
@@ -189,6 +195,36 @@ namespace TO2
             builder.Services.AddAuthorization();
             builder.Services.AddHttpContextAccessor();
 
+            // Client IP behind Render's proxy: the last X-Forwarded-For entry (the one the proxy appended)
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor;
+                options.ForwardLimit = 1;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+
+            // Rate limiting: 10 requests per minute per client IP on the anonymous auth endpoints
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                options.AddPolicy(RateLimitPolicies.Auth, httpContext =>
+                    RateLimitPartition.GetFixedWindowLimiter(
+                        httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                        _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 10,
+                            Window = TimeSpan.FromMinutes(1)
+                        }));
+                options.OnRejected = (context, cancellationToken) =>
+                    new ValueTask(context.HttpContext.Response.WriteAsJsonAsync(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status429TooManyRequests,
+                        Title = "Too Many Requests",
+                        Detail = "Too many attempts. Try again in a minute."
+                    }, cancellationToken));
+            });
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
@@ -197,8 +233,10 @@ namespace TO2
                 db.Database.Migrate();
             }
 
+            app.UseForwardedHeaders();
             app.UseExceptionHandler();
             app.UseCors("AllowFrontend");
+            app.UseRateLimiter();
 
             // Enable WebSockets for SignalR
             app.UseWebSockets();

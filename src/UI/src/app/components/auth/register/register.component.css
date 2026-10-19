@@ -7,10 +7,10 @@
   justify-content: center;
   align-items: flex-start;
   min-height: 100vh;
-  padding-top: 10vh;
+  padding-top: 6vh;
   padding-left: 3rem;
   padding-right: 3rem;
-  padding-bottom: 3rem;
+  padding-bottom: 1.5rem;
   background-color: var(--bg-dark);
 }
 
@@ -22,14 +22,14 @@
   width: 100%;
   max-width: 500px;
   min-height: 580px;
-  padding: 3rem 2.5rem;
+  padding: 2rem 2.5rem;
 }
 
 /* Toggle Buttons */
 .auth-toggle {
   display: flex;
   gap: 0;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   background: var(--bg-dark);
   border-radius: var(--border-radius);
   padding: 4px;
@@ -61,7 +61,7 @@
 
 .register-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .register-header h2 {
@@ -80,7 +80,7 @@
 .register-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .field {
@@ -111,6 +111,13 @@
 .field input[type="password"]:focus {
   border-color: var(--primary-color);
   outline: none;
+}
+
+.label-hint {
+  margin-left: 0.25rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
 }
 
 ::ng-deep .p-button {
@@ -147,7 +154,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  margin: 0.5rem 0 1rem 0;
+  margin: 0;
   background: var(--bg-dark);
   border: 1px solid var(--error-color);
   border-radius: var(--border-radius);
@@ -174,7 +181,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  margin: 0.5rem 0 1rem 0;
+  margin: 0;
   background: var(--bg-dark);
   border: 1px solid var(--success-color);
   border-radius: var(--border-radius);

@@ -10,6 +10,7 @@ import { Tournament, TournamentStateDTO, TournamentStatus, Format } from '../../
 import { FormatConfig } from '../../utils/format-config';
 import { StatusConfig } from '../../utils/status-config';
 import { TournamentStatusLabel } from '../tournament/tournament-status-label/tournament-status-label';
+import { InviteCodeDialogComponent } from '../../shared/components/invite-code-dialog/invite-code-dialog.component';
 
 @Component({
   selector: 'app-navbar',
@@ -18,6 +19,7 @@ import { TournamentStatusLabel } from '../tournament/tournament-status-label/tou
 })
 export class NavbarComponent implements OnInit, OnDestroy {
   @ViewChild('userMenu') userMenu!: Menu;
+  @ViewChild('inviteDialog') inviteDialog!: InviteCodeDialogComponent;
 
   items: MenuItem[] = [];
   userMenuItems: MenuItem[] = [];
@@ -73,7 +75,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private setupUserMenu(): void {
     this.userMenuItems = [
       {
+        label: 'Invite code',
+        icon: 'pi pi-user-plus',
+        command: () => this.inviteDialog.open(this.currentUser?.tenantName ?? '')
+      },
+      {
         label: 'Logout',
+        icon: 'pi pi-sign-out',
         command: () => {
           this.authService.logout();
         }

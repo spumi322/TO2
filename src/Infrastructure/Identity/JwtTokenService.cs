@@ -1,5 +1,6 @@
 using Application.Contracts;
 using Application.DTOs.Auth;
+using Application.Utilities;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Microsoft.Extensions.Options;
@@ -59,10 +60,9 @@ namespace Infrastructure.Identity
             });
         }
 
-        // SHA-256 (no salt/slow hash needed: the token is 512 random bits), uppercase hex
         public string HashRefreshToken(string token)
         {
-            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+            return SecretHasher.Sha256Hex(token);
         }
     }
 }

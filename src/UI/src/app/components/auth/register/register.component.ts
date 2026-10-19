@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject, Subscription, catchError, debounceTime, distinctUntilChanged, map, of, switchMap } from 'rxjs';
 import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
@@ -7,19 +8,42 @@ import { AuthService } from '../../../services/auth/auth.service';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.css']
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit, OnDestroy {
   userName: string = '';
   email: string = '';
   password: string = '';
   tenantName: string = '';
+  inviteCode: string = '';
+  // True when the typed organization exists: joining it needs an invite code
+  organizationExists: boolean = false;
   errorMessage: string = '';
   successMessage: string = '';
   isLoading: boolean = false;
+
+  private tenantNameChanges = new Subject<string>();
+  private tenantNameSubscription?: Subscription;
 
   constructor(
     private authService: AuthService,
     private router: Router
   ) {}
+
+  ngOnInit(): void {
+    this.tenantNameSubscription = this.tenantNameChanges.pipe(
+      map(name => name.trim()),
+      debounceTime(400),
+      distinctUntilChanged(),
+      switchMap(name => name ? this.authService.organizationExists(name).pipe(catchError(() => of(false))) : of(false))
+    ).subscribe(exists => this.organizationExists = exists);
+  }
+
+  ngOnDestroy(): void {
+    this.tenantNameSubscription?.unsubscribe();
+  }
+
+  onTenantNameChange(name: string): void {
+    this.tenantNameChanges.next(name);
+  }
 
   onSubmit(): void {
     if (!this.userName || !this.email || !this.password || !this.tenantName) {
@@ -27,11 +51,17 @@ export class RegisterComponent {
       return;
     }
 
+    if (this.organizationExists && !this.inviteCode.trim()) {
+      this.errorMessage = 'This organization already exists. Enter an invite code from one of its members.';
+      return;
+    }
+
     this.isLoading = true;
     this.errorMessage = '';
     this.successMessage = '';
 
-    this.authService.register(this.userName, this.email, this.password, this.tenantName).subscribe({
+    const inviteCode = this.organizationExists ? this.inviteCode.trim() : undefined;
+    this.authService.register(this.userName, this.email, this.password, this.tenantName, inviteCode).subscribe({
       next: () => {
         this.isLoading = false;
         this.successMessage = 'Registration successful! Redirecting...';
@@ -72,6 +102,12 @@ export class RegisterComponent {
         // Set the error message with status code specific handling
         if (error.status === 409) {
           this.errorMessage = errorMsg || 'This email or username is already in use.';
+          // Name taken (also by a registration a moment ago): show the invite code field
+          if (errorMsg.toLowerCase().includes('invite code')) {
+            this.organizationExists = true;
+          }
+        } else if (error.status === 429) {
+          this.errorMessage = errorMsg || 'Too many attempts. Try again in a minute.';
         } else if (error.status === 400) {
           this.errorMessage = errorMsg || 'Invalid registration information. Please check your inputs.';
         } else if (error.status === 0) {

@@ -36,7 +36,7 @@
       </div>
 
       <!-- Kept outside .tournament-info (position: relative) so the popup positions correctly -->
-      <p-menu #tournamentMenu [model]="tournamentMenuItems" [popup]="true" styleClass="tournament-actions-menu"></p-menu>
+      <p-menu #tournamentMenu [model]="tournamentMenuItems" [popup]="true" styleClass="navbar-menu"></p-menu>
     </div>
 
     <!-- Right: User Info & Actions -->
@@ -101,7 +101,8 @@
           </div>
           <i class="pi pi-angle-down"></i>
         </div>
-        <p-menu #userMenu [model]="userMenuItems" [popup]="true"></p-menu>
+        <p-menu #userMenu [model]="userMenuItems" [popup]="true" styleClass="navbar-menu"></p-menu>
+        <app-invite-code-dialog #inviteDialog></app-invite-code-dialog>
       </ng-container>
 
       <!-- Guest User View -->

@@ -2,6 +2,9 @@
 using Application.DTOs.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using System.ComponentModel.DataAnnotations;
+using TO2.RateLimiting;
 
 namespace TO2.Controllers
 {
@@ -23,6 +26,7 @@ namespace TO2.Controllers
         /// </summary>
         [HttpPost("register")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
         {
             var response = await _authService.RegisterAsync(request);
@@ -30,10 +34,22 @@ namespace TO2.Controllers
         }
 
         /// <summary>
+        /// Whether an organization name is taken (joining it needs an invite code)
+        /// </summary>
+        [HttpGet("organizations/exists")]
+        [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
+        public async Task<ActionResult<OrganizationExistsResponse>> OrganizationExists([FromQuery][Required][MaxLength(100)] string name)
+        {
+            return Ok(await _authService.OrganizationExistsAsync(name));
+        }
+
+        /// <summary>
         /// Login with email and password
         /// </summary>
         [HttpPost("login")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
         {
             var response = await _authService.LoginAsync(request);

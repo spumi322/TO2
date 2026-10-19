@@ -58,11 +58,24 @@
           id="tenantName"
           type="text"
           [(ngModel)]="tenantName"
+          (ngModelChange)="onTenantNameChange($event)"
           name="tenantName"
           placeholder="Enter organization name to join or create"
           required
         />
       </div>
+
+      <div class="field" *ngIf="organizationExists">
+        <label for="inviteCode">Invite Code <span class="label-hint">organization exists, ask a member for a code</span></label>
+        <input
+          id="inviteCode"
+          type="text"
+          [(ngModel)]="inviteCode"
+          name="inviteCode"
+          placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
+          autocomplete="off"
+          required
+        />      </div>
 
       <!-- Error Message -->
       <div *ngIf="errorMessage" class="custom-error-message">

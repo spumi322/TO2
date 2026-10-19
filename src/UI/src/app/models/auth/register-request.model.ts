@@ -3,4 +3,5 @@ export interface RegisterRequest {
   email: string;
   password: string;
   tenantName: string;
+  inviteCode?: string;  // required only to join an existing organization
 }

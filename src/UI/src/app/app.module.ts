@@ -53,6 +53,7 @@ import { MessageService } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
 import { LandingComponent } from './components/landing/landing.component';
 import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confirm-dialog.component';
+import { InviteCodeDialogComponent } from './shared/components/invite-code-dialog/invite-code-dialog.component';
 import { TeamBadgeComponent } from './shared/components/team-badge/team-badge.component';
 import { TeamManagementComponent } from './components/tournament/team-management/team-management.component';
 
@@ -77,6 +78,7 @@ import { TeamManagementComponent } from './components/tournament/team-management
     RegisterComponent,
     LandingComponent,
     ConfirmDialogComponent,
+    InviteCodeDialogComponent,
     TeamBadgeComponent,
     TeamManagementComponent
   ],

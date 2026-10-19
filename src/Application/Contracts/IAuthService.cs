@@ -9,5 +9,6 @@ namespace Application.Contracts
         Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest request);
         Task RevokeTokenAsync(string refreshToken);
         Task<bool> ValidateRefreshTokenAsync(string refreshToken);
+        Task<OrganizationExistsResponse> OrganizationExistsAsync(string name);
     }
 }

@@ -89,14 +89,14 @@ body {
   color: var(--text-muted);
 }
 
-/* Navbar tournament actions menu */
-.p-menu.tournament-actions-menu {
+/* Navbar dropdown menus (tournament actions, user menu) */
+.p-menu.navbar-menu {
   min-width: 12rem;
   padding: 0.25rem;
   border-radius: var(--border-radius);
 }
 
-.p-menu.tournament-actions-menu .p-menuitem-link {
+.p-menu.navbar-menu .p-menuitem-link {
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -105,7 +105,7 @@ body {
   font-size: 0.9rem;
 }
 
-.p-menu.tournament-actions-menu .menu-item-danger .p-menuitem-link:hover {
+.p-menu.navbar-menu .menu-item-danger .p-menuitem-link:hover {
   background: rgba(244, 67, 54, 0.12);
 }
 

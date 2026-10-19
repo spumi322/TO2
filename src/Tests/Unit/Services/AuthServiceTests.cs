@@ -1,5 +1,6 @@
 using Application.Contracts;
 using Application.DTOs.Auth;
+using Application.Utilities;
 using Application.Services;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -22,6 +23,7 @@ namespace Tests.Unit.Services
     public class AuthServiceTests : IntegrationTestBase
     {
         private const string Password = "Secret1";
+        private const string Code = "ABCD-EFGH-JKLM-NPQR-STUV-WXYZ";
 
         private readonly Mock<IIdentityService> _identityMock = new();
         private readonly JwtTokenService _tokenService;
@@ -56,9 +58,11 @@ namespace Tests.Unit.Services
                 });
         }
 
-        private async Task<Tenant> SeedTenantAsync(string name, bool isActive = true)
+        private async Task<Tenant> SeedTenantAsync(string name, bool isActive = true, string? inviteCode = null, DateTime? codeExpiresAt = null)
         {
             var tenant = new Tenant { Name = name, IsActive = isActive };
+            if (inviteCode != null)
+                tenant.SetInviteCode(InviteCode.Hash(inviteCode), codeExpiresAt ?? DateTime.UtcNow.AddHours(1));
             DbContext.Tenants.Add(tenant);
             await DbContext.SaveChangesAsync();
             return tenant;
@@ -78,7 +82,8 @@ namespace Tests.Unit.Services
 
         private string Hash(string token) => _tokenService.HashRefreshToken(token);
 
-        private static RegisterRequest Register(string tenantName) => new("ann", "ann@test.com", Password, tenantName);
+        private static RegisterRequest Register(string tenantName, string? inviteCode = null, string email = "ann@test.com") =>
+            new("ann", email, Password, tenantName, inviteCode);
 
         [Fact]
         public async Task Register_CreatesTenant_When_NameIsNew()
@@ -94,14 +99,91 @@ namespace Tests.Unit.Services
         }
 
         [Fact]
-        public async Task Register_JoinsExistingTenant_When_NameExists()
+        public async Task Register_JoinsExistingTenant_When_InviteCodeValid()
         {
-            var existing = await SeedTenantAsync("Org1");
+            var existing = await SeedTenantAsync("Org1", inviteCode: Code);
 
-            var response = await _service.RegisterAsync(Register("Org1"));
+            // Code typed without dashes and in lowercase still matches
+            var response = await _service.RegisterAsync(Register("Org1", Code.Replace("-", "").ToLowerInvariant()));
 
             response.TenantId.Should().Be(existing.Id);
             (await DbContext.Tenants.CountAsync()).Should().Be(1);
+        }
+
+        [Fact]
+        public async Task Register_InviteCodeIsReusable_UntilItExpires()
+        {
+            var existing = await SeedTenantAsync("Org1", inviteCode: Code);
+
+            var first = await _service.RegisterAsync(Register("Org1", Code, "ann@test.com"));
+            var second = await _service.RegisterAsync(Register("Org1", Code, "bob@test.com"));
+
+            first.TenantId.Should().Be(existing.Id);
+            second.TenantId.Should().Be(existing.Id);
+        }
+
+        [Theory]
+        [InlineData("Org1")]
+        [InlineData("  org1 ")]
+        public async Task Register_ThrowsConflict_When_NameExistsAndNoInviteCode(string typedName)
+        {
+            await SeedTenantAsync("Org1", inviteCode: Code);
+
+            var act = () => _service.RegisterAsync(Register(typedName));
+
+            await act.Should().ThrowAsync<ConflictException>().WithMessage("*invite code*");
+            DbContext.ChangeTracker.Clear();
+            (await DbContext.Tenants.CountAsync()).Should().Be(1);
+        }
+
+        [Fact]
+        public async Task Register_ThrowsValidation_When_InviteCodeWrong()
+        {
+            await SeedTenantAsync("Org1", inviteCode: Code);
+
+            var act = () => _service.RegisterAsync(Register("Org1", "ZZZZ-ZZZZ-ZZZZ-ZZZZ-ZZZZ-ZZZZ"));
+
+            await act.Should().ThrowAsync<ValidationException>().WithMessage("Invalid or expired invite code.");
+        }
+
+        [Fact]
+        public async Task Register_ThrowsValidation_When_InviteCodeExpired()
+        {
+            await SeedTenantAsync("Org1", inviteCode: Code, codeExpiresAt: DateTime.UtcNow.AddMinutes(-1));
+
+            var act = () => _service.RegisterAsync(Register("Org1", Code));
+
+            await act.Should().ThrowAsync<ValidationException>().WithMessage("Invalid or expired invite code.");
+        }
+
+        [Fact]
+        public async Task Register_ThrowsValidation_When_InviteCodeBelongsToOtherOrganization()
+        {
+            await SeedTenantAsync("Org1", inviteCode: Code);
+            await SeedTenantAsync("Org2", inviteCode: "QQQQ-QQQQ-QQQQ-QQQQ-QQQQ-QQQQ");
+
+            var act = () => _service.RegisterAsync(Register("Org2", Code));
+
+            await act.Should().ThrowAsync<ValidationException>().WithMessage("Invalid or expired invite code.");
+        }
+
+        [Fact]
+        public async Task Register_ThrowsValidation_AndCreatesNoTenant_When_InviteCodeForUnknownOrganization()
+        {
+            var act = () => _service.RegisterAsync(Register("Org1", Code));
+
+            await act.Should().ThrowAsync<ValidationException>().WithMessage("Organization not found*");
+            DbContext.ChangeTracker.Clear();
+            (await DbContext.Tenants.CountAsync()).Should().Be(0);
+        }
+
+        [Fact]
+        public async Task OrganizationExists_IgnoresCaseAndSpaces()
+        {
+            await SeedTenantAsync("Org1");
+
+            (await _service.OrganizationExistsAsync(" ORG1 ")).Exists.Should().BeTrue();
+            (await _service.OrganizationExistsAsync("Org2")).Exists.Should().BeFalse();
         }
 
         [Fact]
@@ -118,9 +200,9 @@ namespace Tests.Unit.Services
         [Fact]
         public async Task Register_ThrowsValidation_AndCreatesNoUser_When_TenantInactive()
         {
-            await SeedTenantAsync("Org1", isActive: false);
+            await SeedTenantAsync("Org1", isActive: false, inviteCode: Code);
 
-            var act = () => _service.RegisterAsync(Register("Org1"));
+            var act = () => _service.RegisterAsync(Register("Org1", Code));
 
             await act.Should().ThrowAsync<ValidationException>();
             _identityMock.Verify(x => x.CreateUserAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<long>()), Times.Never);
