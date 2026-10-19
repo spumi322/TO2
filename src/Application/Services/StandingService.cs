@@ -92,7 +92,7 @@ namespace Application.Services
             return p;
         }
 
-        // Group progress
+        // Standing progress
 
         public async Task<bool> IsGroupFinished(long standingId)
         {
@@ -109,7 +109,7 @@ namespace Application.Services
             return standingFinished;
         }
 
-        public async Task MarkGroupAsFinished(long standingId)
+        public async Task MarkStandingAsFinished(long standingId)
         {
             var standing = await _standingRepository.GetByIdAsync(standingId)
                 ?? throw new NotFoundException("Standing", standingId);

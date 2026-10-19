@@ -45,7 +45,7 @@ namespace Application.Pipelines.GameResult.Strategies
             _logger.LogInformation("Standing {StandingId} finished", standingId);
 
             // Mark the group as finished
-            await _standingService.MarkGroupAsFinished(standingId);
+            await _standingService.MarkStandingAsFinished(standingId);
 
             // Load tournament format once (needed for both early-return and all-groups-finished paths)
             var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)

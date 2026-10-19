@@ -35,13 +35,13 @@ namespace Application.Pipelines.GameResult.Steps
 
             // Get standing to determine type
             var standing = await _standingRepository.GetByIdAsync(standingId)
-                ?? throw new Exception($"Standing {standingId} not found");
+                ?? throw new InvalidOperationException($"Standing {standingId} not found");
 
             context.StandingType = standing.StandingType;
 
             // Select appropriate strategy
             var strategy = _strategies.FirstOrDefault(s => s.StandingType == standing.StandingType)
-                ?? throw new Exception($"No strategy found for standing type: {standing.StandingType}");
+                ?? throw new InvalidOperationException($"No strategy found for standing type: {standing.StandingType}");
 
             // Execute strategy to progress the standing
             var result = await strategy.ProgressStandingAsync(tournamentId, standingId, matchId, winnerId);

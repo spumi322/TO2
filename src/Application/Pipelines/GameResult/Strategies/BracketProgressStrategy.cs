@@ -15,6 +15,7 @@ namespace Application.Pipelines.GameResult.Strategies
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRepository<Match> _matchRepository;
         private readonly IGameService _gameService;
+        private readonly IStandingService _standingService;
         private readonly ILogger<BracketProgressStrategy> _logger;
 
         public StandingType StandingType => StandingType.Bracket;
@@ -23,10 +24,12 @@ namespace Application.Pipelines.GameResult.Strategies
             IRepository<Match> matchRepository,
             IUnitOfWork unitOfWork,
             IGameService gameService,
+            IStandingService standingService,
             ILogger<BracketProgressStrategy> logger)
         {
             _matchRepository = matchRepository;
             _gameService = gameService;
+            _standingService = standingService;
             _logger = logger;
             _unitOfWork = unitOfWork;
         }
@@ -38,12 +41,14 @@ namespace Application.Pipelines.GameResult.Strategies
 
             if (isFinal)
             {
-                // Tournament finished - return result to trigger state transition
+                // Tournament finished - mark the bracket finished, return result to trigger state transition
+                await _standingService.MarkStandingAsFinished(standingId);
                 _logger.LogInformation("Final match completed. Tournament will be marked as finished.");
 
                 return new StandingProgressResult(
                     shouldContinuePipeline: true,
                     message: "Tournament finished!",
+                    standingFinished: true,
                     tournamentFinished: true,
                     newTournamentStatus: TournamentStatus.Finished
                 );
@@ -67,7 +72,7 @@ namespace Application.Pipelines.GameResult.Strategies
         private async Task<bool> IsFinalMatch(long matchId, long standingId)
         {
             var match = await _matchRepository.GetByIdAsync(matchId)
-                ?? throw new Exception($"Match {matchId} not found");
+                ?? throw new InvalidOperationException($"Match {matchId} not found");
 
             if (!match.Round.HasValue || !match.Seed.HasValue)
             {
@@ -96,11 +101,11 @@ namespace Application.Pipelines.GameResult.Strategies
         private async Task AdvanceWinnerToNextRound(long finishedMatchId, long winnerId, long standingId)
         {
             var finishedMatch = await _matchRepository.GetByIdAsync(finishedMatchId)
-                ?? throw new Exception($"Match {finishedMatchId} not found");
+                ?? throw new InvalidOperationException($"Match {finishedMatchId} not found");
 
             if (!finishedMatch.Round.HasValue || !finishedMatch.Seed.HasValue)
             {
-                throw new Exception($"Match {finishedMatchId} missing Round or Seed information");
+                throw new InvalidOperationException($"Match {finishedMatchId} missing Round or Seed information");
             }
 
             int currentRound = finishedMatch.Round.Value;

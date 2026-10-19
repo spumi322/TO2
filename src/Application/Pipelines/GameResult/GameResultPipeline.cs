@@ -177,7 +177,7 @@ namespace Application.Pipelines.GameResult
             var standing = await _standingRepository.GetByIdAsync(context.GameResult.StandingId);
             if (standing == null)
             {
-                throw new Exception($"Standing {context.GameResult.StandingId} not found");
+                throw new InvalidOperationException($"Standing {context.GameResult.StandingId} not found");
             }
 
             // Fetch the complete match details (with all games and calculated wins)

@@ -12,12 +12,12 @@ namespace Application.Contracts
         Task InitializeStandingsForTournamentAsync(Tournament tournament, int? numberOfGroups);
         Task<List<Standing>> GetStandingsAsync(long tournamentId);
 
-        // Group progress
+        // Standing progress
         /// <summary>
         /// Checks if any standings finished and marks them. Returns true if a standing was just marked finished.
         /// </summary>
         Task<bool> IsGroupFinished(long standingId);
-        Task MarkGroupAsFinished(long standingId);
+        Task MarkStandingAsFinished(long standingId);
         Task FinalizeGroupTeams(long standingId);
         /// <summary>
         /// Checks if all groups are finished. Returns true if all groups finished.
