@@ -1,6 +1,5 @@
 using Application.DTOs.Auth;
 using Domain.AggregateRoots;
-using Domain.Entities;
 
 namespace Application.Contracts
 {
@@ -15,8 +14,13 @@ namespace Application.Contracts
         AccessToken CreateAccessToken(AuthUser user, Tenant tenant);
 
         /// <summary>
-        /// New refresh token with a random value and expiry; the caller persists it.
+        /// New refresh token: random value for the client and an entity holding only its hash; the caller persists the entity.
         /// </summary>
-        RefreshToken CreateRefreshToken(long userId);
+        IssuedRefreshToken CreateRefreshToken(long userId);
+
+        /// <summary>
+        /// Hash stored in place of the refresh token value; used to look up a token the client sends.
+        /// </summary>
+        string HashRefreshToken(string token);
     }
 }

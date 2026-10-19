@@ -118,8 +118,7 @@ namespace Application.Services
 
         public async Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest request)
         {
-            var refreshToken = await _refreshTokenRepository
-                .FindAsync(rt => rt.Token == request.RefreshToken);
+            var refreshToken = await FindRefreshTokenAsync(request.RefreshToken);
 
             if (refreshToken == null || !refreshToken.IsActive)
                 throw new UnauthorizedException("Invalid or expired refresh token");
@@ -147,8 +146,7 @@ namespace Application.Services
 
         public async Task RevokeTokenAsync(string refreshToken)
         {
-            var token = await _refreshTokenRepository
-                .FindAsync(rt => rt.Token == refreshToken);
+            var token = await FindRefreshTokenAsync(refreshToken);
 
             if (token == null)
                 throw new UnauthorizedException("Invalid refresh token");
@@ -164,10 +162,15 @@ namespace Application.Services
 
         public async Task<bool> ValidateRefreshTokenAsync(string refreshToken)
         {
-            var token = await _refreshTokenRepository
-                .FindAsync(rt => rt.Token == refreshToken);
+            var token = await FindRefreshTokenAsync(refreshToken);
 
             return token != null && token.IsActive;
+        }
+
+        private Task<RefreshToken?> FindRefreshTokenAsync(string refreshToken)
+        {
+            var tokenHash = _tokenService.HashRefreshToken(refreshToken);
+            return _refreshTokenRepository.FindAsync(rt => rt.TokenHash == tokenHash);
         }
 
         private async Task<AuthResponse> GenerateAuthResponseAsync(AuthUser user, Tenant tenant)
@@ -175,7 +178,7 @@ namespace Application.Services
             var accessToken = _tokenService.CreateAccessToken(user, tenant);
 
             var refreshToken = _tokenService.CreateRefreshToken(user.Id);
-            await _refreshTokenRepository.AddAsync(refreshToken);
+            await _refreshTokenRepository.AddAsync(refreshToken.Entity);
             await _unitOfWork.SaveChangesAsync();
 
             return new AuthResponse(

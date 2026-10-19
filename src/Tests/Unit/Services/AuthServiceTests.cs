@@ -24,11 +24,12 @@ namespace Tests.Unit.Services
         private const string Password = "Secret1";
 
         private readonly Mock<IIdentityService> _identityMock = new();
+        private readonly JwtTokenService _tokenService;
         private readonly AuthService _service;
 
         public AuthServiceTests()
         {
-            var tokenService = new JwtTokenService(Options.Create(new JwtSettings
+            _tokenService = new JwtTokenService(Options.Create(new JwtSettings
             {
                 SecretKey = "test-secret-key-that-is-long-enough-for-hmac-sha256",
                 Issuer = "TO2",
@@ -37,7 +38,7 @@ namespace Tests.Unit.Services
 
             _service = new AuthService(
                 _identityMock.Object,
-                tokenService,
+                _tokenService,
                 new Repository<Tenant>(DbContext),
                 new Repository<RefreshToken>(DbContext),
                 new UnitOfWork(DbContext),
@@ -75,6 +76,8 @@ namespace Tests.Unit.Services
             return authUser;
         }
 
+        private string Hash(string token) => _tokenService.HashRefreshToken(token);
+
         private static RegisterRequest Register(string tenantName) => new("ann", "ann@test.com", Password, tenantName);
 
         [Fact]
@@ -87,7 +90,7 @@ namespace Tests.Unit.Services
             tenant.Name.Should().Be("Org1");
             response.TenantId.Should().Be(tenant.Id);
             response.AccessToken.Should().NotBeNullOrEmpty();
-            (await DbContext.RefreshTokens.SingleAsync()).Token.Should().Be(response.RefreshToken);
+            (await DbContext.RefreshTokens.SingleAsync()).TokenHash.Should().Be(Hash(response.RefreshToken));
         }
 
         [Fact]
@@ -151,6 +154,19 @@ namespace Tests.Unit.Services
         }
 
         [Fact]
+        public async Task Login_StoresOnlyTokenHash()
+        {
+            var tenant = await SeedTenantAsync("Org1");
+            var user = await SeedUserAsync(tenant);
+
+            var response = await _service.LoginAsync(new LoginRequest(user.Email, Password));
+
+            var stored = await DbContext.RefreshTokens.SingleAsync();
+            stored.TokenHash.Should().NotBe(response.RefreshToken);
+            stored.TokenHash.Should().Be(Hash(response.RefreshToken));
+        }
+
+        [Fact]
         public async Task Login_ThrowsUnauthorized_When_CredentialsInvalid()
         {
             var act = () => _service.LoginAsync(new LoginRequest("ann@test.com", "wrong"));
@@ -180,8 +196,8 @@ namespace Tests.Unit.Services
 
             refreshed.RefreshToken.Should().NotBe(login.RefreshToken);
             DbContext.ChangeTracker.Clear();
-            (await DbContext.RefreshTokens.SingleAsync(t => t.Token == login.RefreshToken)).IsRevoked.Should().BeTrue();
-            (await DbContext.RefreshTokens.SingleAsync(t => t.Token == refreshed.RefreshToken)).IsActive.Should().BeTrue();
+            (await DbContext.RefreshTokens.SingleAsync(t => t.TokenHash == Hash(login.RefreshToken))).IsRevoked.Should().BeTrue();
+            (await DbContext.RefreshTokens.SingleAsync(t => t.TokenHash == Hash(refreshed.RefreshToken))).IsActive.Should().BeTrue();
         }
 
         [Fact]

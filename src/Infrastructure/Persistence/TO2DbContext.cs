@@ -94,7 +94,8 @@ namespace Infrastructure.Persistence
             modelBuilder.Entity<RefreshToken>(entity =>
             {
                 entity.HasKey(rt => rt.Id);
-                entity.Property(rt => rt.Token).IsRequired();
+                entity.Property(rt => rt.TokenHash).IsRequired().HasMaxLength(64);
+                entity.HasIndex(rt => rt.TokenHash).IsUnique();
                 entity.HasOne(rt => rt.User)
                       .WithMany(u => u.RefreshTokens)
                       .HasForeignKey(rt => rt.UserId)

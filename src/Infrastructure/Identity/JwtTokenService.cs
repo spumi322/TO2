@@ -47,14 +47,22 @@ namespace Infrastructure.Identity
             return new AccessToken(new JwtSecurityTokenHandler().WriteToken(token), expiresAt);
         }
 
-        public RefreshToken CreateRefreshToken(long userId)
+        public IssuedRefreshToken CreateRefreshToken(long userId)
         {
-            return new RefreshToken
+            var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+            return new IssuedRefreshToken(token, new RefreshToken
             {
-                Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
+                TokenHash = HashRefreshToken(token),
                 Expires = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpirationDays),
                 UserId = userId
-            };
+            });
+        }
+
+        // SHA-256 (no salt/slow hash needed: the token is 512 random bits), uppercase hex
+        public string HashRefreshToken(string token)
+        {
+            return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
         }
     }
 }

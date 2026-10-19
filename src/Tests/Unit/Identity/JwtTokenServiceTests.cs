@@ -49,9 +49,19 @@ namespace Tests.Unit.Identity
             var second = _service.CreateRefreshToken(5);
 
             first.Token.Should().NotBe(second.Token);
-            first.UserId.Should().Be(5);
-            first.Expires.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromSeconds(5));
-            first.IsActive.Should().BeTrue();
+            first.Entity.UserId.Should().Be(5);
+            first.Entity.Expires.Should().BeCloseTo(DateTime.UtcNow.AddDays(7), TimeSpan.FromSeconds(5));
+            first.Entity.IsActive.Should().BeTrue();
+        }
+
+        [Fact]
+        public void CreateRefreshToken_EntityHoldsHashNotValue()
+        {
+            var issued = _service.CreateRefreshToken(5);
+
+            issued.Entity.TokenHash.Should().NotBe(issued.Token);
+            issued.Entity.TokenHash.Should().Be(_service.HashRefreshToken(issued.Token));
+            issued.Entity.TokenHash.Should().HaveLength(64);
         }
     }
 }
