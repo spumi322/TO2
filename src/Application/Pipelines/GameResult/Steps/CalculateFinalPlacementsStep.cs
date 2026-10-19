@@ -51,8 +51,8 @@ namespace Application.Pipelines.GameResult.Steps
             // Store in context
             context.FinalStandings = finalStandings;
 
-            Logger.LogInformation("Final placements calculated and saved for tournament {TournamentId}",
-                tournamentId);
+            Logger.LogInformation("Stored {PlacementCount} final placements for tournament {TournamentId}",
+                placements.Count, tournamentId);
 
             // Update message
             if (context.MatchWinnerId.HasValue)

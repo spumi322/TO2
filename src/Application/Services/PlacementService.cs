@@ -39,8 +39,6 @@ namespace Application.Services
 
         public async Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateBracketPlacements(long standingId)
         {
-            _logger.LogInformation($"=== Calculating bracket placements for standing {standingId} ===");
-
             var placements = new List<(long TeamId, int Placement, int? EliminatedInRound)>();
 
             // Get all matches for this bracket
@@ -49,20 +47,18 @@ namespace Application.Services
 
             if (!matches.Any())
             {
-                _logger.LogWarning("No matches found for standing");
+                _logger.LogWarning("No matches found for bracket standing {StandingId}, no placements calculated", standingId);
                 return placements;
             }
 
             // Find max round (final)
             int maxRound = matches.Max(m => m.Round ?? 0);
-            _logger.LogInformation($"Max round: {maxRound}");
 
             // Champion = winner of the final
             var finalMatch = matches.FirstOrDefault(m => m.Round == maxRound && m.Seed == 1);
             if (finalMatch?.WinnerId != null)
             {
                 placements.Add((finalMatch.WinnerId.Value, 1, null));
-                _logger.LogInformation($"  Team {finalMatch.WinnerId} = 1st place (Champion)");
             }
 
             // Teams eliminated in the same round share a rank:
@@ -75,18 +71,14 @@ namespace Application.Services
                 foreach (var match in roundMatches.Where(m => m.LoserId.HasValue))
                 {
                     placements.Add((match.LoserId!.Value, rank, round));
-                    _logger.LogInformation($"  Team {match.LoserId} = {rank} place (eliminated R{round})");
                 }
             }
 
-            _logger.LogInformation($"Calculated {placements.Count} final placements");
             return placements;
         }
 
         public async Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateGroupOnlyPlacements(long tournamentId)
         {
-            _logger.LogInformation($"=== Calculating group-only placements for tournament {tournamentId} ===");
-
             var placements = new List<(long TeamId, int Placement, int? EliminatedInRound)>();
 
             var standings = await _standingRepository.FindAllAsync(s => s.TournamentId == tournamentId);
@@ -94,23 +86,11 @@ namespace Application.Services
 
             foreach (var group in groupStandings)
             {
+                // Placement = position in the group (team statuses were already set when the group finished)
                 var teams = GroupRanking.Rank(await _groupRepository.GetByStandingIdAsync(group.Id));
-                int position = 1;
-
-                foreach (var team in teams)
-                {
-                    placements.Add((team.TeamId, position, null));
-
-                    // Set group team status: 1st = Champion, rest = Eliminated
-                    team.Status = position == 1 ? TeamStatus.Champion : TeamStatus.Eliminated;
-                    team.Eliminated = position != 1;
-
-                    _logger.LogInformation($"  {group.Name}: Team {team.TeamName} = position {position}, status {team.Status}");
-                    position++;
-                }
+                placements.AddRange(teams.Select((team, index) => (team.TeamId, index + 1, (int?)null)));
             }
 
-            _logger.LogInformation($"Calculated {placements.Count} group-only placements");
             return placements;
         }
 
@@ -135,7 +115,6 @@ namespace Application.Services
                 foreach (var x in samePosition)
                 {
                     placements.Add((x.Entry.TeamId, rank, null));
-                    _logger.LogInformation($"  Team {x.Entry.TeamId} = {rank} place (group position {samePosition.Key})");
                 }
 
                 rank += samePosition.Count();
@@ -146,33 +125,24 @@ namespace Application.Services
 
         public async Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements)
         {
-            _logger.LogInformation($"=== Storing final results for tournament {tournamentId} ===");
-
             var now = DateTime.UtcNow;
 
             var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(tt => tt.TournamentId == tournamentId);
 
             foreach (var placement in placements)
             {
+                var tournamentTeam = tournamentTeams.FirstOrDefault(tt => tt.TeamId == placement.TeamId);
+
+                if (tournamentTeam == null)
                 {
-                    // Get TournamentTeam record
-                    var tournamentTeam = tournamentTeams.FirstOrDefault(tt => tt.TeamId == placement.TeamId);
-
-                    if (tournamentTeam == null)
-                    {
-                        _logger.LogWarning($"TournamentTeam not found for Team {placement.TeamId} in Tournament {tournamentId}");
-                        continue;
-                    }
-
-                    // Update final results
-                    tournamentTeam.FinalPlacement = placement.Placement;
-                    tournamentTeam.EliminatedInRound = placement.EliminatedInRound;
-                    tournamentTeam.ResultFinalizedAt = now;
-
-                    _logger.LogInformation($"  Team {placement.TeamId}: Placement {placement}, Eliminated Round {placement.EliminatedInRound.ToString() ?? "N/A"}");
+                    _logger.LogWarning("Team {TeamId} is not registered in tournament {TournamentId}, placement {Placement} not stored",
+                        placement.TeamId, tournamentId, placement.Placement);
+                    continue;
                 }
 
-                _logger.LogInformation($"✓ Stored {placements.Count} final results");
+                tournamentTeam.FinalPlacement = placement.Placement;
+                tournamentTeam.EliminatedInRound = placement.EliminatedInRound;
+                tournamentTeam.ResultFinalizedAt = now;
             }
         }
 
