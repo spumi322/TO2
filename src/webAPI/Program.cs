@@ -78,6 +78,7 @@ namespace TO2
             // Application Services
             builder.Services.AddScoped<ITournamentService, TournamentService>();
             builder.Services.AddScoped<IStandingService, StandingService>();
+            builder.Services.AddScoped<IPlacementService, PlacementService>();
             builder.Services.AddScoped<ITeamService, TeamService>();
             builder.Services.AddScoped<IMatchService, MatchService>();
             builder.Services.AddScoped<IGameService, GameService>();

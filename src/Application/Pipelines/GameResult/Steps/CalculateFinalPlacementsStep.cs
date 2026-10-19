@@ -11,13 +11,13 @@ namespace Application.Pipelines.GameResult.Steps
     /// </summary>
     public class CalculateFinalPlacementsStep : PipeLineBase<CalculateFinalPlacementsStep>
     {
-        private readonly IStandingService _standingService;
+        private readonly IPlacementService _placementService;
 
         public CalculateFinalPlacementsStep(
             ILogger<CalculateFinalPlacementsStep> logger,
-            IStandingService standingService) : base(logger)
+            IPlacementService placementService) : base(logger)
         {
-            _standingService = standingService;
+            _placementService = placementService;
         }
 
         protected override async Task<bool> ExecuteStepAsync(GameResultContext context)
@@ -33,14 +33,14 @@ namespace Application.Pipelines.GameResult.Steps
 
             // Calculate final placements based on format
             var placements = context.Tournament.Format == Domain.Enums.Format.GroupsOnly
-                ? await _standingService.CalculateGroupOnlyPlacements(tournamentId)
-                : await _standingService.CalculateBracketPlacements(standingId);
+                ? await _placementService.CalculateGroupOnlyPlacements(tournamentId)
+                : await _placementService.CalculateBracketPlacements(standingId);
 
             // Save final results to database
-            await _standingService.SetFinalResults(tournamentId, placements);
+            await _placementService.SetFinalResults(tournamentId, placements);
 
             // Get final results for response
-            var finalStandings = await _standingService.GetFinalResultsAsync(tournamentId);
+            var finalStandings = await _placementService.GetFinalResultsAsync(tournamentId);
 
             // Store in context
             context.FinalStandings = finalStandings;

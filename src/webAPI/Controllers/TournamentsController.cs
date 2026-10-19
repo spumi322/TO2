@@ -11,16 +11,16 @@ namespace TO2.Controllers
     public class TournamentsController : ControllerBase
     {
         private readonly ITournamentService _tournamentService;
-        private readonly IStandingService _standingService;
+        private readonly IPlacementService _placementService;
         private readonly IWorkFlowService _workFlowService;
 
         public TournamentsController(
             ITournamentService tournamentService,
-            IStandingService standingService,
+            IPlacementService placementService,
             IWorkFlowService workFlowService)
         {
             _tournamentService = tournamentService;
-            _standingService = standingService;
+            _placementService = placementService;
             _workFlowService = workFlowService;
         }
 
@@ -57,7 +57,7 @@ namespace TO2.Controllers
         [HttpGet("{id}/final-standings")]
         public async Task<IActionResult> GetFinalStandings(long id)
         {
-            return Ok(await _standingService.GetFinalResultsAsync(id));
+            return Ok(await _placementService.GetFinalResultsAsync(id));
         }
 
         // POST: api/Tournament

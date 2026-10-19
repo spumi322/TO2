@@ -23,8 +23,6 @@ namespace Application.Services
         private readonly IFormatService _formatService;
         private readonly ILogger<StandingService> _logger;
 
-        private readonly IUnitOfWork _unitOfWork;
-
         public StandingService(IStandingRepository standingRepository,
                                IMatchRepository matchRepository,
                                IRepository<Tournament> tournamentRepository,
@@ -32,8 +30,7 @@ namespace Application.Services
                                IRepository<Team> teamRepository,
                                IRepository<TournamentTeam> tournamentTeamRepository,
                                IFormatService formatService,
-                               ILogger<StandingService> logger,
-                               IUnitOfWork unitOfWork)
+                               ILogger<StandingService> logger)
         {
             _standingRepository = standingRepository;
             _matchRepository = matchRepository;
@@ -43,25 +40,9 @@ namespace Application.Services
             _tournamentTeamRepository = tournamentTeamRepository;
             _formatService = formatService;
             _logger = logger;
-            _unitOfWork = unitOfWork;
         }
 
-        public async Task GenerateStanding(long tournamentId, string name, StandingType type, int? teamsPerStanding)
-        {
-            var standing = new Standing(name, teamsPerStanding, type);
-            standing.TournamentId = tournamentId;
-
-            await _standingRepository.AddAsync(standing);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        private static int NextPowerOfTwo(int n)
-        {
-            if (n <= 1) return 2;
-            int p = 1;
-            while (p < n) p <<= 1;
-            return p;
-        }
+        // Setup
 
         public async Task InitializeStandingsForTournamentAsync(Tournament tournament, int? numberOfGroups)
         {
@@ -101,6 +82,16 @@ namespace Application.Services
 
             return standings.ToList();
         }
+
+        private static int NextPowerOfTwo(int n)
+        {
+            if (n <= 1) return 2;
+            int p = 1;
+            while (p < n) p <<= 1;
+            return p;
+        }
+
+        // Group progress
 
         public async Task<bool> IsGroupFinished(long standingId)
         {
@@ -156,9 +147,7 @@ namespace Application.Services
             return allGroupsFinished;
         }
 
-        private static double WinRate(GroupEntry e) =>
-            e.Wins + e.Losses == 0 ? 0.0 : (double)e.Wins / (e.Wins + e.Losses);
-
+        // Bracket entry
 
         // NOTED N+1 PROBLEM EXAMPLE, LEAVE IT FOR EDUCATIONAL PURPOSE
         // var teams = await _teamRepository.FindAllAsync(t => teamIds.Contains(t.Id));
@@ -236,270 +225,18 @@ namespace Application.Services
             return entrants;
         }
 
-        public async Task<List<TeamPlacementDTO>> GetFinalResultsAsync(long tournamentId)
+        private static double WinRate(GroupEntry e) =>
+            e.Wins + e.Losses == 0 ? 0.0 : (double)e.Wins / (e.Wins + e.Losses);
+
+        // Read models (UI)
+
+        public async Task<List<GetGroupsWithDetailsResponseDTO>> GetGroupsWithDetailsAsync(long tournamentId)
         {
-            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
-                ?? throw new NotFoundException("Tournament", tournamentId);
+            var standings = await _standingRepository.GetGroupsWithMatchesAsync(tournamentId);
 
-            if (tournament.Status != TournamentStatus.Finished)
-            {
-                return new List<TeamPlacementDTO>();
-            }
+            var entriesByStanding = (await _groupRepository.FindAllAsync(g => g.TournamentId == tournamentId)).ToLookup(e => e.StandingId);
 
-            var bracketStanding = (await GetStandingsAsync(tournamentId))
-                .FirstOrDefault(s => s.StandingType == StandingType.Bracket);
-
-            if (bracketStanding == null)
-            {
-                // No bracket (GroupsOnly) — read from stored TournamentTeam records
-                return await GetFinalResultsFromTournamentTeams(tournamentId);
-            }
-
-            // Get all bracket matches using repository
-            var allMatches = await _matchRepository.FindAllAsync(m => m.StandingId == bracketStanding.Id);
-            if (!allMatches.Any())
-            {
-                return new List<TeamPlacementDTO>();
-            }
-
-            // Extract unique team IDs from matches
-            var teamIds = allMatches
-                .SelectMany(m => new[] { m.TeamAId, m.TeamBId })
-                .Where(id => id.HasValue)
-                .Select(id => id.Value)
-                .Distinct()
-                .ToList();
-
-            // Get all teams from repository and filter to bracket participants
-            var bracketTeams = await _teamRepository.FindAllAsync(t => teamIds.Contains(t.Id));
-            var teamNameLookup = bracketTeams.ToDictionary(t => t.Id, t => t.Name);
-
-            // Calculate total rounds
-            int totalRounds = allMatches.Max(m => m.Round ?? 0);
-
-            // Find the final match (last round, seed 1)
-            var finalMatch = allMatches.FirstOrDefault(m => m.Round == totalRounds && m.Seed == 1);
-            if (finalMatch == null || !finalMatch.WinnerId.HasValue)
-            {
-                return new List<TeamPlacementDTO>();
-            }
-
-            // Build standings by determining elimination round for each team
-            var teamPlacements = new List<(long TeamId, string TeamName, int EliminationRound, TeamStatus Status)>();
-
-            foreach (var teamId in teamIds)
-            {
-                // Find the match where this team lost (if any)
-                var lossMatch = allMatches.FirstOrDefault(m => m.LoserId == teamId);
-
-                var teamName = teamNameLookup.ContainsKey(teamId) ? teamNameLookup[teamId] : "Unknown Team";
-
-                if (lossMatch == null)
-                {
-                    // No loss match = Champion
-                    teamPlacements.Add((teamId, teamName, totalRounds + 1, TeamStatus.Champion));
-                }
-                else
-                {
-                    // Team was eliminated in the round they lost
-                    int eliminationRound = lossMatch.Round ?? 0;
-                    teamPlacements.Add((teamId, teamName, eliminationRound, TeamStatus.Eliminated));
-                }
-            }
-
-            // Sort by elimination round (higher = better placement)
-            // Then by TeamId for tie-breaking within same round
-            var sortedTeams = teamPlacements
-                .OrderByDescending(t => t.EliminationRound)
-                .ThenBy(t => t.TeamId)
-                .ToList();
-
-            // Assign placements with tied ranks
-            var standings = new List<TeamPlacementDTO>();
-            int currentPlacement = 1;
-            int? lastEliminationRound = null;
-            int teamsAtCurrentRank = 0;
-
-            foreach (var team in sortedTeams)
-            {
-                if (lastEliminationRound.HasValue && team.EliminationRound < lastEliminationRound.Value)
-                {
-                    // New elimination round = new placement (skip tied ranks)
-                    currentPlacement += teamsAtCurrentRank;
-                    teamsAtCurrentRank = 0;
-                }
-
-                standings.Add(new TeamPlacementDTO(
-                    team.TeamId,
-                    team.TeamName,
-                    currentPlacement,
-                    team.Status,
-                    team.EliminationRound
-                ));
-
-                lastEliminationRound = team.EliminationRound;
-                teamsAtCurrentRank++;
-            }
-
-            return standings;
-        }
-
-        private async Task<List<TeamPlacementDTO>> GetFinalResultsFromTournamentTeams(long tournamentId)
-        {
-            var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(
-                tt => tt.TournamentId == tournamentId && tt.FinalPlacement != null);
-
-            var teamIds = tournamentTeams.Select(tt => tt.TeamId).ToList();
-            var teams = await _teamRepository.FindAllAsync(t => teamIds.Contains(t.Id));
-            var teamNameLookup = teams.ToDictionary(t => t.Id, t => t.Name);
-
-            return tournamentTeams
-                .OrderBy(tt => tt.FinalPlacement)
-                .ThenBy(tt => tt.TeamId)
-                .Select(tt => new TeamPlacementDTO(
-                    tt.TeamId,
-                    teamNameLookup.GetValueOrDefault(tt.TeamId, "Unknown Team"),
-                    tt.FinalPlacement!.Value,
-                    tt.FinalPlacement == 1 ? TeamStatus.Champion : TeamStatus.Eliminated,
-                    tt.EliminatedInRound ?? 0
-                ))
-                .ToList();
-        }
-
-        public async Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateBracketPlacements(long standingId)
-        {
-            _logger.LogInformation($"=== Calculating bracket placements for standing {standingId} ===");
-
-            var placements = new List<(long TeamId, int Placement, int? EliminatedInRound)>();
-
-            // Get all matches for this bracket
-            var allMatches = await _matchRepository.FindAllAsync(m => m.StandingId == standingId);
-            var matches = allMatches.OrderByDescending(m => m.Round).ThenBy(m => m.Seed).ToList();
-
-            if (!matches.Any())
-            {
-                _logger.LogWarning("No matches found for standing");
-                return placements;
-            }
-
-            // Find max round (final)
-            int maxRound = matches.Max(m => m.Round ?? 0);
-            _logger.LogInformation($"Max round: {maxRound}");
-
-            // Calculate placement for each round, starting from final
-            int currentPlacement = 1;
-
-            for (int round = maxRound; round >= 1; round--)
-            {
-                var roundMatches = matches.Where(m => m.Round == round).OrderBy(m => m.Seed).ToList();
-                int teamsEliminatedThisRound = roundMatches.Count;
-
-                _logger.LogInformation($"Round {round}: {teamsEliminatedThisRound} matches");
-
-                foreach (var match in roundMatches)
-                {
-                    if (round == maxRound && match.Seed == 1)
-                    {
-                        // Final match - special handling
-                        if (match.WinnerId.HasValue)
-                        {
-                            // Champion (1st place)
-                            placements.Add((match.WinnerId.Value, 1, null));
-                            _logger.LogInformation($"  Team {match.WinnerId} = 1st place (Champion)");
-                        }
-
-                        if (match.LoserId.HasValue)
-                        {
-                            // Runner-up (2nd place)
-                            placements.Add((match.LoserId.Value, 2, maxRound));
-                            _logger.LogInformation($"  Team {match.LoserId} = 2nd place (Runner-up, eliminated R{maxRound})");
-                        }
-
-                        currentPlacement = 3; // Next placements start from 3rd
-                    }
-                    else
-                    {
-                        // Non-final matches - losers get placed based on elimination round
-                        if (match.LoserId.HasValue)
-                        {
-                            placements.Add((match.LoserId.Value, currentPlacement, round));
-                            _logger.LogInformation($"  Team {match.LoserId} = {currentPlacement} place (eliminated R{round})");
-                            currentPlacement++;
-                        }
-                    }
-                }
-            }
-
-            _logger.LogInformation($"Calculated {placements.Count} final placements");
-            return placements;
-        }
-
-        public async Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateGroupOnlyPlacements(long tournamentId)
-        {
-            _logger.LogInformation($"=== Calculating group-only placements for tournament {tournamentId} ===");
-
-            var placements = new List<(long TeamId, int Placement, int? EliminatedInRound)>();
-
-            var standings = await GetStandingsAsync(tournamentId);
-            var groupStandings = standings.Where(s => s.StandingType == StandingType.Group).ToList();
-
-            foreach (var group in groupStandings)
-            {
-                var teams = await _groupRepository.GetByStandingIdOrderedAsync(group.Id);
-                int position = 1;
-
-                foreach (var team in teams)
-                {
-                    placements.Add((team.TeamId, position, null));
-
-                    // Set group team status: 1st = Champion, rest = Eliminated
-                    team.Status = position == 1 ? TeamStatus.Champion : TeamStatus.Eliminated;
-                    team.Eliminated = position != 1;
-
-                    _logger.LogInformation($"  {group.Name}: Team {team.TeamName} = position {position}, status {team.Status}");
-                    position++;
-                }
-            }
-
-            _logger.LogInformation($"Calculated {placements.Count} group-only placements");
-            return placements;
-        }
-
-        public async Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements)
-        {
-            _logger.LogInformation($"=== Storing final results for tournament {tournamentId} ===");
-
-            var now = DateTime.UtcNow;
-
-            var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(tt => tt.TournamentId == tournamentId);
-
-            foreach (var placement in placements)
-            {
-                {
-                    // Get TournamentTeam record
-                    var tournamentTeam = tournamentTeams.FirstOrDefault(tt => tt.TeamId == placement.TeamId);
-
-                    if (tournamentTeam == null)
-                    {
-                        _logger.LogWarning($"TournamentTeam not found for Team {placement.TeamId} in Tournament {tournamentId}");
-                        continue;
-                    }
-
-                    // Update final results
-                    tournamentTeam.FinalPlacement = placement.Placement;
-                    tournamentTeam.EliminatedInRound = placement.EliminatedInRound;
-                    tournamentTeam.ResultFinalizedAt = now;
-
-                    _logger.LogInformation($"  Team {placement.TeamId}: Placement {placement}, Eliminated Round {placement.EliminatedInRound.ToString() ?? "N/A"}");
-                }
-
-                _logger.LogInformation($"✓ Stored {placements.Count} final results");
-            }
-        }
-
-        private int CalculateTeamWins(Match match, long? teamId)
-        {
-            return match.Games.Count(g => g.WinnerId == teamId);
+            return standings.Select(s => BuildGroupDTO(s, entriesByStanding[s.Id])).ToList();
         }
 
         public async Task<GetGroupsWithDetailsResponseDTO?> GetGroupWithDetailsByStandingIdAsync(long standingId)
@@ -510,15 +247,6 @@ namespace Application.Services
             var entries = await _groupRepository.FindAllAsync(e => e.StandingId == standingId);
 
             return BuildGroupDTO(standing, entries);
-        }
-
-        public async Task<List<GetGroupsWithDetailsResponseDTO>> GetGroupsWithDetailsAsync(long tournamentId)
-        {
-            var standings = await _standingRepository.GetGroupsWithMatchesAsync(tournamentId);
-
-            var entriesByStanding = (await _groupRepository.FindAllAsync(g => g.TournamentId == tournamentId)).ToLookup(e => e.StandingId);
-
-            return standings.Select(s => BuildGroupDTO(s, entriesByStanding[s.Id])).ToList();
         }
 
         public async Task<GetBracketWithDetailsResponseDTO?> GetBracketWithDetailsAsync(long tournamentId)
@@ -542,6 +270,11 @@ namespace Application.Services
                 Version = bracketStanding.Version,
                 Matches = matches
             };
+        }
+
+        private int CalculateTeamWins(Match match, long? teamId)
+        {
+            return match.Games.Count(g => g.WinnerId == teamId);
         }
 
         private GetGroupsWithDetailsResponseDTO BuildGroupDTO(Standing standing, IEnumerable<GroupEntry> entries)

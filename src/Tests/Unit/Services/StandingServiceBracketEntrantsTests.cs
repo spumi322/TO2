@@ -30,8 +30,7 @@ namespace Tests.Unit.Services
                 new Repository<Team>(DbContext),
                 new TournamentTeamRepository(DbContext),
                 new FormatService(),
-                new Mock<ILogger<StandingService>>().Object,
-                new UnitOfWork(DbContext));
+                new Mock<ILogger<StandingService>>().Object);
 
             DbContext.Tenants.Add(new Tenant { Id = 1, Name = "Org1" });
             DbContext.SaveChanges();

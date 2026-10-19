@@ -40,8 +40,7 @@ namespace Tests.Unit.Services
                 new Repository<Team>(DbContext),
                 new Repository<TournamentTeam>(DbContext),
                 new FormatService(),
-                new Mock<ILogger<StandingService>>().Object,
-                unitOfWork);
+                new Mock<ILogger<StandingService>>().Object);
 
             _service = new TournamentService(
                 new TournamentRepository(DbContext),
