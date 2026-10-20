@@ -1,0 +1,11 @@
+{
+  "buildCommand": "cd src/UI && npm install && npm run build",
+  "outputDirectory": "src/UI/dist/ui/browser",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
