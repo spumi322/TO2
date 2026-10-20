@@ -1,0 +1,13 @@
+<header class="top-bar">
+  <div class="inner">
+    <a class="logo" routerLink="/">
+      <img src="cup_logo.png" alt="" width="28" height="28" />
+      <span>TO2</span>
+    </a>
+    <nav>
+      <a routerLink="/tournaments" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">Tournaments</a>
+    </nav>
+    <span class="spacer"></span>
+    <ng-content />
+  </div>
+</header>
