@@ -1,0 +1,54 @@
+<div class="page stack">
+  <div class="row">
+    <h1>Tournaments</h1>
+    <span class="spacer"></span>
+    <p-button label="New tournament" icon="pi pi-plus" routerLink="/tournaments/new" />
+  </div>
+
+  @if (error(); as message) {
+    <div class="form-error" role="alert">
+      {{ message }}
+      <a href="" (click)="$event.preventDefault(); load()">Retry</a>
+    </div>
+  }
+
+  @if (tournaments() === null) {
+    @if (!error()) {
+      <div class="grid">
+        @for (i of [1, 2, 3]; track i) {
+          <p-skeleton height="120px" borderRadius="10px" />
+        }
+      </div>
+    }
+  } @else if (sections().length === 0) {
+    <app-empty-state
+      title="No tournaments yet"
+      message="Create your first tournament. To work on it together, invite people from the user menu (Invite code)."
+      icon="pi-trophy"
+    >
+      <p-button label="Create tournament" routerLink="/tournaments/new" />
+    </app-empty-state>
+  } @else {
+    @for (section of sections(); track section.key) {
+      <section class="stack">
+        <h2>{{ section.title }} <span class="muted count">{{ section.items.length }}</span></h2>
+        <div class="grid">
+          @for (t of section.items; track t.id) {
+            <a class="card tournament" [class.cancelled]="section.key === 'cancelled'" [routerLink]="['/tournaments', t.id]">
+              <div class="row">
+                <app-status-chip [status]="t.status" />
+                <span class="spacer"></span>
+                <app-format-badge [format]="t.format" />
+              </div>
+              <h3>{{ t.name }}</h3>
+              @if (t.description) {
+                <p class="muted description">{{ t.description }}</p>
+              }
+              <span class="muted small num"><i class="pi pi-users"></i> {{ t.currentTeams }} / {{ t.maxTeams }} teams</span>
+            </a>
+          }
+        </div>
+      </section>
+    }
+  }
+</div>
