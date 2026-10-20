@@ -50,6 +50,9 @@ export class OverviewTab {
     return { kind: 'none' };
   });
 
+  // GroupsOnly with several groups has one winner per group
+  readonly champions = computed(() => this.store.results().filter((placement) => placement.placement === 1));
+
   readonly playStage = computed(() => {
     const step = this.nextStep();
     return step.kind === 'play' ? step.stage : null;

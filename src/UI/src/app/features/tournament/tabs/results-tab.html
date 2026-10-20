@@ -1,0 +1,38 @@
+@if (!rows().length) {
+  <app-empty-state title="No results yet" message="Results appear when the tournament is finished." icon="pi-trophy" />
+} @else {
+  <div class="stack">
+    <div class="podium">
+      @for (tier of podium(); track tier.label; let i = $index) {
+        <div class="tier card" [class]="'place-' + (i + 1)">
+          <span class="place">{{ tier.label }}</span>
+          @for (team of tier.teams; track team.teamId) {
+            <strong class="team">{{ team.teamName }}</strong>
+            @if (team.groupName) {
+              <span class="muted small">{{ team.groupName }}</span>
+            }
+          }
+        </div>
+      }
+    </div>
+
+    <table class="card placements num">
+      <thead>
+        <tr>
+          <th scope="col">Place</th>
+          <th scope="col" class="team-col">Team</th>
+          <th scope="col">Reached</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.teamId) {
+          <tr [class.champion]="row.placement === 1">
+            <td>{{ row.rankLabel }}</td>
+            <td class="team-col">{{ row.teamName }}</td>
+            <td class="muted">{{ row.reached }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

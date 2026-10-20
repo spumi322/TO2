@@ -67,9 +67,14 @@
           </section>
         }
         @case ('finished') {
-          <section class="card next">
-            <h3>Tournament finished</h3>
-            <div><p-button label="See results" routerLink="../results" /></div>
+          <section class="card next champion">
+            <span class="muted small"><i class="pi pi-trophy"></i> {{ champions().length > 1 ? 'Group winners' : 'Champion' }}</span>
+            @for (team of champions(); track team.teamId) {
+              <strong class="champion-name">{{ team.teamName }}</strong>
+            } @empty {
+              <h3>Tournament finished</h3>
+            }
+            <div><p-button label="See results" [outlined]="true" routerLink="../results" /></div>
           </section>
         }
       }
