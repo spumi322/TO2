@@ -1,4 +1,5 @@
-import { Component, computed, inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, computed, DestroyRef, effect, inject } from '@angular/core';
 import { EmptyState } from '../../../shared/empty-state';
 import { BracketTeamClick, BracketView } from '../bracket-view/bracket-view';
 import { Scoring } from '../scoring';
@@ -17,6 +18,16 @@ export class BracketTab {
 
   readonly canScore = computed(() => !!this.store.state()?.canScoreMatches);
   readonly seeded = computed(() => !!this.store.bracket()?.isSeeded);
+  // Up to 8 first-round matches (16 teams) fit one screen; bigger brackets scroll one half per step
+  readonly halves = computed(
+    () => (this.store.bracket()?.matches.filter((match) => match.round === 1).length ?? 0) > 8,
+  );
+
+  constructor() {
+    const root = inject(DOCUMENT).documentElement;
+    effect(() => root.classList.toggle('snap-blocks', this.halves()));
+    inject(DestroyRef).onDestroy(() => root.classList.remove('snap-blocks'));
+  }
 
   // Same as a match card in the groups: the clicked team wins the next unplayed game
   score(click: BracketTeamClick): void {

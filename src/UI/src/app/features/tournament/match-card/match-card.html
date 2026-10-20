@@ -1,35 +1,51 @@
-<article class="match" [class.scorable]="scorable()" [class.busy]="busy()" [attr.aria-busy]="busy()">
-  <div class="meta">
-    <span class="muted small">Bo{{ match().bestOf }}</span>
-    @if (live()) {
-      <span class="live small">Live</span>
-    }
-  </div>
-
-  @for (team of [teamA(), teamB()]; track $index) {
+<article
+  class="match"
+  [class.scorable]="scorable()"
+  [class.busy]="busy()"
+  [class.live]="live()"
+  [class.decided]="decided()"
+  [attr.aria-busy]="busy()"
+>
+  <div class="line">
     <button
       type="button"
-      class="team"
-      [class.won]="team.won"
-      [class.lost]="team.lost"
-      [class.tbd]="!team.known"
+      class="team a"
+      [class.won]="teamA().won"
+      [class.lost]="teamA().lost"
+      [class.tbd]="!teamA().known"
       [disabled]="!scorable() || busy()"
-      [attr.aria-label]="scorable() ? team.name + ' wins the next game' : team.name"
-      (click)="scoreNext(team.id)"
+      [attr.aria-label]="scorable() ? teamA().name + ' wins the next game' : teamA().name"
+      (click)="scoreNext(teamA().id)"
     >
-      <span class="name">{{ team.name }}</span>
-      <span class="score num">{{ team.wins }}</span>
+      <span class="name">{{ teamA().name }}</span>
+      <span class="score num">{{ teamA().wins }}</span>
     </button>
-  }
+    <span class="vs muted small">{{ live() ? 'live' : 'Bo' + match().bestOf }}</span>
+    <button
+      type="button"
+      class="team b"
+      [class.won]="teamB().won"
+      [class.lost]="teamB().lost"
+      [class.tbd]="!teamB().known"
+      [disabled]="!scorable() || busy()"
+      [attr.aria-label]="scorable() ? teamB().name + ' wins the next game' : teamB().name"
+      (click)="scoreNext(teamB().id)"
+    >
+      <span class="score num">{{ teamB().wins }}</span>
+      <span class="name">{{ teamB().name }}</span>
+    </button>
+  </div>
 
-  @if (playedGames().length) {
+  <!-- Correcting a game is only possible until the match has a winner -->
+  @if (live() && scorable()) {
     <div class="games">
+      <span class="muted small">Fix a game:</span>
       @for (game of playedGames(); track game.id; let i = $index) {
         <button
           type="button"
           class="chip"
-          [disabled]="!scorable() || busy()"
-          [title]="scorable() ? 'Give game ' + (i + 1) + ' to the other team' : ''"
+          [disabled]="busy()"
+          [title]="'Give game ' + (i + 1) + ' to the other team'"
           (click)="flip(game)"
         >
           G{{ i + 1 }} {{ gameLabel(game) }}

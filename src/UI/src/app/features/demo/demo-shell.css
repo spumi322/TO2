@@ -1,10 +1,14 @@
-.demo-banner {
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--primary) 12%, transparent);
+.demo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
   color: var(--text);
+  white-space: nowrap;
 }
 
-.demo-banner i {
+.demo-badge i {
   color: var(--primary);
 }

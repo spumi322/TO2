@@ -1,27 +1,28 @@
 /* Theme tokens: light on :root, dark under [data-theme='dark'] (set on <html> by ThemeService) */
 :root {
-  --bg: #f6f7fb;
+  --bg: #f3f5f4;
   --surface: #ffffff;
-  --surface-2: #eef0f6;
-  --border: #dde1ea;
-  --text: #141824;
-  --text-muted: #5b6475;
-  --primary: #4f46e5;
+  --surface-2: #eaeeec;
+  --border: #d5dcd8;
+  --text: #15201a;
+  --text-muted: #5b6670;
+  --primary: #2e7d32;
   --primary-contrast: #ffffff;
-  --success: #15803d;
-  --warning: #b45309;
-  --danger: #b91c1c;
+  --success: #2e7d32;
+  --warning: #c25e00;
+  --danger: #c62828;
   --card-shadow: 0 1px 2px rgb(16 24 40 / 0.06);
 
   /* Tournament status colors */
-  --status-setup: #475569;
-  --status-seeding: #b45309;
-  --status-groups: #0369a1;
-  --status-groups-done: #7c3aed;
-  --status-bracket: #be185d;
-  --status-finished: #15803d;
-  --status-cancelled: #b91c1c;
+  --status-setup: #546e7a;
+  --status-seeding: #c25e00;
+  --status-groups: #1565c0;
+  --status-groups-done: #6a1b9a;
+  --status-bracket: #ad1457;
+  --status-finished: #9a6b00;
+  --status-cancelled: #c62828;
 
+  --top-bar-height: 57px;
   --font-ui: 'Inter', system-ui, sans-serif;
   --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
   --radius-sm: 6px;
@@ -31,27 +32,28 @@
   color-scheme: light;
 }
 
+/* Dark: the original TO2 scheme (navy background, slate cards, green accent) */
 [data-theme='dark'] {
-  --bg: #0e1117;
-  --surface: #161b24;
-  --surface-2: #1e2531;
-  --border: #2a3242;
-  --text: #e7eaf1;
-  --text-muted: #97a0b3;
-  --primary: #8b85ff;
-  --primary-contrast: #0e1117;
-  --success: #4ade80;
-  --warning: #fbbf24;
-  --danger: #f87171;
-  --card-shadow: none;
+  --bg: #0b1120;
+  --surface: #1a1f2e;
+  --surface-2: #242938;
+  --border: #374151;
+  --text: #dce8dd;
+  --text-muted: #9ca3af;
+  --primary: #43a047;
+  --primary-contrast: #ffffff;
+  --success: #4caf50;
+  --warning: #ff9800;
+  --danger: #f44336;
+  --card-shadow: 0 4px 12px rgb(0 0 0 / 0.3);
 
-  --status-setup: #a3b0c2;
-  --status-seeding: #fbbf24;
-  --status-groups: #38bdf8;
-  --status-groups-done: #c4b5fd;
-  --status-bracket: #f472b6;
-  --status-finished: #4ade80;
-  --status-cancelled: #f87171;
+  --status-setup: #9ca3af;
+  --status-seeding: #ff9800;
+  --status-groups: #42a5f5;
+  --status-groups-done: #ba68c8;
+  --status-bracket: #f06292;
+  --status-finished: #ffca28;
+  --status-cancelled: #f44336;
 
   color-scheme: dark;
 }
@@ -106,6 +108,16 @@ a {
   max-width: 1200px;
   margin: 0 auto;
   padding: 24px 16px 48px;
+}
+
+/* Tournament pages use the width of large screens (groups side by side, wide brackets) */
+.page.page-wide {
+  max-width: 1600px;
+}
+
+/* Pages whose content comes in screen-sized blocks (e.g. two groups per screen) snap a block per scroll */
+html.snap-blocks {
+  scroll-snap-type: y mandatory;
 }
 
 .page-narrow {

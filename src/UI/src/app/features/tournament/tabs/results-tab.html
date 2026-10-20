@@ -7,7 +7,7 @@
         <div class="tier card" [class]="'place-' + (i + 1)">
           <span class="place">{{ tier.label }}</span>
           @for (team of tier.teams; track team.teamId) {
-            <app-team-badge [teamName]="team.teamName" [size]="i === 0 ? 'lg' : 'md'" />
+            <strong class="team">{{ team.teamName }}</strong>
             @if (team.groupName) {
               <span class="muted small">{{ team.groupName }}</span>
             }
@@ -16,23 +16,27 @@
       }
     </div>
 
-    <table class="card placements num">
-      <thead>
-        <tr>
-          <th scope="col">Place</th>
-          <th scope="col" class="team-col">Team</th>
-          <th scope="col">Reached</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of rows(); track row.teamId) {
-          <tr [class.champion]="row.placement === 1">
-            <td>{{ row.rankLabel }}</td>
-            <td class="team-col"><app-team-badge [teamName]="row.teamName" size="xs" /></td>
-            <td class="muted">{{ row.reached }}</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+    <div class="tables">
+      @for (column of columns(); track $index) {
+        <table class="card placements num">
+          <thead>
+            <tr>
+              <th scope="col">Place</th>
+              <th scope="col" class="team-col">Team</th>
+              <th scope="col">Reached</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of column; track row.teamId) {
+              <tr [class.champion]="row.placement === 1">
+                <td>{{ row.rankLabel }}</td>
+                <td class="team-col">{{ row.teamName }}</td>
+                <td class="muted">{{ row.reached }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
   </div>
 }

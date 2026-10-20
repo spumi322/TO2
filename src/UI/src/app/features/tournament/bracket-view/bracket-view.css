@@ -17,10 +17,11 @@
   --border-color: var(--border);
   --border-hover-color: var(--text-muted);
   --border-selected-color: var(--primary);
-  --text-size: 13px;
-  --match-width: 200px;
-  --round-margin: 32px;
-  --match-border-radius: 8px;
+  --text-size: 14px;
+  --match-width: 210px;
+  --round-margin: 36px;
+  --match-vertical-padding: 5px;
+  --match-border-radius: 6px;
 
   margin: 0;
   padding: 0;
@@ -40,4 +41,22 @@
 /* The library's stage title: the tab already says "Bracket" (::ng-deep: the element is created by the library) */
 :host ::ng-deep .brackets-viewer h1 {
   display: none;
+}
+
+/* Compact matches: no "M 1.1" / "Bo3" labels (every match is Bo3) and less space between them */
+:host ::ng-deep .brackets-viewer .opponents > span {
+  display: none;
+}
+
+:host ::ng-deep .brackets-viewer .match {
+  margin: 12px 0;
+}
+
+/* Big brackets (more than 16 teams): tight spacing, so one half fits a screen */
+:host ::ng-deep .brackets-viewer.compact .match {
+  margin: 4px 0;
+}
+
+:host ::ng-deep .brackets-viewer .participant.win .name {
+  font-weight: 700;
 }

@@ -6,53 +6,64 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 8px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1px solid transparent;
+}
+
+.match.live {
+  border-color: color-mix(in srgb, var(--status-groups) 60%, transparent);
 }
 
 .match.busy {
   opacity: 0.6;
 }
 
-.meta {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 4px;
-}
-
-.live {
-  color: var(--status-groups);
-  font-weight: 600;
+/* One line: TeamA  score  Bo3  score  TeamB */
+.line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
 }
 
 .team {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 40px;
-  padding: 6px 8px;
+  min-height: 34px;
+  padding: 4px 8px;
   border: 0;
-  border-left: 3px solid transparent;
   border-radius: var(--radius-sm);
-  background: var(--surface-2);
+  background: transparent;
   color: var(--text);
   font: inherit;
+  min-width: 0;
+}
+
+.team.a {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.team.b {
+  justify-content: flex-start;
   text-align: left;
 }
 
 .scorable .team:not(:disabled) {
   cursor: pointer;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
 }
 
 .scorable .team:not(:disabled):hover {
-  background: color-mix(in srgb, var(--primary) 15%, var(--surface-2));
+  background: color-mix(in srgb, var(--primary) 25%, var(--surface));
 }
 
 .team.won {
   font-weight: 700;
-  border-left-color: var(--success);
+  color: var(--success);
 }
 
 .team.lost,
@@ -61,7 +72,6 @@
 }
 
 .name {
-  flex: 1;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -69,38 +79,55 @@
 }
 
 .score {
-  min-width: 24px;
+  min-width: 22px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg);
   text-align: center;
   font-family: var(--font-display);
   font-weight: 700;
+  color: var(--text);
+}
+
+.won .score {
+  background: color-mix(in srgb, var(--success) 25%, var(--bg));
+}
+
+.vs {
+  min-width: 32px;
+  text-align: center;
+}
+
+.live .vs {
+  color: var(--status-groups);
+  font-weight: 600;
 }
 
 .games {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
   gap: 4px;
-  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 .chip {
-  padding: 2px 8px;
+  padding: 1px 8px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: transparent;
   color: var(--text-muted);
   font: inherit;
   font-size: 12px;
-  max-width: 100%;
+  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.scorable .chip:not(:disabled) {
   cursor: pointer;
 }
 
-.scorable .chip:not(:disabled):hover {
+.chip:hover:not(:disabled) {
   border-color: var(--primary);
   color: var(--text);
 }

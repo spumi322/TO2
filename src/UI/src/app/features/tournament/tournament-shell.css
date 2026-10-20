@@ -1,29 +1,41 @@
-.back {
-  text-decoration: none;
-  align-self: flex-start;
+/* Visible height for a tab's content: viewport minus the top bar, the pinned head and the page padding */
+.shell {
+  --head-height: 100px;
+  --fit-offset: calc(var(--top-bar-height) + var(--head-height) + 24px);
+  --fit-height: max(420px, calc(100dvh - var(--fit-offset)));
+  padding-top: 0;
+}
+
+.shell-head {
+  position: sticky;
+  top: var(--top-bar-height);
+  z-index: 5;
+  height: var(--head-height);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: var(--bg);
+  margin-bottom: 16px;
 }
 
 .header {
   display: flex;
-  align-items: flex-end;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.title {
-  flex: 1;
+  align-items: center;
+  gap: 12px;
   min-width: 0;
-}
-
-.stack-xs {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  padding-bottom: 8px;
 }
 
 .name {
-  font-size: 28px;
-  overflow-wrap: anywhere;
+  font-size: 26px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spacer {
+  flex: 1;
 }
 
 .tabs {
@@ -52,4 +64,20 @@
 .tabs a.active {
   color: var(--text);
   border-bottom-color: var(--primary);
+}
+
+@media (max-width: 600px) {
+  .shell {
+    --head-height: 132px;
+  }
+
+  .header {
+    flex-wrap: wrap;
+    row-gap: 4px;
+  }
+
+  .name {
+    flex-basis: 100%;
+    font-size: 22px;
+  }
 }

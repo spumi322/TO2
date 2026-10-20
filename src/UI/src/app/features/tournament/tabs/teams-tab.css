@@ -1,3 +1,26 @@
+/* Add panel on the left, the team list beside it in as many columns as fit (32 teams on one screen) */
+.teams-layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.teams-layout.read-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (max-width: 860px) {
+  .teams-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.add {
+  position: sticky;
+  top: calc(var(--fit-offset) - 8px);
+}
+
 textarea {
   width: 100%;
 }
@@ -15,21 +38,42 @@ textarea {
   transition: width 150ms ease;
 }
 
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.list-head {
+  min-height: 32px;
+}
+
 .teams {
   list-style: none;
   margin: 0;
-  padding: 4px 16px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 8px;
 }
 
 .teams li {
-  min-height: 44px;
-  border-bottom: 1px solid var(--border);
-}
-
-.teams li:last-child {
-  border-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 40px;
+  padding: 4px 4px 4px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 
 .team-name {
+  flex: 1;
   min-width: 0;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

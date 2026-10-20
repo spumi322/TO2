@@ -1,4 +1,5 @@
 .top-bar {
+  height: var(--top-bar-height);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   position: sticky;
@@ -6,11 +7,10 @@
   z-index: 10;
 }
 
+/* Full width: logo at the left edge, user area at the right edge, whatever the page width below */
 .inner {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 8px 16px;
-  min-height: 56px;
+  padding: 0 24px;
+  height: 100%;
   display: flex;
   align-items: center;
   gap: 24px;

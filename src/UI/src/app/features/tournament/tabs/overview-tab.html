@@ -70,7 +70,7 @@
           <section class="card next champion">
             <span class="muted small"><i class="pi pi-trophy"></i> {{ champions().length > 1 ? 'Group winners' : 'Champion' }}</span>
             @for (team of champions(); track team.teamId) {
-              <app-team-badge [teamName]="team.teamName" size="lg" />
+              <strong class="champion-name">{{ team.teamName }}</strong>
             } @empty {
               <h3>Tournament finished</h3>
             }
@@ -104,6 +104,18 @@
         <dt>Matches</dt>
         <dd>Best of 3</dd>
       </dl>
+      @for (stage of progress(); track stage.label) {
+        <div class="progress">
+          <div class="row small">
+            <span class="muted">{{ stage.label }}</span>
+            <span class="spacer"></span>
+            <span class="num">{{ stage.played }} / {{ stage.total }}</span>
+          </div>
+          <div class="bar" aria-hidden="true">
+            <div class="bar-fill" [style.width.%]="(stage.played / stage.total) * 100"></div>
+          </div>
+        </div>
+      }
     </aside>
   </div>
 }

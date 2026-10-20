@@ -2,9 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
-import { Format, FORMAT_LABELS, formatHasGroups, TournamentStatus } from '../../../shared/enums';
-import { TeamBadge } from '../../../shared/team-badge';
-import { TournamentActions } from '../tournament-actions';
+import { Format, FORMAT_LABELS, formatHasGroups, TournamentStatus } from '../../../shared/enums';import { TournamentActions } from '../tournament-actions';
 import { TournamentStore } from '../tournament.store';
 
 type NextStep =
@@ -17,7 +15,7 @@ type NextStep =
 
 @Component({
   selector: 'app-overview-tab',
-  imports: [DatePipe, RouterLink, Button, TeamBadge],
+  imports: [DatePipe, RouterLink, Button],
   templateUrl: './overview-tab.html',
   styleUrl: './overview-tab.css',
 })
@@ -49,6 +47,30 @@ export class OverviewTab {
     }
     if (t.status === TournamentStatus.Finished) return { kind: 'finished' };
     return { kind: 'none' };
+  });
+
+  // Played / total per started stage (BYE matches are not played, so they don't count)
+  readonly progress = computed(() => {
+    const stages: { label: string; played: number; total: number }[] = [];
+    const groupMatches = this.store.groups().flatMap((group) => group.matches);
+    if (groupMatches.length) {
+      stages.push({
+        label: 'Group matches',
+        played: groupMatches.filter((m) => m.winnerId !== null).length,
+        total: groupMatches.length,
+      });
+    }
+    const bracketMatches = (this.store.bracket()?.matches ?? []).filter(
+      (m) => !(m.round === 1 && (!m.teamAId || !m.teamBId)),
+    );
+    if (this.store.bracket()?.isSeeded && bracketMatches.length) {
+      stages.push({
+        label: 'Bracket matches',
+        played: bracketMatches.filter((m) => m.winnerId !== null).length,
+        total: bracketMatches.length,
+      });
+    }
+    return stages;
   });
 
   // GroupsOnly with several groups has one winner per group

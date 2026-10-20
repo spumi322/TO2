@@ -1,30 +1,26 @@
-<div class="page stack">
-  <div class="demo-banner row">
-    <i class="pi pi-eye"></i>
-    <span>Read-only demo tournament.</span>
-    <span class="spacer"></span>
-    <a routerLink="/register">Create your own</a>
-  </div>
-
+<div class="page page-wide shell">
   @if (failed()) {
     <div class="form-error" role="alert">The demo could not be loaded.</div>
   } @else if (store.tournament(); as t) {
-    <header class="header">
-      <div class="title stack-xs">
-        <div class="row">
-          <app-status-chip [status]="t.status" />
-          <app-format-badge [format]="t.format" />
-        </div>
-        <h1 class="name">{{ t.name }}</h1>
-      </div>
-    </header>
+    <div class="shell-head">
+      <header class="header">
+        <h1 class="name" [title]="t.name">{{ t.name }}</h1>
+        <app-status-chip [status]="t.status" />
+        <app-format-badge [format]="t.format" />
+        <span class="spacer"></span>
+        <span class="demo-badge small"><i class="pi pi-eye"></i> Read-only demo</span>
+        <a routerLink="/register" class="small">Create your own</a>
+      </header>
 
-    <nav class="tabs" aria-label="Tournament sections">
-      @for (tab of tabs(); track tab.path) {
-        <a [routerLink]="tab.path" routerLinkActive="active">{{ tab.label }}</a>
-      }
-    </nav>
+      <nav class="tabs" aria-label="Tournament sections">
+        @for (tab of tabs(); track tab.path) {
+          <a [routerLink]="tab.path" routerLinkActive="active">{{ tab.label }}</a>
+        }
+      </nav>
+    </div>
 
-    <router-outlet />
+    <div class="shell-body">
+      <router-outlet />
+    </div>
   }
 </div>

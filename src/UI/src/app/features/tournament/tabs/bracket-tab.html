@@ -5,16 +5,24 @@
     icon="pi-sitemap"
   />
 } @else {
-  @if (canScore()) {
-    <p class="muted small">Click a team to give it the next game.</p>
-  }
-  <div class="card bracket" [class.saving]="scoring.savingMatchId() !== null">
-    <app-bracket-view
-      [bracket]="store.bracket()!"
-      [teamNames]="store.teamNames()"
-      [tournamentId]="store.id()"
-      [canScore]="canScore()"
-      (teamClick)="score($event)"
-    />
+  <div class="bracket-wrap">
+    <!-- Big brackets scroll in two halves: one screen per half (outside the card, which scrolls sideways) -->
+    @if (halves()) {
+      <span class="snap top" aria-hidden="true"></span>
+      <span class="snap middle" aria-hidden="true"></span>
+    }
+    <div class="card bracket" [class.saving]="scoring.savingMatchId() !== null">
+      @if (canScore()) {
+        <p class="muted small hint">Click a team to give it the next game.</p>
+      }
+      <app-bracket-view
+        [bracket]="store.bracket()!"
+        [teamNames]="store.teamNames()"
+        [tournamentId]="store.id()"
+        [canScore]="canScore()"
+        [compact]="halves()"
+        (teamClick)="score($event)"
+      />
+    </div>
   </div>
 }

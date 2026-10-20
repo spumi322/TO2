@@ -10,24 +10,37 @@
   align-items: center;
   gap: 4px;
   text-align: center;
-  padding: 20px 16px;
+  padding: 16px;
 }
 
 .place {
   font-family: var(--font-display);
-  font-size: 32px;
+  font-size: 30px;
   font-weight: 700;
   line-height: 1;
   margin-bottom: 4px;
 }
 
-.place-1 {
-  border-color: var(--status-finished);
-  padding: 28px 16px;
+.team {
+  font-size: 17px;
+  overflow-wrap: anywhere;
 }
 
-.place-1 .place {
+.place-1 {
+  border-color: var(--status-finished);
+}
+
+.place-1 .place,
+.place-1 .team {
   color: var(--status-finished);
+}
+
+/* Up to three tables side by side (split in the component) */
+.tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  align-items: start;
 }
 
 .placements {
@@ -47,14 +60,15 @@ th {
 }
 
 td {
-  padding: 10px 16px;
+  padding: 9px 16px;
   border-top: 1px solid var(--border);
 }
 
 .team-col {
-  font-weight: 500;
+  font-weight: 600;
 }
 
 tr.champion td {
   font-weight: 700;
+  color: var(--status-finished);
 }

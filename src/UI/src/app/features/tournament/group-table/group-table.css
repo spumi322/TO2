@@ -1,6 +1,11 @@
+:host {
+  display: block;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
+  font-size: 15px;
 }
 
 th {
@@ -14,38 +19,35 @@ th {
 
 td {
   text-align: center;
-  padding: 8px;
+  padding: 9px 8px;
   border-bottom: 1px solid var(--border);
 }
 
 th.team,
 td.team {
   text-align: left;
+  width: 55%;
 }
 
 .rank {
-  width: 32px;
+  width: 36px;
   color: var(--text-muted);
 }
 
-td.team {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-left: 3px solid transparent;
-}
-
 .name {
-  font-weight: 500;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
 .status {
+  margin-left: 8px;
   color: var(--text-muted);
+  font-weight: 500;
 }
 
-tr.advanced td.team {
-  border-left-color: var(--success);
+/* Advancing teams: green edge on the rank cell */
+tr.advanced td.rank {
+  box-shadow: inset 3px 0 var(--success);
 }
 
 tr.advanced .status {
@@ -56,6 +58,11 @@ tr.eliminated td {
   color: var(--text-muted);
 }
 
+tr.eliminated .name {
+  font-weight: 500;
+}
+
+/* Cut line under the last advancing position */
 tr.cut td {
   border-bottom: 1px dashed var(--text-muted);
 }

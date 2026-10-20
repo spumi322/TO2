@@ -82,9 +82,9 @@ describe('MatchCard', () => {
     const el = render(match([game(10, ALPHA), game(11, ALPHA), game(12)], ALPHA), true);
 
     teamButtons(el)[0].click();
-    chips(el)[0].click();
 
     expect(emitted).toHaveLength(0);
+    expect(chips(el)).toHaveLength(0);
     expect(el.querySelector('.team.won')?.textContent).toContain('Alpha');
   });
 });

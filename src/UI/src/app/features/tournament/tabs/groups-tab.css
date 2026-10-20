@@ -1,12 +1,91 @@
+/* Two groups per row; each row is one screen tall (--fit-height from the shell), a card at most that tall */
 .groups {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: var(--fit-height);
+  align-items: start;
   gap: 16px;
+}
+
+.group {
+  max-height: var(--fit-height);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  scroll-snap-align: start;
+  scroll-margin-top: calc(var(--fit-offset) - 8px);
+}
+
+.group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.done {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.group-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* The match list takes the rest of the card and scrolls inside it when a big group does not fit */
+.matches {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  align-content: start;
+  gap: 6px;
+  padding-right: 2px;
+}
+
+/* One group: the whole width, table beside the matches */
+.groups.single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.single .group {
+  height: var(--fit-height);
+}
+
+.single .group-body {
+  display: grid;
+  grid-template-columns: minmax(320px, 2fr) minmax(0, 3fr);
+  grid-template-rows: minmax(0, 1fr);
   align-items: start;
 }
 
-.matches {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-  gap: 8px;
+.single .matches {
+  height: 100%;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+@media (max-width: 1000px) {
+  .groups {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: auto;
+  }
+
+  .group,
+  .single .group {
+    height: auto;
+    max-height: none;
+  }
+
+  .single .group-body {
+    display: flex;
+  }
+
+  .matches {
+    overflow: visible;
+  }
 }

@@ -1,10 +1,10 @@
-<div class="stack">
+<div class="teams-layout" [class.read-only]="!canEdit()">
   @if (canEdit()) {
-    <section class="card stack">
+    <section class="card stack add">
       <div class="row">
         <h3>Add teams</h3>
         <span class="spacer"></span>
-        <span class="muted num">{{ store.teams().length }} / {{ maxTeams() }} teams</span>
+        <span class="muted num">{{ store.teams().length }} / {{ maxTeams() }}</span>
       </div>
       <div class="capacity" aria-hidden="true">
         <div class="fill" [style.width.%]="maxTeams() ? (store.teams().length / maxTeams()) * 100 : 0"></div>
@@ -15,7 +15,7 @@
         <textarea
           pTextarea
           id="team-names"
-          rows="2"
+          rows="4"
           placeholder="Alpha, Bravo, Charlie"
           [ngModel]="input()"
           (ngModelChange)="input.set($event)"
@@ -28,42 +28,47 @@
         <span class="hint">Max 24 characters per name. Enter adds, Shift+Enter starts a new line.</span>
       </div>
 
-      <div class="row">
-        <span class="spacer"></span>
-        <p-button
-          [label]="names().length > 1 ? 'Add ' + names().length + ' teams' : 'Add team'"
-          icon="pi pi-plus"
-          [disabled]="!names().length || problems().length > 0"
-          [loading]="adding()"
-          (onClick)="add()"
-        />
-      </div>
+      <p-button
+        [label]="names().length > 1 ? 'Add ' + names().length + ' teams' : 'Add team'"
+        icon="pi pi-plus"
+        [fluid]="true"
+        [disabled]="!names().length || problems().length > 0"
+        [loading]="adding()"
+        (onClick)="add()"
+      />
     </section>
-  } @else {
-    <p class="muted">Registration is closed: teams can not be changed.</p>
   }
 
-  @if (sortedTeams().length) {
-    <ul class="card teams">
-      @for (team of sortedTeams(); track team.id) {
-        <li class="row">
-          <app-team-badge class="team-name" [teamName]="team.name" size="sm" />
-          <span class="spacer"></span>
-          @if (canEdit()) {
-            <p-button
-              icon="pi pi-times"
-              [text]="true"
-              severity="secondary"
-              [ariaLabel]="'Remove ' + team.name"
-              (onClick)="teamToRemove.set(team)"
-            />
-          }
-        </li>
+  <section class="list">
+    <div class="row list-head">
+      <h3>{{ sortedTeams().length }} {{ sortedTeams().length === 1 ? 'team' : 'teams' }}</h3>
+      @if (!canEdit()) {
+        <span class="muted small">Registration is closed: teams can not be changed.</span>
       }
-    </ul>
-  } @else {
-    <app-empty-state title="No teams yet" message="Add the teams that play in this tournament." icon="pi-users" />
-  }
+    </div>
+    @if (sortedTeams().length) {
+      <ul class="teams">
+        @for (team of sortedTeams(); track team.id) {
+          <li>
+            <span class="team-name" [title]="team.name">{{ team.name }}</span>
+            @if (canEdit()) {
+              <p-button
+                icon="pi pi-times"
+                [text]="true"
+                [rounded]="true"
+                size="small"
+                severity="secondary"
+                [ariaLabel]="'Remove ' + team.name"
+                (onClick)="teamToRemove.set(team)"
+              />
+            }
+          </li>
+        }
+      </ul>
+    } @else {
+      <app-empty-state title="No teams yet" message="Add the teams that play in this tournament." icon="pi-users" />
+    }
+  </section>
 </div>
 
 @if (teamToRemove(); as team) {

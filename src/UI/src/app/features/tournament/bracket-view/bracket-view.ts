@@ -60,7 +60,13 @@ export interface BracketTeamClick {
     @if (failed()) {
       <p class="form-error">The bracket could not be displayed. Reload the page to try again.</p>
     }
-    <div class="brackets-viewer" [id]="elementId" [class.clickable]="canScore()" (click)="onClick($event)"></div>
+    <div
+      class="brackets-viewer"
+      [id]="elementId"
+      [class.clickable]="canScore()"
+      [class.compact]="compact()"
+      (click)="onClick($event)"
+    ></div>
   `,
   styleUrl: './bracket-view.css',
 })
@@ -69,6 +75,8 @@ export class BracketView {
   readonly teamNames = input.required<Map<number, string>>();
   readonly tournamentId = input.required<number>();
   readonly canScore = input(false);
+  // Tight spacing between matches (big brackets)
+  readonly compact = input(false);
   readonly teamClick = output<BracketTeamClick>();
 
   protected readonly elementId = `bracket-view-${++nextId}`;

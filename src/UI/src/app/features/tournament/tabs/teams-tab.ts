@@ -6,14 +6,12 @@ import { Textarea } from 'primeng/textarea';
 import { ErrorToast } from '../../../core/http/error-toast';
 import { Team } from '../../../core/models';
 import { ConfirmDialog } from '../../../shared/confirm-dialog';
-import { EmptyState } from '../../../shared/empty-state';
-import { TeamBadge } from '../../../shared/team-badge';
-import { TournamentStore } from '../tournament.store';
+import { EmptyState } from '../../../shared/empty-state';import { TournamentStore } from '../tournament.store';
 import { checkTeamNames, parseTeamNames } from './team-names';
 
 @Component({
   selector: 'app-teams-tab',
-  imports: [FormsModule, Button, Textarea, ConfirmDialog, EmptyState, TeamBadge],
+  imports: [FormsModule, Button, Textarea, ConfirmDialog, EmptyState],
   templateUrl: './teams-tab.html',
   styleUrl: './teams-tab.css',
 })
