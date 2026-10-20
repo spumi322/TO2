@@ -4,10 +4,25 @@
       <img src="cup_logo.png" alt="" width="28" height="28" />
       <span>TO2</span>
     </a>
-    <nav>
-      <a routerLink="/tournaments" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">Tournaments</a>
-    </nav>
+    @if (session.isLoggedIn()) {
+      <nav>
+        <a routerLink="/tournaments" routerLinkActive="active">Tournaments</a>
+      </nav>
+    }
     <span class="spacer"></span>
-    <ng-content />
+    @if (session.session(); as s) {
+      <p-button
+        [label]="s.userName"
+        icon="pi pi-user"
+        [text]="true"
+        severity="secondary"
+        ariaLabel="User menu"
+        (onClick)="menu.toggle($event)"
+      />
+      <p-menu #menu [model]="userMenu()" [popup]="true" appendTo="body" />
+      <app-invite-code-dialog [(visible)]="inviteOpen" />
+    } @else {
+      <a routerLink="/login">Sign in</a>
+    }
   </div>
 </header>

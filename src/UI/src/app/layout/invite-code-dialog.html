@@ -1,0 +1,31 @@
+<p-dialog
+  header="Invite code"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: 'min(440px, calc(100vw - 32px))' }"
+  appendTo="body"
+  (onHide)="reset()"
+>
+  <div class="stack">
+    @if (error(); as message) {
+      <div class="form-error" role="alert">{{ message }}</div>
+    }
+
+    @if (invite(); as code) {
+      <p>Share this code with people who should join <strong>{{ session.session()?.tenantName }}</strong>. They enter it when creating an account.</p>
+      <div class="code-row">
+        <code class="code num">{{ code.code }}</code>
+        <p-button [label]="copied() ? 'Copied' : 'Copy'" [outlined]="true" (onClick)="copy(code.code)" />
+      </div>
+      <p class="muted small">Valid until {{ code.expiresAt | date: 'd MMM, HH:mm' }}. It cannot be shown again.</p>
+    } @else {
+      <p>Generate a code to let someone join <strong>{{ session.session()?.tenantName }}</strong>.</p>
+      <p class="muted">A new code makes the previous one stop working. It is valid for 24 hours.</p>
+      <div class="row">
+        <span class="spacer"></span>
+        <p-button label="Generate code" [loading]="generating()" (onClick)="generate()" />
+      </div>
+    }
+  </div>
+</p-dialog>

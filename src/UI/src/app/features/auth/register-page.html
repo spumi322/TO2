@@ -1,0 +1,71 @@
+<div class="page-narrow">
+  <form class="card stack auth-card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <h1>Create account</h1>
+
+    @if (error(); as message) {
+      <div class="form-error" role="alert">{{ message }}</div>
+    }
+
+    <div class="field">
+      <label for="userName">Username</label>
+      <input pInputText id="userName" formControlName="userName" autocomplete="username" />
+      @if (form.controls.userName.touched && form.controls.userName.invalid) {
+        <span class="field-error">{{ form.controls.userName.errors?.['server'] ?? 'Enter a username (max 100 characters).' }}</span>
+      }
+    </div>
+
+    <div class="field">
+      <label for="email">Email</label>
+      <input pInputText id="email" type="email" formControlName="email" autocomplete="email" />
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <span class="field-error">{{ form.controls.email.errors?.['server'] ?? 'Enter a valid email address.' }}</span>
+      }
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input pInputText id="password" type="password" formControlName="password" autocomplete="new-password" />
+      <span class="hint" [class.field-error]="form.controls.password.touched && form.controls.password.invalid">
+        At least 6 characters, with a digit, a lowercase and an uppercase letter.
+      </span>
+    </div>
+
+    <div class="field">
+      <label for="tenantName">Organization</label>
+      <input pInputText id="tenantName" formControlName="tenantName" autocomplete="organization" (blur)="checkOrganization()" />
+      @switch (orgState()) {
+        @case ('checking') {
+          <span class="hint">Checking...</span>
+        }
+        @case ('new') {
+          <span class="hint">A new organization will be created.</span>
+        }
+        @case ('exists') {
+          <span class="hint">This organization exists: enter an invite code from one of its members.</span>
+        }
+        @case ('checkFailed') {
+          <span class="field-error">{{ orgCheckMessage() }}</span>
+        }
+      }
+      @if (form.controls.tenantName.touched && form.controls.tenantName.invalid) {
+        <span class="field-error">{{ form.controls.tenantName.errors?.['server'] ?? 'Enter an organization name.' }}</span>
+      }
+    </div>
+
+    @if (showInvite()) {
+      <div class="field">
+        <label for="inviteCode">Invite code</label>
+        <input #inviteInput pInputText id="inviteCode" formControlName="inviteCode" autocomplete="off" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" />
+        @if (form.controls.inviteCode.errors?.['server']; as message) {
+          <span class="field-error">{{ message }}</span>
+        }
+      </div>
+    }
+
+    <p-button type="submit" label="Create account" [loading]="submitting()" [fluid]="true" />
+
+    <p class="muted switch">
+      Already have an account? <a routerLink="/login">Sign in</a>
+    </p>
+  </form>
+</div>
