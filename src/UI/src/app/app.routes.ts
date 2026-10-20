@@ -3,7 +3,12 @@ import { authGuard, guestGuard } from './core/auth/auth.guards';
 import { NotFoundPage } from './pages/not-found-page';
 
 export const routes: Routes = [
-  { path: '', pathMatch: 'full', redirectTo: 'tournaments' },
+  {
+    path: '',
+    pathMatch: 'full',
+    title: 'TO2 - Tournament Organizer',
+    loadComponent: () => import('./pages/landing-page').then((m) => m.LandingPage),
+  },
   {
     path: 'login',
     title: 'Sign in - TO2',

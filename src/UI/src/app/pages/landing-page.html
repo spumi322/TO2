@@ -1,0 +1,111 @@
+<div class="landing">
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <img src="to2_logo.png" alt="TO2" class="logo" width="96" height="96" />
+        <span class="eyebrow">Tournament organizer</span>
+        <h1>Run tournaments.<br /><span class="accent">Live, start to finish.</span></h1>
+        <p class="sub">
+          Group stages, playoff brackets, or both. Real-time updates for everyone in your organization,
+          automatic seeding and results.
+        </p>
+        <div class="row actions">
+          @if (session.isLoggedIn()) {
+            <p-button label="Go to tournaments" routerLink="/tournaments" size="large" />
+          } @else {
+            <p-button label="Get started" routerLink="/register" size="large" />
+            <p-button label="Sign in" routerLink="/login" [outlined]="true" size="large" />
+          }
+          <a routerLink="/demo" class="demo-link">View a demo tournament <i class="pi pi-arrow-right"></i></a>
+        </div>
+      </div>
+
+      <div class="preview card" aria-hidden="true">
+        <div class="row">
+          <span class="live"><span class="dot"></span>Groups live</span>
+          <span class="spacer"></span>
+          <span class="muted small">Groups + Bracket</span>
+        </div>
+        <strong class="preview-title">Spring Championship</strong>
+        <div class="preview-table num">
+          @for (row of [['Alpha Squad', '3-0', '9'], ['Team Nexus', '2-1', '6'], ['Red Wolves', '1-2', '3'], ['Storm Unit', '0-3', '0']]; track row[0]; let i = $index) {
+            <div class="preview-row" [class.advance]="i < 2">
+              <span class="muted">{{ i + 1 }}</span>
+              <span class="name">{{ row[0] }}</span>
+              <span>{{ row[1] }}</span>
+              <strong>{{ row[2] }}</strong>
+            </div>
+          }
+        </div>
+        <div class="preview-match">
+          <span class="muted small">Live match</span>
+          <div class="row num">
+            <span class="name">Alpha Squad</span>
+            <strong class="score">1 - 1</strong>
+            <span class="name right">Red Wolves</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Three formats</h2>
+    <div class="grid">
+      @for (f of formats; track f.name) {
+        <div class="card stack format">
+          <i [class]="'pi ' + f.icon"></i>
+          <h3>{{ f.name }}</h3>
+          <p class="muted">{{ f.description }}</p>
+          <ul>
+            @for (feature of f.features; track feature) {
+              <li><i class="pi pi-check"></i> {{ feature }}</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Everything an organizer needs</h2>
+    <div class="grid">
+      @for (f of features; track f.title) {
+        <div class="card feature">
+          <i [class]="'pi ' + f.icon"></i>
+          <h3>{{ f.title }}</h3>
+          <p class="muted">{{ f.description }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>How it works</h2>
+    <div class="grid">
+      @for (s of steps; track s.number) {
+        <div class="step">
+          <span class="step-number">{{ s.number }}</span>
+          <h3>{{ s.title }}</h3>
+          <p class="muted">{{ s.description }}</p>
+        </div>
+      }
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card cta">
+      <h2>Ready to run your first tournament?</h2>
+      <div class="row">
+        @if (session.isLoggedIn()) {
+          <p-button label="Go to tournaments" routerLink="/tournaments" />
+        } @else {
+          <p-button label="Get started" routerLink="/register" />
+        }
+        <p-button label="View demo" routerLink="/demo" [text]="true" />
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer muted small">TO2 - Tournament Organizer 2</footer>
+</div>
