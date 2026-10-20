@@ -1,4 +1,4 @@
-﻿import { DatePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';

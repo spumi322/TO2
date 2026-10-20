@@ -1,0 +1,36 @@
+textarea {
+  width: 100%;
+}
+
+.capacity {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width 150ms ease;
+}
+
+.teams {
+  list-style: none;
+  margin: 0;
+  padding: 4px 16px;
+}
+
+.teams li {
+  min-height: 44px;
+  border-bottom: 1px solid var(--border);
+}
+
+.teams li:last-child {
+  border-bottom: 0;
+}
+
+.team-name {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}

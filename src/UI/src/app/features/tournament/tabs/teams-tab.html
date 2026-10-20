@@ -1,0 +1,80 @@
+<div class="stack">
+  @if (canEdit()) {
+    <section class="card stack">
+      <div class="row">
+        <h3>Add teams</h3>
+        <span class="spacer"></span>
+        <span class="muted num">{{ store.teams().length }} / {{ maxTeams() }} teams</span>
+      </div>
+      <div class="capacity" aria-hidden="true">
+        <div class="fill" [style.width.%]="maxTeams() ? (store.teams().length / maxTeams()) * 100 : 0"></div>
+      </div>
+
+      <div class="field">
+        <label for="team-names">Team names, separated by commas or new lines</label>
+        <textarea
+          pTextarea
+          id="team-names"
+          rows="2"
+          placeholder="Alpha, Bravo, Charlie"
+          [ngModel]="input()"
+          (ngModelChange)="input.set($event)"
+          (keydown)="onKeydown($event)"
+          [disabled]="adding()"
+        ></textarea>
+        @for (problem of problems(); track problem) {
+          <span class="field-error">{{ problem }}</span>
+        }
+        <span class="hint">Max 24 characters per name. Enter adds, Shift+Enter starts a new line.</span>
+      </div>
+
+      <div class="row">
+        <span class="spacer"></span>
+        <p-button
+          [label]="names().length > 1 ? 'Add ' + names().length + ' teams' : 'Add team'"
+          icon="pi pi-plus"
+          [disabled]="!names().length || problems().length > 0"
+          [loading]="adding()"
+          (onClick)="add()"
+        />
+      </div>
+    </section>
+  } @else {
+    <p class="muted">Registration is closed: teams can not be changed.</p>
+  }
+
+  @if (sortedTeams().length) {
+    <ul class="card teams">
+      @for (team of sortedTeams(); track team.id) {
+        <li class="row">
+          <span class="team-name">{{ team.name }}</span>
+          <span class="spacer"></span>
+          @if (canEdit()) {
+            <p-button
+              icon="pi pi-times"
+              [text]="true"
+              severity="secondary"
+              [ariaLabel]="'Remove ' + team.name"
+              (onClick)="teamToRemove.set(team)"
+            />
+          }
+        </li>
+      }
+    </ul>
+  } @else {
+    <app-empty-state title="No teams yet" message="Add the teams that play in this tournament." icon="pi-users" />
+  }
+</div>
+
+@if (teamToRemove(); as team) {
+  <app-confirm-dialog
+    [visible]="true"
+    (visibleChange)="closeRemoveDialog($event)"
+    header="Remove team"
+    [message]="'Remove ' + team.name + ' from this tournament?'"
+    confirmLabel="Remove"
+    [danger]="true"
+    [busy]="removing()"
+    (confirmed)="remove()"
+  />
+}
