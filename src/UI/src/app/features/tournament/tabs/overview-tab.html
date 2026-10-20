@@ -70,7 +70,7 @@
           <section class="card next champion">
             <span class="muted small"><i class="pi pi-trophy"></i> {{ champions().length > 1 ? 'Group winners' : 'Champion' }}</span>
             @for (team of champions(); track team.teamId) {
-              <strong class="champion-name">{{ team.teamName }}</strong>
+              <app-team-badge [teamName]="team.teamName" size="lg" />
             } @empty {
               <h3>Tournament finished</h3>
             }

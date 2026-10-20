@@ -31,6 +31,5 @@ textarea {
 }
 
 .team-name {
-  font-weight: 500;
-  overflow-wrap: anywhere;
+  min-width: 0;
 }

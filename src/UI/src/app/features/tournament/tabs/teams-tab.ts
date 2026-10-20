@@ -7,12 +7,13 @@ import { ErrorToast } from '../../../core/http/error-toast';
 import { Team } from '../../../core/models';
 import { ConfirmDialog } from '../../../shared/confirm-dialog';
 import { EmptyState } from '../../../shared/empty-state';
+import { TeamBadge } from '../../../shared/team-badge';
 import { TournamentStore } from '../tournament.store';
 import { checkTeamNames, parseTeamNames } from './team-names';
 
 @Component({
   selector: 'app-teams-tab',
-  imports: [FormsModule, Button, Textarea, ConfirmDialog, EmptyState],
+  imports: [FormsModule, Button, Textarea, ConfirmDialog, EmptyState, TeamBadge],
   templateUrl: './teams-tab.html',
   styleUrl: './teams-tab.css',
 })

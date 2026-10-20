@@ -47,7 +47,7 @@
     <ul class="card teams">
       @for (team of sortedTeams(); track team.id) {
         <li class="row">
-          <span class="team-name">{{ team.name }}</span>
+          <app-team-badge class="team-name" [teamName]="team.name" size="sm" />
           <span class="spacer"></span>
           @if (canEdit()) {
             <p-button

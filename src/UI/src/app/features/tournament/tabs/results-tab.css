@@ -30,11 +30,6 @@
   color: var(--status-finished);
 }
 
-.team {
-  font-size: 16px;
-  overflow-wrap: anywhere;
-}
-
 .placements {
   width: 100%;
   border-collapse: collapse;

@@ -31,11 +31,6 @@
   color: var(--status-finished);
 }
 
-.champion-name {
-  font-family: var(--font-display);
-  font-size: 24px;
-}
-
 .banner {
   padding: 12px 16px;
   border-radius: var(--radius);

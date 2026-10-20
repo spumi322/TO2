@@ -64,3 +64,18 @@ nav a:hover {
 .live-dot.reconnecting {
   background: var(--warning);
 }
+
+/* Phone: less spacing, user menu as an icon only (::ng-deep: the label is inside p-button) */
+@media (max-width: 600px) {
+  .inner {
+    gap: 12px;
+  }
+
+  .logo span {
+    display: none;
+  }
+
+  :host ::ng-deep .user-button .p-button-label {
+    display: none;
+  }
+}

@@ -1,12 +1,13 @@
 import { Component, computed, inject } from '@angular/core';
 import { EmptyState } from '../../../shared/empty-state';
 import { Format } from '../../../shared/enums';
+import { TeamBadge } from '../../../shared/team-badge';
 import { ordinal, podiumTiers, toPlacementRows } from '../placements';
 import { TournamentStore } from '../tournament.store';
 
 @Component({
   selector: 'app-results-tab',
-  imports: [EmptyState],
+  imports: [EmptyState, TeamBadge],
   templateUrl: './results-tab.html',
   styleUrl: './results-tab.css',
 })

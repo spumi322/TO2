@@ -7,7 +7,7 @@
         <div class="tier card" [class]="'place-' + (i + 1)">
           <span class="place">{{ tier.label }}</span>
           @for (team of tier.teams; track team.teamId) {
-            <strong class="team">{{ team.teamName }}</strong>
+            <app-team-badge [teamName]="team.teamName" [size]="i === 0 ? 'lg' : 'md'" />
             @if (team.groupName) {
               <span class="muted small">{{ team.groupName }}</span>
             }
@@ -28,7 +28,7 @@
         @for (row of rows(); track row.teamId) {
           <tr [class.champion]="row.placement === 1">
             <td>{{ row.rankLabel }}</td>
-            <td class="team-col">{{ row.teamName }}</td>
+            <td class="team-col"><app-team-badge [teamName]="row.teamName" size="xs" /></td>
             <td class="muted">{{ row.reached }}</td>
           </tr>
         }

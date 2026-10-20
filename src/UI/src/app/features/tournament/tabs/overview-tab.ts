@@ -3,6 +3,7 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Format, FORMAT_LABELS, formatHasGroups, TournamentStatus } from '../../../shared/enums';
+import { TeamBadge } from '../../../shared/team-badge';
 import { TournamentActions } from '../tournament-actions';
 import { TournamentStore } from '../tournament.store';
 
@@ -16,7 +17,7 @@ type NextStep =
 
 @Component({
   selector: 'app-overview-tab',
-  imports: [DatePipe, RouterLink, Button],
+  imports: [DatePipe, RouterLink, Button, TeamBadge],
   templateUrl: './overview-tab.html',
   styleUrl: './overview-tab.css',
 })
