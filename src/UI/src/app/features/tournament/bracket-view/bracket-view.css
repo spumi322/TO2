@@ -1,0 +1,38 @@
+:host {
+  display: block;
+  overflow-x: auto;
+}
+
+/* Theme through the library's own CSS variables (more specific than its .brackets-viewer rule) */
+.brackets-viewer {
+  --primary-background: var(--surface);
+  --secondary-background: var(--surface-2);
+  --match-background: var(--surface);
+  --font-color: var(--text);
+  --win-color: var(--success);
+  --loss-color: var(--danger);
+  --label-color: var(--text-muted);
+  --hint-color: var(--text-muted);
+  --connector-color: var(--border);
+  --border-color: var(--border);
+  --border-hover-color: var(--text-muted);
+  --border-selected-color: var(--primary);
+  --text-size: 13px;
+  --match-width: 200px;
+  --round-margin: 32px;
+  --match-border-radius: 8px;
+
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: var(--font-ui);
+}
+
+.brackets-viewer.clickable {
+  cursor: pointer;
+}
+
+/* The library's stage title: the tab already says "Bracket" (::ng-deep: the element is created by the library) */
+:host ::ng-deep .brackets-viewer h1 {
+  display: none;
+}

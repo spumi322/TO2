@@ -1,0 +1,34 @@
+@if (!seeded()) {
+  <app-empty-state
+    title="The bracket is not seeded yet"
+    message="The bracket is drawn when its stage starts."
+    icon="pi-sitemap"
+  />
+} @else {
+  @if (canScore()) {
+    <p class="muted small">Click a match to score it.</p>
+  }
+  <div class="card bracket">
+    <app-bracket-view
+      [bracket]="store.bracket()!"
+      [teamNames]="store.teamNames()"
+      [tournamentId]="store.id()"
+      [canScore]="canScore()"
+      (matchClick)="open($event)"
+    />
+  </div>
+}
+
+<p-popover appendTo="body">
+  @if (selectedMatch(); as match) {
+    <div class="popover-match">
+      <app-match-card
+        [match]="match"
+        [teamNames]="store.teamNames()"
+        [canScore]="canScore()"
+        [busy]="scoring.savingMatchId() === match.id"
+        (gameWinner)="scoring.setWinner($event)"
+      />
+    </div>
+  }
+</p-popover>

@@ -1,0 +1,12 @@
+p {
+  margin: 0 0 8px;
+}
+
+.bracket {
+  padding: 16px;
+  overflow-x: auto;
+}
+
+.popover-match {
+  width: 240px;
+}

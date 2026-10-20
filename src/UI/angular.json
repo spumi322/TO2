@@ -49,6 +49,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "brackets-viewer.min.{js,css}",
+                "input": "node_modules/brackets-viewer/dist",
+                "output": "brackets-viewer"
               }
             ],
             "styles": [
