@@ -31,7 +31,8 @@
   gap: 4px;
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
-  scrollbar-width: thin;
+  overflow-y: hidden;
+  scrollbar-width: none;
 }
 
 .tabs a {
