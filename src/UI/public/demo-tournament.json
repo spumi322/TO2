@@ -1,0 +1,921 @@
+{
+  "tournament": {
+    "id": 301,
+    "name": "Spring Championship",
+    "description": "A finished demo tournament: 8 teams in 2 groups, the top 2 of each group play the playoff bracket.",
+    "maxTeams": 8,
+    "format": 2,
+    "status": 7,
+    "isRegistrationOpen": false,
+    "version": 5,
+    "cancelledAt": null,
+    "cancelledBy": null,
+    "cancellationReason": null,
+    "currentTeams": 8,
+    "numberOfGroups": 2,
+    "advancingPerGroup": 2
+  },
+  "teams": [
+    {
+      "id": 989,
+      "name": "Alpha"
+    },
+    {
+      "id": 990,
+      "name": "Bravo"
+    },
+    {
+      "id": 991,
+      "name": "Charlie"
+    },
+    {
+      "id": 992,
+      "name": "Delta"
+    },
+    {
+      "id": 993,
+      "name": "Echo"
+    },
+    {
+      "id": 994,
+      "name": "Foxtrot"
+    },
+    {
+      "id": 995,
+      "name": "Golf"
+    },
+    {
+      "id": 996,
+      "name": "Hotel"
+    }
+  ],
+  "groups": [
+    {
+      "id": 670,
+      "name": "Group 1",
+      "isFinished": true,
+      "isSeeded": true,
+      "version": 2,
+      "teams": [
+        {
+          "id": 993,
+          "name": "Echo",
+          "wins": 3,
+          "losses": 0,
+          "points": 9,
+          "gameWins": 6,
+          "gameLosses": 0,
+          "status": 2
+        },
+        {
+          "id": 991,
+          "name": "Charlie",
+          "wins": 2,
+          "losses": 1,
+          "points": 6,
+          "gameWins": 4,
+          "gameLosses": 2,
+          "status": 2
+        },
+        {
+          "id": 995,
+          "name": "Golf",
+          "wins": 1,
+          "losses": 2,
+          "points": 3,
+          "gameWins": 2,
+          "gameLosses": 4,
+          "status": 3
+        },
+        {
+          "id": 990,
+          "name": "Bravo",
+          "wins": 0,
+          "losses": 3,
+          "points": 0,
+          "gameWins": 0,
+          "gameLosses": 6,
+          "status": 3
+        }
+      ],
+      "matches": [
+        {
+          "id": 3228,
+          "standingId": 670,
+          "round": 1,
+          "seed": 1,
+          "teamAId": 993,
+          "teamBId": 991,
+          "winnerId": 993,
+          "loserId": 991,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9376,
+              "matchId": 3228,
+              "teamAId": 993,
+              "teamAScore": 0,
+              "teamBId": 991,
+              "teamBScore": 0,
+              "winnerId": 993,
+              "version": 1
+            },
+            {
+              "id": 9377,
+              "matchId": 3228,
+              "teamAId": 993,
+              "teamAScore": 0,
+              "teamBId": 991,
+              "teamBScore": 0,
+              "winnerId": 993,
+              "version": 1
+            },
+            {
+              "id": 9378,
+              "matchId": 3228,
+              "teamAId": 993,
+              "teamAScore": 0,
+              "teamBId": 991,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            }
+          ]
+        },
+        {
+          "id": 3229,
+          "standingId": 670,
+          "round": 1,
+          "seed": 2,
+          "teamAId": 993,
+          "teamBId": 995,
+          "winnerId": 993,
+          "loserId": 995,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9379,
+              "matchId": 3229,
+              "teamAId": 993,
+              "teamAScore": 0,
+              "teamBId": 995,
+              "teamBScore": 0,
+              "winnerId": 993,
+              "version": 1
+            },
+            {
+              "id": 9380,
+              "matchId": 3229,
+              "teamAId": 993,
+              "teamAScore": 0,
+              "teamBId": 995,
+              "teamBScore": 0,
+              "winnerId": 993,
+              "version": 1
+            },
+            {
+              "id": 9381,
+              "matchId": 3229,
+              "teamAId": 993,
+              "teamAScore": 0,
+              "teamBId": 995,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            }
+          ]
+        },
+        {
+          "id": 3230,
+          "standingId": 670,
+          "round": 1,
+          "seed": 3,
+          "teamAId": 993,
+          "teamBId": 990,
+          "winnerId": 993,
+          "loserId": 990,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9382,
+              "matchId": 3230,
+              "teamAId": 993,
+              "teamAScore": 0,
+              "teamBId": 990,
+              "teamBScore": 0,
+              "winnerId": 993,
+              "version": 1
+            },
+            {
+              "id": 9383,
+              "matchId": 3230,
+              "teamAId": 993,
+              "teamAScore": 0,
+              "teamBId": 990,
+              "teamBScore": 0,
+              "winnerId": 993,
+              "version": 1
+            },
+            {
+              "id": 9384,
+              "matchId": 3230,
+              "teamAId": 993,
+              "teamAScore": 0,
+              "teamBId": 990,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            }
+          ]
+        },
+        {
+          "id": 3231,
+          "standingId": 670,
+          "round": 2,
+          "seed": 2,
+          "teamAId": 991,
+          "teamBId": 995,
+          "winnerId": 991,
+          "loserId": 995,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9385,
+              "matchId": 3231,
+              "teamAId": 991,
+              "teamAScore": 0,
+              "teamBId": 995,
+              "teamBScore": 0,
+              "winnerId": 991,
+              "version": 1
+            },
+            {
+              "id": 9387,
+              "matchId": 3231,
+              "teamAId": 991,
+              "teamAScore": 0,
+              "teamBId": 995,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            },
+            {
+              "id": 9386,
+              "matchId": 3231,
+              "teamAId": 991,
+              "teamAScore": 0,
+              "teamBId": 995,
+              "teamBScore": 0,
+              "winnerId": 991,
+              "version": 1
+            }
+          ]
+        },
+        {
+          "id": 3232,
+          "standingId": 670,
+          "round": 2,
+          "seed": 3,
+          "teamAId": 991,
+          "teamBId": 990,
+          "winnerId": 991,
+          "loserId": 990,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9388,
+              "matchId": 3232,
+              "teamAId": 991,
+              "teamAScore": 0,
+              "teamBId": 990,
+              "teamBScore": 0,
+              "winnerId": 991,
+              "version": 1
+            },
+            {
+              "id": 9389,
+              "matchId": 3232,
+              "teamAId": 991,
+              "teamAScore": 0,
+              "teamBId": 990,
+              "teamBScore": 0,
+              "winnerId": 991,
+              "version": 1
+            },
+            {
+              "id": 9390,
+              "matchId": 3232,
+              "teamAId": 991,
+              "teamAScore": 0,
+              "teamBId": 990,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            }
+          ]
+        },
+        {
+          "id": 3233,
+          "standingId": 670,
+          "round": 3,
+          "seed": 3,
+          "teamAId": 995,
+          "teamBId": 990,
+          "winnerId": 995,
+          "loserId": 990,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9391,
+              "matchId": 3233,
+              "teamAId": 995,
+              "teamAScore": 0,
+              "teamBId": 990,
+              "teamBScore": 0,
+              "winnerId": 995,
+              "version": 1
+            },
+            {
+              "id": 9393,
+              "matchId": 3233,
+              "teamAId": 995,
+              "teamAScore": 0,
+              "teamBId": 990,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            },
+            {
+              "id": 9392,
+              "matchId": 3233,
+              "teamAId": 995,
+              "teamAScore": 0,
+              "teamBId": 990,
+              "teamBScore": 0,
+              "winnerId": 995,
+              "version": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 671,
+      "name": "Group 2",
+      "isFinished": true,
+      "isSeeded": true,
+      "version": 2,
+      "teams": [
+        {
+          "id": 996,
+          "name": "Hotel",
+          "wins": 3,
+          "losses": 0,
+          "points": 9,
+          "gameWins": 6,
+          "gameLosses": 0,
+          "status": 2
+        },
+        {
+          "id": 994,
+          "name": "Foxtrot",
+          "wins": 2,
+          "losses": 1,
+          "points": 6,
+          "gameWins": 4,
+          "gameLosses": 2,
+          "status": 2
+        },
+        {
+          "id": 989,
+          "name": "Alpha",
+          "wins": 1,
+          "losses": 2,
+          "points": 3,
+          "gameWins": 2,
+          "gameLosses": 4,
+          "status": 3
+        },
+        {
+          "id": 992,
+          "name": "Delta",
+          "wins": 0,
+          "losses": 3,
+          "points": 0,
+          "gameWins": 0,
+          "gameLosses": 6,
+          "status": 3
+        }
+      ],
+      "matches": [
+        {
+          "id": 3234,
+          "standingId": 671,
+          "round": 1,
+          "seed": 1,
+          "teamAId": 996,
+          "teamBId": 994,
+          "winnerId": 996,
+          "loserId": 994,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9394,
+              "matchId": 3234,
+              "teamAId": 996,
+              "teamAScore": 0,
+              "teamBId": 994,
+              "teamBScore": 0,
+              "winnerId": 996,
+              "version": 1
+            },
+            {
+              "id": 9395,
+              "matchId": 3234,
+              "teamAId": 996,
+              "teamAScore": 0,
+              "teamBId": 994,
+              "teamBScore": 0,
+              "winnerId": 996,
+              "version": 1
+            },
+            {
+              "id": 9396,
+              "matchId": 3234,
+              "teamAId": 996,
+              "teamAScore": 0,
+              "teamBId": 994,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            }
+          ]
+        },
+        {
+          "id": 3235,
+          "standingId": 671,
+          "round": 1,
+          "seed": 2,
+          "teamAId": 996,
+          "teamBId": 989,
+          "winnerId": 996,
+          "loserId": 989,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9397,
+              "matchId": 3235,
+              "teamAId": 996,
+              "teamAScore": 0,
+              "teamBId": 989,
+              "teamBScore": 0,
+              "winnerId": 996,
+              "version": 1
+            },
+            {
+              "id": 9398,
+              "matchId": 3235,
+              "teamAId": 996,
+              "teamAScore": 0,
+              "teamBId": 989,
+              "teamBScore": 0,
+              "winnerId": 996,
+              "version": 1
+            },
+            {
+              "id": 9399,
+              "matchId": 3235,
+              "teamAId": 996,
+              "teamAScore": 0,
+              "teamBId": 989,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            }
+          ]
+        },
+        {
+          "id": 3236,
+          "standingId": 671,
+          "round": 1,
+          "seed": 3,
+          "teamAId": 996,
+          "teamBId": 992,
+          "winnerId": 996,
+          "loserId": 992,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9402,
+              "matchId": 3236,
+              "teamAId": 996,
+              "teamAScore": 0,
+              "teamBId": 992,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            },
+            {
+              "id": 9400,
+              "matchId": 3236,
+              "teamAId": 996,
+              "teamAScore": 0,
+              "teamBId": 992,
+              "teamBScore": 0,
+              "winnerId": 996,
+              "version": 1
+            },
+            {
+              "id": 9401,
+              "matchId": 3236,
+              "teamAId": 996,
+              "teamAScore": 0,
+              "teamBId": 992,
+              "teamBScore": 0,
+              "winnerId": 996,
+              "version": 1
+            }
+          ]
+        },
+        {
+          "id": 3237,
+          "standingId": 671,
+          "round": 2,
+          "seed": 2,
+          "teamAId": 994,
+          "teamBId": 989,
+          "winnerId": 994,
+          "loserId": 989,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9405,
+              "matchId": 3237,
+              "teamAId": 994,
+              "teamAScore": 0,
+              "teamBId": 989,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            },
+            {
+              "id": 9404,
+              "matchId": 3237,
+              "teamAId": 994,
+              "teamAScore": 0,
+              "teamBId": 989,
+              "teamBScore": 0,
+              "winnerId": 994,
+              "version": 1
+            },
+            {
+              "id": 9403,
+              "matchId": 3237,
+              "teamAId": 994,
+              "teamAScore": 0,
+              "teamBId": 989,
+              "teamBScore": 0,
+              "winnerId": 994,
+              "version": 1
+            }
+          ]
+        },
+        {
+          "id": 3238,
+          "standingId": 671,
+          "round": 2,
+          "seed": 3,
+          "teamAId": 994,
+          "teamBId": 992,
+          "winnerId": 994,
+          "loserId": 992,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9406,
+              "matchId": 3238,
+              "teamAId": 994,
+              "teamAScore": 0,
+              "teamBId": 992,
+              "teamBScore": 0,
+              "winnerId": 994,
+              "version": 1
+            },
+            {
+              "id": 9407,
+              "matchId": 3238,
+              "teamAId": 994,
+              "teamAScore": 0,
+              "teamBId": 992,
+              "teamBScore": 0,
+              "winnerId": 994,
+              "version": 1
+            },
+            {
+              "id": 9408,
+              "matchId": 3238,
+              "teamAId": 994,
+              "teamAScore": 0,
+              "teamBId": 992,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            }
+          ]
+        },
+        {
+          "id": 3239,
+          "standingId": 671,
+          "round": 3,
+          "seed": 3,
+          "teamAId": 989,
+          "teamBId": 992,
+          "winnerId": 989,
+          "loserId": 992,
+          "bestOf": 3,
+          "version": 1,
+          "teamAWins": 2,
+          "teamBWins": 0,
+          "games": [
+            {
+              "id": 9411,
+              "matchId": 3239,
+              "teamAId": 989,
+              "teamAScore": 0,
+              "teamBId": 992,
+              "teamBScore": 0,
+              "winnerId": null,
+              "version": 0
+            },
+            {
+              "id": 9410,
+              "matchId": 3239,
+              "teamAId": 989,
+              "teamAScore": 0,
+              "teamBId": 992,
+              "teamBScore": 0,
+              "winnerId": 989,
+              "version": 1
+            },
+            {
+              "id": 9409,
+              "matchId": 3239,
+              "teamAId": 989,
+              "teamAScore": 0,
+              "teamBId": 992,
+              "teamBScore": 0,
+              "winnerId": 989,
+              "version": 1
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "bracket": {
+    "id": 669,
+    "name": "Main Bracket",
+    "isFinished": true,
+    "isSeeded": true,
+    "version": 2,
+    "matches": [
+      {
+        "id": 3240,
+        "standingId": 669,
+        "round": 1,
+        "seed": 1,
+        "teamAId": 993,
+        "teamBId": 994,
+        "winnerId": 993,
+        "loserId": 994,
+        "bestOf": 3,
+        "version": 1,
+        "teamAWins": 2,
+        "teamBWins": 0,
+        "games": [
+          {
+            "id": 9412,
+            "matchId": 3240,
+            "teamAId": 993,
+            "teamAScore": 0,
+            "teamBId": 994,
+            "teamBScore": 0,
+            "winnerId": 993,
+            "version": 1
+          },
+          {
+            "id": 9413,
+            "matchId": 3240,
+            "teamAId": 993,
+            "teamAScore": 0,
+            "teamBId": 994,
+            "teamBScore": 0,
+            "winnerId": 993,
+            "version": 1
+          },
+          {
+            "id": 9414,
+            "matchId": 3240,
+            "teamAId": 993,
+            "teamAScore": 0,
+            "teamBId": 994,
+            "teamBScore": 0,
+            "winnerId": null,
+            "version": 0
+          }
+        ]
+      },
+      {
+        "id": 3241,
+        "standingId": 669,
+        "round": 1,
+        "seed": 2,
+        "teamAId": 996,
+        "teamBId": 991,
+        "winnerId": 996,
+        "loserId": 991,
+        "bestOf": 3,
+        "version": 1,
+        "teamAWins": 2,
+        "teamBWins": 0,
+        "games": [
+          {
+            "id": 9415,
+            "matchId": 3241,
+            "teamAId": 996,
+            "teamAScore": 0,
+            "teamBId": 991,
+            "teamBScore": 0,
+            "winnerId": 996,
+            "version": 1
+          },
+          {
+            "id": 9416,
+            "matchId": 3241,
+            "teamAId": 996,
+            "teamAScore": 0,
+            "teamBId": 991,
+            "teamBScore": 0,
+            "winnerId": 996,
+            "version": 1
+          },
+          {
+            "id": 9417,
+            "matchId": 3241,
+            "teamAId": 996,
+            "teamAScore": 0,
+            "teamBId": 991,
+            "teamBScore": 0,
+            "winnerId": null,
+            "version": 0
+          }
+        ]
+      },
+      {
+        "id": 3242,
+        "standingId": 669,
+        "round": 2,
+        "seed": 1,
+        "teamAId": 993,
+        "teamBId": 996,
+        "winnerId": 993,
+        "loserId": 996,
+        "bestOf": 3,
+        "version": 3,
+        "teamAWins": 2,
+        "teamBWins": 0,
+        "games": [
+          {
+            "id": 9419,
+            "matchId": 3242,
+            "teamAId": 993,
+            "teamAScore": 0,
+            "teamBId": 996,
+            "teamBScore": 0,
+            "winnerId": 993,
+            "version": 1
+          },
+          {
+            "id": 9420,
+            "matchId": 3242,
+            "teamAId": 993,
+            "teamAScore": 0,
+            "teamBId": 996,
+            "teamBScore": 0,
+            "winnerId": null,
+            "version": 0
+          },
+          {
+            "id": 9418,
+            "matchId": 3242,
+            "teamAId": 993,
+            "teamAScore": 0,
+            "teamBId": 996,
+            "teamBScore": 0,
+            "winnerId": 993,
+            "version": 1
+          }
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "teamId": 993,
+      "teamName": "Echo",
+      "placement": 1,
+      "status": 4,
+      "eliminatedInRound": 0,
+      "groupName": null
+    },
+    {
+      "teamId": 996,
+      "teamName": "Hotel",
+      "placement": 2,
+      "status": 3,
+      "eliminatedInRound": 2,
+      "groupName": null
+    },
+    {
+      "teamId": 991,
+      "teamName": "Charlie",
+      "placement": 3,
+      "status": 3,
+      "eliminatedInRound": 1,
+      "groupName": null
+    },
+    {
+      "teamId": 994,
+      "teamName": "Foxtrot",
+      "placement": 3,
+      "status": 3,
+      "eliminatedInRound": 1,
+      "groupName": null
+    },
+    {
+      "teamId": 989,
+      "teamName": "Alpha",
+      "placement": 5,
+      "status": 3,
+      "eliminatedInRound": 0,
+      "groupName": "Group 2"
+    },
+    {
+      "teamId": 995,
+      "teamName": "Golf",
+      "placement": 5,
+      "status": 3,
+      "eliminatedInRound": 0,
+      "groupName": "Group 1"
+    },
+    {
+      "teamId": 990,
+      "teamName": "Bravo",
+      "placement": 7,
+      "status": 3,
+      "eliminatedInRound": 0,
+      "groupName": "Group 1"
+    },
+    {
+      "teamId": 992,
+      "teamName": "Delta",
+      "placement": 7,
+      "status": 3,
+      "eliminatedInRound": 0,
+      "groupName": "Group 2"
+    }
+  ]
+}

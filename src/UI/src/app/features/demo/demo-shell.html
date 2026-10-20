@@ -1,0 +1,30 @@
+<div class="page stack">
+  <div class="demo-banner row">
+    <i class="pi pi-eye"></i>
+    <span>Read-only demo tournament.</span>
+    <span class="spacer"></span>
+    <a routerLink="/register">Create your own</a>
+  </div>
+
+  @if (failed()) {
+    <div class="form-error" role="alert">The demo could not be loaded.</div>
+  } @else if (store.tournament(); as t) {
+    <header class="header">
+      <div class="title stack-xs">
+        <div class="row">
+          <app-status-chip [status]="t.status" />
+          <app-format-badge [format]="t.format" />
+        </div>
+        <h1 class="name">{{ t.name }}</h1>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="Tournament sections">
+      @for (tab of tabs(); track tab.path) {
+        <a [routerLink]="tab.path" routerLinkActive="active">{{ tab.label }}</a>
+      }
+    </nav>
+
+    <router-outlet />
+  }
+</div>

@@ -19,6 +19,15 @@ import {
 import { GameUpdatedEvent, HubEventName } from '../../core/realtime/hub-events';
 import { RealtimeService } from '../../core/realtime/realtime.service';
 
+export interface TournamentSnapshot {
+  tournament: Tournament;
+  state: TournamentState;
+  teams: Team[];
+  groups: Group[];
+  bracket: Bracket | null;
+  results: TeamPlacement[];
+}
+
 /**
  * State of one open tournament page, provided on the shell route (one instance per open tournament).
  * Loads everything in parallel; reloads replace single signals, so the open tab is never rebuilt.
@@ -81,6 +90,18 @@ export class TournamentStore {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  // Fixed data without the API (the /demo page)
+  loadSnapshot(snapshot: TournamentSnapshot): void {
+    this._id.set(snapshot.tournament.id);
+    this.tournament.set(snapshot.tournament);
+    this.state.set(snapshot.state);
+    this.teams.set(snapshot.teams);
+    this.groups.set(snapshot.groups);
+    this.bracket.set(snapshot.bracket);
+    this.results.set(snapshot.results);
+    this.loading.set(false);
   }
 
   reload(): Promise<void> {

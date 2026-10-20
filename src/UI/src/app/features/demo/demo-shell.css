@@ -1,0 +1,10 @@
+.demo-banner {
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--text);
+}
+
+.demo-banner i {
+  color: var(--primary);
+}
