@@ -35,12 +35,18 @@ describe('placements', () => {
     ]);
   });
 
-  it('labels GroupsOnly winners by group', () => {
-    const rows = toPlacementRows([p('Alpha', 1, 0, 'Group A'), p('Bravo', 1, 0, 'Group B')], 0);
+  it('shows GroupsOnly placements as positions in their group', () => {
+    const rows = toPlacementRows(
+      [p('Alpha', 1, 0, 'Group A'), p('Bravo', 1, 0, 'Group B'), p('Charlie', 2, 0, 'Group A'), p('Delta', 2, 0, 'Group B')],
+      0,
+      true,
+    );
 
     expect(rows.map((r) => [r.rankLabel, r.reached])).toEqual([
-      ['1st-2nd', 'Group A winner'],
-      ['1st-2nd', 'Group B winner'],
+      ['1st', 'Group A winner'],
+      ['1st', 'Group B winner'],
+      ['2nd', 'Group A'],
+      ['2nd', 'Group B'],
     ]);
   });
 

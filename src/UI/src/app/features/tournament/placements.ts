@@ -24,14 +24,15 @@ export function stageReached(eliminatedInRound: number, totalRounds: number): st
 
 /**
  * Placements come from the server, already ranked; this only labels them.
- * Teams sharing a placement get a range ("5th-8th"). A group name means the placement is a group position.
+ * Shared ranks (bracket rounds, group-stage knockouts: 3, 3, then 5) are shown as a range ("3rd-4th").
+ * GroupsOnly placements are positions inside each group (1, 1, 2, 2 with two groups): shown as is.
  */
-export function toPlacementRows(placements: TeamPlacement[], totalRounds: number): PlacementRow[] {
+export function toPlacementRows(placements: TeamPlacement[], totalRounds: number, groupPositions = false): PlacementRow[] {
   const sharing = new Map<number, number>();
   for (const p of placements) sharing.set(p.placement, (sharing.get(p.placement) ?? 0) + 1);
 
   return placements.map((p) => {
-    const count = sharing.get(p.placement) ?? 1;
+    const count = groupPositions ? 1 : (sharing.get(p.placement) ?? 1);
     const rankLabel = count > 1 ? `${ordinal(p.placement)}-${ordinal(p.placement + count - 1)}` : ordinal(p.placement);
 
     let reached: string;
