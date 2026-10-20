@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, untracked } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, input, untracked } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { Skeleton } from 'primeng/skeleton';
 import { EmptyState } from '../../shared/empty-state';
@@ -42,7 +42,8 @@ export class TournamentShell {
   constructor() {
     effect(() => {
       const id = Number(this.id());
-      untracked(() => void this.store.load(id));
+      untracked(() => void this.store.load(id).then(() => this.store.connect()));
     });
+    inject(DestroyRef).onDestroy(() => this.store.disconnect());
   }
 }

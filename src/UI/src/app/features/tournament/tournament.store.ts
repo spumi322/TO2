@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
-import { firstValueFrom, forkJoin } from 'rxjs';
+import { filter, firstValueFrom, forkJoin, map, merge, Observable, Subscription } from 'rxjs';
 import { MatchesApi } from '../../core/api/matches.api';
 import { StandingsApi } from '../../core/api/standings.api';
 import { TeamsApi } from '../../core/api/teams.api';
@@ -16,6 +16,8 @@ import {
   Tournament,
   TournamentState,
 } from '../../core/models';
+import { GameUpdatedEvent, HubEventName } from '../../core/realtime/hub-events';
+import { RealtimeService } from '../../core/realtime/realtime.service';
 
 /**
  * State of one open tournament page, provided on the shell route (one instance per open tournament).
@@ -28,6 +30,8 @@ export class TournamentStore {
   private readonly teamsApi = inject(TeamsApi);
   private readonly standingsApi = inject(StandingsApi);
   private readonly matchesApi = inject(MatchesApi);
+  private readonly realtime = inject(RealtimeService);
+  private liveSubscription: Subscription | null = null;
 
   private readonly _id = signal(0);
   readonly id = this._id.asReadonly();
@@ -118,6 +122,52 @@ export class TournamentStore {
 
   applyBracket(bracket: Bracket): void {
     this.bracket.set(bracket);
+  }
+
+  // Live updates: join the tournament's hub group and apply events while the page is open
+  connect(): void {
+    this.disconnect();
+    const id = this._id();
+    this.liveSubscription = this.liveUpdates().subscribe((apply) =>
+      apply().catch((error: unknown) => console.warn('Live update failed', error)),
+    );
+    this.realtime.joinTournament(id).catch(() => this.notFound.set(true));
+  }
+
+  disconnect(): void {
+    if (!this.liveSubscription) return;
+    this.liveSubscription.unsubscribe();
+    this.liveSubscription = null;
+    void this.realtime.leaveTournament(this._id());
+  }
+
+  applyGameUpdated(event: GameUpdatedEvent): Promise<void> {
+    if (event.updatedGroup) this.applyGroup(event.updatedGroup);
+    if (event.updatedBracket) this.applyBracket(event.updatedBracket);
+    if (event.finalStandings) this.results.set(event.finalStandings);
+
+    const reloads: Promise<void>[] = [];
+    if (event.newTournamentStatus !== null) reloads.push(this.reloadTournament());
+    if (event.tournamentFinished && !event.finalStandings) reloads.push(this.reloadResults());
+    return Promise.all(reloads).then(() => undefined);
+  }
+
+  // Each event becomes "what to do"; tenant-wide events are filtered to this tournament
+  private liveUpdates(): Observable<() => Promise<void>> {
+    const mine = <K extends HubEventName>(name: K) =>
+      this.realtime.on(name).pipe(filter((event) => event.tournamentId === this._id()));
+
+    return merge(
+      mine('GameUpdated').pipe(map((event) => () => this.applyGameUpdated(event))),
+      merge(mine('TeamAdded'), mine('TeamRemoved')).pipe(map(() => () => this.reloadTeams())),
+      merge(mine('TournamentUpdated'), mine('TournamentCancelled')).pipe(map(() => () => this.reloadTournament())),
+      merge(mine('GroupsStarted'), mine('BracketStarted')).pipe(
+        map(() => () => Promise.all([this.reloadTournament(), this.reloadStandings()]).then(() => undefined)),
+      ),
+      mine('TournamentDeleted').pipe(map((event) => async () => this.deletedBy.set(event.updatedBy))),
+      // Events may have been missed while offline
+      this.realtime.reconnected$.pipe(map(() => () => this.reload())),
+    );
   }
 
   // Actions: errors propagate to the caller, which shows them
