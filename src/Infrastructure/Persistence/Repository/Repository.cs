@@ -64,5 +64,9 @@ namespace Infrastructure.Persistence.Repository
             var entity = await GetByIdAsync(id);
             if (entity != null) _dbSet.Remove(entity);
         }
+
+        // ConcurrencyVersionInterceptor increments Version of every Modified entity
+        public void BumpVersion(TEntity entity)
+            => _dbContext.Entry(entity).Property(e => e.Version).IsModified = true;
     }
 }

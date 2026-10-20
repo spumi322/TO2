@@ -20,5 +20,10 @@ namespace Application.Contracts
         Task AddRangeAsync(IEnumerable<T> entities);
         Task DeleteAsync(T entity);
         Task DeleteAsync(long id);
+
+        // Marks a loaded entity as changed, so the next save increments its Version.
+        // Used as an aggregate lock when only its children change (e.g. teams of a tournament):
+        // two concurrent writes then conflict instead of both passing their checks.
+        void BumpVersion(T entity);
     }
 }

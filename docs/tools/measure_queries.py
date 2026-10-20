@@ -50,17 +50,14 @@ for i in range(4):
 tid = call("POST /tournaments", "POST", "/tournaments",
            {"name": "Measure Cup", "description": "d", "maxTeams": TEAMS, "format": 2, "numberOfGroups": GROUPS, "advancingPerGroup": ADV})["id"]
 
-for i in range(TEAMS):
-    team = call("POST /teams", "POST", "/teams", {"name": f"T{i}-{random.randint(0, 99999)}"})
-    call("POST add team to tournament", "POST", f"/teams/{tid}/teams/{team['id']}")
+call("POST /tournaments/{id}/teams (bulk)", "POST", f"/tournaments/{tid}/teams", {"names": [f"T{i}" for i in range(TEAMS)]})
 
-for label, path in [("GET /tournaments (list)", "/tournaments"), ("GET /teams (all)", "/teams"),
+for label, path in [("GET /tournaments (list)", "/tournaments"),
                     ("GET /tournaments/{id}", f"/tournaments/{tid}"), ("GET /tournaments/{id}/teams", f"/tournaments/{tid}/teams"),
                     ("GET /tournaments/{id}/state", f"/tournaments/{tid}/state")]:
     call(label, "GET", path)
 
 call("POST start-groups", "POST", f"/tournaments/{tid}/start-groups")
-call("GET /standings/{id}", "GET", f"/standings/{tid}")
 groups = call("GET /standings/{id}/groups", "GET", f"/standings/{tid}/groups")
 
 

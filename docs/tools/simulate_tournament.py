@@ -49,11 +49,8 @@ token = call("POST", "/auth/register", {"userName": u, "email": f"{u}@example.co
 setup = ({"format": 3, "numberOfGroups": 4} if GROUPS_ONLY
          else {"format": 2, "numberOfGroups": 4, "advancingPerGroup": 2})
 tid = call("POST", "/tournaments", {"name": "Sim Cup", "description": "d", "maxTeams": 16, **setup})["id"]
-name = {}
-for i in range(1, 17):
-    team = call("POST", "/teams", {"name": f"S{i:02d}"})
-    name[team["id"]] = f"S{i:02d}"
-    call("POST", f"/teams/{tid}/teams/{team['id']}")
+teams = call("POST", f"/tournaments/{tid}/teams", {"names": [f"S{i:02d}" for i in range(1, 17)]})
+name = {t["id"]: t["name"] for t in teams}
 
 
 def play(standing_id, m, winner=None, loser_games=0):

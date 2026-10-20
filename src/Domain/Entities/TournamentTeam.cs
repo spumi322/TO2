@@ -13,6 +13,13 @@ namespace Domain.Entities
             TeamId = teamId;
         }
 
+        // For a team created in the same save: EF sets TeamId from the navigation
+        public TournamentTeam(long tournamentId, Team team)
+        {
+            TournamentId = tournamentId;
+            Team = team;
+        }
+
         public long TournamentId { get; private set; }
         public Tournament Tournament { get; private set; }
 

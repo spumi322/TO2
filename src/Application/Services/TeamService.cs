@@ -61,6 +61,43 @@ namespace Application.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
+        // All or nothing: every name becomes a new team (teams are not reused), one save
+        public async Task<List<GetTeamResponseDTO>> AddTeamsToTournamentAsync(long tournamentId, AddTeamsRequestDTO request)
+        {
+            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+                ?? throw new NotFoundException("Tournament", tournamentId);
+
+            if (!_stateMachine.CanModifyTeams(tournament.Status))
+                throw new ConflictException("Tournament registration is closed.");
+
+            var names = request.Names.Select(n => n.Trim()).ToList();
+            var registeredNames = await _tournamentTeamRepository.GetTeamNamesAsync(tournamentId);
+
+            var freeSlots = tournament.MaxTeams - registeredNames.Count;
+            if (freeSlots <= 0)
+                throw new ConflictException("Tournament is full.");
+            if (names.Count > freeSlots)
+                throw new ConflictException($"Only {freeSlots} slots left.");
+
+            var alreadyRegistered = names
+                .Where(n => registeredNames.Contains(n, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+            if (alreadyRegistered.Count > 0)
+                throw new ConflictException($"Already registered: {string.Join(", ", alreadyRegistered)}.");
+
+            var teams = names.Select(n => new Team(n)).ToList();
+            await _teamRepository.AddRangeAsync(teams);
+            await _tournamentTeamRepository.AddRangeAsync(teams.Select(t => new TournamentTeam(tournamentId, t)));
+
+            // Two batches at once: the second save fails on the version (409) instead of exceeding MaxTeams
+            _tournamentRepository.BumpVersion(tournament);
+            await _unitOfWork.SaveChangesAsync();
+
+            await _signalRService.BroadcastTeamAdded(tournamentId, teams.Select(t => t.Id).ToList(), _tenantService.GetCurrentUserName());
+
+            return teams.Select(t => t.ToGetTeamResponseDTO()).ToList();
+        }
+
         public async Task RemoveTeamFromTournamentAsync(long teamId, long tournamentId)
         {
             var existingTournament = await _tournamentRepository.GetByIdAsync(tournamentId)
@@ -73,6 +110,14 @@ namespace Application.Services
                 ?? throw new NotFoundException("Team is not registered in this tournament");
 
             await _tournamentTeamRepository.DeleteAsync(tournamentTeam);
+
+            // Same rule as tournament delete: a team in no other tournament is deleted too
+            var inOtherTournament = await _tournamentTeamRepository
+                .ExistsAsync(tt => tt.TeamId == teamId && tt.TournamentId != tournamentId);
+            if (!inOtherTournament)
+                await _teamRepository.DeleteAsync(teamId);
+
+            _tournamentRepository.BumpVersion(existingTournament);
             await _unitOfWork.SaveChangesAsync();
 
             await _signalRService.BroadcastTeamRemoved(tournamentId, teamId, _tenantService.GetCurrentUserName());

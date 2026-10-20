@@ -12,14 +12,14 @@ namespace Domain.AggregateRoots
 
         public Team(string name)
         {
-            Name = name;
+            Name = name.Trim();
         }
 
         public string Name { get; private set; }
 
         public void Rename(string name)
         {
-            Name = name;
+            Name = name.Trim();
         }
 
         public long TenantId { get; set; }

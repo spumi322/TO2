@@ -41,12 +41,12 @@ namespace TO2.SignalR
                 .SendAsync("GameUpdated", eventPayload);
         }
 
-        public async Task BroadcastTeamAdded(long tournamentId, long teamId, string updatedBy)
+        public async Task BroadcastTeamAdded(long tournamentId, IReadOnlyList<long> teamIds, string updatedBy)
         {
             var tenantId = tenantService.GetCurrentTenantId();
             await _hubContext.Clients
                 .Group($"tenant-{tenantId}")
-                .SendAsync("TeamAdded", new { tournamentId, teamId, updatedBy });
+                .SendAsync("TeamAdded", new { tournamentId, teamIds, updatedBy });
         }
 
         public async Task BroadcastTeamRemoved(long tournamentId, long teamId, string updatedBy)

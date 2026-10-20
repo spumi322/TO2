@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,15 +12,18 @@ namespace TO2.Controllers
     public class TournamentsController : ControllerBase
     {
         private readonly ITournamentService _tournamentService;
+        private readonly ITeamService _teamService;
         private readonly IPlacementService _placementService;
         private readonly IWorkFlowService _workFlowService;
 
         public TournamentsController(
             ITournamentService tournamentService,
+            ITeamService teamService,
             IPlacementService placementService,
             IWorkFlowService workFlowService)
         {
             _tournamentService = tournamentService;
+            _teamService = teamService;
             _placementService = placementService;
             _workFlowService = workFlowService;
         }
@@ -44,6 +48,13 @@ namespace TO2.Controllers
         public async Task<IActionResult> GetTeamsByTournament(long id)
         {
             return Ok(await _tournamentService.GetTeamsByTournamentAsync(id));
+        }
+
+        // POST: api/tournaments/5/teams
+        [HttpPost("{id}/teams")]
+        public async Task<IActionResult> AddTeams(long id, [FromBody] AddTeamsRequestDTO request)
+        {
+            return Ok(await _teamService.AddTeamsToTournamentAsync(id, request));
         }
 
         // GET: api/Tournament/5/state
