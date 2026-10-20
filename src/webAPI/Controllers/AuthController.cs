@@ -78,29 +78,5 @@ namespace TO2.Controllers
             await _authService.RevokeTokenAsync(request.RefreshToken);
             return Ok(new { message = "Token revoked successfully" });
         }
-
-        /// <summary>
-        /// Test endpoint to verify authentication
-        /// </summary>
-        [HttpGet("me")]
-        [Authorize]
-        public ActionResult<object> GetCurrentUser()
-        {
-            var userId = User.FindFirst("sub")?.Value;
-            var email = User.FindFirst("email")?.Value;
-            var userName = User.FindFirst("name")?.Value;
-            var tenantId = User.FindFirst("tenantId")?.Value;
-            var tenantName = User.FindFirst("tenantName")?.Value;
-
-            return Ok(new
-            {
-                userId,
-                email,
-                userName,
-                tenantId,
-                tenantName,
-                message = "You are authenticated!"
-            });
-        }
     }
 }

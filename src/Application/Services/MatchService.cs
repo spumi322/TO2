@@ -20,13 +20,6 @@ namespace Application.Services
             _logger = logger;
         }
 
-        public async Task<List<Match>> GetMatchesAsync(long standingId)
-        {
-            var matches = await _matchRepository.FindAllAsync(m => m.StandingId == standingId);
-
-            return matches.ToList();
-        }
-
         public async Task<Match> GenerateMatch(Team? teamA, Team? teamB, int round, int seed, long standingId)
         {
             Match match;

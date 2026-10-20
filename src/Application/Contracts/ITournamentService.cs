@@ -12,7 +12,6 @@ namespace Application.Contracts
         Task CancelTournamentAsync(long id, CancelTournamentRequestDTO request);
         Task DeleteTournamentAsync(long id);
         Task<List<GetTeamResponseDTO>> GetTeamsByTournamentAsync(long tournamentId);
-        Task<StartTournamentDTO> StartTournament(long tournamentId);
         Task<TournamentStateDTO> GetTournamentStateAsync(long tournamentId);
     }
 }

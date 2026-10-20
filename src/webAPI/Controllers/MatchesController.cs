@@ -10,29 +10,11 @@ namespace TO2.Controllers
     [Route("api/matches")]
     public class MatchesController : ControllerBase
     {
-        private readonly IMatchService _matchService;
-        private readonly IGameService _gameService;
         private readonly IWorkFlowService _workFlowService;
 
-        public MatchesController(IMatchService matchService, IGameService gameService, IWorkFlowService workFlowService)
+        public MatchesController(IWorkFlowService workFlowService)
         {
-            _matchService = matchService;
-            _gameService = gameService;
             _workFlowService = workFlowService;
-        }
-
-        // GET /api/matches?standingId={id}
-        [HttpGet]
-        public async Task<IActionResult> GetMatches([FromQuery] long standingId)
-        {
-            return Ok(await _matchService.GetMatchesAsync(standingId));
-        }
-
-        // GET /api/matches/{matchId}/games
-        [HttpGet("{matchId}/games")]
-        public async Task<IActionResult> GetGames(long matchId)
-        {
-            return Ok(await _gameService.GetAllGamesByMatch(matchId));
         }
 
         // PUT /api/matches/{matchId}/games/{gameId}/result

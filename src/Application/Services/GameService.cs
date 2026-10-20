@@ -56,15 +56,6 @@ namespace Application.Services
             return new GenerateGamesDTO(true, $"{games.Count} games generated for match {match.Id}");
         }
 
-
-
-        public async Task<List<Game>> GetAllGamesByMatch(long matchId)
-        {
-            var games = await _gameRepository.FindAllAsync(g => g.MatchId == matchId);
-
-            return games.ToList();
-        }
-
         public async Task SetGameResult(long gameId, long winnerId, int? teamAScore, int? teamBScore)
         {
             var existingGame = await _gameRepository.GetByIdAsync(gameId)

@@ -34,25 +34,11 @@ namespace TO2.SignalR
                 .SendAsync("TournamentUpdated", new { tournamentId, updatedBy });
         }
 
-        public async Task BroadcastMatchUpdated(long tournamentId, long matchId, string updatedBy)
-        {
-            await _hubContext.Clients
-                .Group($"tournament-{tournamentId}")
-                .SendAsync("MatchUpdated", new { tournamentId, matchId, updatedBy });
-        }
-
         public async Task BroadcastGameUpdated(GameUpdatedEvent eventPayload)
         {
             await _hubContext.Clients
                 .Group($"tournament-{eventPayload.TournamentId}")
                 .SendAsync("GameUpdated", eventPayload);
-        }
-
-        public async Task BroadcastStandingUpdated(long tournamentId, long standingId, string updatedBy)
-        {
-            await _hubContext.Clients
-                .Group($"tournament-{tournamentId}")
-                .SendAsync("StandingUpdated", new { tournamentId, standingId, updatedBy });
         }
 
         public async Task BroadcastTeamAdded(long tournamentId, long teamId, string updatedBy)

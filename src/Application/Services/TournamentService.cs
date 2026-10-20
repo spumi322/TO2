@@ -152,20 +152,6 @@ namespace Application.Services
 
             return teams.Select(t => t.ToGetTeamResponseDTO()).ToList();
         }
-
-        public async Task<StartTournamentDTO> StartTournament(long tournamentId)
-        {
-            var existingTournament = await _tournamentRepository.GetByIdAsync(tournamentId)
-                ?? throw new NotFoundException("Tournament", tournamentId);
-
-            if (!existingTournament.IsRegistrationOpen)
-                throw new ConflictException("Tournament already started");
-
-            existingTournament.IsRegistrationOpen = false;
-            await _unitOfWork.SaveChangesAsync();
-
-            return new StartTournamentDTO("Tournament succesfully started", true, existingTournament.Version);
-        }
     }
 }
 

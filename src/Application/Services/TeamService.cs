@@ -40,31 +40,6 @@ namespace Application.Services
             _stateMachine = stateMachine;
         }
 
-        public async Task<CreateTeamResponseDTO> CreateTeamAsync(CreateTeamRequestDTO request)
-        {
-            var team = new Team(request.Name);
-
-            await _teamRepository.AddAsync(team);
-            await _unitOfWork.SaveChangesAsync();
-
-            return new CreateTeamResponseDTO(team.Id);
-        }
-
-        public async Task<List<GetAllTeamsResponseDTO>> GetAllTeamsAsync()
-        {
-            var teams = await _teamRepository.GetAllAsync();
-
-            return teams.Select(t => t.ToGetAllTeamsResponseDTO()).ToList();
-        }
-
-        public async Task<GetTeamResponseDTO> GetTeamAsync(long teamId)
-        {
-            var existingTeam = await _teamRepository.GetByIdAsync(teamId)
-                ?? throw new NotFoundException("Team", teamId);
-
-            return existingTeam.ToGetTeamResponseDTO();
-        }
-
         public async Task<UpdateTeamResponseDTO> UpdateTeamAsync(long id, UpdateTeamRequestDTO request)
         {
             var existingTeam = await _teamRepository.GetByIdAsync(id)
@@ -84,39 +59,6 @@ namespace Application.Services
         {
             await _teamRepository.DeleteAsync(teamId);
             await _unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task<AddTeamToTournamentResponseDTO> AddTeamToTournamentAsync(AddTeamToTournamentRequestDTO request)
-        {
-            // Validate that both team and tournament exist
-            var team = await _teamRepository.GetByIdAsync(request.TeamId)
-                ?? throw new NotFoundException("Team", request.TeamId);
-            var tournament = await _tournamentRepository.GetByIdAsync(request.TournamentId)
-                ?? throw new NotFoundException("Tournament", request.TournamentId);
-
-            if (!_stateMachine.CanModifyTeams(tournament.Status))
-                throw new ConflictException("Tournament registration is closed");
-
-            if (await _tournamentTeamRepository.ExistsInTournamentAsync(request.TeamId, request.TournamentId))
-                throw new ConflictException("Team is already in the tournament!");
-
-            if (await _tournamentTeamRepository.HasTeamWithNameAsync(request.TournamentId, team.Name))
-                throw new ConflictException($"A team with the name '{team.Name}' is already registered in this tournament");
-
-            var currentParticipantsCount = await _tournamentTeamRepository.GetCountByTournamentAsync(request.TournamentId);
-
-            if (currentParticipantsCount >= tournament.MaxTeams)
-                throw new ConflictException("Tournament is at maximum capacity");
-
-            // Create and save
-            var tournamentTeam = new TournamentTeam(request.TournamentId, request.TeamId);
-
-            await _tournamentTeamRepository.AddAsync(tournamentTeam);
-            await _unitOfWork.SaveChangesAsync();
-
-            await _signalRService.BroadcastTeamAdded(request.TournamentId, request.TeamId, _tenantService.GetCurrentUserName());
-
-            return new AddTeamToTournamentResponseDTO(request.TournamentId, request.TeamId);
         }
 
         public async Task RemoveTeamFromTournamentAsync(long teamId, long tournamentId)

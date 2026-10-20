@@ -98,14 +98,6 @@ namespace TO2.Controllers
             return NoContent();
         }
 
-        // PUT: api/Tournament/5/start
-        [HttpPut("{id}/start")]
-        public async Task<IActionResult> StartTournament(long id)
-        {
-            await _tournamentService.StartTournament(id);
-            return Ok();
-        }
-
         // DELETE: api/tournaments/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(long id)
