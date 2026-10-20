@@ -57,7 +57,9 @@
         @case ('play') {
           <section class="card next">
             <h3>{{ playStage() === 'groups' ? 'Groups are live' : 'Playoffs are live' }}</h3>
-            <p class="muted">Tap a team on a match to give it the next game.</p>
+            <p class="muted">
+              {{ playStage() === 'groups' ? 'Press +1 next to a team to give it the next game.' : 'Click a team in the bracket to give it the next game.' }}
+            </p>
             <div>
               <p-button
                 [label]="playStage() === 'groups' ? 'Go to groups' : 'Go to bracket'"
@@ -79,12 +81,13 @@
         }
       }
 
-      @if (t.description) {
-        <section class="card">
-          <h3>About</h3>
-          <p class="pre-line description">{{ t.description }}</p>
-        </section>
-      }
+      <section class="card">
+        <h3>Format</h3>
+        <p class="description">{{ formatSummary() }}</p>
+        @if (t.description) {
+          <p class="pre-line description muted about">{{ t.description }}</p>
+        }
+      </section>
     </div>
 
     <aside class="card facts">

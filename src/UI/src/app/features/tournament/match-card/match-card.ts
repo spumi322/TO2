@@ -9,7 +9,7 @@ export interface GameWinnerChange {
 
 /**
  * One match (groups and bracket). Scoring is winner-only:
- * tapping a team gives it the next unplayed game; tapping a played game's chip gives that game to the other team.
+ * a team's +1 button gives it the next unplayed game; a played game's chip gives that game to the other team.
  * Both work until the match has a winner (the backend allows re-scoring a game until then).
  */
 @Component({

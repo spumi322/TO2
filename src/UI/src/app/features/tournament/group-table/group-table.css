@@ -45,7 +45,11 @@ td.team {
   font-weight: 500;
 }
 
-/* Advancing teams: green edge on the rank cell */
+/* Whole rows tinted once decided: green = advances (or won), red = out */
+tr.advanced td {
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+}
+
 tr.advanced td.rank {
   box-shadow: inset 3px 0 var(--success);
 }
@@ -56,6 +60,11 @@ tr.advanced .status {
 
 tr.eliminated td {
   color: var(--text-muted);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+}
+
+tr.eliminated td.rank {
+  box-shadow: inset 3px 0 var(--danger);
 }
 
 tr.eliminated .name {

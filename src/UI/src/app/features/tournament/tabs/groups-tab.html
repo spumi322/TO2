@@ -18,16 +18,24 @@
           }
         </div>
         <div class="group-body">
-          <app-group-table [group]="group" [advancing]="advancing()" />
+          <div class="table-side">
+            <p class="muted small rule">{{ rule() }}</p>
+            <app-group-table [group]="group" [advancing]="advancing()" />
+          </div>
           <div class="matches" [attr.aria-label]="group.name + ' matches'">
-            @for (match of sortedMatches(group.matches); track match.id) {
-              <app-match-card
-                [match]="match"
-                [teamNames]="store.teamNames()"
-                [canScore]="canScore()"
-                [busy]="scoring.savingMatchId() === match.id"
-                (gameWinner)="scoring.setWinner($event)"
-              />
+            @for (round of rounds(group); track round.round) {
+              <h4 class="round muted small">Round {{ round.round }}</h4>
+              <div class="round-matches">
+                @for (match of round.matches; track match.id) {
+                  <app-match-card
+                    [match]="match"
+                    [teamNames]="store.teamNames()"
+                    [canScore]="canScore()"
+                    [busy]="scoring.savingMatchId() === match.id"
+                    (gameWinner)="scoring.setWinner($event)"
+                  />
+                }
+              </div>
             }
           </div>
         </div>

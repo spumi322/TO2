@@ -39,7 +39,7 @@ describe('MatchCard', () => {
     return fixture.nativeElement as HTMLElement;
   }
 
-  const teamButtons = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLButtonElement>('button.team'));
+  const teamButtons = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLButtonElement>('button.plus'));
   const chips = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLButtonElement>('button.chip'));
 
   beforeEach(() => {
@@ -61,12 +61,8 @@ describe('MatchCard', () => {
   it('is read-only without canScoreMatches', () => {
     const el = render(match([game(10), game(11), game(12)]), false);
 
-    teamButtons(el).forEach((button) => {
-      expect(button.disabled).toBe(true);
-      button.click();
-    });
-
-    expect(emitted).toHaveLength(0);
+    expect(teamButtons(el)).toHaveLength(0);
+    expect(el.textContent).toContain('vs');
   });
 
   it('gives a played game to the other team when its chip is tapped', () => {
@@ -81,10 +77,8 @@ describe('MatchCard', () => {
   it('can not be changed once the match has a winner', () => {
     const el = render(match([game(10, ALPHA), game(11, ALPHA), game(12)], ALPHA), true);
 
-    teamButtons(el)[0].click();
-
-    expect(emitted).toHaveLength(0);
+    expect(teamButtons(el)).toHaveLength(0);
     expect(chips(el)).toHaveLength(0);
-    expect(el.querySelector('.team.won')?.textContent).toContain('Alpha');
+    expect(el.querySelector('.name.won')?.textContent).toContain('Alpha');
   });
 });

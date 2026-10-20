@@ -36,16 +36,32 @@
   gap: 12px;
 }
 
+.rule {
+  margin: 0 0 6px;
+}
+
 /* The match list takes the rest of the card and scrolls inside it when a big group does not fit */
 .matches {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 2px;
+}
+
+.round {
+  margin: 6px 0 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.round-matches {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  align-content: start;
   gap: 6px;
-  padding-right: 2px;
 }
 
 /* One group: the whole width, table beside the matches */
@@ -66,7 +82,10 @@
 
 .single .matches {
   height: 100%;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+.single .round-matches {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
 }
 
 @media (max-width: 1000px) {

@@ -34,12 +34,24 @@ export class GroupsTab {
     inject(DestroyRef).onDestroy(() => root.classList.remove('snap-blocks'));
   }
 
+  // How the table is read, in one line above it
+  readonly rule = computed(() => {
+    const advancing = this.advancing();
+    const ranking = 'Ranked by match wins, then game difference.';
+    return advancing ? `Top ${advancing} advance. ${ranking}` : ranking;
+  });
+
   played(group: Group): number {
     return group.matches.filter((match) => match.winnerId !== null).length;
   }
 
-  // Stable order (by round): a match never jumps away while it is being scored
-  sortedMatches(matches: StandingMatch[]): StandingMatch[] {
-    return [...matches].sort((a, b) => (a.round ?? 0) - (b.round ?? 0) || a.id - b.id);
+  // Matches under "Round 1", "Round 2", ... in play order (a match never moves while it is being scored)
+  rounds(group: Group): { round: number; matches: StandingMatch[] }[] {
+    const byRound = new Map<number, StandingMatch[]>();
+    for (const match of [...group.matches].sort((a, b) => a.id - b.id)) {
+      const round = match.round ?? 1;
+      byRound.set(round, [...(byRound.get(round) ?? []), match]);
+    }
+    return [...byRound.entries()].sort(([a], [b]) => a - b).map(([round, matches]) => ({ round, matches }));
   }
 }

@@ -1,39 +1,44 @@
-<article
-  class="match"
-  [class.scorable]="scorable()"
-  [class.busy]="busy()"
-  [class.live]="live()"
-  [class.decided]="decided()"
-  [attr.aria-busy]="busy()"
->
+<article class="match" [class.live]="live()" [class.busy]="busy()" [attr.aria-busy]="busy()">
   <div class="line">
-    <button
-      type="button"
-      class="team a"
-      [class.won]="teamA().won"
-      [class.lost]="teamA().lost"
-      [class.tbd]="!teamA().known"
-      [disabled]="!scorable() || busy()"
-      [attr.aria-label]="scorable() ? teamA().name + ' wins the next game' : teamA().name"
-      (click)="scoreNext(teamA().id)"
-    >
-      <span class="name">{{ teamA().name }}</span>
-      <span class="score num">{{ teamA().wins }}</span>
-    </button>
-    <span class="vs muted small">{{ live() ? 'live' : 'Bo' + match().bestOf }}</span>
-    <button
-      type="button"
-      class="team b"
-      [class.won]="teamB().won"
-      [class.lost]="teamB().lost"
-      [class.tbd]="!teamB().known"
-      [disabled]="!scorable() || busy()"
-      [attr.aria-label]="scorable() ? teamB().name + ' wins the next game' : teamB().name"
-      (click)="scoreNext(teamB().id)"
-    >
-      <span class="score num">{{ teamB().wins }}</span>
-      <span class="name">{{ teamB().name }}</span>
-    </button>
+    @if (scorable()) {
+      <button
+        type="button"
+        class="plus"
+        [disabled]="busy()"
+        [attr.aria-label]="teamA().name + ' wins the next game'"
+        title="Give the next game to this team"
+        (click)="scoreNext(teamA().id)"
+      >
+        +1
+      </button>
+    }
+    <span class="name a" [class.won]="teamA().won" [class.lost]="teamA().lost" [class.tbd]="!teamA().known">
+      {{ teamA().name }}
+    </span>
+    <span class="result num" [class.open]="!decided() && !live()">
+      @if (decided() || live()) {
+        <span [class.won]="teamA().won">{{ teamA().wins }}</span>
+        <span class="sep">-</span>
+        <span [class.won]="teamB().won">{{ teamB().wins }}</span>
+      } @else {
+        vs
+      }
+    </span>
+    <span class="name b" [class.won]="teamB().won" [class.lost]="teamB().lost" [class.tbd]="!teamB().known">
+      {{ teamB().name }}
+    </span>
+    @if (scorable()) {
+      <button
+        type="button"
+        class="plus"
+        [disabled]="busy()"
+        [attr.aria-label]="teamB().name + ' wins the next game'"
+        title="Give the next game to this team"
+        (click)="scoreNext(teamB().id)"
+      >
+        +1
+      </button>
+    }
   </div>
 
   <!-- Correcting a game is only possible until the match has a winner -->
