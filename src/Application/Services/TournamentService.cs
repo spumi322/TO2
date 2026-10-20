@@ -19,6 +19,7 @@ namespace Application.Services
 
         private readonly ITournamentRepository _tournamentRepository;
         private readonly ITournamentTeamRepository _tournamentTeamRepository;
+        private readonly IStandingRepository _standingRepository;
         private readonly IRepository<Team> _teamRepository;
         private readonly IStandingService _standingService;
         private readonly ILogger<TournamentService> _logger;
@@ -29,6 +30,7 @@ namespace Application.Services
 
         public TournamentService(ITournamentRepository tournamentRepository,
                                  ITournamentTeamRepository tournamentTeamRepository,
+                                 IStandingRepository standingRepository,
                                  IRepository<Team> teamRepository,
                                  IStandingService standingService,
                                  ILogger<TournamentService> logger,
@@ -39,6 +41,7 @@ namespace Application.Services
         {
             _tournamentRepository = tournamentRepository;
             _tournamentTeamRepository = tournamentTeamRepository;
+            _standingRepository = standingRepository;
             _teamRepository = teamRepository;
             _standingService = standingService;
             _logger = logger;
@@ -90,7 +93,10 @@ namespace Application.Services
             var existingTournament = await _tournamentRepository.GetByIdAsync(id)
                 ?? throw new NotFoundException("Tournament", id);
 
-            return existingTournament.ToGetTournamentResponseDTO();
+            var currentTeams = await _tournamentTeamRepository.GetCountByTournamentAsync(id);
+            var numberOfGroups = await _standingRepository.CountAsync(s => s.TournamentId == id && s.StandingType == StandingType.Group);
+
+            return existingTournament.ToGetTournamentResponseDTO(currentTeams, numberOfGroups);
         }
 
         public async Task<List<GetTournamentListResponseDTO>> GetTournamentListAsync()

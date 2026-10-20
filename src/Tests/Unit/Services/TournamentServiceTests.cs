@@ -45,6 +45,7 @@ namespace Tests.Unit.Services
             _service = new TournamentService(
                 new TournamentRepository(DbContext),
                 new TournamentTeamRepository(DbContext),
+                new StandingRepository(DbContext),
                 new Repository<Team>(DbContext),
                 standingService,
                 new Mock<ILogger<TournamentService>>().Object,
@@ -113,6 +114,44 @@ namespace Tests.Unit.Services
 
             state.CanStartGroups.Should().Be(canStartGroups);
             state.CanStartBracket.Should().Be(canStartBracket);
+        }
+
+        #endregion
+
+        #region Get
+
+        [Fact]
+        public async Task Get_Should_ReturnTeamCountGroupCountAndAdvancing()
+        {
+            var created = await _service.CreateTournamentAsync(
+                new CreateTournamentRequestDTO("Summer Cup", "Desc", 8, Format.GroupsAndBracket, 2, 2));
+            for (var i = 0; i < 3; i++)
+            {
+                var team = TestDataBuilder.Teams.CreateDefault();
+                DbContext.Teams.Add(team);
+                await DbContext.SaveChangesAsync();
+                DbContext.TournamentTeams.Add(TestDataBuilder.TournamentTeams.Create(created.Id, team.Id));
+            }
+            await SaveAndDetachAsync();
+
+            var result = await _service.GetTournamentAsync(created.Id);
+
+            result.CurrentTeams.Should().Be(3);
+            result.NumberOfGroups.Should().Be(2);
+            result.AdvancingPerGroup.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task Get_Should_ReturnNoGroups_When_BracketOnly()
+        {
+            var created = await _service.CreateTournamentAsync(
+                new CreateTournamentRequestDTO("Summer Cup", "Desc", 8, Format.BracketOnly, null, null));
+
+            var result = await _service.GetTournamentAsync(created.Id);
+
+            result.CurrentTeams.Should().Be(0);
+            result.NumberOfGroups.Should().Be(0);
+            result.AdvancingPerGroup.Should().BeNull();
         }
 
         #endregion

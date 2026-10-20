@@ -13,7 +13,7 @@ namespace Application.Mappings
         [MapperIgnoreSource(nameof(CreateTournamentRequestDTO.NumberOfGroups))]
         public static partial Tournament ToTournament(this CreateTournamentRequestDTO request);
 
-        public static partial GetTournamentResponseDTO ToGetTournamentResponseDTO(this Tournament tournament);
+        public static partial GetTournamentResponseDTO ToGetTournamentResponseDTO(this Tournament tournament, int currentTeams, int numberOfGroups);
 
         public static partial GetTournamentListResponseDTO ToGetTournamentListResponseDTO(this Tournament tournament, int currentTeams);
 
