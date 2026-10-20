@@ -1,0 +1,57 @@
+.overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .overview {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.next {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-left: 3px solid var(--primary);
+}
+
+.next p,
+.description {
+  margin: 0;
+}
+
+.banner {
+  padding: 12px 16px;
+  border-radius: var(--radius);
+}
+
+.banner.danger {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
+}
+
+.reason {
+  margin: 6px 0 0;
+  color: var(--text);
+}
+
+dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+}
+
+dt {
+  color: var(--text-muted);
+}
+
+dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+}

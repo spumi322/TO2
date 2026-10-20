@@ -22,6 +22,21 @@
         </div>
         <h1 class="name">{{ t.name }}</h1>
       </div>
+      <div class="row actions">
+        @if (primaryAction(); as action) {
+          <p-button [label]="action.label" icon="pi pi-play" [disabled]="!!store.state()?.isTransitionState" (onClick)="action.run()" />
+        }
+        @if (menuItems().length) {
+          <p-button
+            icon="pi pi-ellipsis-v"
+            [text]="true"
+            severity="secondary"
+            ariaLabel="More actions"
+            (onClick)="menu.toggle($event)"
+          />
+          <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+        }
+      </div>
     </header>
 
     <nav class="tabs" aria-label="Tournament sections">
@@ -36,3 +51,17 @@
     <p-skeleton height="240px" />
   }
 </div>
+
+@if (actions.request(); as request) {
+  <app-confirm-dialog
+    [visible]="true"
+    (visibleChange)="setDialogVisible($event)"
+    [header]="request.header"
+    [message]="request.message"
+    [confirmLabel]="request.confirmLabel"
+    [danger]="!!request.danger"
+    [withReason]="!!request.withReason"
+    [busy]="actions.busy()"
+    (confirmed)="actions.confirm($event)"
+  />
+}
