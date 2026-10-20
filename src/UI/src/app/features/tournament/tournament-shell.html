@@ -1,0 +1,38 @@
+<div class="page stack">
+  <a routerLink="/tournaments" class="muted back"><i class="pi pi-arrow-left"></i> Tournaments</a>
+
+  @if (store.notFound()) {
+    <app-empty-state
+      title="Tournament not found"
+      message="It does not exist, was deleted, or belongs to another organization."
+      icon="pi-search"
+    >
+      <a routerLink="/tournaments">Back to tournaments</a>
+    </app-empty-state>
+  } @else if (store.loadError(); as message) {
+    <div class="form-error" role="alert">
+      {{ message }} <a href="" (click)="$event.preventDefault(); store.reload()">Retry</a>
+    </div>
+  } @else if (store.tournament(); as t) {
+    <header class="header">
+      <div class="title stack-xs">
+        <div class="row">
+          <app-status-chip [status]="t.status" />
+          <app-format-badge [format]="t.format" />
+        </div>
+        <h1 class="name">{{ t.name }}</h1>
+      </div>
+    </header>
+
+    <nav class="tabs" aria-label="Tournament sections">
+      @for (tab of tabs(); track tab.path) {
+        <a [routerLink]="tab.path" routerLinkActive="active">{{ tab.label }}</a>
+      }
+    </nav>
+
+    <router-outlet />
+  } @else {
+    <p-skeleton height="48px" />
+    <p-skeleton height="240px" />
+  }
+</div>

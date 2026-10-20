@@ -30,5 +30,19 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/tournaments/create-tournament-page').then((m) => m.CreateTournamentPage),
   },
+  {
+    path: 'tournaments/:id',
+    title: 'Tournament - TO2',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/tournament/tournament-shell').then((m) => m.TournamentShell),
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'overview' },
+      { path: 'overview', loadComponent: () => import('./features/tournament/tabs/overview-tab').then((m) => m.OverviewTab) },
+      { path: 'teams', loadComponent: () => import('./features/tournament/tabs/teams-tab').then((m) => m.TeamsTab) },
+      { path: 'groups', loadComponent: () => import('./features/tournament/tabs/groups-tab').then((m) => m.GroupsTab) },
+      { path: 'bracket', loadComponent: () => import('./features/tournament/tabs/bracket-tab').then((m) => m.BracketTab) },
+      { path: 'results', loadComponent: () => import('./features/tournament/tabs/results-tab').then((m) => m.ResultsTab) },
+    ],
+  },
   { path: '**', title: 'Not found - TO2', component: NotFoundPage },
 ];
