@@ -1,0 +1,31 @@
+<table class="num">
+  <thead>
+    <tr>
+      <th class="rank" scope="col">#</th>
+      <th class="team" scope="col">Team</th>
+      <th scope="col" title="Match wins - losses">W-L</th>
+      <th scope="col" title="Game difference">+/-</th>
+      <th scope="col" title="Points">Pts</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (team of group().teams; track team.id; let i = $index) {
+      <tr
+        [class.advanced]="team.status === advanced || team.status === champion"
+        [class.eliminated]="team.status === eliminated"
+        [class.cut]="advancing() !== null && i + 1 === advancing() && i < group().teams.length - 1"
+      >
+        <td class="rank">{{ i + 1 }}</td>
+        <td class="team">
+          <span class="name">{{ team.name }}</span>
+          @if (team.status === advanced || team.status === eliminated || team.status === champion) {
+            <span class="status small">{{ statusLabels[team.status] }}</span>
+          }
+        </td>
+        <td>{{ team.wins }}-{{ team.losses }}</td>
+        <td>{{ team.gameWins - team.gameLosses > 0 ? '+' : '' }}{{ team.gameWins - team.gameLosses }}</td>
+        <td><strong>{{ team.points }}</strong></td>
+      </tr>
+    }
+  </tbody>
+</table>

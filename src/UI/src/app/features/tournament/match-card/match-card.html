@@ -1,0 +1,40 @@
+<article class="match" [class.scorable]="scorable()" [class.busy]="busy()" [attr.aria-busy]="busy()">
+  <div class="meta">
+    <span class="muted small">Bo{{ match().bestOf }}</span>
+    @if (live()) {
+      <span class="live small">Live</span>
+    }
+  </div>
+
+  @for (team of [teamA(), teamB()]; track $index) {
+    <button
+      type="button"
+      class="team"
+      [class.won]="team.won"
+      [class.lost]="team.lost"
+      [class.tbd]="!team.known"
+      [disabled]="!scorable() || busy()"
+      [attr.aria-label]="scorable() ? team.name + ' wins the next game' : team.name"
+      (click)="scoreNext(team.id)"
+    >
+      <span class="name">{{ team.name }}</span>
+      <span class="score num">{{ team.wins }}</span>
+    </button>
+  }
+
+  @if (playedGames().length) {
+    <div class="games">
+      @for (game of playedGames(); track game.id; let i = $index) {
+        <button
+          type="button"
+          class="chip"
+          [disabled]="!scorable() || busy()"
+          [title]="scorable() ? 'Give game ' + (i + 1) + ' to the other team' : ''"
+          (click)="flip(game)"
+        >
+          G{{ i + 1 }} {{ gameLabel(game) }}
+        </button>
+      }
+    </div>
+  }
+</article>

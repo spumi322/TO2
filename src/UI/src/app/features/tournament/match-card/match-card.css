@@ -1,0 +1,106 @@
+:host {
+  display: block;
+}
+
+.match {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.match.busy {
+  opacity: 0.6;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.live {
+  color: var(--status-groups);
+  font-weight: 600;
+}
+
+.team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 8px;
+  border: 0;
+  border-left: 3px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+
+.scorable .team:not(:disabled) {
+  cursor: pointer;
+}
+
+.scorable .team:not(:disabled):hover {
+  background: color-mix(in srgb, var(--primary) 15%, var(--surface-2));
+}
+
+.team.won {
+  font-weight: 700;
+  border-left-color: var(--success);
+}
+
+.team.lost,
+.team.tbd {
+  color: var(--text-muted);
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score {
+  min-width: 24px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+.games {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-top: 2px;
+}
+
+.chip {
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scorable .chip:not(:disabled) {
+  cursor: pointer;
+}
+
+.scorable .chip:not(:disabled):hover {
+  border-color: var(--primary);
+  color: var(--text);
+}

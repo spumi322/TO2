@@ -1,0 +1,61 @@
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 6px 8px;
+  background: var(--surface-2);
+}
+
+td {
+  text-align: center;
+  padding: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+th.team,
+td.team {
+  text-align: left;
+}
+
+.rank {
+  width: 32px;
+  color: var(--text-muted);
+}
+
+td.team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-left: 3px solid transparent;
+}
+
+.name {
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.status {
+  color: var(--text-muted);
+}
+
+tr.advanced td.team {
+  border-left-color: var(--success);
+}
+
+tr.advanced .status {
+  color: var(--success);
+}
+
+tr.eliminated td {
+  color: var(--text-muted);
+}
+
+tr.cut td {
+  border-bottom: 1px dashed var(--text-muted);
+}
