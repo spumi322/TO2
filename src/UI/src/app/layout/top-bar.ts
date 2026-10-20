@@ -5,6 +5,7 @@ import { Button } from 'primeng/button';
 import { Menu } from 'primeng/menu';
 import { AuthService } from '../core/auth/auth.service';
 import { SessionStore } from '../core/auth/session.store';
+import { RealtimeService } from '../core/realtime/realtime.service';
 import { InviteCodeDialog } from './invite-code-dialog';
 
 @Component({
@@ -16,8 +17,20 @@ import { InviteCodeDialog } from './invite-code-dialog';
 export class TopBar {
   private readonly auth = inject(AuthService);
   readonly session = inject(SessionStore);
+  readonly realtime = inject(RealtimeService);
 
   readonly inviteOpen = signal(false);
+
+  readonly liveLabel = computed(() => {
+    switch (this.realtime.state()) {
+      case 'connected':
+        return 'Live updates on';
+      case 'reconnecting':
+        return 'Reconnecting...';
+      default:
+        return 'Live updates offline';
+    }
+  });
 
   readonly userMenu = computed<MenuItem[]>(() => {
     const session = this.session.session();

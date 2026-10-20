@@ -11,6 +11,7 @@
     }
     <span class="spacer"></span>
     @if (session.session(); as s) {
+      <span class="live-dot" [class]="realtime.state()" [title]="liveLabel()" role="status" [attr.aria-label]="liveLabel()"></span>
       <p-button
         [label]="s.userName"
         icon="pi pi-user"

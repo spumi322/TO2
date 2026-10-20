@@ -49,3 +49,18 @@ nav a:hover {
 .spacer {
   flex: 1;
 }
+
+.live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.live-dot.connected {
+  background: var(--success);
+}
+
+.live-dot.reconnecting {
+  background: var(--warning);
+}
