@@ -23,5 +23,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/tournaments/tournament-list-page').then((m) => m.TournamentListPage),
   },
+  {
+    path: 'tournaments/new',
+    title: 'New tournament - TO2',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/tournaments/create-tournament-page').then((m) => m.CreateTournamentPage),
+  },
   { path: '**', title: 'Not found - TO2', component: NotFoundPage },
 ];
