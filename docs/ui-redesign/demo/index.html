@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TO2 Design Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<script src="demo.js"></script>
+<style>
+  .pages { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .pages a.card { display: block; padding: 18px; color: var(--text); }
+  .pages a.card:hover { border-color: var(--primary); text-decoration: none; }
+  .pages a.card p { margin-top: 6px; }
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .swatch { border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; background: var(--surface); }
+  .swatch i { display: block; height: 44px; }
+  .swatch div { padding: 8px 10px; font-size: 12px; }
+  .section { margin-top: 40px; display: grid; gap: 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .type-sample { display: grid; gap: 10px; }
+  .demo-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+</style>
+</head>
+<body>
+<header id="topbar"></header>
+<main class="page">
+  <div class="page-head">
+    <div>
+      <h1>TO2 redesign</h1>
+      <p class="muted" style="margin-top:6px">Static demo pages for the new Angular frontend. Fake data, no backend. Theme toggle in the top bar (system / light / dark).</p>
+    </div>
+  </div>
+
+  <div class="pages">
+    <a class="card" href="login.html"><h3>Sign in / Register</h3><p class="muted">Create or join an organization with an invite code.</p></a>
+    <a class="card" href="tournaments.html"><h3>Tournament list</h3><p class="muted">Dashboard grouped by Live, Registration, Finished, Cancelled.</p></a>
+    <a class="card" href="create.html"><h3>Create tournament</h3><p class="muted">Single form with live format preview.</p></a>
+    <a class="card" href="tournament.html#bracket"><h3>Tournament (live)</h3><p class="muted">Header, stages, groups, bracket, game scoring, Setup view.</p></a>
+    <a class="card" href="results.html"><h3>Final standings</h3><p class="muted">Podium and placements of a finished tournament.</p></a>
+  </div>
+
+  <section class="section">
+    <h2>Tournament status</h2>
+    <div class="chips">
+      <span class="chip s-setup">Registration</span>
+      <span class="chip s-seeding">Drawing groups</span>
+      <span class="chip s-groups live">Groups live</span>
+      <span class="chip s-groups-done">Groups done</span>
+      <span class="chip s-seeding">Seeding bracket</span>
+      <span class="chip s-bracket live">Playoffs live</span>
+      <span class="chip s-finished">Finished</span>
+      <span class="chip s-cancelled">Cancelled</span>
+    </div>
+    <p class="muted small">Setup, SeedingGroups, GroupsInProgress, GroupsCompleted, SeedingBracket, BracketInProgress, Finished, Cancelled. Label always visible; active states pulse, seeding states spin.</p>
+  </section>
+
+  <section class="section">
+    <h2>Palette</h2>
+    <div class="swatches">
+      <div class="swatch"><i style="background:var(--bg)"></i><div>--bg</div></div>
+      <div class="swatch"><i style="background:var(--surface)"></i><div>--surface</div></div>
+      <div class="swatch"><i style="background:var(--surface-2)"></i><div>--surface-2</div></div>
+      <div class="swatch"><i style="background:var(--border)"></i><div>--border</div></div>
+      <div class="swatch"><i style="background:var(--text)"></i><div>--text</div></div>
+      <div class="swatch"><i style="background:var(--text-muted)"></i><div>--text-muted</div></div>
+      <div class="swatch"><i style="background:var(--primary)"></i><div>--primary</div></div>
+      <div class="swatch"><i style="background:var(--success)"></i><div>--success</div></div>
+      <div class="swatch"><i style="background:var(--warning)"></i><div>--warning</div></div>
+      <div class="swatch"><i style="background:var(--danger)"></i><div>--danger</div></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Typography</h2>
+    <div class="card card-pad type-sample">
+      <h1>Autumn Cup 2026</h1>
+      <h2>Group A</h2>
+      <h3>Quarterfinals</h3>
+      <p>Body 14 / 1.5 Inter. Organizers score games from any match card while the tournament is live.</p>
+      <p class="muted small">Muted 12 for meta text and hints.</p>
+      <p class="num" style="font:700 32px var(--font-display)">2 - 1</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Components</h2>
+    <div class="demo-row">
+      <button class="btn btn-primary">Start bracket</button>
+      <button class="btn">Secondary</button>
+      <button class="btn btn-ghost">Ghost</button>
+      <button class="btn btn-danger">Cancel tournament</button>
+      <button class="btn" disabled>Disabled</button>
+      <span class="badge">Groups + Bracket</span>
+    </div>
+    <div class="demo-row" style="align-items:flex-start">
+      <div style="width:220px">
+        <div class="match-meta"><span>QF 1 · Bo3</span><span>Final</span></div>
+        <div class="match"><div class="row win"><span class="name">Polar Owls</span><span class="score">2</span></div><div class="row lose"><span class="name">Iron Lynx</span><span class="score">0</span></div></div>
+      </div>
+      <div style="width:220px">
+        <div class="match-meta"><span>QF 2 · Bo3</span><span class="live">Live</span></div>
+        <div class="match clickable"><div class="row"><span class="name">Cobalt Five</span><span class="score">1</span></div><div class="row"><span class="name">Red Harbor</span><span class="score">0</span></div></div>
+      </div>
+      <div style="width:220px">
+        <div class="match-meta"><span>SF 1 · Bo3</span><span></span></div>
+        <div class="match"><div class="row"><span class="name">Polar Owls</span><span class="score">-</span></div><div class="row tbd"><span class="name">TBD</span><span class="score">-</span></div></div>
+      </div>
+    </div>
+    <div class="grid" style="max-width:640px">
+      <div class="alert danger"><div><strong>Conflict.</strong> Game was modified by another user. Reload and try again.</div></div>
+      <div class="alert warning"><div><strong>Too many attempts.</strong> Try again in a minute.</div></div>
+      <div class="alert success"><div><strong>Saved.</strong> Polar Owls win the series 2-0.</div></div>
+    </div>
+  </section>
+</main>
+<script>renderTopbar('');</script>
+</body>
+</html>

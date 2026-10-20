@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TO2 Sign In</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<script src="demo.js"></script>
+<style>
+  .auth { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+  .brand {
+    padding: 48px; display: flex; flex-direction: column; justify-content: space-between; gap: 32px;
+    background: linear-gradient(160deg, #1B1F3B 0%, #2A2470 55%, #4F46E5 130%); color: #E9EAFB;
+  }
+  .brand .logo { color: #fff; }
+  .brand .logo-mark { background: #fff; color: #2A2470; }
+  .brand h1 { font-size: 40px; color: #fff; max-width: 440px; }
+  .brand ul { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 12px; max-width: 420px; }
+  .brand li { display: flex; gap: 10px; color: #C9CBF2; }
+  .brand li::before { content: ""; flex: none; width: 8px; height: 8px; margin-top: 7px; border-radius: 50%; background: #8B85FF; }
+  .mini-bracket { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 420px; opacity: .9; }
+  .mini-bracket div { height: 22px; border-radius: 4px; background: rgb(255 255 255 / .10); border-left: 3px solid #8B85FF; }
+  .mini-bracket div.w { border-left-color: #4ADE80; }
+  .panel { display: grid; place-items: center; padding: 32px 16px; position: relative; }
+  .panel .theme { position: absolute; top: 16px; right: 16px; }
+  .auth-card { width: 100%; max-width: 420px; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--surface-2); padding: 4px; border-radius: var(--radius-sm); margin-bottom: 24px; }
+  .seg button { height: 34px; border: 0; border-radius: 4px; background: none; color: var(--text-muted); font: 600 13px var(--font-ui); cursor: pointer; }
+  .seg button.on { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+  .org-status { display: flex; gap: 8px; align-items: center; font-size: 12px; }
+  .org-status.new { color: var(--success); }
+  .org-status.exists { color: var(--st-groups-done); }
+  .rules { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: var(--text-muted); }
+  .rules span.ok { color: var(--success); }
+  .demo-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
+  @media (max-width: 899px) { .auth { grid-template-columns: 1fr; } .brand { display: none; } }
+</style>
+</head>
+<body>
+<div class="auth">
+  <aside class="brand">
+    <a class="logo" href="index.html"><span class="logo-mark">T2</span>TO2</a>
+    <div>
+      <h1>Run your tournament from draw to final.</h1>
+      <ul>
+        <li>Groups, playoff brackets or both, with automatic seeding.</li>
+        <li>Score games from any device; everyone sees results live.</li>
+        <li>Invite your staff with a one-day invite code.</li>
+      </ul>
+    </div>
+    <div class="mini-bracket" aria-hidden="true">
+      <div class="w"></div><div></div><div></div>
+      <div></div><div class="w"></div><div class="w"></div>
+      <div class="w"></div><div></div><div></div>
+    </div>
+  </aside>
+
+  <main class="panel">
+    <button class="icon-btn theme" id="theme-btn" onclick="cycleTheme()" aria-label="Toggle theme">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/></svg>
+    </button>
+    <div class="auth-card">
+      <div class="seg" role="tablist">
+        <button id="tab-login" class="on" onclick="showMode('login')" role="tab">Sign in</button>
+        <button id="tab-register" onclick="showMode('register')" role="tab">Create account</button>
+      </div>
+
+      <!-- Sign in -->
+      <form id="login" class="form-grid" onsubmit="event.preventDefault(); location.href='tournaments.html'">
+        <div><h2>Welcome back</h2><p class="muted" style="margin-top:4px">Sign in to your organization.</p></div>
+        <div id="login-error" class="alert danger hidden"><div><strong>Invalid email or password</strong></div></div>
+        <div class="field"><label for="l-email">Email</label><input id="l-email" class="input" type="email" autocomplete="email" value="mara@northside.gg"></div>
+        <div class="field"><label for="l-pass">Password</label><input id="l-pass" class="input" type="password" autocomplete="current-password" value="demo-password"></div>
+        <button class="btn btn-primary btn-block" id="login-btn">Sign in</button>
+        <p class="muted small" style="text-align:center">New here? <a href="#" onclick="showMode('register');return false">Create an account</a></p>
+      </form>
+
+      <!-- Register -->
+      <form id="register" class="form-grid hidden" onsubmit="event.preventDefault(); submitRegister()">
+        <div><h2>Create account</h2><p class="muted" style="margin-top:4px">Start a new organization or join an existing one.</p></div>
+        <div id="reg-error" class="alert danger hidden"><div id="reg-error-text"></div></div>
+        <div class="field"><label for="r-user">Username</label><input id="r-user" class="input" autocomplete="username" value="jonas"></div>
+        <div class="field"><label for="r-email">Email</label><input id="r-email" class="input" type="email" autocomplete="email" value="jonas@northside.gg"></div>
+        <div class="field">
+          <label for="r-pass">Password</label>
+          <input id="r-pass" class="input" type="password" autocomplete="new-password" oninput="checkRules(this.value)">
+          <div class="rules" id="rules"><span data-r="len">6+ characters</span><span data-r="up">uppercase</span><span data-r="low">lowercase</span><span data-r="dig">digit</span></div>
+        </div>
+        <div class="field">
+          <label for="r-org">Organization</label>
+          <input id="r-org" class="input" placeholder="e.g. Northside Esports" onblur="checkOrg()">
+          <div id="org-status" class="org-status hint">Type a name. Existing organizations need an invite code.</div>
+        </div>
+        <div class="field hidden" id="code-field">
+          <label for="r-code">Invite code</label>
+          <input id="r-code" class="input num" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" oninput="formatCode(this)" style="letter-spacing:.04em">
+          <span class="hint">Ask any member to generate one under Organization or the user menu.</span>
+          <span class="error hidden" id="code-error">Invalid or expired invite code.</span>
+        </div>
+        <button class="btn btn-primary btn-block" id="reg-btn">Create account</button>
+      </form>
+
+      <div class="demo-links">
+        <span class="muted small">Demo states:</span>
+        <button class="btn btn-sm" onclick="demoWrongLogin()">Wrong password (401)</button>
+        <button class="btn btn-sm" onclick="demoRateLimit()">Rate limited (429)</button>
+        <button class="btn btn-sm" onclick="demoBadCode()">Bad invite code (400)</button>
+      </div>
+      <p class="muted small" style="margin-top:12px">Try organization "Northside Esports" (exists) or any other name (new).</p>
+    </div>
+  </main>
+</div>
+
+<script>
+  var EXISTING = ['northside esports', 'polar league'];
+
+  function showMode(mode) {
+    document.getElementById('login').classList.toggle('hidden', mode !== 'login');
+    document.getElementById('register').classList.toggle('hidden', mode !== 'register');
+    document.getElementById('tab-login').classList.toggle('on', mode === 'login');
+    document.getElementById('tab-register').classList.toggle('on', mode === 'register');
+  }
+
+  function checkOrg() {
+    var name = document.getElementById('r-org').value.trim();
+    var status = document.getElementById('org-status');
+    var codeField = document.getElementById('code-field');
+    if (!name) { status.className = 'org-status hint'; status.textContent = 'Type a name. Existing organizations need an invite code.'; codeField.classList.add('hidden'); return; }
+    var exists = EXISTING.indexOf(name.toLowerCase()) >= 0;
+    status.className = 'org-status ' + (exists ? 'exists' : 'new');
+    status.textContent = exists
+      ? 'Organization exists. Enter an invite code from one of its members to join.'
+      : 'New organization. It will be created with you as its first member.';
+    codeField.classList.toggle('hidden', !exists);
+    document.getElementById('reg-btn').textContent = exists ? 'Join organization' : 'Create organization and account';
+  }
+
+  function checkRules(v) {
+    var ok = { len: v.length >= 6, up: /[A-Z]/.test(v), low: /[a-z]/.test(v), dig: /\d/.test(v) };
+    document.querySelectorAll('#rules span').forEach(function (s) { s.classList.toggle('ok', ok[s.dataset.r]); });
+  }
+
+  function formatCode(input) {
+    var raw = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 24);
+    input.value = raw.replace(/(.{4})(?=.)/g, '$1-');
+  }
+
+  function submitRegister() {
+    var exists = !document.getElementById('code-field').classList.contains('hidden');
+    if (exists && !document.getElementById('r-code').value) {
+      showRegError('This organization already exists. Enter an invite code from one of its members to join.');
+      document.getElementById('r-code').focus();
+      return;
+    }
+    location.href = 'tournaments.html';
+  }
+
+  function showRegError(text) {
+    document.getElementById('reg-error').classList.remove('hidden');
+    document.getElementById('reg-error-text').textContent = text;
+  }
+
+  function demoWrongLogin() { showMode('login'); document.getElementById('login-error').classList.remove('hidden'); }
+
+  function demoRateLimit() {
+    showMode('login');
+    var err = document.getElementById('login-error');
+    err.className = 'alert warning';
+    err.innerHTML = '<div><strong>Too many attempts.</strong> Try again in a minute. <span class="muted" id="cd">(60 s)</span></div>';
+    var btn = document.getElementById('login-btn'); btn.disabled = true;
+    var s = 60, t = setInterval(function () {
+      s--; var cd = document.getElementById('cd'); if (cd) cd.textContent = '(' + s + ' s)';
+      if (s <= 0) { clearInterval(t); btn.disabled = false; }
+    }, 1000);
+  }
+
+  function demoBadCode() {
+    showMode('register');
+    document.getElementById('r-org').value = 'Northside Esports'; checkOrg();
+    var code = document.getElementById('r-code'); code.value = 'K7QM-X2PA-9HTE-WRZC-4BN8-FJ3X'; code.classList.add('invalid');
+    document.getElementById('code-error').classList.remove('hidden');
+  }
+</script>
+</body>
+</html>

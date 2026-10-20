@@ -1,5 +1,7 @@
 # Angular upgrade plan (17 → 21)
 
+Status: deferred to the UI stage. Current audit findings are not exploitable in this app (no i18n, no XSRF cookies, no SSR, no `innerHTML`); the remaining reason is getting back on a supported Angular version.
+
 Angular 17 is out of support and the remaining `npm audit` findings in shipped code (`@angular/core`/`common`/`compiler`/`router`: i18n XSS, XSRF token leak; `primeng`) are fixed only in newer majors. PrimeNG versions track the Angular major (PrimeNG 21 peer-requires Angular 21), so both move together.
 
 ## Impact assessment

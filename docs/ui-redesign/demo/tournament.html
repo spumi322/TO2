@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TO2 Tournament</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<script src="demo.js"></script>
+<style>
+  .t-head { display: grid; gap: 14px; margin-bottom: 20px; }
+  .t-title { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .t-title h1 { margin-right: 4px; }
+  .t-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .t-sub { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; justify-content: space-between; }
+  .demo-switch { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+  .demo-switch button.on { border-color: var(--primary); color: var(--primary); }
+  .tab-panel { padding-top: 24px; }
+  .banner-cancel { margin-bottom: 16px; }
+
+  /* overview */
+  .ov { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .next-card { padding: 20px; display: grid; gap: 14px; border-left: 4px solid var(--primary); }
+  .next-card .eyebrow { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--primary); }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 13px; }
+  .kv dt { color: var(--text-muted); }
+  .kv dd { margin: 0; font-weight: 500; text-align: right; }
+  .activity { list-style: none; margin: 0; padding: 0; }
+  .activity li { display: flex; gap: 10px; padding: 10px 16px; border-top: 1px solid var(--border); font-size: 13px; }
+  .activity li:first-child { border-top: 0; }
+  .activity time { margin-left: auto; color: var(--text-muted); font-size: 12px; white-space: nowrap; }
+  .up-next { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; padding: 16px; }
+
+  /* groups */
+  .groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .gtable td.team { font-weight: 500; }
+  .gtable tr.adv td:first-child { box-shadow: inset 3px 0 0 var(--success); }
+  .gtable tr.out td { color: var(--text-muted); }
+  .gtable tr.cut td { border-bottom: 1px dashed var(--success); }
+  .gtable .pos { width: 32px; color: var(--text-muted); }
+  .gmatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; padding: 12px 16px 16px; border-top: 1px solid var(--border); }
+  details summary { cursor: pointer; padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--text-muted); border-top: 1px solid var(--border); list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: " +"; }
+  details[open] summary::after { content: " -"; }
+
+  /* bracket */
+  .bracket-wrap { overflow-x: auto; padding-bottom: 12px; }
+  .bracket { display: grid; grid-auto-flow: column; grid-auto-columns: 220px; gap: 0 32px; min-width: max-content; }
+  .round { display: flex; flex-direction: column; }
+  .round h3 { font-size: 13px; color: var(--text-muted); font-family: var(--font-ui); text-transform: uppercase; letter-spacing: .06em; height: 32px; }
+  .round .slots { flex: 1; display: flex; flex-direction: column; justify-content: space-around; }
+  .pair { position: relative; display: flex; flex-direction: column; justify-content: space-around; flex: 1; }
+  .slot { position: relative; padding: 10px 0; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .round:not(:last-child) .pair::after {
+    content: ""; position: absolute; right: -16px; top: 25%; bottom: 25%; width: 16px;
+    border: 1px solid var(--border); border-left: 0; border-radius: 0 6px 6px 0;
+  }
+  .round:not(:last-child) .pair.single::after { top: 50%; bottom: auto; height: 0; border-radius: 0; border-bottom: 0; }
+  .round:not(:first-child) .slot::before {
+    content: ""; position: absolute; left: -16px; top: calc(50% + 8px); width: 16px; border-top: 1px solid var(--border);
+  }
+  .champion { display: flex; flex-direction: column; }
+  .champion .box {
+    margin: auto 0; padding: 16px; border-radius: var(--radius); text-align: center;
+    border: 1px dashed var(--border); color: var(--text-muted);
+  }
+  .bracket-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; font-size: 12px; color: var(--text-muted); }
+
+  /* teams */
+  .add-team { position: relative; max-width: 520px; }
+  .suggest { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 10; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); padding: 4px; }
+  .suggest button { display: flex; width: 100%; justify-content: space-between; padding: 8px 10px; border: 0; background: none; color: var(--text); font: inherit; border-radius: 4px; cursor: pointer; text-align: left; }
+  .suggest button:hover, .suggest button.hl { background: var(--surface-2); }
+  .team-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+  .team-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+  .team-item .ini { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--surface-2); font-weight: 700; font-size: 12px; }
+  .team-item .grow { flex: 1; min-width: 0; }
+  .empty { text-align: center; padding: 48px 16px; display: grid; gap: 8px; justify-items: center; }
+
+  /* scoring dialog */
+  .series { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; text-align: center; }
+  .series .big { font: 700 32px var(--font-display); font-variant-numeric: tabular-nums; }
+  .series .tn { font-weight: 600; }
+  .game { display: grid; gap: 10px; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius); }
+  .game.done { background: var(--surface-2); }
+  .game.na { opacity: .5; }
+  .game-head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; color: var(--text-muted); }
+  .pick { display: grid; grid-template-columns: 1fr 64px 64px 1fr; gap: 8px; align-items: center; }
+  .pick .tb {
+    height: 44px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); font: 600 13px var(--font-ui); cursor: pointer; padding: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .pick .tb.on { border-color: var(--success); background: color-mix(in srgb, var(--success) 14%, var(--surface)); color: var(--success); }
+  .pick .input { text-align: center; padding: 0 4px; }
+  @media (max-width: 899px) { .ov, .groups { grid-template-columns: 1fr; } }
+  @media (max-width: 767px) { .pick { grid-template-columns: 1fr 52px 52px 1fr; } }
+</style>
+</head>
+<body>
+<header id="topbar"></header>
+<main class="page">
+  <div class="demo-switch">
+    <span class="muted small">Demo view:</span>
+    <button class="btn btn-sm on" id="mode-live" onclick="setMode('live')">Live (playoffs)</button>
+    <button class="btn btn-sm" id="mode-setup" onclick="setMode('setup')">Setup (registration)</button>
+  </div>
+
+  <div id="cancel-banner" class="alert danger banner-cancel hidden">
+    <div><strong>Cancelled</strong> by mara.k on 20 Oct 2026, 18:42. Reason: <span id="cancel-reason"></span><br><span class="muted">Results stay visible and read-only.</span></div>
+  </div>
+
+  <section class="t-head">
+    <a href="tournaments.html" class="small">&larr; Tournaments</a>
+    <div class="t-title">
+      <h1 id="t-name">Autumn Cup 2026</h1>
+      <span class="chip" id="t-chip"></span>
+      <span class="badge">Groups + Bracket</span>
+      <div class="t-actions">
+        <button class="btn btn-primary hidden" id="start-btn" onclick="openDialog('start-dialog')">Start groups</button>
+        <div class="dropdown">
+          <button class="icon-btn" style="border:1px solid var(--border)" onclick="toggleMenu('t-menu', event)" aria-label="Tournament actions">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </button>
+          <div class="menu" id="t-menu">
+            <button onclick="openDialog('edit-dialog')">Edit name and description</button>
+            <hr>
+            <button class="danger" id="menu-cancel" onclick="openDialog('cancel-dialog')">Cancel tournament</button>
+            <button class="danger hidden" id="menu-delete" onclick="openDialog('delete-dialog')">Delete tournament</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="t-sub">
+      <ol class="stages" id="stages"></ol>
+      <span class="muted small" id="t-meta"></span>
+    </div>
+  </section>
+
+  <nav class="tabs" id="tabs">
+    <a href="#overview" data-tab="overview">Overview</a>
+    <a href="#teams" data-tab="teams">Teams</a>
+    <a href="#groups" data-tab="groups">Groups</a>
+    <a href="#bracket" data-tab="bracket">Bracket</a>
+    <a href="results.html" class="disabled" id="tab-results">Results</a>
+  </nav>
+
+  <section class="tab-panel" id="panel-overview"></section>
+  <section class="tab-panel hidden" id="panel-teams"></section>
+  <section class="tab-panel hidden" id="panel-groups"></section>
+  <section class="tab-panel hidden" id="panel-bracket"></section>
+</main>
+
+<!-- Match scoring dialog -->
+<div class="backdrop" id="match-dialog">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="md-title">
+    <div class="dialog-head"><div><h3 id="md-title">Quarterfinal 2</h3><span class="muted small">Best of 3 · first to 2 wins</span></div>
+      <button class="icon-btn" onclick="closeDialog('match-dialog')" aria-label="Close">&#x2715;</button></div>
+    <div class="dialog-body" id="md-body"></div>
+    <div class="dialog-foot" style="justify-content:space-between">
+      <button class="btn btn-sm btn-ghost" onclick="demoConflict()">Demo: 409 conflict</button>
+      <button class="btn" onclick="closeDialog('match-dialog')">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel dialog -->
+<div class="backdrop" id="cancel-dialog">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="cd-title">
+    <div class="dialog-head"><h3 id="cd-title">Cancel tournament?</h3><button class="icon-btn" onclick="closeDialog('cancel-dialog')" aria-label="Close">&#x2715;</button></div>
+    <div class="dialog-body">
+      <p>Scoring stops and the tournament becomes read-only. Played results stay visible. This cannot be undone.</p>
+      <div class="field"><label for="reason">Reason <span class="muted">(optional, shown to everyone)</span></label>
+        <textarea id="reason" class="textarea" maxlength="250" oninput="document.getElementById('rc').textContent=this.value.length+' / 250'">Venue lost power, rescheduling next week.</textarea>
+        <div class="muted small" style="text-align:right" id="rc">42 / 250</div></div>
+    </div>
+    <div class="dialog-foot"><button class="btn" onclick="closeDialog('cancel-dialog')">Keep running</button><button class="btn btn-danger" onclick="doCancel()">Cancel tournament</button></div>
+  </div>
+</div>
+
+<!-- Delete dialog -->
+<div class="backdrop" id="delete-dialog">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dd-title">
+    <div class="dialog-head"><h3 id="dd-title">Delete tournament?</h3><button class="icon-btn" onclick="closeDialog('delete-dialog')" aria-label="Close">&#x2715;</button></div>
+    <div class="dialog-body"><p>Deletes <strong>Autumn Cup 2026</strong> and its teams that are in no other tournament. This cannot be undone.</p></div>
+    <div class="dialog-foot"><button class="btn" onclick="closeDialog('delete-dialog')">Keep</button><button class="btn btn-danger" onclick="location.href='tournaments.html'">Delete</button></div>
+  </div>
+</div>
+
+<!-- Start groups dialog -->
+<div class="backdrop" id="start-dialog">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sd-title">
+    <div class="dialog-head"><h3 id="sd-title">Start groups?</h3><button class="icon-btn" onclick="closeDialog('start-dialog')" aria-label="Close">&#x2715;</button></div>
+    <div class="dialog-body">
+      <p><strong id="sd-teams">7 teams</strong> are drawn into <strong>4 groups</strong> (round robin, best of 3). Top 2 of each group advance to the bracket.</p>
+      <div class="alert warning"><div><strong>Registration closes.</strong> Teams cannot be added or removed afterwards.</div></div>
+    </div>
+    <div class="dialog-foot"><button class="btn" onclick="closeDialog('start-dialog')">Not yet</button><button class="btn btn-primary" onclick="closeDialog('start-dialog'); setMode('live'); location.hash='groups'; toast('success','Groups started','Groups drawn, 24 matches scheduled')">Start groups</button></div>
+  </div>
+</div>
+
+<!-- Edit dialog -->
+<div class="backdrop" id="edit-dialog">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="ed-title">
+    <div class="dialog-head"><h3 id="ed-title">Edit tournament</h3><button class="icon-btn" onclick="closeDialog('edit-dialog')" aria-label="Close">&#x2715;</button></div>
+    <div class="dialog-body">
+      <div class="field"><label for="e-name">Name</label><input id="e-name" class="input" value="Autumn Cup 2026"></div>
+      <div class="field"><label for="e-desc">Description</label><textarea id="e-desc" class="textarea">Open cup for the Nordic amateur scene. Groups of four, top two advance.</textarea></div>
+      <p class="muted small">Sent with the loaded version: if someone else saved first, you get a conflict message and fresh data.</p>
+    </div>
+    <div class="dialog-foot"><button class="btn" onclick="closeDialog('edit-dialog')">Cancel</button><button class="btn btn-primary" onclick="closeDialog('edit-dialog'); toast('success','Saved','Tournament details updated')">Save</button></div>
+  </div>
+</div>
+
+<script>
+  renderTopbar('tournaments');
+
+  // ---------- fake data (shapes follow the backend DTOs) ----------
+  var TEAMS = {
+    101: 'Polar Owls', 102: 'Glass Cannons', 103: 'Moss Giants', 104: 'Quiet Storm',
+    105: 'Night Ferry', 106: 'Red Harbor', 107: 'Saltwater', 108: 'Pine Ridge',
+    109: 'Cobalt Five', 110: 'Echo Unit', 111: 'Lowlight', 112: 'Brass Monkeys',
+    113: 'Vanta Club', 114: 'Iron Lynx', 115: 'Kite Runners', 116: 'Fjord FC'
+  };
+  function team(id) { return id ? TEAMS[id] : null; }
+
+  // GroupTeamDTO rows already ranked by the backend; status 2 = Advanced, 3 = Eliminated
+  var GROUPS = [
+    { name: 'Group A', teams: [[101, 3, 0, 6, 1, 2], [102, 2, 1, 5, 3, 2], [103, 1, 2, 3, 5, 3], [104, 0, 3, 1, 6, 3]] },
+    { name: 'Group B', teams: [[105, 3, 0, 6, 2, 2], [106, 2, 1, 4, 3, 2], [107, 1, 2, 4, 4, 3], [108, 0, 3, 1, 6, 3]] },
+    { name: 'Group C', teams: [[109, 2, 1, 5, 2, 2], [110, 2, 1, 4, 3, 2], [111, 1, 2, 3, 4, 3], [112, 1, 2, 2, 5, 3]] },
+    { name: 'Group D', teams: [[113, 3, 0, 6, 0, 2], [114, 1, 2, 3, 4, 2], [115, 1, 2, 3, 5, 3], [116, 1, 2, 3, 6, 3]] }
+  ];
+
+  // Bracket: StandingMatchDTO-like; games carry version for scoring
+  var BRACKET = [
+    { id: 501, round: 1, seed: 1, a: 101, b: 106, aw: 2, bw: 0, winner: 101, games: [] },
+    { id: 502, round: 1, seed: 2, a: 109, b: 114, aw: 1, bw: 0, winner: null, games: [
+      { id: 9001, winner: 109, as: 13, bs: 9, version: 3 }, { id: 9002, winner: null, as: null, bs: null, version: 1 }, { id: 9003, winner: null, as: null, bs: null, version: 1 } ] },
+    { id: 503, round: 1, seed: 3, a: 105, b: 102, aw: 2, bw: 1, winner: 105, games: [] },
+    { id: 504, round: 1, seed: 4, a: 113, b: 110, aw: 0, bw: 0, winner: null, games: [
+      { id: 9007, winner: null, as: null, bs: null, version: 1 }, { id: 9008, winner: null, as: null, bs: null, version: 1 }, { id: 9009, winner: null, as: null, bs: null, version: 1 } ] },
+    { id: 505, round: 2, seed: 1, a: 101, b: null, aw: 0, bw: 0, winner: null, games: [] },
+    { id: 506, round: 2, seed: 2, a: 105, b: null, aw: 0, bw: 0, winner: null, games: [] },
+    { id: 507, round: 3, seed: 1, a: null, b: null, aw: 0, bw: 0, winner: null, games: [] }
+  ];
+  var ROUND_NAMES = { 1: 'Quarterfinals', 2: 'Semifinals', 3: 'Final' };
+  var SHORT = { 1: 'QF', 2: 'SF', 3: 'Final' };
+
+  var SETUP_TEAMS = [101, 105, 109, 113, 102, 106, 110];
+  var LIBRARY = [114, 103, 107, 111, 115, 104, 108, 112, 116];
+
+  var mode = 'live', cancelled = false, openMatchId = null;
+
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+
+  // ---------- header ----------
+  function renderHeader() {
+    var chip = document.getElementById('t-chip');
+    var stages = mode === 'setup' ? 0 : 2;
+    if (cancelled) { chip.className = 'chip s-cancelled'; chip.textContent = 'Cancelled'; }
+    else if (mode === 'setup') { chip.className = 'chip s-setup'; chip.textContent = 'Registration'; }
+    else { chip.className = 'chip s-bracket live'; chip.textContent = 'Playoffs live'; }
+
+    var names = ['Registration', 'Groups', 'Bracket', 'Finished'];
+    document.getElementById('stages').innerHTML = names.map(function (n, i) {
+      var cls = i < stages ? 'done' : i === stages ? 'current' : '';
+      return '<li class="' + cls + '"><span class="dot"></span><span class="label">' + n + '</span></li>';
+    }).join('');
+    document.getElementById('t-meta').textContent = mode === 'setup' ? '7 / 16 teams · 4 groups · top 2 advance' : '16 teams · 4 groups · top 2 advance · Bo3';
+
+    document.getElementById('start-btn').classList.toggle('hidden', mode !== 'setup');     // state.canStartGroups
+    document.getElementById('menu-cancel').classList.toggle('hidden', mode !== 'live' || cancelled); // state.canCancel
+    document.getElementById('menu-delete').classList.toggle('hidden', mode !== 'setup');   // state.canDelete
+    document.getElementById('cancel-banner').classList.toggle('hidden', !cancelled);
+  }
+
+  // ---------- match card ----------
+  function matchCard(m, label) {
+    var canScore = mode === 'live' && !cancelled && !m.winner && m.a && m.b;
+    var started = m.aw + m.bw > 0;
+    function row(id, wins, side) {
+      var cls = !id ? 'tbd' : m.winner ? (m.winner === id ? 'win' : 'lose') : '';
+      return '<div class="row ' + cls + '"><span class="name">' + (id ? esc(team(id)) : 'TBD') + '</span><span class="score">' + (id && (started || m.winner) ? wins : '-') + '</span></div>';
+    }
+    var state = m.winner ? 'Final' : (started ? '<span class="live">Live</span>' : (m.a && m.b ? 'Up next' : ''));
+    return '<div><div class="match-meta"><span>' + label + ' · Bo3</span><span>' + state + '</span></div>' +
+      '<' + (canScore ? 'button' : 'div') + ' class="match ' + (canScore ? 'clickable' : '') + '" id="m' + m.id + '"' + (canScore ? ' onclick="openMatch(' + m.id + ')" aria-label="Score match"' : '') + '>' +
+      row(m.a, m.aw) + row(m.b, m.bw) + '</' + (canScore ? 'button' : 'div') + '></div>';
+  }
+
+  // ---------- overview ----------
+  function renderOverview() {
+    var p = document.getElementById('panel-overview');
+    if (mode === 'setup') {
+      p.innerHTML =
+        '<div class="ov"><div class="grid">' +
+          '<div class="card next-card"><span class="eyebrow">Next step</span><h2>Add teams, then start the groups</h2>' +
+          '<p class="muted">7 of 16 teams registered. You can start with fewer teams; groups are filled evenly.</p>' +
+          '<div class="progress"><span style="width:44%"></span></div>' +
+          '<div class="row-flex"><a class="btn" href="#teams">Add teams</a><button class="btn btn-primary" onclick="openDialog(\'start-dialog\')">Start groups</button></div></div>' +
+        '</div>' + factsCard() + '</div>';
+      return;
+    }
+    var upNext = BRACKET.filter(function (m) { return m.round === 1 && !m.winner; });
+    p.innerHTML =
+      '<div class="ov"><div class="grid">' +
+        (cancelled
+          ? '<div class="card next-card" style="border-left-color:var(--danger)"><span class="eyebrow" style="color:var(--danger)">Cancelled</span><h2>This tournament was cancelled</h2><p class="muted">Groups and bracket remain viewable.</p></div>'
+          : '<div class="card next-card"><span class="eyebrow">Now playing</span><h2>Quarterfinals: 2 of 4 decided</h2>' +
+            '<p class="muted">Score games from the match cards. Semifinals fill in automatically.</p>' +
+            '<div class="row-flex"><a class="btn btn-primary" href="#bracket">Open bracket</a><a class="btn" href="#groups">Group results</a></div></div>') +
+        '<div class="card"><div class="card-head"><h3>Unfinished matches</h3><span class="muted small">' + upNext.length + '</span></div>' +
+          '<div class="up-next">' + upNext.map(function (m) { return matchCard(m, SHORT[m.round] + ' ' + m.seed); }).join('') + '</div></div>' +
+      '</div><div class="grid">' + factsCard() +
+        '<div class="card"><div class="card-head"><h3>Activity</h3><span class="live-dot"><span>Live</span></span></div><ul class="activity" id="activity">' +
+          '<li><span><strong>mara.k</strong> scored Game 1: Cobalt Five vs Iron Lynx</span><time>2 min</time></li>' +
+          '<li><span><strong>jonas</strong> finished QF 3: Night Ferry 2-1</span><time>14 min</time></li>' +
+          '<li><span><strong>mara.k</strong> started the bracket</span><time>41 min</time></li>' +
+        '</ul></div></div></div>';
+  }
+  function factsCard() {
+    return '<div class="card"><div class="card-head"><h3>Details</h3></div><div class="card-pad"><dl class="kv" style="margin:0">' +
+      '<dt>Format</dt><dd>Groups + Bracket</dd><dt>Teams</dt><dd>' + (mode === 'setup' ? '7 / 16' : '16 / 16') + '</dd>' +
+      '<dt>Groups</dt><dd>4, top 2 advance</dd><dt>Matches</dt><dd>Best of 3</dd><dt>Bracket</dt><dd>8 teams, 3 rounds</dd></dl>' +
+      '<p class="muted small" style="margin-top:14px; white-space:pre-line">Open cup for the Nordic amateur scene. Groups of four, top two advance.</p></div></div>';
+  }
+
+  // ---------- teams ----------
+  function renderTeams() {
+    var p = document.getElementById('panel-teams');
+    if (mode === 'setup') {
+      p.innerHTML =
+        '<div class="grid" style="gap:20px">' +
+          '<div class="row-flex" style="justify-content:space-between;flex-wrap:wrap"><div><h2>Teams</h2><p class="muted small">7 / 16 registered</p></div>' +
+            '<div style="width:200px" class="progress"><span style="width:44%"></span></div></div>' +
+          '<div class="add-team"><div class="field"><label for="add">Add team</label>' +
+            '<input id="add" class="input" placeholder="Search your teams or type a new name" maxlength="24" autocomplete="off" oninput="suggest(this.value)" onfocus="suggest(this.value)">' +
+            '<span class="hint">Enter adds the highlighted team. New names create a team in your library (max 24 characters).</span></div>' +
+            '<div class="suggest hidden" id="suggest"></div></div>' +
+          '<div class="team-list">' + SETUP_TEAMS.map(function (id) {
+            return '<div class="card team-item"><span class="ini">' + esc(team(id).slice(0, 2).toUpperCase()) + '</span><span class="grow">' + esc(team(id)) + '</span>' +
+              '<button class="icon-btn" onclick="removeTeam(' + id + ')" aria-label="Remove ' + esc(team(id)) + '">&#x2715;</button></div>';
+          }).join('') + '</div></div>';
+      return;
+    }
+    var all = [];
+    GROUPS.forEach(function (g) { g.teams.forEach(function (t) { all.push({ id: t[0], group: g.name, status: t[5] }); }); });
+    p.innerHTML =
+      '<div class="grid" style="gap:16px"><div><h2>Teams</h2><p class="muted small">16 registered · registration closed</p></div>' +
+      '<div class="team-list">' + all.map(function (t) {
+        var st = t.status === 2 ? '<span class="chip s-finished">Advanced</span>' : '<span class="chip s-cancelled">Out</span>';
+        return '<div class="card team-item"><span class="ini">' + esc(team(t.id).slice(0, 2).toUpperCase()) + '</span><span class="grow">' + esc(team(t.id)) + '<div class="muted small">' + t.group + '</div></span>' + st + '</div>';
+      }).join('') + '</div></div>';
+  }
+
+  window.suggest = function (q) {
+    var box = document.getElementById('suggest');
+    q = q.trim().toLowerCase();
+    var hits = LIBRARY.filter(function (id) { return team(id).toLowerCase().indexOf(q) >= 0; }).slice(0, 5);
+    var html = hits.map(function (id, i) { return '<button class="' + (i === 0 ? 'hl' : '') + '" onclick="addTeam(' + id + ')"><span>' + esc(team(id)) + '</span><span class="muted small">From library</span></button>'; }).join('');
+    if (q && !hits.some(function (id) { return team(id).toLowerCase() === q; })) {
+      html += '<button onclick="addNew()"><span>Create team "<strong>' + esc(q) + '</strong>"</span><span class="muted small">New</span></button>';
+    }
+    box.innerHTML = html;
+    box.classList.toggle('hidden', !html);
+  };
+  window.addTeam = function (id) {
+    SETUP_TEAMS.push(id); LIBRARY = LIBRARY.filter(function (x) { return x !== id; });
+    renderTeams(); document.getElementById('add').focus();
+    toast('success', 'Team added', team(id) + ' registered (' + SETUP_TEAMS.length + ' / 16)');
+  };
+  window.addNew = function () {
+    var v = document.getElementById('add').value.trim();
+    var id = 200 + SETUP_TEAMS.length; TEAMS[id] = v; SETUP_TEAMS.push(id);
+    renderTeams(); document.getElementById('add').focus();
+    toast('success', 'Team created and added', v);
+  };
+  window.removeTeam = function (id) {
+    SETUP_TEAMS = SETUP_TEAMS.filter(function (x) { return x !== id; }); LIBRARY.push(id); renderTeams();
+  };
+  document.addEventListener('click', function (e) {
+    var box = document.getElementById('suggest');
+    if (box && !e.target.closest('.add-team')) box.classList.add('hidden');
+  });
+
+  // ---------- groups ----------
+  function renderGroups() {
+    var p = document.getElementById('panel-groups');
+    if (mode === 'setup') {
+      p.innerHTML = '<div class="card empty"><h3>Groups are drawn when you start</h3><p class="muted">Teams are split evenly into 4 groups. Every team plays every other team in its group once (best of 3).</p><button class="btn btn-primary" onclick="openDialog(\'start-dialog\')">Start groups</button></div>';
+      return;
+    }
+    p.innerHTML = '<div class="groups">' + GROUPS.map(function (g, gi) {
+      var rows = g.teams.map(function (t, i) {
+        var cls = (t[5] === 2 ? 'adv' : 'out') + (i === 1 ? ' cut' : '');
+        var diff = t[3] - t[4];
+        return '<tr class="' + cls + '"><td class="pos">' + (i + 1) + '</td><td class="team">' + esc(team(t[0])) + '</td><td class="r">' + t[1] + '-' + t[2] + '</td><td class="r hide-sm">' + t[3] + '-' + t[4] + '</td><td class="r">' + (diff > 0 ? '+' : '') + diff + '</td><td class="r"><strong>' + t[1] * 3 + '</strong></td></tr>';
+      }).join('');
+      var ids = g.teams.map(function (t) { return t[0]; });
+      var matches = '';
+      for (var i = 0; i < 4; i++) for (var j = i + 1; j < 4; j++) {
+        var a = g.teams[i], b = g.teams[j];
+        var aWin = (i + j + gi) % 4 !== 3;
+        matches += matchCard({ id: 600 + gi * 10 + i * 4 + j, a: ids[i], b: ids[j], aw: aWin ? 2 : 1, bw: aWin ? (j % 2) : 2, winner: aWin ? ids[i] : ids[j] }, g.name.replace('Group ', '') + ' R' + (i + 1));
+      }
+      return '<div class="card"><div class="card-head"><h3>' + g.name + '</h3><span class="chip s-finished">Finished</span></div>' +
+        '<table class="table gtable"><thead><tr><th></th><th>Team</th><th class="r">W-L</th><th class="r hide-sm">Games</th><th class="r">Diff</th><th class="r">Pts</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        '<details><summary>Matches (6)</summary><div class="gmatches">' + matches + '</div></details></div>';
+    }).join('') + '</div><p class="muted small" style="margin-top:12px">Ranking: match wins, then game difference. Green edge: advanced to the bracket.</p>';
+  }
+
+  // ---------- bracket ----------
+  function renderBracket() {
+    var p = document.getElementById('panel-bracket');
+    if (mode === 'setup') {
+      p.innerHTML = '<div class="card empty"><h3>Bracket starts after the groups</h3><p class="muted">Top 2 of each group advance. Group winners meet runners-up, teams from the same group are kept apart in the first round.</p></div>';
+      return;
+    }
+    var cols = '';
+    for (var r = 1; r <= 3; r++) {
+      var ms = BRACKET.filter(function (m) { return m.round === r; });
+      var pairs = '';
+      for (var i = 0; i < ms.length; i += 2) {
+        var pairMs = ms.slice(i, i + 2);
+        pairs += '<div class="pair ' + (pairMs.length === 1 ? 'single' : '') + '">' + pairMs.map(function (m) { return '<div class="slot">' + matchCard(m, SHORT[r] + (r < 3 ? ' ' + m.seed : '')) + '</div>'; }).join('') + '</div>';
+      }
+      cols += '<div class="round"><h3>' + ROUND_NAMES[r] + '</h3><div class="slots">' + pairs + '</div></div>';
+    }
+    cols += '<div class="champion"><h3 class="muted small" style="height:32px;text-transform:uppercase;letter-spacing:.06em;font:600 13px var(--font-ui)">Champion</h3><div class="box">Decided by the final</div></div>';
+    p.innerHTML =
+      '<div class="bracket-legend"><span>Click a match with both teams known to score it.</span><span>Winners advance automatically.</span></div>' +
+      '<div class="bracket-wrap"><div class="bracket">' + cols + '</div></div>';
+  }
+
+  // ---------- scoring dialog ----------
+  window.openMatch = function (id) {
+    openMatchId = id;
+    renderMatchDialog();
+    openDialog('match-dialog');
+  };
+  function renderMatchDialog() {
+    var m = BRACKET.filter(function (x) { return x.id === openMatchId; })[0];
+    document.getElementById('md-title').textContent = ROUND_NAMES[m.round].replace(/s$/, '') + ' ' + m.seed;
+    var html = '<div class="series"><div class="tn">' + esc(team(m.a)) + '</div><div class="big">' + m.aw + ' - ' + m.bw + '</div><div class="tn">' + esc(team(m.b)) + '</div></div>';
+    m.games.forEach(function (g, i) {
+      var decided = !!m.winner;
+      var na = decided && !g.winner;
+      html += '<div class="game ' + (g.winner ? 'done' : '') + (na ? ' na' : '') + '" id="g' + g.id + '">' +
+        '<div class="game-head"><span>Game ' + (i + 1) + '</span><span>' + (na ? 'Not played' : g.winner ? 'Saved' : 'Not scored') + '</span></div>' +
+        (na ? '' :
+        '<div class="pick">' +
+          '<button class="tb ' + (g.winner === m.a ? 'on' : '') + '" onclick="pickWinner(' + g.id + ',' + m.a + ')" ' + (decided ? 'disabled' : '') + '>' + esc(team(m.a)) + '</button>' +
+          '<input class="input num" inputmode="numeric" aria-label="' + esc(team(m.a)) + ' score" value="' + (g.as == null ? '' : g.as) + '" oninput="scoreInput(' + g.id + ')" ' + (decided ? 'disabled' : '') + '>' +
+          '<input class="input num" inputmode="numeric" aria-label="' + esc(team(m.b)) + ' score" value="' + (g.bs == null ? '' : g.bs) + '" oninput="scoreInput(' + g.id + ')" ' + (decided ? 'disabled' : '') + '>' +
+          '<button class="tb ' + (g.winner === m.b ? 'on' : '') + '" onclick="pickWinner(' + g.id + ',' + m.b + ')" ' + (decided ? 'disabled' : '') + '>' + esc(team(m.b)) + '</button>' +
+        '</div>' +
+        (decided ? '' : '<div class="row-flex" style="justify-content:space-between"><span class="muted small">Tap the winner. Scores are optional.' + (g.winner ? ' Saved games can be corrected until the match is decided.' : '') + '</span>' +
+          '<button class="btn btn-sm btn-primary" onclick="saveGame(' + g.id + ')">' + (g.winner ? 'Update' : 'Save game') + '</button></div>')) +
+      '</div>';
+    });
+    if (m.winner) html += '<div class="alert success"><div><strong>' + esc(team(m.winner)) + ' win ' + Math.max(m.aw, m.bw) + '-' + Math.min(m.aw, m.bw) + '.</strong> They advance to the semifinals.</div></div>';
+    document.getElementById('md-body').innerHTML = html;
+  }
+  var pending = {};
+  window.pickWinner = function (gid, tid) {
+    pending[gid] = tid;
+    var row = document.getElementById('g' + gid);
+    var btns = row.querySelectorAll('.tb');
+    var m = BRACKET.filter(function (x) { return x.id === openMatchId; })[0];
+    btns[0].classList.toggle('on', tid === m.a); btns[1].classList.toggle('on', tid === m.b);
+  };
+  window.scoreInput = function (gid) {
+    var ins = document.getElementById('g' + gid).querySelectorAll('input');
+    var a = parseInt(ins[0].value, 10), b = parseInt(ins[1].value, 10);
+    var m = BRACKET.filter(function (x) { return x.id === openMatchId; })[0];
+    if (!isNaN(a) && !isNaN(b) && a !== b) pickWinner(gid, a > b ? m.a : m.b);
+  };
+  window.saveGame = function (gid) {
+    var m = BRACKET.filter(function (x) { return x.id === openMatchId; })[0];
+    var g = m.games.filter(function (x) { return x.id === gid; })[0];
+    var w = pending[gid] || g.winner;
+    if (!w) { toast('warning', 'Pick a winner', 'Tap the team that won this game.'); return; }
+    var ins = document.getElementById('g' + gid).querySelectorAll('input');
+    g.winner = w; g.as = ins[0].value || null; g.bs = ins[1].value || null; g.version++;
+    m.aw = m.games.filter(function (x) { return x.winner === m.a; }).length;
+    m.bw = m.games.filter(function (x) { return x.winner === m.b; }).length;
+    if (m.aw === 2 || m.bw === 2) {
+      m.winner = m.aw === 2 ? m.a : m.b;
+      var next = BRACKET.filter(function (x) { return x.round === m.round + 1 && x.seed === Math.ceil(m.seed / 2); })[0];
+      if (next) { if (m.seed % 2 === 1) next.a = m.winner; else next.b = m.winner; }
+      toast('success', 'Match finished', team(m.winner) + ' win ' + Math.max(m.aw, m.bw) + '-' + Math.min(m.aw, m.bw) + ' and advance');
+    } else {
+      toast('success', 'Game saved', 'Series ' + m.aw + '-' + m.bw);
+    }
+    renderMatchDialog(); renderAll();
+  };
+  window.demoConflict = function () {
+    toast('danger', 'Conflict', 'Game was modified by another user. Reload and try again.');
+    setTimeout(function () { toast('', 'Reloaded', 'Latest results loaded. Check and save again.'); }, 700);
+  };
+
+  // ---------- cancel ----------
+  window.doCancel = function () {
+    cancelled = true;
+    document.getElementById('cancel-reason').textContent = document.getElementById('reason').value || 'none given';
+    closeDialog('cancel-dialog');
+    renderAll();
+    toast('', 'Tournament cancelled', 'Everyone viewing it now sees it as cancelled.');
+  };
+
+  // ---------- tabs / modes ----------
+  function showTab() {
+    var tab = (location.hash || '#overview').slice(1);
+    if (['overview', 'teams', 'groups', 'bracket'].indexOf(tab) < 0) tab = 'overview';
+    document.querySelectorAll('#tabs a[data-tab]').forEach(function (a) { a.classList.toggle('active', a.dataset.tab === tab); });
+    ['overview', 'teams', 'groups', 'bracket'].forEach(function (t) { document.getElementById('panel-' + t).classList.toggle('hidden', t !== tab); });
+  }
+  window.addEventListener('hashchange', showTab);
+
+  window.setMode = function (m) {
+    mode = m; cancelled = false;
+    document.getElementById('mode-live').classList.toggle('on', m === 'live');
+    document.getElementById('mode-setup').classList.toggle('on', m === 'setup');
+    renderAll();
+  };
+  function renderAll() { renderHeader(); renderOverview(); renderTeams(); renderGroups(); renderBracket(); showTab(); }
+  renderAll();
+
+  // Simulated hub event: GameUpdated from another user
+  setTimeout(function () {
+    if (mode !== 'live' || cancelled) return;
+    var m = BRACKET.filter(function (x) { return x.id === 504; })[0];
+    m.games[0].winner = 113; m.games[0].version++; m.aw = 1;
+    renderAll();
+    var card = document.getElementById('m504'); if (card) card.classList.add('flash');
+    var act = document.getElementById('activity');
+    if (act) act.insertAdjacentHTML('afterbegin', '<li><span><strong>jonas</strong> scored Game 1: Vanta Club vs Echo Unit</span><time>now</time></li>');
+    toast('', 'Live update', 'jonas scored Vanta Club vs Echo Unit (1-0)');
+  }, 5000);
+</script>
+</body>
+</html>

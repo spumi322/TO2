@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TO2 New Tournament</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<script src="demo.js"></script>
+<style>
+  .layout { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 24px; align-items: start; }
+  .formats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .fmt {
+    display: grid; gap: 8px; padding: 14px; text-align: left; cursor: pointer;
+    border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); color: var(--text); font: inherit;
+  }
+  .fmt:hover { border-color: var(--primary); }
+  .fmt.on { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+  .fmt strong { font-size: 14px; }
+  .fmt span { font-size: 12px; color: var(--text-muted); }
+  .fmt svg { width: 100%; height: 36px; color: var(--text-muted); }
+  .fmt.on svg { color: var(--primary); }
+  .numbers { display: grid; grid-template-columns: repeat(3, auto); gap: 16px 24px; justify-content: start; }
+  .preview { position: sticky; top: 80px; }
+  .preview .card-pad { display: grid; gap: 16px; }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fact { background: var(--surface-2); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .fact b { display: block; font: 700 20px var(--font-display); }
+  .groups-prev { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; }
+  .gbox { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px; font-size: 12px; }
+  .gbox .slots { display: grid; gap: 3px; margin-top: 6px; }
+  .gbox .slots i { height: 6px; border-radius: 3px; background: var(--surface-2); }
+  .gbox .slots i.adv { background: var(--success); opacity: .7; }
+  .bracket-prev { display: flex; gap: 10px; align-items: stretch; height: 120px; }
+  .bracket-prev .col { display: flex; flex-direction: column; justify-content: space-around; flex: 1; }
+  .bracket-prev .col i { height: 8px; border-radius: 3px; background: var(--primary-tint); border-left: 2px solid var(--primary); }
+  .bracket-prev .col i.bye { background: var(--surface-2); border-left-color: var(--border); }
+  .counter { font-size: 12px; color: var(--text-muted); text-align: right; }
+  @media (max-width: 959px) { .layout { grid-template-columns: 1fr; } .preview { position: static; } }
+  @media (max-width: 560px) { .formats { grid-template-columns: 1fr; } .fmt { grid-template-columns: 80px 1fr; align-items: center; } .fmt svg { grid-row: span 2; } .numbers { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header id="topbar"></header>
+<main class="page">
+  <div class="page-head">
+    <div>
+      <a href="tournaments.html" class="small">&larr; Tournaments</a>
+      <h1 style="margin-top:6px">New tournament</h1>
+    </div>
+  </div>
+
+  <div class="layout">
+    <form class="card card-pad form-grid" onsubmit="event.preventDefault(); location.href='tournament.html#teams'" novalidate>
+      <div class="field">
+        <label for="name">Name</label>
+        <input id="name" class="input" value="Winter Invitational" maxlength="60">
+        <span class="hint">4-60 characters.</span>
+      </div>
+      <div class="field">
+        <label for="desc">Description <span class="muted">(optional)</span></label>
+        <textarea id="desc" class="textarea" maxlength="250" oninput="document.getElementById('cnt').textContent=this.value.length+' / 250'">Invite-only event for the top teams of the season.</textarea>
+        <div class="counter" id="cnt">50 / 250</div>
+      </div>
+
+      <div class="field">
+        <label>Format</label>
+        <div class="formats">
+          <button type="button" class="fmt" data-f="1" onclick="setFormat(1)">
+            <svg viewBox="0 0 120 36" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h22v8H4zM4 22h22v8H4zM26 10h10v16h10M46 18h22"/><path d="M68 14h22v8H68z"/></svg>
+            <strong>Bracket</strong><span>Single elimination, random seeding</span>
+          </button>
+          <button type="button" class="fmt" data-f="3" onclick="setFormat(3)">
+            <svg viewBox="0 0 120 36" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="48" height="28" rx="3"/><path d="M4 13h48M4 22h48"/><rect x="66" y="4" width="48" height="28" rx="3"/><path d="M66 13h48M66 22h48"/></svg>
+            <strong>Groups</strong><span>Round robin, group position is final</span>
+          </button>
+          <button type="button" class="fmt" data-f="2" onclick="setFormat(2)">
+            <svg viewBox="0 0 120 36" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="34" height="12" rx="2"/><rect x="4" y="20" width="34" height="12" rx="2"/><path d="M38 10h14v16H38M52 18h12"/><path d="M64 12h22v12H64zM86 18h14"/><path d="M100 13h16v10h-16z"/></svg>
+            <strong>Groups + Bracket</strong><span>Groups, then top teams to playoffs</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="numbers">
+        <div class="field">
+          <label>Max teams</label>
+          <div class="stepper"><button type="button" onclick="step('maxTeams',-1)" aria-label="Fewer teams">-</button><output id="maxTeams">16</output><button type="button" onclick="step('maxTeams',1)" aria-label="More teams">+</button></div>
+          <span class="hint">4-32</span>
+        </div>
+        <div class="field" id="f-groups">
+          <label>Groups</label>
+          <div class="stepper"><button type="button" onclick="step('groups',-1)" aria-label="Fewer groups">-</button><output id="groups">4</output><button type="button" onclick="step('groups',1)" aria-label="More groups">+</button></div>
+          <span class="hint">3+ teams per group</span>
+        </div>
+        <div class="field" id="f-adv">
+          <label>Advance per group</label>
+          <div class="stepper"><button type="button" onclick="step('adv',-1)" aria-label="Fewer advancing">-</button><output id="adv">2</output><button type="button" onclick="step('adv',1)" aria-label="More advancing">+</button></div>
+          <span class="hint">At least 1 per group is out</span>
+        </div>
+      </div>
+      <div id="errors" class="stack"></div>
+
+      <div class="row-flex" style="justify-content:flex-end; margin-top:8px">
+        <a class="btn" href="tournaments.html">Cancel</a>
+        <button class="btn btn-primary" id="submit">Create and add teams</button>
+      </div>
+    </form>
+
+    <aside class="preview card">
+      <div class="card-head"><h3>Preview</h3><span class="badge" id="pv-format"></span></div>
+      <div class="card-pad">
+        <div class="facts" id="facts"></div>
+        <div id="pv-groups"></div>
+        <div id="pv-bracket"></div>
+        <p class="muted small">Matches are best of 3. The tournament can start with fewer teams than the maximum (at least 2); empty bracket slots become BYEs.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<script>
+  renderTopbar('tournaments');
+  var s = { format: 2, maxTeams: 16, groups: 4, adv: 2 };
+  var LIMITS = { maxTeams: [4, 32], groups: [1, 10], adv: [1, 15] };
+  var NAMES = { 1: 'Bracket', 2: 'Groups + Bracket', 3: 'Groups' };
+
+  function setFormat(f) { s.format = f; render(); }
+  function step(key, d) {
+    var v = s[key] + d, lim = LIMITS[key];
+    if (v < lim[0] || v > lim[1]) return;
+    s[key] = v; render();
+  }
+  function nextPow2(n) { var p = 2; while (p < n) p *= 2; return p; }
+  function roundName(teams) { return teams === 2 ? 'Final' : teams === 4 ? 'Semifinals' : teams === 8 ? 'Quarterfinals' : 'Round of ' + teams; }
+
+  // Mirrors CreateTournamentValidator for instant feedback (server stays the authority)
+  function validate() {
+    var e = [];
+    if (s.format === 1) return e;
+    var minSize = Math.floor(s.maxTeams / s.groups);
+    if (minSize < 3) e.push('Each group must have at least 3 teams.');
+    if (s.format === 2) {
+      if (s.groups === 1 && s.adv < 2) e.push('With a single group, at least 2 teams must advance.');
+      if (s.adv >= minSize) e.push('Advance per group must be less than the smallest group (' + minSize + ').');
+    }
+    return e;
+  }
+
+  function render() {
+    document.querySelectorAll('.fmt').forEach(function (b) { b.classList.toggle('on', +b.dataset.f === s.format); });
+    ['maxTeams', 'groups', 'adv'].forEach(function (k) { document.getElementById(k).textContent = s[k]; });
+    document.getElementById('f-groups').classList.toggle('hidden', s.format === 1);
+    document.getElementById('f-adv').classList.toggle('hidden', s.format !== 2);
+    document.getElementById('pv-format').textContent = NAMES[s.format];
+
+    var errs = validate();
+    document.getElementById('errors').innerHTML = errs.map(function (m) { return '<div class="alert danger"><div>' + m + '</div></div>'; }).join('');
+    document.getElementById('submit').disabled = errs.length > 0;
+
+    var facts = [], groupsHtml = '', bracketHtml = '';
+    var hasGroups = s.format !== 1, hasBracket = s.format !== 3;
+
+    if (hasGroups) {
+      var base = Math.floor(s.maxTeams / s.groups), extra = s.maxTeams % s.groups, sizes = [], matches = 0;
+      for (var i = 0; i < s.groups; i++) { var size = base + (i < extra ? 1 : 0); sizes.push(size); matches += size * (size - 1) / 2; }
+      facts.push(['Groups', s.groups], ['Group matches', matches]);
+      groupsHtml = '<div class="stack"><strong class="small">Groups</strong><div class="groups-prev">' + sizes.map(function (size, i) {
+        var slots = '';
+        for (var j = 0; j < size; j++) slots += '<i class="' + (s.format === 2 && j < s.adv ? 'adv' : '') + '"></i>';
+        return '<div class="gbox"><b>' + String.fromCharCode(65 + i) + '</b> <span class="muted">' + size + ' teams</span><div class="slots">' + slots + '</div></div>';
+      }).join('') + '</div>' + (s.format === 2 ? '<span class="muted small">Green: advances to the bracket.</span>' : '') + '</div>';
+    }
+
+    if (hasBracket) {
+      var entrants = s.format === 1 ? s.maxTeams : s.groups * s.adv;
+      var size2 = nextPow2(entrants), byes = size2 - entrants, rounds = Math.log2(size2);
+      facts.push(['Bracket size', size2], ['BYEs', byes]);
+      var cols = '';
+      for (var r = 0, n = size2; n >= 2; r++, n /= 2) {
+        var cells = '';
+        for (var k = 0; k < Math.min(n, 16); k++) cells += '<i class="' + (r === 0 && k >= entrants ? 'bye' : '') + '"></i>';
+        cols += '<div class="col" title="' + roundName(n) + '">' + cells + '</div>';
+      }
+      bracketHtml = '<div class="stack"><strong class="small">Bracket: ' + entrants + ' teams, ' + rounds + ' rounds (' + roundName(size2) + ' to Final)</strong><div class="bracket-prev">' + cols + '</div></div>';
+    }
+    if (!hasBracket) facts.push(['Final result', 'Group position'], ['Max teams', s.maxTeams]);
+
+    document.getElementById('facts').innerHTML = facts.map(function (f) { return '<div class="fact"><span class="muted small">' + f[0] + '</span><b>' + f[1] + '</b></div>'; }).join('');
+    document.getElementById('pv-groups').innerHTML = groupsHtml;
+    document.getElementById('pv-bracket').innerHTML = bracketHtml;
+  }
+  render();
+</script>
+</body>
+</html>
