@@ -7,6 +7,6 @@ p {
   overflow-x: auto;
 }
 
-.popover-match {
-  width: 240px;
+.bracket.saving {
+  opacity: 0.7;
 }

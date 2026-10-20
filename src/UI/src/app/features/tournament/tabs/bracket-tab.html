@@ -6,29 +6,15 @@
   />
 } @else {
   @if (canScore()) {
-    <p class="muted small">Click a match to score it.</p>
+    <p class="muted small">Click a team to give it the next game.</p>
   }
-  <div class="card bracket">
+  <div class="card bracket" [class.saving]="scoring.savingMatchId() !== null">
     <app-bracket-view
       [bracket]="store.bracket()!"
       [teamNames]="store.teamNames()"
       [tournamentId]="store.id()"
       [canScore]="canScore()"
-      (matchClick)="open($event)"
+      (teamClick)="score($event)"
     />
   </div>
 }
-
-<p-popover appendTo="body">
-  @if (selectedMatch(); as match) {
-    <div class="popover-match">
-      <app-match-card
-        [match]="match"
-        [teamNames]="store.teamNames()"
-        [canScore]="canScore()"
-        [busy]="scoring.savingMatchId() === match.id"
-        (gameWinner)="scoring.setWinner($event)"
-      />
-    </div>
-  }
-</p-popover>

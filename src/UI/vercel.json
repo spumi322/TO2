@@ -1,7 +1,8 @@
 {
-  "buildCommand": "cd src/UI && npm install && npm run build",
-  "outputDirectory": "src/UI/dist/ui/browser",
   "framework": null,
+  "installCommand": "npm ci",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/ui/browser",
   "rewrites": [
     {
       "source": "/(.*)",

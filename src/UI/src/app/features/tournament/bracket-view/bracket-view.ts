@@ -1,4 +1,4 @@
-import { Component, effect, ElementRef, input, output, signal, untracked, viewChild } from '@angular/core';
+import { Component, effect, input, output, signal, untracked } from '@angular/core';
 import { Bracket } from '../../../core/models';
 import { roundName, toViewerData, ViewerData } from './bracket-adapter';
 
@@ -12,7 +12,6 @@ interface BracketsViewerApi {
       participantOriginPlacement: 'none';
       showSlotsOrigin: boolean;
       separatedChildCountLabel: boolean;
-      onMatchClick: (match: { id: number | string }) => void;
       customRoundName: (info: { fractionOfFinal?: number }) => string;
     },
   ): Promise<void>;
@@ -45,15 +44,15 @@ function loadViewer(): Promise<BracketsViewerApi> {
 
 let nextId = 0;
 
-export interface BracketMatchClick {
+export interface BracketTeamClick {
   matchId: number;
-  // The clicked match element, to anchor a popover
-  element: HTMLElement | null;
+  teamId: number;
 }
 
 /**
- * The only place that touches brackets-viewer: data goes through the pure adapter,
- * the library renders it, clicks come back as match ids. Re-renders whenever an input changes.
+ * The only place that touches brackets-viewer: data goes through the pure adapter, the library renders it,
+ * and one click listener on the container turns a click on a team into (match id, team id).
+ * Re-renders whenever an input changes.
  */
 @Component({
   selector: 'app-bracket-view',
@@ -61,7 +60,7 @@ export interface BracketMatchClick {
     @if (failed()) {
       <p class="form-error">The bracket could not be displayed. Reload the page to try again.</p>
     }
-    <div #host class="brackets-viewer" [id]="elementId" [class.clickable]="canScore()"></div>
+    <div class="brackets-viewer" [id]="elementId" [class.clickable]="canScore()" (click)="onClick($event)"></div>
   `,
   styleUrl: './bracket-view.css',
 })
@@ -70,17 +69,25 @@ export class BracketView {
   readonly teamNames = input.required<Map<number, string>>();
   readonly tournamentId = input.required<number>();
   readonly canScore = input(false);
-  readonly matchClick = output<BracketMatchClick>();
+  readonly teamClick = output<BracketTeamClick>();
 
   protected readonly elementId = `bracket-view-${++nextId}`;
   protected readonly failed = signal(false);
-  private readonly host = viewChild.required<ElementRef<HTMLElement>>('host');
 
   constructor() {
     effect(() => {
       const data = toViewerData(this.bracket(), this.teamNames(), this.tournamentId());
       untracked(() => void this.render(data));
     });
+  }
+
+  // The library marks matches with data-match-id and teams with data-participant-id
+  protected onClick(event: MouseEvent): void {
+    if (!this.canScore() || !(event.target instanceof Element)) return;
+    const team = event.target.closest<HTMLElement>('[data-participant-id]');
+    const match = team?.closest<HTMLElement>('[data-match-id]');
+    if (!team || !match) return;
+    this.teamClick.emit({ matchId: Number(match.dataset['matchId']), teamId: Number(team.dataset['participantId']) });
   }
 
   private async render(data: ViewerData): Promise<void> {
@@ -92,7 +99,6 @@ export class BracketView {
         participantOriginPlacement: 'none',
         showSlotsOrigin: false,
         separatedChildCountLabel: true,
-        onMatchClick: (match) => this.onMatchClick(Number(match.id)),
         customRoundName: (info) => (info.fractionOfFinal ? roundName(info.fractionOfFinal) : ''),
       });
       this.failed.set(false);
@@ -100,11 +106,5 @@ export class BracketView {
       console.error(error);
       this.failed.set(true);
     }
-  }
-
-  private onMatchClick(matchId: number): void {
-    if (!this.canScore()) return;
-    const element = this.host().nativeElement.querySelector<HTMLElement>(`[data-match-id="${matchId}"]`);
-    this.matchClick.emit({ matchId, element });
   }
 }

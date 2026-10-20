@@ -28,8 +28,13 @@
   font-family: var(--font-ui);
 }
 
-.brackets-viewer.clickable {
+/* Teams of a scorable match: clicking one gives it the next game (::ng-deep: elements created by the library) */
+:host ::ng-deep .brackets-viewer.clickable .match .participant[data-participant-id] {
   cursor: pointer;
+}
+
+:host ::ng-deep .brackets-viewer.clickable .match .participant[data-participant-id]:hover {
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
 }
 
 /* The library's stage title: the tab already says "Bracket" (::ng-deep: the element is created by the library) */
