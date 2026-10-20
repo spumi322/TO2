@@ -4,6 +4,7 @@ using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using Application.Mappings;
 using Domain.AggregateRoots;
+using Domain.Enums;
 using Domain.Exceptions;
 using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
@@ -13,7 +14,11 @@ namespace Application.Services
 {
     public class TournamentService : ITournamentService
     {
+        // A stage needs at least two teams to start
+        private const int MinTeamsToStart = 2;
+
         private readonly ITournamentRepository _tournamentRepository;
+        private readonly ITournamentTeamRepository _tournamentTeamRepository;
         private readonly IRepository<Team> _teamRepository;
         private readonly IStandingService _standingService;
         private readonly ILogger<TournamentService> _logger;
@@ -23,6 +28,7 @@ namespace Application.Services
         private readonly IUnitOfWork _unitOfWork;
 
         public TournamentService(ITournamentRepository tournamentRepository,
+                                 ITournamentTeamRepository tournamentTeamRepository,
                                  IRepository<Team> teamRepository,
                                  IStandingService standingService,
                                  ILogger<TournamentService> logger,
@@ -32,6 +38,7 @@ namespace Application.Services
                                  ITenantService tenantService)
         {
             _tournamentRepository = tournamentRepository;
+            _tournamentTeamRepository = tournamentTeamRepository;
             _teamRepository = teamRepository;
             _standingService = standingService;
             _logger = logger;
@@ -46,6 +53,8 @@ namespace Application.Services
             var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
                 ?? throw new NotFoundException("Tournament", tournamentId);
 
+            var hasEnoughTeams = await _tournamentTeamRepository.GetCountByTournamentAsync(tournamentId) >= MinTeamsToStart;
+
             return new TournamentStateDTO(
                 CurrentStatus: tournament.Status,
                 IsTransitionState: _stateMachine.IsTransitionState(tournament.Status),
@@ -54,6 +63,10 @@ namespace Application.Services
                 CanModifyTeams: _stateMachine.CanModifyTeams(tournament.Status),
                 CanCancel: _stateMachine.CanCancel(tournament.Status),
                 CanDelete: _stateMachine.CanDelete(tournament.Status),
+                CanStartGroups: hasEnoughTeams
+                    && _stateMachine.IsTransitionValid(tournament.Status, TournamentStatus.SeedingGroups, tournament.Format),
+                CanStartBracket: hasEnoughTeams
+                    && _stateMachine.IsTransitionValid(tournament.Status, TournamentStatus.SeedingBracket, tournament.Format),
                 Version: tournament.Version
             );
         }

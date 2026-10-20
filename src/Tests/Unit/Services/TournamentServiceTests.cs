@@ -44,6 +44,7 @@ namespace Tests.Unit.Services
 
             _service = new TournamentService(
                 new TournamentRepository(DbContext),
+                new TournamentTeamRepository(DbContext),
                 new Repository<Team>(DbContext),
                 standingService,
                 new Mock<ILogger<TournamentService>>().Object,
@@ -64,11 +65,57 @@ namespace Tests.Unit.Services
             return tournament.Id;
         }
 
+        private async Task<long> SeedTournamentWithTeamsAsync(Format format, TournamentStatus status, int teamCount)
+        {
+            var tournament = TestDataBuilder.Tournaments.CreateDefault(format: format);
+            tournament.Status = status;
+            DbContext.Tournaments.Add(tournament);
+            await DbContext.SaveChangesAsync();
+
+            for (var i = 0; i < teamCount; i++)
+            {
+                var team = TestDataBuilder.Teams.CreateDefault();
+                DbContext.Teams.Add(team);
+                await DbContext.SaveChangesAsync();
+                DbContext.TournamentTeams.Add(TestDataBuilder.TournamentTeams.Create(tournament.Id, team.Id));
+            }
+
+            await SaveAndDetachAsync();
+            return tournament.Id;
+        }
+
         private async Task<Tournament> ReloadAsync(long id)
         {
             DbContext.ChangeTracker.Clear();
             return await DbContext.Tournaments.SingleAsync(t => t.Id == id);
         }
+
+        #region State
+
+        [Theory]
+        [InlineData(Format.GroupsOnly, TournamentStatus.Setup, 2, true, false)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.Setup, 2, true, false)]
+        [InlineData(Format.BracketOnly, TournamentStatus.Setup, 2, false, true)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.Setup, 1, false, false)]
+        [InlineData(Format.BracketOnly, TournamentStatus.Setup, 0, false, false)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.GroupsInProgress, 4, false, false)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.GroupsCompleted, 4, false, true)]
+        [InlineData(Format.GroupsOnly, TournamentStatus.GroupsInProgress, 4, false, false)]
+        [InlineData(Format.BracketOnly, TournamentStatus.BracketInProgress, 4, false, false)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.Finished, 4, false, false)]
+        [InlineData(Format.GroupsAndBracket, TournamentStatus.Cancelled, 4, false, false)]
+        public async Task State_Should_SetStartFlags_ByStatusFormatAndTeamCount(
+            Format format, TournamentStatus status, int teamCount, bool canStartGroups, bool canStartBracket)
+        {
+            var id = await SeedTournamentWithTeamsAsync(format, status, teamCount);
+
+            var state = await _service.GetTournamentStateAsync(id);
+
+            state.CanStartGroups.Should().Be(canStartGroups);
+            state.CanStartBracket.Should().Be(canStartBracket);
+        }
+
+        #endregion
 
         #region Cancel
 
