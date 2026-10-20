@@ -166,6 +166,7 @@ namespace Application.Services
             var teamIds = tournamentTeams.Select(tt => tt.TeamId).ToList();
             var teams = await _teamRepository.FindAllAsync(t => teamIds.Contains(t.Id));
             var teamNameLookup = teams.ToDictionary(t => t.Id, t => t.Name);
+            var groupNameLookup = await GetGroupPlacementNamesAsync(tournament);
 
             return tournamentTeams
                 .OrderBy(tt => tt.FinalPlacement)
@@ -175,9 +176,26 @@ namespace Application.Services
                     teamNameLookup.GetValueOrDefault(tt.TeamId, "Unknown Team"),
                     tt.FinalPlacement!.Value,
                     tt.FinalPlacement == 1 ? TeamStatus.Champion : TeamStatus.Eliminated,
-                    tt.EliminatedInRound ?? 0
+                    tt.EliminatedInRound ?? 0,
+                    groupNameLookup.GetValueOrDefault(tt.TeamId)
                 ))
                 .ToList();
+        }
+
+        // Team id -> group name, for teams whose placement is their group position
+        private async Task<Dictionary<long, string>> GetGroupPlacementNamesAsync(Tournament tournament)
+        {
+            if (tournament.Format == Format.BracketOnly)
+                return new Dictionary<long, string>();
+
+            var groups = await _standingRepository.FindAllAsync(s => s.TournamentId == tournament.Id && s.StandingType == StandingType.Group);
+            var groupNames = groups.ToDictionary(g => g.Id, g => g.Name);
+            var entries = await _groupRepository.GetByTournamentIdAsync(tournament.Id);
+
+            // GroupsOnly: every team; GroupsAndBracket: only teams knocked out in the groups
+            return entries
+                .Where(e => tournament.Format == Format.GroupsOnly || e.Eliminated)
+                .ToDictionary(e => e.TeamId, e => groupNames.GetValueOrDefault(e.StandingId, ""));
         }
     }
 }
