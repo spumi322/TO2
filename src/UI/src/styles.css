@@ -13,16 +13,14 @@
   --danger: #c62828;
   --card-shadow: 0 1px 2px rgb(16 24 40 / 0.06);
 
-  /* Tournament status colors: toned stages, gold only for winners (finished) */
-  --status-setup: #546e7a;
+  /* Tournament status colors: one green, darker stage by stage (registration, groups, playoffs); gold only for winners */
+  --status-setup: #4f7f53;
   --status-seeding: #64748b;
-  --status-groups: #3f6f91;
-  --status-groups-done: #2e7d32;
-  --status-bracket: #2e7d32;
+  --status-groups: #388e3c;
+  --status-groups-done: #1b5e20;
+  --status-bracket: #1b5e20;
   --status-finished: #9a6b00;
   --status-cancelled: #c62828;
-  /* Finished stages on the stage track */
-  --stage-done: #9ccc9e;
 
   --top-bar-height: 57px;
   --font-ui: 'Inter', system-ui, sans-serif;
@@ -49,14 +47,13 @@
   --danger: #f44336;
   --card-shadow: 0 4px 12px rgb(0 0 0 / 0.3);
 
-  --status-setup: #9ca3af;
+  --status-setup: #c8e6c9;
   --status-seeding: #9ca3af;
-  --status-groups: #7fa7c4;
-  --status-groups-done: #4caf50;
-  --status-bracket: #4caf50;
+  --status-groups: #81c784;
+  --status-groups-done: #43a047;
+  --status-bracket: #43a047;
   --status-finished: #ffca28;
   --status-cancelled: #f44336;
-  --stage-done: #2f6b33;
 
   color-scheme: dark;
 }

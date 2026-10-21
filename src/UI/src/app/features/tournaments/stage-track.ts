@@ -2,7 +2,7 @@ import { Component, computed, input } from '@angular/core';
 import { Format, TournamentStatus } from '../../shared/enums';
 import { StageKey, stageSteps, StepState } from './stage-steps';
 
-// Color of a stage while it is the current one
+// Each stage keeps its shade once reached, so the track fills light to dark green
 const STAGE_COLORS: Record<StageKey, string> = {
   registration: 'var(--status-setup)',
   groups: 'var(--status-groups)',
@@ -49,9 +49,7 @@ const STATE_WORDS: Record<StepState, string> = {
       border-radius: 3px;
       background: var(--border);
     }
-    .seg.done {
-      background: var(--stage-done);
-    }
+    .seg.done,
     .seg.current {
       background: var(--seg-color);
     }

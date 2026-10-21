@@ -1,12 +1,12 @@
 # Tournament list (main page after login)
 
 ## Context
-`/tournaments` shows every tournament as a card in Ongoing / Registration / Finished / Cancelled sections. With real use (asd1: 77 tournaments) it is 3.5 screens long, Finished (53) dominates, cards repeat the section name as a status chip, "4 / 7 teams" on started tournaments reads as missing teams, cards have no winner or date and uneven heights. Research (Liquipedia, HLTV, Challonge, start.gg, Battlefy, Toornament): active work first, history behind a tab or filter, finished = winner + date, live = stage progress. Design mockups: canvas https://claude.ai/artifact/9EE5MFEWHnM9R5yUP3Q9n7, chosen board **E1 - Steel / green**.
+`/tournaments` shows every tournament as a card in Ongoing / Registration / Finished / Cancelled sections. With real use (asd1: 77 tournaments) it is 3.5 screens long, Finished (53) dominates, cards repeat the section name as a status chip, "4 / 7 teams" on started tournaments reads as missing teams, cards have no winner or date and uneven heights. Research (Liquipedia, HLTV, Challonge, start.gg, Battlefy, Toornament): active work first, history behind a tab or filter, finished = winner + date, live = stage progress. Design mockups: canvas https://claude.ai/artifact/9EE5MFEWHnM9R5yUP3Q9n7, chosen layout **E1** (D3 layout), colors from the **Green ramp** board.
 
 Work phase by phase.
 
 ## Decisions
-- **Layout** (E1): page header (title + New tournament), then **Live now** (all ongoing tournaments as rows), then **tabs**: Registration / Finished / Cancelled with counts, one list visible at a time.
+- **Layout**: page header (title + New tournament), then **Live now** (all ongoing tournaments as rows), then **tabs**: Registration / Finished / Cancelled with counts, one list visible at a time.
 - **Live row**: format icon tile (tinted by stage) + name | stage track | stage chip | format | team count ("8", no max).
 - **Stage track**: segments per format, from `Format` + `Status` only (no backend): BracketOnly `Registration > Playoffs > Finished`, GroupsOnly `Registration > Groups > Finished`, GroupsAndBracket `Registration > Groups > Playoffs > Finished`. Done = dim green, current = stage color, next = grey; `GroupsCompleted` = Groups done + Playoffs outlined. Pure function, unit tested.
 - **Registration row**: icon + name | fill bar | format | "2 / 8" or "Full".
@@ -14,8 +14,8 @@ Work phase by phase.
 - **One screen**: Live now shows all rows by default ("Show less" = half of the rows that fit); the open tab gets the rows left on the screen (min 3, recomputed on resize); "Show all N" / "Show less" in the section heading row (client side, the list is already loaded).
 - **Cancelled row**: name | reason | teams | cancelled date.
 - **No** descriptions in the list (overview tab has them), no search, no pagination, no archive, no scheduling dates.
-- **Colors (E1)**: groups steel blue `#7fa7c4`, playoffs TO2 green `#4caf50`, ready for playoffs = playoffs green as outline, done segments dark green `#2f6b33`, live pulse green. Gold (`--status-finished`) only for winners/trophies, never for a state.
-- **Colors are app-wide**: the E1 values go into the `--status-*` tokens, so status chips look the same on every page. Seeding states (`SeedingGroups`, `SeedingBracket`) move from orange to neutral grey (the spinner shows progress). Light theme gets darker shades for contrast.
+- **Colors (green ramp)**: one green, darker stage by stage: registration `#c8e6c9`, groups `#81c784`, playoffs TO2 green `#43a047` (light theme: `#4f7f53`, `#388e3c`, `#1b5e20`). Reached stages keep their shade on the track; ready for playoffs = playoffs green as outline; the Finished segment stays grey (a finished tournament leaves Live now). Gold (`--status-finished`) only for winners/trophies, never for a state.
+- **Colors are app-wide**: the ramp goes into the `--status-*` tokens, so status chips look the same on every page. Seeding states (`SeedingGroups`, `SeedingBracket`) move from orange to neutral grey (the spinner shows progress). Light theme gets darker shades for contrast.
 - **Labels**: `GroupsCompleted` = "Ready for playoffs".
 - **Default tab**: Registration; Finished when Registration is empty. Not remembered between visits.
 - **Commits**: one per phase (phase 1 includes this plan). CLAUDE.md is gitignored: phase 3 edits stay local.
@@ -39,7 +39,7 @@ CONFIRM: tests green; `curl GET api/tournaments` on the real API shows winners f
 
 ## Phase 2: UI
 - `core/models.ts`: new list item fields.
-- `styles.css`: E1 values for `--status-groups`, `--status-groups-done`, `--status-bracket`, `--status-seeding` (dark + light theme); new `--stage-done` for done track segments; `shared/enums.ts`: `GroupsCompleted` label "Ready for playoffs", `outline` flag; `StatusChip` renders the outline variant.
+- `styles.css`: green ramp in `--status-setup`, `--status-groups`, `--status-groups-done`, `--status-bracket`, grey `--status-seeding` (dark + light theme); `shared/enums.ts`: `GroupsCompleted` label "Ready for playoffs", `outline` flag; `StatusChip` renders the outline variant.
 - `features/tournaments/stage-track.ts` (+ spec): `stageSteps(format, status)` → `{ label, state }[]`; small `StageTrack` component.
 - `tournament-list-page`: Live now rows, tabs (signal), Registration / Finished (latest 10 + show all, sorted by `finishedAt` desc) / Cancelled rows; rows are links; tables scroll horizontally on phones; empty states per list; realtime reload unchanged.
 - Remove the old card styles.
