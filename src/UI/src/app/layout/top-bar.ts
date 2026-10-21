@@ -6,7 +6,7 @@ import { Menu } from 'primeng/menu';
 import { AuthService } from '../core/auth/auth.service';
 import { SessionStore } from '../core/auth/session.store';
 import { RealtimeService } from '../core/realtime/realtime.service';
-import { ThemeMode, ThemeService } from '../core/ui/theme.service';
+import { ThemeService } from '../core/ui/theme.service';
 import { InviteCodeDialog } from './invite-code-dialog';
 
 @Component({
@@ -23,24 +23,9 @@ export class TopBar {
   readonly theme = inject(ThemeService);
   readonly inviteOpen = signal(false);
 
-  readonly themeIcon = computed(() => {
-    switch (this.theme.mode()) {
-      case 'light':
-        return 'pi pi-sun';
-      case 'dark':
-        return 'pi pi-moon';
-      default:
-        return 'pi pi-desktop';
-    }
-  });
-
-  readonly themeMenu = computed<MenuItem[]>(() =>
-    (['system', 'light', 'dark'] as ThemeMode[]).map((mode) => ({
-      label: mode === 'system' ? 'System' : mode === 'light' ? 'Light' : 'Dark',
-      icon: this.theme.mode() === mode ? 'pi pi-check' : 'pi pi-fw',
-      command: () => this.theme.setMode(mode),
-    })),
-  );
+  // The button shows the theme a click switches to
+  readonly themeIcon = computed(() => (this.theme.mode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'));
+  readonly themeLabel = computed(() => (this.theme.mode() === 'dark' ? 'Light theme' : 'Dark theme'));
 
   readonly liveLabel = computed(() => {
     switch (this.realtime.state()) {

@@ -14,10 +14,10 @@
       [icon]="themeIcon()"
       [text]="true"
       severity="secondary"
-      ariaLabel="Theme"
-      (onClick)="themeMenuRef.toggle($event)"
+      [ariaLabel]="themeLabel()"
+      [title]="themeLabel()"
+      (onClick)="theme.toggle()"
     />
-    <p-menu #themeMenuRef [model]="themeMenu()" [popup]="true" appendTo="body" />
     @if (session.session(); as s) {
       <span class="live-dot" [class]="realtime.state()" [title]="liveLabel()" role="status" [attr.aria-label]="liveLabel()"></span>
       <p-button
