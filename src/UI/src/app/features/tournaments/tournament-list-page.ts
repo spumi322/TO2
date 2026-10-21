@@ -23,8 +23,6 @@ type Tab = 'registration' | 'finished' | 'cancelled';
 const PAGE_CHROME_HEIGHT = 380;
 const ROW_HEIGHT = 49;
 const MIN_ROWS = 3;
-// Free space kept under the last row
-const SPARE_ROWS = 1;
 
 const byNewest = (a: TournamentListItem, b: TournamentListItem) => b.id - a.id;
 const byDateDesc = (date: (t: TournamentListItem) => string | null) => (a: TournamentListItem, b: TournamentListItem) =>
@@ -50,9 +48,7 @@ export class TournamentListPage implements OnInit {
 
   private readonly windowHeight = signal(window.innerHeight);
   // Rows that fit the window, both lists together
-  private readonly rowsOnScreen = computed(
-    () => Math.floor((this.windowHeight() - PAGE_CHROME_HEIGHT) / ROW_HEIGHT) - SPARE_ROWS,
-  );
+  private readonly rowsOnScreen = computed(() => Math.floor((this.windowHeight() - PAGE_CHROME_HEIGHT) / ROW_HEIGHT));
   readonly liveLimit = computed(() => Math.max(MIN_ROWS, Math.floor(this.rowsOnScreen() / 2)));
 
   protected readonly formatLabels = FORMAT_LABELS;
