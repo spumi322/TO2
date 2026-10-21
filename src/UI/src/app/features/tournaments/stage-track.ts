@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 import { Format, TournamentStatus } from '../../shared/enums';
-import { StageKey, stageSteps, StepState } from './stage-steps';
+import { StageKey, StageStep, stageSteps, StepState } from './stage-steps';
 
 // Each stage keeps its shade once reached, so the track fills light to dark green
 const STAGE_COLORS: Record<StageKey, string> = {
@@ -24,7 +24,9 @@ const STATE_WORDS: Record<StepState, string> = {
     <div class="track" role="img" [attr.aria-label]="ariaLabel()">
       @for (step of steps(); track step.key) {
         <div class="step">
-          <span class="seg" [class]="step.state" [style.--seg-color]="colors[step.key]"></span>
+          <span class="seg" [class]="step.state" [style.--seg-color]="colors[step.key]">
+            <span class="fill" [style.width.%]="fillPercent(step)"></span>
+          </span>
           <span class="label" [class.now]="step.state === 'current' || step.state === 'ready'">{{ step.label }}</span>
         </div>
       }
@@ -48,9 +50,12 @@ const STATE_WORDS: Record<StepState, string> = {
       height: 6px;
       border-radius: 3px;
       background: var(--border);
+      overflow: hidden;
     }
-    .seg.done,
-    .seg.current {
+    .fill {
+      display: block;
+      height: 100%;
+      border-radius: 3px;
       background: var(--seg-color);
     }
     .seg.ready {
@@ -74,8 +79,17 @@ const STATE_WORDS: Record<StepState, string> = {
 export class StageTrack {
   readonly format = input.required<Format>();
   readonly status = input.required<TournamentStatus>();
+  // Registered / max teams: the Registration segment fills like the slots bar
+  readonly teams = input(0);
+  readonly maxTeams = input(1);
 
   protected readonly colors = STAGE_COLORS;
   readonly steps = computed(() => stageSteps(this.format(), this.status()));
+
+  protected fillPercent(step: StageStep): number {
+    if (step.state === 'todo' || step.state === 'ready') return 0;
+    if (step.key === 'registration') return Math.min(100, (this.teams() / this.maxTeams()) * 100);
+    return 100;
+  }
   readonly ariaLabel = computed(() => this.steps().map((s) => `${s.label} ${STATE_WORDS[s.state]}`).join(', '));
 }

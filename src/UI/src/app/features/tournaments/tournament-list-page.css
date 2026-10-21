@@ -152,11 +152,12 @@
   overflow: hidden;
 }
 
+/* Same shade as the Registration stage on the stage track */
 .fill {
   display: block;
   height: 100%;
   border-radius: 3px;
-  background: var(--primary);
+  background: var(--status-setup);
 }
 
 .full {
