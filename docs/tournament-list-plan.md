@@ -11,7 +11,7 @@ Work phase by phase.
 - **Stage track**: segments per format, from `Format` + `Status` only (no backend): BracketOnly `Registration > Playoffs > Finished`, GroupsOnly `Registration > Groups > Finished`, GroupsAndBracket `Registration > Groups > Playoffs > Finished`. Done = dim green, current = stage color, next = grey; `GroupsCompleted` = Groups done + Playoffs outlined. Pure function, unit tested.
 - **Registration row**: icon + name | fill bar | format | "2 / 8" or "Full".
 - **Finished row**: name | trophy + winner | format | teams | finished date, newest first.
-- **One screen**: Live now and the open tab each show the rows that fit half of the window height left after the page chrome (min 3, recomputed on resize); "Show all N" / "Show less" in the section heading row (client side, the list is already loaded).
+- **One screen**: Live now shows all rows by default ("Show less" = half of the rows that fit); the open tab gets the rows left on the screen (min 3, one row kept free at the bottom, recomputed on resize); "Show all N" / "Show less" in the section heading row (client side, the list is already loaded).
 - **Cancelled row**: name | reason | teams | cancelled date.
 - **No** descriptions in the list (overview tab has them), no search, no pagination, no archive, no scheduling dates.
 - **Colors (E1)**: groups steel blue `#7fa7c4`, playoffs TO2 green `#4caf50`, ready for playoffs = playoffs green as outline, done segments dark green `#2f6b33`, live pulse green. Gold (`--status-finished`) only for winners/trophies, never for a state.
