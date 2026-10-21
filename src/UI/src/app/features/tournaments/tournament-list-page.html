@@ -14,13 +14,13 @@
 
   @if (tournaments() === null) {
     @if (!error()) {
-      <div class="grid">
-        @for (i of [1, 2, 3]; track i) {
-          <p-skeleton height="120px" borderRadius="10px" />
+      <div class="stack">
+        @for (i of [1, 2, 3, 4]; track i) {
+          <p-skeleton height="52px" borderRadius="10px" />
         }
       </div>
     }
-  } @else if (sections().length === 0) {
+  } @else if (tournaments()!.length === 0) {
     <app-empty-state
       title="No tournaments yet"
       message="Create your first tournament. To work on it together, invite people from the user menu (Invite code)."
@@ -29,26 +29,133 @@
       <p-button label="Create tournament" routerLink="/tournaments/new" />
     </app-empty-state>
   } @else {
-    @for (section of sections(); track section.key) {
-      <section class="stack">
-        <h2>{{ section.title }} <span class="muted count">{{ section.items.length }}</span></h2>
-        <div class="grid">
-          @for (t of section.items; track t.id) {
-            <a class="card tournament" [class.cancelled]="section.key === 'cancelled'" [routerLink]="['/tournaments', t.id]">
-              <div class="row">
+    <section class="stack">
+      <h2 class="live-title">
+        <span class="pulse" aria-hidden="true"></span>Live now <span class="muted count">{{ live().length }}</span>
+      </h2>
+      @if (live().length === 0) {
+        <p class="muted none">No tournament is running.</p>
+      } @else {
+        <div class="box">
+          <div class="list live">
+            <div class="row-grid head" aria-hidden="true">
+              <span>Tournament</span><span>Progress</span><span>Stage</span><span>Format</span><span class="right">Teams</span>
+            </div>
+            @for (t of live(); track t.id) {
+              <a class="row-grid item" [routerLink]="['/tournaments', t.id]">
+                <span class="name">
+                  <span class="tile" [style.--tile-color]="statusColor(t)"><app-format-icon [format]="t.format" /></span>
+                  <span class="text">{{ t.name }}</span>
+                </span>
+                <app-stage-track [format]="t.format" [status]="t.status" />
                 <app-status-chip [status]="t.status" />
-                <span class="spacer"></span>
-                <app-format-badge [format]="t.format" />
-              </div>
-              <h3>{{ t.name }}</h3>
-              @if (t.description) {
-                <p class="muted description">{{ t.description }}</p>
-              }
-              <span class="muted small num"><i class="pi pi-users"></i> {{ t.currentTeams }} / {{ t.maxTeams }} teams</span>
-            </a>
-          }
+                <span class="muted">{{ formatLabels[t.format] }}</span>
+                <span class="num right">{{ t.currentTeams }}</span>
+              </a>
+            }
+          </div>
         </div>
-      </section>
-    }
+      }
+    </section>
+
+    <section class="stack">
+      <div class="tabs" role="tablist">
+        @for (item of tabs(); track item.key) {
+          <button type="button" role="tab" class="tab" [class.active]="tab() === item.key" [attr.aria-selected]="tab() === item.key"
+            (click)="selectTab(item.key)">
+            {{ item.title }} <span class="tab-count num">{{ item.count }}</span>
+          </button>
+        }
+      </div>
+
+      @switch (tab()) {
+        @case ('registration') {
+          @if (registration().length === 0) {
+            <p class="muted none">No tournament is open for registration.</p>
+          } @else {
+            <div class="box">
+              <div class="list registration">
+                <div class="row-grid head" aria-hidden="true">
+                  <span>Tournament</span><span>Slots</span><span>Format</span><span class="right">Teams</span>
+                </div>
+                @for (t of registration(); track t.id) {
+                  <a class="row-grid item" [routerLink]="['/tournaments', t.id]">
+                    <span class="name">
+                      <span class="tile" [style.--tile-color]="statusColor(t)"><app-format-icon [format]="t.format" /></span>
+                      <span class="text">{{ t.name }}</span>
+                    </span>
+                    <span class="bar" aria-hidden="true"><span class="fill" [style.width.%]="(t.currentTeams / t.maxTeams) * 100"></span></span>
+                    <span class="muted">{{ formatLabels[t.format] }}</span>
+                    @if (t.currentTeams >= t.maxTeams) {
+                      <span class="num right full">Full</span>
+                    } @else {
+                      <span class="num right">{{ t.currentTeams }} / {{ t.maxTeams }}</span>
+                    }
+                  </a>
+                }
+              </div>
+            </div>
+          }
+        }
+        @case ('finished') {
+          @if (finished().length === 0) {
+            <p class="muted none">No finished tournament yet.</p>
+          } @else {
+            <div class="box">
+              <div class="list finished">
+                <div class="row-grid head" aria-hidden="true">
+                  <span>Tournament</span><span>Winner</span><span>Format</span><span>Teams</span><span>Finished</span>
+                </div>
+                @for (t of finishedShown(); track t.id) {
+                  <a class="row-grid item" [routerLink]="['/tournaments', t.id]">
+                    <span class="name">
+                      <span class="tile" [style.--tile-color]="statusColor(t)"><i class="pi pi-trophy" aria-hidden="true"></i></span>
+                      <span class="text">{{ t.name }}</span>
+                    </span>
+                    <span class="winner" [class.muted]="!t.winnerName">
+                      @if (t.winnerName) {
+                        <i class="pi pi-trophy" aria-hidden="true"></i>
+                      }
+                      <span class="text">{{ winnerLabel(t) }}</span>
+                    </span>
+                    <span class="muted">{{ formatLabels[t.format] }}</span>
+                    <span class="num">{{ t.currentTeams }}</span>
+                    <span class="muted num">{{ t.finishedAt | date: 'MMM d, y' }}</span>
+                  </a>
+                }
+              </div>
+            </div>
+            @if (finished().length > finishedShown().length) {
+              <p-button class="show-all" [label]="'Show all ' + finished().length + ' finished'" severity="secondary" [outlined]="true"
+                (onClick)="showAllFinished.set(true)" />
+            }
+          }
+        }
+        @case ('cancelled') {
+          @if (cancelled().length === 0) {
+            <p class="muted none">No cancelled tournament.</p>
+          } @else {
+            <div class="box">
+              <div class="list cancelled">
+                <div class="row-grid head" aria-hidden="true">
+                  <span>Tournament</span><span>Reason</span><span>Teams</span><span>Cancelled</span>
+                </div>
+                @for (t of cancelled(); track t.id) {
+                  <a class="row-grid item" [routerLink]="['/tournaments', t.id]">
+                    <span class="name">
+                      <span class="tile" [style.--tile-color]="statusColor(t)"><i class="pi pi-times" aria-hidden="true"></i></span>
+                      <span class="text">{{ t.name }}</span>
+                    </span>
+                    <span class="muted reason">{{ t.cancellationReason ?? '-' }}</span>
+                    <span class="num">{{ t.currentTeams }}</span>
+                    <span class="muted num">{{ t.cancelledAt | date: 'MMM d, y' }}</span>
+                  </a>
+                }
+              </div>
+            </div>
+          }
+        }
+      }
+    </section>
   }
 </div>

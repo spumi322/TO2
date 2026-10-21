@@ -11,6 +11,11 @@ export interface TournamentListItem {
   format: Format;
   status: TournamentStatus;
   version: number;
+  // The only team placed 1st; null when not finished or several group winners (GroupsOnly)
+  winnerName: string | null;
+  finishedAt: string | null;
+  cancelledAt: string | null;
+  cancellationReason: string | null;
 }
 
 export interface Tournament {

@@ -4,7 +4,7 @@ import { STATUS_INFO, TournamentStatus } from './enums';
 @Component({
   selector: 'app-status-chip',
   template: `
-    <span class="chip" [style.--chip-color]="'var(' + info().color + ')'">
+    <span class="chip" [class.outline]="info().outline" [style.--chip-color]="'var(' + info().color + ')'">
       @if (info().live) {
         <span class="dot pulse" aria-hidden="true"></span>
       } @else if (info().seeding) {
@@ -29,6 +29,10 @@ import { STATUS_INFO, TournamentStatus } from './enums';
       white-space: nowrap;
       color: var(--chip-color);
       background: color-mix(in srgb, var(--chip-color) 12%, transparent);
+    }
+    .chip.outline {
+      background: transparent;
+      box-shadow: inset 0 0 0 1.5px var(--chip-color);
     }
     .dot {
       width: 8px;

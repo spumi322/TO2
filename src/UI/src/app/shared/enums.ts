@@ -36,13 +36,15 @@ export interface StatusInfo {
   live?: boolean;
   // Backend is drawing groups/bracket: spinner
   seeding?: boolean;
+  // The next stage can start but has not: outlined chip
+  outline?: boolean;
 }
 
 export const STATUS_INFO: Record<TournamentStatus, StatusInfo> = {
   [TournamentStatus.Setup]: { label: 'Registration', color: '--status-setup', section: 'upcoming' },
   [TournamentStatus.SeedingGroups]: { label: 'Drawing groups', color: '--status-seeding', section: 'ongoing', seeding: true },
   [TournamentStatus.GroupsInProgress]: { label: 'Groups live', color: '--status-groups', section: 'ongoing', live: true },
-  [TournamentStatus.GroupsCompleted]: { label: 'Groups done', color: '--status-groups-done', section: 'ongoing' },
+  [TournamentStatus.GroupsCompleted]: { label: 'Ready for playoffs', color: '--status-groups-done', section: 'ongoing', outline: true },
   [TournamentStatus.SeedingBracket]: { label: 'Seeding bracket', color: '--status-seeding', section: 'ongoing', seeding: true },
   [TournamentStatus.BracketInProgress]: { label: 'Playoffs live', color: '--status-bracket', section: 'ongoing', live: true },
   [TournamentStatus.Finished]: { label: 'Finished', color: '--status-finished', section: 'finished' },
