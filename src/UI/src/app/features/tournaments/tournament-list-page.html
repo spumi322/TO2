@@ -100,11 +100,7 @@
                     </span>
                     <span class="bar" aria-hidden="true"><span class="fill" [style.width.%]="(t.currentTeams / t.maxTeams) * 100"></span></span>
                     <span class="muted">{{ formatLabels[t.format] }}</span>
-                    @if (t.currentTeams >= t.maxTeams) {
-                      <span class="num right full">Full</span>
-                    } @else {
-                      <span class="num right">{{ t.currentTeams }} / {{ t.maxTeams }}</span>
-                    }
+                    <span class="num right" [class.full]="t.currentTeams >= t.maxTeams">{{ t.currentTeams }} / {{ t.maxTeams }}</span>
                   </a>
                 }
               </div>

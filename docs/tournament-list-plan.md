@@ -9,7 +9,7 @@ Work phase by phase.
 - **Layout**: page header (title + New tournament), then **Live now** (all ongoing tournaments as rows), then **tabs**: Registration / Finished / Cancelled with counts, one list visible at a time.
 - **Live row**: format icon tile (tinted by stage) + name | stage track | stage chip | format | team count ("8", no max).
 - **Stage track**: segments per format, from `Format` + `Status` only (no backend): BracketOnly `Registration > Playoffs > Finished`, GroupsOnly `Registration > Groups > Finished`, GroupsAndBracket `Registration > Groups > Playoffs > Finished`. Done = dim green, current = stage color, next = grey; `GroupsCompleted` = Groups done + Playoffs outlined. Pure function, unit tested.
-- **Registration row**: icon + name | fill bar | format | "2 / 8" or "Full".
+- **Registration row**: icon + name | fill bar | format | "2 / 8", green when full.
 - **Finished row**: name | trophy + winner | format | teams | finished date, newest first.
 - **One screen**: Live now shows all rows by default ("Show less" = half of the rows that fit); the open tab gets the rows left on the screen (min 3, recomputed on resize); "Show all N" / "Show less" in the section heading row (client side, the list is already loaded).
 - **Cancelled row**: name | reason | teams | cancelled date.
