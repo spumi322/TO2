@@ -4,7 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Skeleton } from 'primeng/skeleton';
-import { debounceTime, merge } from 'rxjs';
+import { debounceTime, fromEvent, merge } from 'rxjs';
 import { TournamentsApi } from '../../core/api/tournaments.api';
 import { toApiError } from '../../core/http/api-error';
 import { TournamentListItem } from '../../core/models';
@@ -18,8 +18,11 @@ import { StageTrack } from './stage-track';
 
 type Tab = 'registration' | 'finished' | 'cancelled';
 
-// Finished tab shows the latest ones until "Show all"
-const FINISHED_PREVIEW = 10;
+// One-screen rule: Live now and the open tab share the window height, each shows the rows that fit until "Show all".
+// Page parts that are not rows: top bar, page header, section title, tab bar, list headers, paddings
+const PAGE_CHROME_HEIGHT = 380;
+const ROW_HEIGHT = 49;
+const MIN_ROWS = 3;
 
 const byNewest = (a: TournamentListItem, b: TournamentListItem) => b.id - a.id;
 const byDateDesc = (date: (t: TournamentListItem) => string | null) => (a: TournamentListItem, b: TournamentListItem) =>
@@ -40,7 +43,13 @@ export class TournamentListPage implements OnInit {
   readonly error = signal<string | null>(null);
   // null = not picked yet: Registration, or Finished when nothing is in registration
   private readonly pickedTab = signal<Tab | null>(null);
-  readonly showAllFinished = signal(false);
+  readonly liveExpanded = signal(false);
+  readonly tabExpanded = signal(false);
+
+  private readonly windowHeight = signal(window.innerHeight);
+  readonly rowsPerList = computed(() =>
+    Math.max(MIN_ROWS, Math.floor((this.windowHeight() - PAGE_CHROME_HEIGHT) / ROW_HEIGHT / 2)),
+  );
 
   protected readonly formatLabels = FORMAT_LABELS;
 
@@ -53,11 +62,24 @@ export class TournamentListPage implements OnInit {
   readonly finished = computed(() => this.inSection('finished').sort(byDateDesc((t) => t.finishedAt)));
   readonly cancelled = computed(() => this.inSection('cancelled').sort(byDateDesc((t) => t.cancelledAt)));
 
-  readonly finishedShown = computed(() =>
-    this.showAllFinished() ? this.finished() : this.finished().slice(0, FINISHED_PREVIEW),
-  );
-
   readonly tab = computed<Tab>(() => this.pickedTab() ?? (this.registration().length > 0 ? 'registration' : 'finished'));
+
+  private readonly tabItems = computed(() => {
+    switch (this.tab()) {
+      case 'registration':
+        return this.registration();
+      case 'finished':
+        return this.finished();
+      case 'cancelled':
+        return this.cancelled();
+    }
+  });
+
+  readonly liveShown = computed(() => (this.liveExpanded() ? this.live() : this.live().slice(0, this.rowsPerList())));
+  readonly tabShown = computed(() => (this.tabExpanded() ? this.tabItems() : this.tabItems().slice(0, this.rowsPerList())));
+  readonly liveHasMore = computed(() => this.live().length > this.rowsPerList());
+  readonly tabHasMore = computed(() => this.tabItems().length > this.rowsPerList());
+  readonly tabCount = computed(() => this.tabItems().length);
 
   readonly tabs = computed(() => [
     { key: 'registration' as Tab, title: 'Registration', count: this.registration().length },
@@ -72,6 +94,10 @@ export class TournamentListPage implements OnInit {
     merge(...TENANT_EVENT_NAMES.map((name) => this.realtime.on(name)), this.realtime.reconnected$)
       .pipe(debounceTime(500), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.load());
+
+    fromEvent(window, 'resize')
+      .pipe(debounceTime(100), takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.windowHeight.set(window.innerHeight));
   }
 
   load(): void {
@@ -86,6 +112,7 @@ export class TournamentListPage implements OnInit {
 
   selectTab(tab: Tab): void {
     this.pickedTab.set(tab);
+    this.tabExpanded.set(false);
   }
 
   statusColor(t: TournamentListItem): string {

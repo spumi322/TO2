@@ -168,7 +168,6 @@
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
-  border-bottom: 1px solid var(--border);
 }
 
 .tab {
@@ -205,6 +204,37 @@
   padding: 0 8px;
 }
 
-.show-all {
-  align-self: center;
+.section-head,
+.tab-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tab-bar {
+  border-bottom: 1px solid var(--border);
+}
+
+.section-head .toggle,
+.tab-bar .toggle {
+  margin-left: auto;
+}
+
+/* Show all / Show less: a text button in the heading row, so it costs no extra height */
+.toggle {
+  height: 32px;
+  padding: 0 10px;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.toggle:hover {
+  border-color: var(--primary);
 }

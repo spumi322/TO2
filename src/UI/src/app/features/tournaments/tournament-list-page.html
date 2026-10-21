@@ -30,9 +30,16 @@
     </app-empty-state>
   } @else {
     <section class="stack">
-      <h2 class="live-title">
-        <span class="pulse" aria-hidden="true"></span>Live now <span class="muted count">{{ live().length }}</span>
-      </h2>
+      <div class="section-head">
+        <h2 class="live-title">
+          <span class="pulse" aria-hidden="true"></span>Live now <span class="muted count">{{ live().length }}</span>
+        </h2>
+        @if (liveHasMore()) {
+          <button type="button" class="toggle" (click)="liveExpanded.set(!liveExpanded())">
+            {{ liveExpanded() ? 'Show less' : 'Show all ' + live().length }}
+          </button>
+        }
+      </div>
       @if (live().length === 0) {
         <p class="muted none">No tournament is running.</p>
       } @else {
@@ -41,7 +48,7 @@
             <div class="row-grid head" aria-hidden="true">
               <span>Tournament</span><span>Progress</span><span>Stage</span><span>Format</span><span class="right">Teams</span>
             </div>
-            @for (t of live(); track t.id) {
+            @for (t of liveShown(); track t.id) {
               <a class="row-grid item" [routerLink]="['/tournaments', t.id]">
                 <span class="name">
                   <span class="tile" [style.--tile-color]="statusColor(t)"><app-format-icon [format]="t.format" /></span>
@@ -59,11 +66,18 @@
     </section>
 
     <section class="stack">
-      <div class="tabs" role="tablist">
-        @for (item of tabs(); track item.key) {
-          <button type="button" role="tab" class="tab" [class.active]="tab() === item.key" [attr.aria-selected]="tab() === item.key"
-            (click)="selectTab(item.key)">
-            {{ item.title }} <span class="tab-count num">{{ item.count }}</span>
+      <div class="tab-bar">
+        <div class="tabs" role="tablist">
+          @for (item of tabs(); track item.key) {
+            <button type="button" role="tab" class="tab" [class.active]="tab() === item.key" [attr.aria-selected]="tab() === item.key"
+              (click)="selectTab(item.key)">
+              {{ item.title }} <span class="tab-count num">{{ item.count }}</span>
+            </button>
+          }
+        </div>
+        @if (tabHasMore()) {
+          <button type="button" class="toggle" (click)="tabExpanded.set(!tabExpanded())">
+            {{ tabExpanded() ? 'Show less' : 'Show all ' + tabCount() }}
           </button>
         }
       </div>
@@ -78,7 +92,7 @@
                 <div class="row-grid head" aria-hidden="true">
                   <span>Tournament</span><span>Slots</span><span>Format</span><span class="right">Teams</span>
                 </div>
-                @for (t of registration(); track t.id) {
+                @for (t of tabShown(); track t.id) {
                   <a class="row-grid item" [routerLink]="['/tournaments', t.id]">
                     <span class="name">
                       <span class="tile" [style.--tile-color]="statusColor(t)"><app-format-icon [format]="t.format" /></span>
@@ -106,7 +120,7 @@
                 <div class="row-grid head" aria-hidden="true">
                   <span>Tournament</span><span>Winner</span><span>Format</span><span>Teams</span><span>Finished</span>
                 </div>
-                @for (t of finishedShown(); track t.id) {
+                @for (t of tabShown(); track t.id) {
                   <a class="row-grid item" [routerLink]="['/tournaments', t.id]">
                     <span class="name">
                       <span class="tile" [style.--tile-color]="statusColor(t)"><i class="pi pi-trophy" aria-hidden="true"></i></span>
@@ -125,10 +139,6 @@
                 }
               </div>
             </div>
-            @if (finished().length > finishedShown().length) {
-              <p-button class="show-all" [label]="'Show all ' + finished().length + ' finished'" severity="secondary" [outlined]="true"
-                (onClick)="showAllFinished.set(true)" />
-            }
           }
         }
         @case ('cancelled') {
@@ -140,7 +150,7 @@
                 <div class="row-grid head" aria-hidden="true">
                   <span>Tournament</span><span>Reason</span><span>Teams</span><span>Cancelled</span>
                 </div>
-                @for (t of cancelled(); track t.id) {
+                @for (t of tabShown(); track t.id) {
                   <a class="row-grid item" [routerLink]="['/tournaments', t.id]">
                     <span class="name">
                       <span class="tile" [style.--tile-color]="statusColor(t)"><i class="pi pi-times" aria-hidden="true"></i></span>
