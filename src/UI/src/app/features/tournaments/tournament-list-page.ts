@@ -19,8 +19,8 @@ import { StageTrack } from './stage-track';
 type Tab = 'registration' | 'finished' | 'cancelled';
 
 // One-screen rule: Live now shows every row (or half the screen after "Show less"), the open tab gets the rows left.
-// Page parts that are not rows: top bar, page header, section title, tab bar, list headers, paddings
-const PAGE_CHROME_HEIGHT = 380;
+// Page parts that are not rows: top bar, page header, section title, tab bar (+56px margin), list headers, paddings
+const PAGE_CHROME_HEIGHT = 436;
 const ROW_HEIGHT = 49;
 const MIN_ROWS = 3;
 

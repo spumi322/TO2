@@ -204,6 +204,11 @@
   padding: 0 8px;
 }
 
+/* Separates the tabs (registration, history) from Live now; counted in PAGE_CHROME_HEIGHT */
+.tab-section {
+  margin-top: 56px;
+}
+
 .section-head,
 .tab-bar {
   display: flex;
