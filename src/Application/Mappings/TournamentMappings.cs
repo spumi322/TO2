@@ -15,7 +15,7 @@ namespace Application.Mappings
 
         public static partial GetTournamentResponseDTO ToGetTournamentResponseDTO(this Tournament tournament, int currentTeams, int numberOfGroups);
 
-        public static partial GetTournamentListResponseDTO ToGetTournamentListResponseDTO(this Tournament tournament, int currentTeams);
+        public static partial GetTournamentListResponseDTO ToGetTournamentListResponseDTO(this Tournament tournament, int currentTeams, string? winnerName, DateTime? finishedAt);
 
         public static partial UpdateTournamentResponseDTO ToUpdateTournamentResponseDTO(this Tournament tournament);
     }

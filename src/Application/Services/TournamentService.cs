@@ -101,10 +101,14 @@ namespace Application.Services
 
         public async Task<List<GetTournamentListResponseDTO>> GetTournamentListAsync()
         {
-            var tournaments = await _tournamentRepository.GetAllWithTeamCountAsync();
+            var rows = await _tournamentRepository.GetListAsync();
 
-            return tournaments
-                .Select(x => x.Tournament.ToGetTournamentListResponseDTO(x.TeamCount))
+            // Nothing edits a finished tournament, so its last modification is when it finished
+            return rows
+                .Select(r => r.Tournament.ToGetTournamentListResponseDTO(
+                    r.TeamCount,
+                    r.WinnerName,
+                    r.Tournament.Status == TournamentStatus.Finished ? r.Tournament.LastModifiedDate : null))
                 .ToList();
         }
 

@@ -156,6 +156,84 @@ namespace Tests.Unit.Services
 
         #endregion
 
+        #region List
+
+        private async Task<long> SeedWithPlacementsAsync(Format format, TournamentStatus status, params (string Name, int? Placement)[] teams)
+        {
+            var tournament = TestDataBuilder.Tournaments.CreateDefault(format: format);
+            tournament.Status = status;
+            tournament.LastModifiedDate = new DateTime(2026, 4, 1, 12, 0, 0, DateTimeKind.Utc);
+            DbContext.Tournaments.Add(tournament);
+            await DbContext.SaveChangesAsync();
+
+            foreach (var (name, placement) in teams)
+            {
+                var team = TestDataBuilder.Teams.CreateDefault(name);
+                DbContext.Teams.Add(team);
+                await DbContext.SaveChangesAsync();
+                var entry = TestDataBuilder.TournamentTeams.Create(tournament.Id, team.Id);
+                entry.FinalPlacement = placement;
+                DbContext.TournamentTeams.Add(entry);
+            }
+
+            await SaveAndDetachAsync();
+            return tournament.Id;
+        }
+
+        [Fact]
+        public async Task List_Should_ReturnWinnerAndFinishedAt_When_Finished()
+        {
+            var id = await SeedWithPlacementsAsync(Format.BracketOnly, TournamentStatus.Finished,
+                ("Void Runners", 1), ("Static Wolves", 2), ("Team C", 3));
+
+            var item = (await _service.GetTournamentListAsync()).Single(t => t.Id == id);
+
+            item.WinnerName.Should().Be("Void Runners");
+            item.FinishedAt.Should().Be(new DateTime(2026, 4, 1, 12, 0, 0, DateTimeKind.Utc));
+            item.CurrentTeams.Should().Be(3);
+        }
+
+        [Fact]
+        public async Task List_Should_ReturnNoWinner_When_SeveralGroupWinners()
+        {
+            // GroupsOnly with two groups: placement = group position, so two teams are 1st
+            var id = await SeedWithPlacementsAsync(Format.GroupsOnly, TournamentStatus.Finished,
+                ("A1", 1), ("B1", 1), ("A2", 2), ("B2", 2));
+
+            var item = (await _service.GetTournamentListAsync()).Single(t => t.Id == id);
+
+            item.WinnerName.Should().BeNull();
+            item.FinishedAt.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task List_Should_ReturnNoWinnerOrFinishedAt_When_Ongoing()
+        {
+            var id = await SeedWithPlacementsAsync(Format.BracketOnly, TournamentStatus.BracketInProgress,
+                ("A", null), ("B", null));
+
+            var item = (await _service.GetTournamentListAsync()).Single(t => t.Id == id);
+
+            item.WinnerName.Should().BeNull();
+            item.FinishedAt.Should().BeNull();
+            item.CurrentTeams.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task List_Should_ReturnCancellation_When_Cancelled()
+        {
+            var id = await SeedTournamentAsync(TournamentStatus.GroupsInProgress);
+            await _service.CancelTournamentAsync(id, new CancelTournamentRequestDTO("Not enough teams"));
+
+            var item = (await _service.GetTournamentListAsync()).Single(t => t.Id == id);
+
+            item.CancellationReason.Should().Be("Not enough teams");
+            item.CancelledAt.Should().NotBeNull();
+            item.FinishedAt.Should().BeNull();
+        }
+
+        #endregion
+
         #region Cancel
 
         [Theory]

@@ -9,6 +9,9 @@ namespace Application.Contracts.Repositories
         Task<Tournament?> GetWithTeamsAsync(long id);
         Task<IReadOnlyList<Tournament>> GetActiveAsync();
         Task<IReadOnlyList<Tournament>> GetByStatusAsync(TournamentStatus status);
-        Task<IReadOnlyList<(Tournament Tournament, int TeamCount)>> GetAllWithTeamCountAsync();
+        Task<IReadOnlyList<TournamentListRow>> GetListAsync();
     }
+
+    // WinnerName: the only team with final placement 1, null when there is none or several (GroupsOnly with several groups)
+    public record TournamentListRow(Tournament Tournament, int TeamCount, string? WinnerName);
 }

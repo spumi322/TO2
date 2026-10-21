@@ -153,6 +153,10 @@ namespace Application.Pipelines.GameResult
                 var eventPayload = await BuildGameUpdatedEventAsync(context);
                 await _signalRService.BroadcastGameUpdated(eventPayload);
                 _logger.LogInformation("Broadcasted comprehensive GameUpdated event for GameId: {GameId}", context.GameResult.gameId);
+
+                // A status change (groups done, tournament finished) also concerns pages outside the tournament (tournament list)
+                if (context.NewTournamentStatus is not null)
+                    await _signalRService.BroadcastTournamentUpdated(context.Tournament.Id, _tenantService.GetCurrentUserName());
             }
             catch (Exception ex)
             {

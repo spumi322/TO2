@@ -31,14 +31,21 @@ namespace Infrastructure.Persistence.Repository
             => await _dbSet
             .Where(t => t.Status == status)
             .ToListAsync();
-        public async Task<IReadOnlyList<(Tournament Tournament, int TeamCount)>> GetAllWithTeamCountAsync()
+        public async Task<IReadOnlyList<TournamentListRow>> GetListAsync()
         {
             var rows = await _dbSet
                 .AsNoTracking()
-                .Select(t => new { Tournament = t, TeamCount = t.TournamentTeams.Count() })
+                .Select(t => new
+                {
+                    Tournament = t,
+                    TeamCount = t.TournamentTeams.Count(),
+                    WinnerName = t.TournamentTeams.Count(tt => tt.FinalPlacement == 1) == 1
+                        ? t.TournamentTeams.Where(tt => tt.FinalPlacement == 1).Select(tt => tt.Team.Name).FirstOrDefault()
+                        : null
+                })
                 .ToListAsync();
 
-            return rows.Select(r => (r.Tournament, r.TeamCount)).ToList();
+            return rows.Select(r => new TournamentListRow(r.Tournament, r.TeamCount, r.WinnerName)).ToList();
         }
     }
 }
