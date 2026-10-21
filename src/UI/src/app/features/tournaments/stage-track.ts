@@ -58,6 +58,10 @@ const STATE_WORDS: Record<StepState, string> = {
       border-radius: 3px;
       background: var(--seg-color);
     }
+    /* Finished stages fade out, the current one stays strong */
+    .done .fill {
+      opacity: 0.35;
+    }
     .seg.ready {
       background: transparent;
       box-shadow: inset 0 0 0 1.5px var(--status-groups-done);
