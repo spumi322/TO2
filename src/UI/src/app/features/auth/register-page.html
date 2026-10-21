@@ -58,6 +58,8 @@
         <input #inviteInput pInputText id="inviteCode" formControlName="inviteCode" autocomplete="off" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" />
         @if (form.controls.inviteCode.errors?.['server']; as message) {
           <span class="field-error">{{ message }}</span>
+        } @else if (form.controls.inviteCode.touched && form.controls.inviteCode.invalid) {
+          <span class="field-error">Enter the invite code.</span>
         }
       </div>
     }

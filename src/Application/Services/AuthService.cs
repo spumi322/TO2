@@ -37,7 +37,7 @@ namespace Application.Services
         {
             // Check if user already exists
             if (await _identityService.EmailExistsAsync(request.Email))
-                throw new ConflictException("User with this email already exists");
+                throw new ConflictException("User with this email already exists.");
 
             try
             {

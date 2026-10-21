@@ -54,7 +54,7 @@ export class RegisterPage {
     this.auth.organizationExists(name).subscribe({
       next: (exists) => {
         this.orgState.set(exists ? 'exists' : 'new');
-        this.showInvite.set(exists);
+        this.setInviteShown(exists);
       },
       error: (error: unknown) => {
         this.checkedName = '';
@@ -84,6 +84,14 @@ export class RegisterPage {
     });
   }
 
+  // A shown invite field is required: joining an existing organization needs a code
+  private setInviteShown(shown: boolean): void {
+    this.showInvite.set(shown);
+    const inviteCode = this.form.controls.inviteCode;
+    inviteCode.setValidators(shown ? [Validators.required, Validators.maxLength(50)] : [Validators.maxLength(50)]);
+    inviteCode.updateValueAndValidity();
+  }
+
   private handleError(error: unknown): void {
     const apiError = toApiError(error);
     const message = apiError.message;
@@ -93,7 +101,7 @@ export class RegisterPage {
       this.error.set(unmatched.length ? unmatched.join(' ') : null);
     } else if (apiError.kind === 'conflict' && /invite code/i.test(message)) {
       // The organization exists (or was just created by someone else): joining needs a code
-      this.showInvite.set(true);
+      this.setInviteShown(true);
       this.orgState.set('exists');
       this.error.set(message);
       setTimeout(() => this.inviteInput()?.nativeElement.focus());
