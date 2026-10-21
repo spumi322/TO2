@@ -8,7 +8,7 @@ Work phase by phase.
 ## Decisions
 - **Layout**: page header (title + New tournament), then **Live now** (all ongoing tournaments as rows), then **tabs**: Registration / Finished / Cancelled with counts, one list visible at a time.
 - **Live row**: format icon tile (tinted by stage) + name | stage track | stage chip | format | team count ("8", no max).
-- **Stage track**: segments per format, from `Format` + `Status` only (no backend): BracketOnly `Registration > Playoffs > Finished`, GroupsOnly `Registration > Groups > Finished`, GroupsAndBracket `Registration > Groups > Playoffs > Finished`. Done = dim green, current = stage color, next = grey; `GroupsCompleted` = Groups done + Playoffs outlined. Pure function, unit tested.
+- **Stage track**: segments per format, from `Format` + `Status` only (no backend): BracketOnly `Registration > Playoffs > Finished`, GroupsOnly `Registration > Groups > Finished`, GroupsAndBracket `Registration > Groups > Playoffs > Finished`. Done = the stage's shade, faded; current = the stage's shade, full strength; next = grey; `GroupsCompleted` = Groups done + Playoffs outlined. Pure function, unit tested.
 - **Registration row**: icon + name | fill bar | format | "2 / 8", green when full.
 - **Finished row**: name | trophy + winner | format | teams | finished date, newest first.
 - **One screen**: Live now shows all rows by default ("Show less" = half of the rows that fit); the open tab gets the rows left on the screen (min 3, recomputed on resize); "Show all N" / "Show less" in the section heading row (client side, the list is already loaded).
@@ -19,18 +19,18 @@ Work phase by phase.
 - **Labels**: `GroupsCompleted` = "Ready for playoffs".
 - **Default tab**: Registration; Finished when Registration is empty. Not remembered between visits.
 - **Commits**: one per phase (phase 1 includes this plan). CLAUDE.md is gitignored: phase 3 edits stay local.
-- **Stuck seeding tournaments** (3 in asd1): Known Issue, no data fix.
+- **Stuck seeding tournaments** (3 in asd1, saved in `SeedingBracket`): deleted from the database after a `pg_dump` backup.
 - **Backend** (list DTO only, no new endpoint):
   - `WinnerName` (string?): the team with `TournamentTeam.FinalPlacement == 1` when exactly one team has it, else null. GroupsOnly with several groups has one placement-1 team per group (placement = group position): no single winner, the UI shows "Several group winners" for a finished GroupsOnly tournament without a winner.
   - `FinishedAt` (DateTime?): `LastModifiedDate` when `Status == Finished`, else null (nothing changes a finished tournament afterwards).
   - `CancelledAt`, `CancellationReason`: already on `Tournament`, mapped.
-  - One query: `GetAllWithTeamCountAsync` projects the winner name next to the team count.
+  - One query: `TournamentRepository.GetListAsync` projects the team count and the winner name (count of placement-1 teams, the name when it is exactly one) per tournament.
 - **Realtime**: the list reloads (debounced) on the tenant group events. Start groups/bracket already send `TournamentUpdated` to the tenant group; a game result that changes the status (`GroupsCompleted`, `Finished`) only sends `GameUpdated` to the tournament group, which the list never joins. Fix: `GameResultPipeline` also sends `TournamentUpdated` (tenant group) when `NewTournamentStatus` is set, the same pattern as the start pipelines.
 - **Data check per element**: live row = name, format, status, current teams (all in the DTO today); registration = current/max teams (today); finished = winner, finished date (new); cancelled = reason, date (new, already on `Tournament`). `FinishedAt` from `LastModifiedDate` holds because nothing in the app edits a finished tournament (`PUT api/tournaments/{id}` has no UI).
 
 ## Phase 1: backend
 - `GetTournamentListResponseDTO`: `WinnerName`, `FinishedAt`, `CancelledAt`, `CancellationReason`.
-- `TournamentRepository.GetAllWithTeamCountAsync` → also selects the winner name (subquery on `TournamentTeams` with `FinalPlacement == 1` → `Team.Name`); return type becomes a small record instead of a tuple.
+- `TournamentRepository.GetListAsync`: team count + winner name (subqueries on `TournamentTeams` with `FinalPlacement == 1` → `Team.Name`); returns the `TournamentListRow` record.
 - `TournamentMappings.ToGetTournamentListResponseDTO(tournament, currentTeams, winnerName, finishedAt)`; `TournamentService.GetTournamentListAsync` computes `finishedAt`.
 - `GameResultPipeline.BroadcastUpdatesAsync`: also `BroadcastTournamentUpdated(tournamentId, user)` when `context.NewTournamentStatus` is not null (inside the existing try, after commit).
 - Tests (`TournamentServiceTests`, SQLite integration): finished tournament → winner name + `FinishedAt`; ongoing → both null; cancelled → `CancelledAt` + reason; team count unchanged. `GameResultPipeline`: status change → `TournamentUpdated` sent; plain game → not sent.
@@ -40,19 +40,18 @@ CONFIRM: tests green; `curl GET api/tournaments` on the real API shows winners f
 ## Phase 2: UI
 - `core/models.ts`: new list item fields.
 - `styles.css`: green ramp in `--status-setup`, `--status-groups`, `--status-groups-done`, `--status-bracket`, grey `--status-seeding` (dark + light theme); `shared/enums.ts`: `GroupsCompleted` label "Ready for playoffs", `outline` flag; `StatusChip` renders the outline variant.
-- `features/tournaments/stage-track.ts` (+ spec): `stageSteps(format, status)` → `{ label, state }[]`; small `StageTrack` component.
-- `tournament-list-page`: Live now rows, tabs (signal), Registration / Finished (latest 10 + show all, sorted by `finishedAt` desc) / Cancelled rows; rows are links; tables scroll horizontally on phones; empty states per list; realtime reload unchanged.
+- `features/tournaments/stage-steps.ts` (+ spec): `stageSteps(format, status)` → `{ key, label, state }[]`; `stage-track.ts`: `StageTrack` component (Registration segment filled by teams / max); `shared/format-icon.ts`: line icon per format.
+- `tournament-list-page`: Live now rows, tabs (signal), Registration / Finished (sorted by `finishedAt` desc) / Cancelled rows, row counts per the one-screen decision; rows are links; tables scroll horizontally on phones; empty states per list; realtime reload unchanged.
 - Remove the old card styles.
 
 CONFIRM: build + tests green; short browser check with asd1 (live rows, tabs, show all, phone width, light theme; score the deciding game in a second tab → list moves the tournament to Finished with its winner without reload). Commit.
 
 ## Phase 3: docs
 - CLAUDE.md: list DTO fields, list page structure, status colors rule (gold = winners only).
-- Known Issues: 3 asd1 tournaments stuck in `SeedingBracket` (old data, shown under Live now as "Seeding bracket").
 
 ## Out of scope
 Search, filters, pagination, archive, scheduled dates, runner-up, match progress (played/total), logos.
 
 ## Stop and ask
-- Winner query needs more than one extra subquery, or changes the list endpoint's shape beyond the 4 fields.
+- Winner query changes the list endpoint's shape beyond the 4 fields.
 - Status color change breaks readability elsewhere (match card, group table, landing page use `--status-groups`).
