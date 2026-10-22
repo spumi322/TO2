@@ -1,6 +1,6 @@
 import { Component, computed, input } from '@angular/core';
 import { Format, TournamentStatus } from '../../shared/enums';
-import { StageCounts, stageFill, StageKey, StageStep, stageSteps, StepState } from './stage-steps';
+import { stageCount, StageCounts, stageFill, StageKey, StageStep, stageSteps, StepState } from './stage-steps';
 
 // Each stage keeps its shade once reached, so the track fills light to dark green
 const STAGE_COLORS: Record<StageKey, string> = {
@@ -27,7 +27,12 @@ const STATE_WORDS: Record<StepState, string> = {
           <span class="seg" [class]="step.state" [style.--seg-color]="colors[step.key]">
             <span class="fill" [style.width.%]="fill(step)"></span>
           </span>
-          <span class="label" [class.now]="step.state === 'current' || step.state === 'ready'">{{ step.label }}</span>
+          <span class="label" [class.now]="step.state === 'current' || step.state === 'ready'"
+            >{{ step.label }}
+            @if (showCounts() && count(step); as text) {
+              <span class="count">{{ text }}</span>
+            }
+          </span>
         </div>
       }
     </div>
@@ -78,6 +83,10 @@ const STATE_WORDS: Record<StepState, string> = {
       color: var(--text);
       font-weight: 600;
     }
+    .count {
+      color: var(--text-muted);
+      font-weight: 400;
+    }
   `,
 })
 export class StageTrack {
@@ -85,12 +94,18 @@ export class StageTrack {
   readonly status = input.required<TournamentStatus>();
   // Registered teams, finished groups and bracket rounds: segments fill as the stage goes on
   readonly counts = input.required<StageCounts>();
+  // "11 / 16" next to the labels (tournament page; the list is too narrow for it)
+  readonly showCounts = input(false);
 
   protected readonly colors = STAGE_COLORS;
   readonly steps = computed(() => stageSteps(this.format(), this.status()));
 
   protected fill(step: StageStep): number {
     return stageFill(step, this.counts());
+  }
+
+  protected count(step: StageStep): string | null {
+    return stageCount(step, this.counts());
   }
   readonly ariaLabel = computed(() => this.steps().map((s) => `${s.label} ${STATE_WORDS[s.state]}`).join(', '));
 }

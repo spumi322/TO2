@@ -70,3 +70,12 @@ export function stageFill(step: StageStep, counts: StageCounts): number {
   if (step.key === 'playoffs') return percent(counts.roundsFinished, counts.roundsTotal);
   return 100;
 }
+
+// Count under a reached segment ("11 / 16"): registered teams, finished groups, finished bracket rounds
+export function stageCount(step: StageStep, counts: StageCounts): string | null {
+  if (step.state === 'todo' || step.state === 'ready') return null;
+  if (step.key === 'registration') return `${counts.currentTeams} / ${counts.maxTeams}`;
+  if (step.key === 'groups' && counts.groupsTotal > 0) return `${counts.groupsFinished} / ${counts.groupsTotal}`;
+  if (step.key === 'playoffs' && counts.roundsTotal > 0) return `${counts.roundsFinished} / ${counts.roundsTotal}`;
+  return null;
+}
