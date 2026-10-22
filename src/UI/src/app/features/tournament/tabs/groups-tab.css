@@ -1,110 +1,92 @@
-/* Two groups per row; each row is one screen tall (--fit-height from the shell), a card at most that tall */
-.groups {
+.groups-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* One button per group: name + Finished or confirmed / total matches */
+.group-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.group-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.group-button:hover {
+  color: var(--text);
+}
+
+.group-button.active {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--text);
+}
+
+.group-button .muted,
+.group-button .done {
+  font-weight: 400;
+}
+
+.done {
+  color: var(--status-groups);
+}
+
+/* Table beside the matches; stacked on narrow screens */
+.group-view {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: var(--fit-height);
+  grid-template-columns: minmax(300px, 2fr) minmax(0, 3fr);
   align-items: start;
   gap: 16px;
 }
 
-.group {
-  max-height: var(--fit-height);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-height: 0;
-  scroll-snap-align: start;
-  scroll-margin-top: calc(var(--fit-offset) - 8px);
+@media (max-width: 1000px) {
+  .group-view {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
-.group-head {
+.table-card {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 8px;
 }
 
-.done {
-  color: var(--success);
-  font-weight: 600;
-}
-
-.group-body {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+.table-card h3 {
+  margin: 0;
 }
 
 .rule {
-  margin: 0 0 6px;
+  margin: 0;
 }
 
-/* The match list takes the rest of the card and scrolls inside it when a big group does not fit */
 .matches {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding-right: 2px;
 }
 
 .round {
-  margin: 6px 0 0;
+  margin: 8px 0 2px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.round-matches {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 6px;
-}
-
-/* One group: the whole width, table beside the matches */
-.groups.single {
-  grid-template-columns: minmax(0, 1fr);
-}
-
-.single .group {
-  height: var(--fit-height);
-}
-
-.single .group-body {
-  display: grid;
-  grid-template-columns: minmax(320px, 2fr) minmax(0, 3fr);
-  grid-template-rows: minmax(0, 1fr);
-  align-items: start;
-}
-
-.single .matches {
-  height: 100%;
-}
-
-.single .round-matches {
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-}
-
-@media (max-width: 1000px) {
-  .groups {
-    grid-template-columns: minmax(0, 1fr);
-    grid-auto-rows: auto;
-  }
-
-  .group,
-  .single .group {
-    height: auto;
-    max-height: none;
-  }
-
-  .single .group-body {
-    display: flex;
-  }
-
-  .matches {
-    overflow: visible;
-  }
+.round:first-child {
+  margin-top: 0;
 }

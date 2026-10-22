@@ -48,7 +48,9 @@ export class MatchCard {
   readonly draftLabel = computed(() => {
     const draft = this.draft();
     if (this.confirmed() || !draft) return null;
-    return draft.by ? `draft · ${draft.by}` : 'draft';
+    if (draft.by) return `draft · ${draft.by}`;
+    // Own draft waiting for Confirm: the button says it all
+    return this.ready() ? null : 'draft';
   });
 
   readonly teamA = computed(() => this.side(this.match().teamAId));
