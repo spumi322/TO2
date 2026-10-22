@@ -30,9 +30,11 @@
                   <app-match-card
                     [match]="match"
                     [teamNames]="store.teamNames()"
+                    [draft]="store.drafts().get(match.id)"
                     [canScore]="canScore()"
                     [busy]="scoring.savingMatchId() === match.id"
-                    (gameWinner)="scoring.setWinner($event)"
+                    (draftChange)="store.setDraft($event.match, $event.teamAWins, $event.teamBWins)"
+                    (confirm)="scoring.confirm($event)"
                   />
                 }
               </div>

@@ -2,35 +2,31 @@
   display: block;
 }
 
+/* One row: TeamA [− 2 +] – [− 0 +] TeamB  actions */
 .match {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 6px 8px;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-  border: 1px solid transparent;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 104px 14px 104px minmax(0, 1fr) 140px;
+  grid-template-areas: 'nameA scoreA dash scoreB nameB actions';
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 2px 8px;
+  border-radius: var(--radius);
 }
 
-.match.live {
-  border-color: color-mix(in srgb, var(--status-groups) 60%, transparent);
+/* A team has the wins needed: waiting for Confirm */
+.match.ready {
+  background: color-mix(in srgb, var(--status-bracket) 12%, transparent);
+  box-shadow: inset 0 0 0 1px var(--status-bracket);
 }
 
 .match.busy {
   opacity: 0.6;
 }
 
-/* [+1] TeamA  2 - 0  TeamB [+1] */
-.line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 30px;
-}
-
 .name {
-  flex: 1;
   min-width: 0;
+  padding: 0 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -38,12 +34,16 @@
 }
 
 .name.a {
+  grid-area: nameA;
   text-align: right;
+}
+
+.name.b {
+  grid-area: nameB;
 }
 
 .name.won {
   font-weight: 700;
-  color: var(--success);
 }
 
 .name.lost,
@@ -51,75 +51,127 @@
   color: var(--text-muted);
 }
 
-.result {
-  display: inline-flex;
+.score {
+  display: flex;
+  align-items: center;
   gap: 4px;
-  min-width: 52px;
-  justify-content: center;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: var(--bg);
+}
+
+.score.a {
+  grid-area: scoreA;
+  justify-content: flex-end;
+}
+
+.score.b {
+  grid-area: scoreB;
+  justify-content: flex-start;
+}
+
+.num {
+  min-width: 22px;
+  text-align: center;
   font-family: var(--font-display);
+  font-size: 18px;
   font-weight: 700;
 }
 
-.result.open {
-  color: var(--text-muted);
-  font-family: var(--font-ui);
-  font-weight: 500;
-  font-size: 12px;
-}
-
-.result .won {
-  color: var(--success);
-}
-
-.sep {
+.dash {
+  grid-area: dash;
+  text-align: center;
   color: var(--text-muted);
 }
 
-.plus {
-  flex-shrink: 0;
-  padding: 2px 8px;
-  border: 1px solid color-mix(in srgb, var(--primary) 60%, transparent);
+.step {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--primary);
+  background: var(--surface-2);
+  color: var(--text);
   font: inherit;
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
   cursor: pointer;
 }
 
-.plus:hover:not(:disabled) {
+.step:hover:not(:disabled) {
+  border-color: var(--text-muted);
+}
+
+.step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-sm);
   background: var(--primary);
   color: var(--primary-contrast);
-}
-
-.games {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-}
-
-.chip {
-  padding: 1px 8px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-muted);
   font: inherit;
-  font-size: 12px;
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
 }
 
-.chip:hover:not(:disabled) {
-  border-color: var(--primary);
-  color: var(--text);
+.done {
+  font-size: 12px;
+  color: var(--status-groups);
+}
+
+/* One line per team: bracket panel, and narrow screens */
+.match.stacked {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'nameA scoreA'
+    'nameB scoreB'
+    'actions actions';
+  padding: 8px 10px;
+}
+
+.match.stacked .dash {
+  display: none;
+}
+
+.match.stacked .name.a {
+  text-align: left;
+}
+
+.match.stacked .score.b {
+  justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+  .match {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'nameA scoreA'
+      'nameB scoreB'
+      'actions actions';
+    padding: 8px 10px;
+  }
+
+  .dash {
+    display: none;
+  }
+
+  .name.a {
+    text-align: left;
+  }
+
+  .score.b {
+    justify-content: flex-end;
+  }
 }

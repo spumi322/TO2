@@ -9,7 +9,7 @@ import {
   Bracket,
   GameResult,
   Group,
-  StandingGame,
+  MatchDraft,
   StandingMatch,
   Team,
   TeamPlacement,
@@ -51,6 +51,8 @@ export class TournamentStore {
   readonly groups = signal<Group[]>([]);
   readonly bracket = signal<Bracket | null>(null);
   readonly results = signal<TeamPlacement[]>([]);
+  // Draft scores by match id: this page's own (by = null) and the ones others share through the hub. Never saved
+  readonly drafts = signal<ReadonlyMap<number, MatchDraft>>(new Map());
 
   readonly loading = signal(true);
   readonly notFound = signal(false);
@@ -163,6 +165,8 @@ export class TournamentStore {
   }
 
   applyGameUpdated(event: GameUpdatedEvent): Promise<void> {
+    // The match is saved now: its draft is over
+    this.putDraft(event.matchId, null);
     if (event.updatedGroup) this.applyGroup(event.updatedGroup);
     if (event.updatedBracket) this.applyBracket(event.updatedBracket);
     if (event.finalStandings) this.results.set(event.finalStandings);
@@ -180,6 +184,12 @@ export class TournamentStore {
 
     return merge(
       mine('GameUpdated').pipe(map((event) => () => this.applyGameUpdated(event))),
+      mine('MatchDraftUpdated').pipe(
+        map((event) => async () => {
+          const empty = event.teamAWins === 0 && event.teamBWins === 0;
+          this.putDraft(event.matchId, empty ? null : { teamAWins: event.teamAWins, teamBWins: event.teamBWins, by: event.updatedBy });
+        }),
+      ),
       merge(mine('TeamAdded'), mine('TeamRemoved')).pipe(map(() => () => this.reloadTeams())),
       merge(mine('TournamentUpdated'), mine('TournamentCancelled')).pipe(map(() => () => this.reloadTournament())),
       merge(mine('GroupsStarted'), mine('BracketStarted')).pipe(
@@ -223,28 +233,46 @@ export class TournamentStore {
     await this.reloadTeams();
   }
 
-  // Sets the winner of one game (new or a correction); sends the game version the page loaded
-  async setGameWinner(match: StandingMatch, game: StandingGame, winnerId: number): Promise<GameResult> {
+  // Changes this page's draft of a match and shares it live (failures only lose the live view, not the draft)
+  setDraft(match: StandingMatch, teamAWins: number, teamBWins: number): void {
+    const empty = teamAWins === 0 && teamBWins === 0;
+    this.putDraft(match.id, empty ? null : { teamAWins, teamBWins, by: null });
+    this.realtime
+      .shareMatchDraft(this._id(), match.id, teamAWins, teamBWins)
+      .catch((error: unknown) => console.warn('Draft not shared', error));
+  }
+
+  // Saves the match's draft as its result; sends the match version the page loaded
+  async confirmMatch(match: StandingMatch): Promise<GameResult> {
+    const draft = this.drafts().get(match.id) ?? { teamAWins: match.teamAWins, teamBWins: match.teamBWins };
     try {
       const result = await firstValueFrom(
-        this.matchesApi.setGameResult({
-          gameId: game.id,
-          winnerId,
-          teamAScore: null,
-          teamBScore: null,
+        this.matchesApi.setMatchResult({
           matchId: match.id,
           standingId: match.standingId,
           tournamentId: this._id(),
-          version: game.version,
+          teamAWins: draft.teamAWins,
+          teamBWins: draft.teamBWins,
+          version: match.version,
         }),
       );
+      this.putDraft(match.id, null);
       await this.afterGameResult(result);
       return result;
     } catch (error) {
-      // 409: someone else changed it, or the state moved on: show fresh data
+      // 409: someone else confirmed it, or the state moved on: show fresh data
       if (toApiError(error).kind === 'conflict') await Promise.all([this.reloadStandings(), this.reloadTournament()]);
       throw error;
     }
+  }
+
+  private putDraft(matchId: number, draft: MatchDraft | null): void {
+    this.drafts.update((drafts) => {
+      const next = new Map(drafts);
+      if (draft) next.set(matchId, draft);
+      else next.delete(matchId);
+      return next;
+    });
   }
 
   private async afterGameResult(result: GameResult): Promise<void> {

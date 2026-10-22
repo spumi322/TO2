@@ -44,14 +44,9 @@ function loadViewer(): Promise<BracketsViewerApi> {
 
 let nextId = 0;
 
-export interface BracketTeamClick {
-  matchId: number;
-  teamId: number;
-}
-
 /**
  * The only place that touches brackets-viewer: data goes through the pure adapter, the library renders it,
- * and one click listener on the container turns a click on a team into (match id, team id).
+ * and one click listener on the container turns a click on a match into its id.
  * Re-renders whenever an input changes.
  */
 @Component({
@@ -61,9 +56,8 @@ export interface BracketTeamClick {
       <p class="form-error">The bracket could not be displayed. Reload the page to try again.</p>
     }
     <div
-      class="brackets-viewer"
+      class="brackets-viewer clickable"
       [id]="elementId"
-      [class.clickable]="canScore()"
       [class.compact]="compact()"
       (click)="onClick($event)"
     ></div>
@@ -74,10 +68,9 @@ export class BracketView {
   readonly bracket = input.required<Bracket>();
   readonly teamNames = input.required<Map<number, string>>();
   readonly tournamentId = input.required<number>();
-  readonly canScore = input(false);
   // Tight spacing between matches (big brackets)
   readonly compact = input(false);
-  readonly teamClick = output<BracketTeamClick>();
+  readonly matchClick = output<number>();
 
   protected readonly elementId = `bracket-view-${++nextId}`;
   protected readonly failed = signal(false);
@@ -89,13 +82,11 @@ export class BracketView {
     });
   }
 
-  // The library marks matches with data-match-id and teams with data-participant-id
+  // The library marks matches with data-match-id
   protected onClick(event: MouseEvent): void {
-    if (!this.canScore() || !(event.target instanceof Element)) return;
-    const team = event.target.closest<HTMLElement>('[data-participant-id]');
-    const match = team?.closest<HTMLElement>('[data-match-id]');
-    if (!team || !match) return;
-    this.teamClick.emit({ matchId: Number(match.dataset['matchId']), teamId: Number(team.dataset['participantId']) });
+    if (!(event.target instanceof Element)) return;
+    const match = event.target.closest<HTMLElement>('[data-match-id]');
+    if (match) this.matchClick.emit(Number(match.dataset['matchId']));
   }
 
   private async render(data: ViewerData): Promise<void> {

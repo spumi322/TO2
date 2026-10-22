@@ -1,13 +1,16 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, computed, DestroyRef, effect, inject } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, signal } from '@angular/core';
+import { Button } from 'primeng/button';
 import { EmptyState } from '../../../shared/empty-state';
-import { BracketTeamClick, BracketView } from '../bracket-view/bracket-view';
+import { roundName } from '../bracket-view/bracket-adapter';
+import { BracketView } from '../bracket-view/bracket-view';
+import { MatchCard } from '../match-card/match-card';
 import { Scoring } from '../scoring';
 import { TournamentStore } from '../tournament.store';
 
 @Component({
   selector: 'app-bracket-tab',
-  imports: [EmptyState, BracketView],
+  imports: [EmptyState, Button, BracketView, MatchCard],
   providers: [Scoring],
   templateUrl: './bracket-tab.html',
   styleUrl: './bracket-tab.css',
@@ -23,18 +26,20 @@ export class BracketTab {
     () => (this.store.bracket()?.matches.filter((match) => match.round === 1).length ?? 0) > 8,
   );
 
+  // The clicked match, scored in the side panel with the same row as in the groups
+  readonly selectedMatchId = signal<number | null>(null);
+  readonly selectedMatch = computed(
+    () => this.store.bracket()?.matches.find((match) => match.id === this.selectedMatchId()) ?? null,
+  );
+  readonly selectedRound = computed(() => {
+    const match = this.selectedMatch();
+    const rounds = Math.max(...(this.store.bracket()?.matches.map((m) => m.round ?? 1) ?? [1]));
+    return match ? roundName(1 / 2 ** (rounds - (match.round ?? 1))) : '';
+  });
+
   constructor() {
     const root = inject(DOCUMENT).documentElement;
     effect(() => root.classList.toggle('snap-blocks', this.halves()));
     inject(DestroyRef).onDestroy(() => root.classList.remove('snap-blocks'));
-  }
-
-  // Same as a match card in the groups: the clicked team wins the next unplayed game
-  score(click: BracketTeamClick): void {
-    const match = this.store.bracket()?.matches.find((m) => m.id === click.matchId);
-    if (!match?.teamAId || !match.teamBId || match.winnerId !== null) return;
-
-    const game = [...match.games].sort((a, b) => a.id - b.id).find((g) => g.winnerId === null);
-    if (game) void this.scoring.setWinner({ match, game, winnerId: click.teamId });
   }
 }

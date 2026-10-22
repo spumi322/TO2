@@ -139,15 +139,21 @@ export interface TeamPlacement {
   groupName: string | null;
 }
 
-export interface SetGameResultRequest {
-  gameId: number;
-  winnerId: number;
-  teamAScore: number | null;
-  teamBScore: number | null;
+// Confirmed result of a whole match (version = the match version the page loaded)
+export interface SetMatchResultRequest {
   matchId: number;
   standingId: number;
   tournamentId: number;
+  teamAWins: number;
+  teamBWins: number;
   version: number;
+}
+
+// A match's draft score: not saved; by = who is scoring it (null = this page)
+export interface MatchDraft {
+  teamAWins: number;
+  teamBWins: number;
+  by: string | null;
 }
 
 export interface GameResult {

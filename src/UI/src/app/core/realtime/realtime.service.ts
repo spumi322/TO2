@@ -56,6 +56,13 @@ export class RealtimeService {
     }
   }
 
+  // Shares a match's draft score with the others on the tournament page (the hub relays it, nothing is saved)
+  async shareMatchDraft(tournamentId: number, matchId: number, teamAWins: number, teamBWins: number): Promise<void> {
+    if (this.connection?.state === HubConnectionState.Connected) {
+      await this.connection.invoke('ShareMatchDraft', tournamentId, matchId, teamAWins, teamBWins);
+    }
+  }
+
   async leaveTournament(tournamentId: number): Promise<void> {
     this.joined.delete(tournamentId);
     if (this.connection?.state === HubConnectionState.Connected) {

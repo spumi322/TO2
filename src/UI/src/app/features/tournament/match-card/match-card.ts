@@ -1,16 +1,18 @@
 import { Component, computed, input, output } from '@angular/core';
-import { StandingGame, StandingMatch } from '../../../core/models';
+import { MatchDraft, StandingMatch } from '../../../core/models';
 
-export interface GameWinnerChange {
+export interface DraftChange {
   match: StandingMatch;
-  game: StandingGame;
-  winnerId: number;
+  teamAWins: number;
+  teamBWins: number;
 }
 
+type Side = 'a' | 'b';
+
 /**
- * One match (groups and bracket). Scoring is winner-only:
- * a team's +1 button gives it the next unplayed game; a played game's chip gives that game to the other team.
- * Both work until the match has a winner (the backend allows re-scoring a game until then).
+ * One match (groups and bracket). While the match is open, each team has a − / + for its game wins:
+ * that is a draft, shared live but not saved. When one team has the wins needed, Confirm saves the result.
+ * A confirmed match only shows its score.
  */
 @Component({
   selector: 'app-match-card',
@@ -20,48 +22,53 @@ export interface GameWinnerChange {
 export class MatchCard {
   readonly match = input.required<StandingMatch>();
   readonly teamNames = input.required<Map<number, string>>();
+  readonly draft = input<MatchDraft | null | undefined>(null);
   readonly canScore = input(false);
   readonly busy = input(false);
-  readonly gameWinner = output<GameWinnerChange>();
+  // One line per team (bracket panel) instead of one row
+  readonly stacked = input(false);
+  readonly draftChange = output<DraftChange>();
+  readonly confirm = output<StandingMatch>();
 
-  readonly teamA = computed(() => this.side(this.match().teamAId, this.match().teamAWins));
-  readonly teamB = computed(() => this.side(this.match().teamBId, this.match().teamBWins));
-  readonly games = computed(() => [...this.match().games].sort((a, b) => a.id - b.id));
-  readonly playedGames = computed(() => this.games().filter((game) => game.winnerId !== null));
-  readonly nextGame = computed(() => this.games().find((game) => game.winnerId === null) ?? null);
-  readonly decided = computed(() => this.match().winnerId !== null);
-  readonly live = computed(() => !this.decided() && this.playedGames().length > 0);
-
-  // Both teams known (0/null = not decided yet) and no winner yet
-  readonly scorable = computed(
-    () => this.canScore() && !this.decided() && !!this.match().teamAId && !!this.match().teamBId,
+  // Best of 3 needs 2 wins, best of 5 needs 3
+  readonly winsNeeded = computed(() => Math.floor(this.match().bestOf / 2) + 1);
+  readonly confirmed = computed(() => this.match().winnerId !== null);
+  readonly editable = computed(
+    () => this.canScore() && !this.confirmed() && !!this.match().teamAId && !!this.match().teamBId,
   );
 
-  scoreNext(teamId: number | null): void {
-    const game = this.nextGame();
-    if (!this.scorable() || this.busy() || !game || !teamId) return;
-    this.gameWinner.emit({ match: this.match(), game, winnerId: teamId });
+  // Saved score once confirmed; before that the draft (or games saved by the old per-game scoring)
+  readonly score = computed(() => {
+    const m = this.match();
+    const draft = this.draft();
+    return !this.confirmed() && draft ? { a: draft.teamAWins, b: draft.teamBWins } : { a: m.teamAWins, b: m.teamBWins };
+  });
+  readonly decided = computed(() => this.score().a >= this.winsNeeded() || this.score().b >= this.winsNeeded());
+  readonly ready = computed(() => this.editable() && this.decided());
+  readonly draftLabel = computed(() => {
+    const draft = this.draft();
+    if (this.confirmed() || !draft) return null;
+    return draft.by ? `draft · ${draft.by}` : 'draft';
+  });
+
+  readonly teamA = computed(() => this.side(this.match().teamAId));
+  readonly teamB = computed(() => this.side(this.match().teamBId));
+
+  change(side: Side, delta: 1 | -1): void {
+    if (!this.editable() || this.busy()) return;
+    const { a, b } = this.score();
+    const next = side === 'a' ? { a: a + delta, b } : { a, b: b + delta };
+    if (next.a < 0 || next.b < 0) return;
+    if (delta === 1 && this.decided()) return;
+    this.draftChange.emit({ match: this.match(), teamAWins: next.a, teamBWins: next.b });
   }
 
-  // Corrects a played game: its winner becomes the other team
-  flip(game: StandingGame): void {
-    const { teamAId, teamBId } = this.match();
-    if (!this.scorable() || this.busy() || !teamAId || !teamBId) return;
-    this.gameWinner.emit({ match: this.match(), game, winnerId: game.winnerId === teamAId ? teamBId : teamAId });
-  }
-
-  gameLabel(game: StandingGame): string {
-    return this.teamNames().get(game.winnerId ?? 0) ?? '?';
-  }
-
-  private side(teamId: number | null, wins: number) {
+  private side(teamId: number | null) {
     const known = !!teamId;
     const winnerId = this.match().winnerId;
     return {
-      id: teamId,
       name: known ? (this.teamNames().get(teamId!) ?? 'Unknown team') : 'TBD',
       known,
-      wins,
       won: known && winnerId === teamId,
       lost: known && winnerId !== null && winnerId !== teamId,
     };

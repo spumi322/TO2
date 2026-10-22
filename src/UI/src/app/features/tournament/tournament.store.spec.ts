@@ -4,7 +4,7 @@ import { MatchesApi } from '../../core/api/matches.api';
 import { StandingsApi } from '../../core/api/standings.api';
 import { TeamsApi } from '../../core/api/teams.api';
 import { TournamentsApi } from '../../core/api/tournaments.api';
-import { Group, Tournament, TournamentState } from '../../core/models';
+import { Group, StandingMatch, Tournament, TournamentState } from '../../core/models';
 import { GameUpdatedEvent, HubEventMap, HubEventName } from '../../core/realtime/hub-events';
 import { RealtimeService } from '../../core/realtime/realtime.service';
 import { Format, TournamentStatus } from '../../shared/enums';
@@ -30,6 +30,7 @@ class FakeRealtime {
   readonly reconnected$ = new Subject<void>();
   joinTournament = vi.fn().mockResolvedValue(undefined);
   leaveTournament = vi.fn().mockResolvedValue(undefined);
+  shareMatchDraft = vi.fn().mockResolvedValue(undefined);
 
   on<K extends HubEventName>(name: K) {
     return this.subject(name).asObservable() as Subject<HubEventMap[K]>;
@@ -164,5 +165,54 @@ describe('TournamentStore live updates', () => {
 
     expect(tournamentsApi['teams']).not.toHaveBeenCalled();
     expect(realtime.leaveTournament).toHaveBeenCalledWith(TOURNAMENT_ID);
+  });
+
+  describe('match drafts', () => {
+    const match = { id: 50, standingId: 10, teamAWins: 0, teamBWins: 0 } as StandingMatch;
+
+    it('keeps its own draft and shares it through the hub', () => {
+      store.setDraft(match, 1, 0);
+
+      expect(store.drafts().get(50)).toEqual({ teamAWins: 1, teamBWins: 0, by: null });
+      expect(realtime.shareMatchDraft).toHaveBeenCalledWith(TOURNAMENT_ID, 50, 1, 0);
+    });
+
+    it('drops the draft when it goes back to 0 - 0', () => {
+      store.setDraft(match, 1, 0);
+      store.setDraft(match, 0, 0);
+
+      expect(store.drafts().has(50)).toBe(false);
+    });
+
+    it('shows a draft someone else shares, with their name', async () => {
+      realtime.emit('MatchDraftUpdated', { tournamentId: TOURNAMENT_ID, updatedBy: 'anna', matchId: 50, teamAWins: 1, teamBWins: 1 });
+      await flushPromises();
+
+      expect(store.drafts().get(50)).toEqual({ teamAWins: 1, teamBWins: 1, by: 'anna' });
+    });
+
+    it('ignores drafts of another tournament', async () => {
+      realtime.emit('MatchDraftUpdated', { tournamentId: 99, updatedBy: 'anna', matchId: 50, teamAWins: 1, teamBWins: 0 });
+      await flushPromises();
+
+      expect(store.drafts().size).toBe(0);
+    });
+
+    it('clears the draft when the match result is saved', async () => {
+      store.setDraft(match, 2, 0);
+      realtime.emit('GameUpdated', {
+        tournamentId: TOURNAMENT_ID,
+        updatedBy: 'anna',
+        matchId: 50,
+        updatedGroup: group(10, 'Group A'),
+        updatedBracket: null,
+        newTournamentStatus: null,
+        finalStandings: null,
+        tournamentFinished: false,
+      } as unknown as GameUpdatedEvent);
+      await flushPromises();
+
+      expect(store.drafts().has(50)).toBe(false);
+    });
   });
 });

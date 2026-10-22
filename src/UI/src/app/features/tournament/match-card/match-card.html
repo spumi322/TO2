@@ -1,61 +1,52 @@
-<article class="match" [class.live]="live()" [class.busy]="busy()" [attr.aria-busy]="busy()">
-  <div class="line">
-    @if (scorable()) {
-      <button
-        type="button"
-        class="plus"
-        [disabled]="busy()"
-        [attr.aria-label]="teamA().name + ' wins the next game'"
-        title="Give the next game to this team"
-        (click)="scoreNext(teamA().id)"
-      >
-        +1
-      </button>
-    }
-    <span class="name a" [class.won]="teamA().won" [class.lost]="teamA().lost" [class.tbd]="!teamA().known">
-      {{ teamA().name }}
-    </span>
-    <span class="result num" [class.open]="!decided() && !live()">
-      @if (decided() || live()) {
-        <span [class.won]="teamA().won">{{ teamA().wins }}</span>
-        <span class="sep">-</span>
-        <span [class.won]="teamB().won">{{ teamB().wins }}</span>
-      } @else {
-        vs
-      }
-    </span>
-    <span class="name b" [class.won]="teamB().won" [class.lost]="teamB().lost" [class.tbd]="!teamB().known">
-      {{ teamB().name }}
-    </span>
-    @if (scorable()) {
-      <button
-        type="button"
-        class="plus"
-        [disabled]="busy()"
-        [attr.aria-label]="teamB().name + ' wins the next game'"
-        title="Give the next game to this team"
-        (click)="scoreNext(teamB().id)"
-      >
-        +1
-      </button>
-    }
-  </div>
+<article class="match" [class.ready]="ready()" [class.stacked]="stacked()" [class.busy]="busy()" [attr.aria-busy]="busy()">
+  <span class="name a" [class.won]="teamA().won" [class.lost]="teamA().lost" [class.tbd]="!teamA().known" [title]="teamA().name">
+    {{ teamA().name }}
+  </span>
 
-  <!-- Correcting a game is only possible until the match has a winner -->
-  @if (live() && scorable()) {
-    <div class="games">
-      <span class="muted small">Fix a game:</span>
-      @for (game of playedGames(); track game.id; let i = $index) {
-        <button
-          type="button"
-          class="chip"
-          [disabled]="busy()"
-          [title]="'Give game ' + (i + 1) + ' to the other team'"
-          (click)="flip(game)"
-        >
-          G{{ i + 1 }} {{ gameLabel(game) }}
-        </button>
+  <span class="score a">
+    @if (editable()) {
+      <button type="button" class="step" [disabled]="busy() || score().a === 0" [attr.aria-label]="'Take a game from ' + teamA().name" (click)="change('a', -1)">
+        −
+      </button>
+    }
+    <span class="num">{{ score().a }}</span>
+    @if (editable()) {
+      <button type="button" class="step" [disabled]="busy() || decided()" [attr.aria-label]="'Give ' + teamA().name + ' a game'" (click)="change('a', 1)">
+        +
+      </button>
+    }
+  </span>
+
+  <span class="dash" aria-hidden="true">–</span>
+
+  <span class="score b">
+    @if (editable()) {
+      <button type="button" class="step" [disabled]="busy() || score().b === 0" [attr.aria-label]="'Take a game from ' + teamB().name" (click)="change('b', -1)">
+        −
+      </button>
+    }
+    <span class="num">{{ score().b }}</span>
+    @if (editable()) {
+      <button type="button" class="step" [disabled]="busy() || decided()" [attr.aria-label]="'Give ' + teamB().name + ' a game'" (click)="change('b', 1)">
+        +
+      </button>
+    }
+  </span>
+
+  <span class="name b" [class.won]="teamB().won" [class.lost]="teamB().lost" [class.tbd]="!teamB().known" [title]="teamB().name">
+    {{ teamB().name }}
+  </span>
+
+  <span class="actions">
+    @if (confirmed()) {
+      <span class="done"><i class="pi pi-check" aria-hidden="true"></i> Confirmed</span>
+    } @else {
+      @if (draftLabel(); as label) {
+        <span class="muted small">{{ label }}</span>
       }
-    </div>
-  }
+      @if (ready()) {
+        <button type="button" class="confirm" [disabled]="busy()" (click)="confirm.emit(match())">Confirm</button>
+      }
+    }
+  </span>
 </article>
