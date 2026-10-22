@@ -1,4 +1,5 @@
 using Application.Contracts;
+using Application.DTOs.SignalR;
 using Domain.AggregateRoots;
 using FluentAssertions;
 using Infrastructure.Persistence.Repository;
@@ -69,6 +70,41 @@ namespace Tests.Unit.SignalR
 
             await act.Should().ThrowAsync<HubException>();
             _groupsMock.Verify(x => x.AddToGroupAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        private Mock<IClientProxy> MockOthersInGroup(long tournamentId)
+        {
+            var proxy = new Mock<IClientProxy>();
+            var clients = new Mock<IHubCallerClients>();
+            clients.Setup(x => x.OthersInGroup($"tournament-{tournamentId}")).Returns(proxy.Object);
+            _hub.Clients = clients.Object;
+            return proxy;
+        }
+
+        [Fact]
+        public async Task ShareMatchDraft_RelaysToOthersInTournament_When_TournamentInOwnTenant()
+        {
+            var (ownId, _) = await SeedTournamentsAsync();
+            var proxy = MockOthersInGroup(ownId);
+
+            await _hub.ShareMatchDraft(ownId, 42, 1, 0);
+
+            proxy.Verify(x => x.SendCoreAsync(
+                "MatchDraftUpdated",
+                It.Is<object?[]>(args => args.Length == 1 && args[0]!.Equals(new MatchDraftUpdatedEvent(ownId, 42, 1, 0, "TestUser"))),
+                default), Times.Once);
+        }
+
+        [Fact]
+        public async Task ShareMatchDraft_Throws_AndRelaysNothing_When_TournamentInOtherTenant()
+        {
+            var (_, otherId) = await SeedTournamentsAsync();
+            var proxy = MockOthersInGroup(otherId);
+
+            var act = () => _hub.ShareMatchDraft(otherId, 42, 1, 0);
+
+            await act.Should().ThrowAsync<HubException>();
+            proxy.Verify(x => x.SendCoreAsync(It.IsAny<string>(), It.IsAny<object?[]>(), It.IsAny<CancellationToken>()), Times.Never);
         }
     }
 }

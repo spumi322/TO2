@@ -1,4 +1,5 @@
 ﻿using Application.Contracts;
+using Application.DTOs.SignalR;
 using Domain.AggregateRoots;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
@@ -46,6 +47,23 @@ namespace TO2.Hubs
         public async Task LeaveTournament(long tournamentId)
         {
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"tournament-{tournamentId}");
+        }
+
+        // Relays a match's draft score to the others on the tournament page. Nothing is saved: Confirm saves the result
+        public async Task ShareMatchDraft(long tournamentId, long matchId, int teamAWins, int teamBWins)
+        {
+            // Same tenant check as JoinTournament: only into a tournament group of the caller's own tenant
+            if (!await _tournamentRepository.ExistsAsync(t => t.Id == tournamentId))
+            {
+                _logger.LogWarning(
+                    "Refused match draft: user {UserName} (tenant {TenantId}) sent a draft for tournament {TournamentId}",
+                    _tenantService.GetCurrentUserName(), _tenantService.GetCurrentTenantId(), tournamentId);
+                throw new HubException("Tournament not found.");
+            }
+
+            await Clients.OthersInGroup($"tournament-{tournamentId}").SendAsync(
+                "MatchDraftUpdated",
+                new MatchDraftUpdatedEvent(tournamentId, matchId, teamAWins, teamBWins, _tenantService.GetCurrentUserName()));
         }
     }
 }
