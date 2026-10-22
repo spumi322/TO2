@@ -3,6 +3,8 @@ using Application.Contracts.Repositories;
 using Application.Pipelines.GameResult;
 using Application.Pipelines.GameResult.Contracts;
 using Application.Pipelines.GameResult.Strategies;
+using Application.Pipelines.MatchResult;
+using Application.Pipelines.MatchResult.Contracts;
 using Application.Pipelines.StartBracket;
 using Application.Pipelines.StartBracket.Contracts;
 using Application.Pipelines.StartBracket.Strategies;
@@ -94,6 +96,8 @@ namespace TO2
             // Pipeline Steps (order defined in GameResultPipeline.StepOrder)
             foreach (var step in GameResultPipeline.StepOrder)
                 builder.Services.AddScoped(typeof(IGameResultPipelineStep), step);
+            // Match Result Pipeline - confirmed match result; reuses the game result steps above (without ScoreGameStep)
+            builder.Services.AddScoped<IMatchResultPipeline, MatchResultPipeline>();
             // Standing Progress Strategies
             builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
             builder.Services.AddScoped<IStandingProgressStrategy, BracketProgressStrategy>();
