@@ -12,7 +12,7 @@ const STAGE_COLORS: Record<StageKey, string> = {
 
 const STATE_WORDS: Record<StepState, string> = {
   done: 'done',
-  current: 'in progress',
+  current: 'current',
   ready: 'ready to start',
   todo: 'not started',
 };

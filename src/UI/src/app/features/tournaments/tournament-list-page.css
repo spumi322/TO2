@@ -10,7 +10,7 @@
   gap: 10px;
 }
 
-/* Live now marker: same pulse as live status chips */
+/* In play marker: same pulse as live status chips */
 .pulse {
   width: 10px;
   height: 10px;
@@ -205,7 +205,7 @@
   padding: 0 8px;
 }
 
-/* Separates the tabs (registration, history) from Live now; counted in PAGE_CHROME_HEIGHT */
+/* Separates the tabs (registration, history) from In play; counted in PAGE_CHROME_HEIGHT */
 .tab-section {
   margin-top: 56px;
 }

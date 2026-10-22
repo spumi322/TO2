@@ -18,7 +18,7 @@ import { StageTrack } from './stage-track';
 
 type Tab = 'registration' | 'finished' | 'cancelled';
 
-// One-screen rule: Live now shows every row (or half the screen after "Show less"), the open tab gets the rows left.
+// One-screen rule: In play shows every row (or half the screen after "Show less"), the open tab gets the rows left.
 // Page parts that are not rows: top bar, page header, section title, tab bar (+56px margin), list headers, paddings
 const PAGE_CHROME_HEIGHT = 436;
 const ROW_HEIGHT = 49;
@@ -57,7 +57,13 @@ export class TournamentListPage implements OnInit {
     return (this.tournaments() ?? []).filter((t) => STATUS_INFO[t.status].section === section);
   }
 
-  readonly live = computed(() => this.inSection('ongoing').sort(byNewest));
+  readonly ongoing = computed(() => this.inSection('ongoing').sort(byNewest));
+  // Running tournaments plus the latest finished ones until the screen is full (In play has priority over the tab),
+  // newest first: a tournament keeps its row when it finishes and only leaves when the rows are needed
+  readonly live = computed(() => {
+    const free = Math.max(0, this.rowsOnScreen() - this.ongoing().length);
+    return [...this.ongoing(), ...this.finished().slice(0, free)].sort(byNewest);
+  });
   readonly registration = computed(() => this.inSection('upcoming').sort(byNewest));
   readonly finished = computed(() => this.inSection('finished').sort(byDateDesc((t) => t.finishedAt)));
   readonly cancelled = computed(() => this.inSection('cancelled').sort(byDateDesc((t) => t.cancelledAt)));

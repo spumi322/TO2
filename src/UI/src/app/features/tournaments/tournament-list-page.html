@@ -32,7 +32,7 @@
     <section class="stack">
       <div class="section-head">
         <h2 class="live-title">
-          <span class="pulse" aria-hidden="true"></span>Live now <span class="muted count">{{ live().length }}</span>
+          <span class="pulse" aria-hidden="true"></span>In play <span class="muted count">{{ ongoing().length }}</span>
         </h2>
         @if (liveHasMore()) {
           <button type="button" class="toggle" (click)="liveExpanded.set(!liveExpanded())">

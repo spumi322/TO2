@@ -6,15 +6,15 @@
 Work phase by phase.
 
 ## Decisions
-- **Layout**: page header (title + New tournament), then **Live now** (all ongoing tournaments as rows), then **tabs**: Registration / Finished / Cancelled with counts, one list visible at a time.
+- **Layout**: page header (title + New tournament), then **In play** (ongoing tournaments plus the latest finished ones, newest created first), then **tabs**: Registration / Finished / Cancelled with counts, one list visible at a time.
 - **Live row**: format icon tile (tinted by stage) + name | stage track | stage chip | format | team count ("8", no max).
-- **Stage track**: segments per format, from `Format` + `Status` only (no backend): BracketOnly `Registration > Playoffs > Finished`, GroupsOnly `Registration > Groups > Finished`, GroupsAndBracket `Registration > Groups > Playoffs > Finished`. Done = the stage's shade, faded; current = the stage's shade, full strength; next = grey; `GroupsCompleted` = Groups done + Playoffs outlined. Pure function, unit tested.
+- **Stage track**: segments per format, from `Format` + `Status`: BracketOnly `Registration > Playoffs > Finished`, GroupsOnly `Registration > Groups > Finished`, GroupsAndBracket `Registration > Groups > Playoffs > Finished`. Done = the stage's shade, faded; current = the stage's shade, full strength; next = grey; `GroupsCompleted` = Groups done + Playoffs outlined; `Finished` = Finished current. The current Groups / Playoffs segment fills by finished groups / bracket rounds (list DTO counts, BYE matches count as played); a group or round finishing broadcasts `TournamentUpdated`. Pure functions, unit tested.
 - **Registration row**: icon + name | fill bar | format | "2 / 8", green when full.
 - **Finished row**: name | trophy + winner | format | teams | finished date, newest first.
-- **One screen**: Live now shows all rows by default ("Show less" = half of the rows that fit); the open tab gets the rows left on the screen (min 3, recomputed on resize); "Show all N" / "Show less" in the section heading row (client side, the list is already loaded).
+- **One screen**: In play gets all the rows that fit, finished ones fill the rows the running ones leave and leave only when a row is needed; it shows all rows by default ("Show less" = half of the rows that fit); the open tab gets the rows left on the screen (min 3, recomputed on resize); "Show all N" / "Show less" in the section heading row (client side, the list is already loaded).
 - **Cancelled row**: name | reason | teams | cancelled date.
 - **No** descriptions in the list (overview tab has them), no search, no pagination, no archive, no scheduling dates.
-- **Colors (green ramp)**: one green, darker stage by stage: registration `#c8e6c9`, groups `#81c784`, playoffs TO2 green `#43a047` (light theme: `#4f7f53`, `#388e3c`, `#1b5e20`). Reached stages keep their shade on the track, finished ones faded; the Registration segment fills to registered / max teams like the Slots bar (same shade); ready for playoffs = playoffs green as outline; the Finished segment stays grey (a finished tournament leaves Live now). Gold (`--status-finished`) only for winners/trophies, never for a state.
+- **Colors (green ramp)**: one green, darker stage by stage: registration `#c8e6c9`, groups `#81c784`, playoffs TO2 green `#43a047` (light theme: `#4f7f53`, `#388e3c`, `#1b5e20`). Reached stages keep their shade on the track, finished ones faded; the Registration segment fills to registered / max teams like the Slots bar (same shade); ready for playoffs = playoffs green as outline; the Finished segment is gold like the Finished chip. Gold (`--status-finished`) only for winners/trophies and the Finished stage, never for another state.
 - **Colors are app-wide**: the ramp goes into the `--status-*` tokens, so status chips look the same on every page. Seeding states (`SeedingGroups`, `SeedingBracket`) move from orange to neutral grey (the spinner shows progress). Light theme gets darker shades for contrast.
 - **Labels**: `GroupsCompleted` = "Ready for playoffs".
 - **Default tab**: Registration; Finished when Registration is empty. Not remembered between visits.
@@ -41,7 +41,7 @@ CONFIRM: tests green; `curl GET api/tournaments` on the real API shows winners f
 - `core/models.ts`: new list item fields.
 - `styles.css`: green ramp in `--status-setup`, `--status-groups`, `--status-groups-done`, `--status-bracket`, grey `--status-seeding` (dark + light theme); `shared/enums.ts`: `GroupsCompleted` label "Ready for playoffs", `outline` flag; `StatusChip` renders the outline variant.
 - `features/tournaments/stage-steps.ts` (+ spec): `stageSteps(format, status)` → `{ key, label, state }[]`; `stage-track.ts`: `StageTrack` component (Registration segment filled by teams / max); `shared/format-icon.ts`: line icon per format.
-- `tournament-list-page`: Live now rows, tabs (signal), Registration / Finished (sorted by `finishedAt` desc) / Cancelled rows, row counts per the one-screen decision; rows are links; tables scroll horizontally on phones; empty states per list; realtime reload unchanged.
+- `tournament-list-page`: In play rows, tabs (signal), Registration / Finished (sorted by `finishedAt` desc) / Cancelled rows, row counts per the one-screen decision; rows are links; tables scroll horizontally on phones; empty states per list; realtime reload unchanged.
 - Remove the old card styles.
 
 CONFIRM: build + tests green; short browser check with asd1 (live rows, tabs, show all, phone width, light theme; score the deciding game in a second tab → list moves the tournament to Finished with its winner without reload). Commit.

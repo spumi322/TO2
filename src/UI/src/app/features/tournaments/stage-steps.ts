@@ -39,8 +39,9 @@ const POSITION: Partial<Record<TournamentStatus, { key: StageKey; state: 'curren
 export function stageSteps(format: Format, status: TournamentStatus): StageStep[] {
   const keys = STAGES[format];
   if (status === TournamentStatus.Cancelled) return [];
+  // Finished is the stage a finished tournament is at
   if (status === TournamentStatus.Finished) {
-    return keys.map((key) => ({ key, label: LABELS[key], state: 'done' }));
+    return keys.map((key) => ({ key, label: LABELS[key], state: key === 'finished' ? 'current' : 'done' }));
   }
 
   const position = POSITION[status]!;

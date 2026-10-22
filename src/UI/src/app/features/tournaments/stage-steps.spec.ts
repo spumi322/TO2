@@ -39,8 +39,8 @@ describe('stage steps', () => {
     expect(states(Format.GroupsOnly, TournamentStatus.SeedingGroups)[1]).toBe('groups:current');
   });
 
-  it('marks every stage done when finished, none when cancelled', () => {
-    expect(states(Format.GroupsOnly, TournamentStatus.Finished)).toEqual(['registration:done', 'groups:done', 'finished:done']);
+  it('marks Finished current when finished, no stages when cancelled', () => {
+    expect(states(Format.GroupsOnly, TournamentStatus.Finished)).toEqual(['registration:done', 'groups:done', 'finished:current']);
     expect(stageSteps(Format.BracketOnly, TournamentStatus.Cancelled)).toEqual([]);
   });
 
