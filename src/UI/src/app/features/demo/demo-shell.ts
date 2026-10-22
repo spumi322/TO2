@@ -31,7 +31,6 @@ export class DemoShell implements OnInit {
     if (!t) return [];
     return [
       { path: 'overview', label: 'Overview' },
-      { path: 'teams', label: `Teams (${t.currentTeams})` },
       ...(formatHasGroups(t.format) ? [{ path: 'groups', label: 'Groups' }] : []),
       ...(formatHasBracket(t.format) ? [{ path: 'bracket', label: 'Bracket' }] : []),
       { path: 'results', label: 'Results' },

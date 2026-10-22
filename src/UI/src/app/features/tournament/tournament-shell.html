@@ -19,9 +19,6 @@
         <app-status-chip [status]="t.status" />
         <app-format-badge [format]="t.format" />
         <span class="spacer"></span>
-        @if (primaryAction(); as action) {
-          <p-button [label]="action.label" icon="pi pi-play" [disabled]="!!store.state()?.isTransitionState" (onClick)="action.run()" />
-        }
         @if (menuItems().length) {
           <p-button
             icon="pi pi-ellipsis-v"

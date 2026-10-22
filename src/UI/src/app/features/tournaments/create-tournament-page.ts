@@ -77,7 +77,7 @@ export class CreateTournamentPage {
     this.submitting.set(true);
     this.error.set(null);
     this.api.create(buildCreateRequest(this.config())).subscribe({
-      next: (created) => void this.router.navigate(['/tournaments', created.id, 'teams']),
+      next: (created) => void this.router.navigate(['/tournaments', created.id, 'overview']),
       error: (error: unknown) => {
         this.submitting.set(false);
         const apiError = toApiError(error);

@@ -56,20 +56,21 @@ export function stageCounts(tournament: Tournament, groups: Group[], bracket: Br
   };
 }
 
-// Groups and bracket rounds that have started (drawn / seeded)
-export function stageCards(groups: Group[], bracket: Bracket | null): StageCard[] {
-  const groupCards = groups
+// Groups that are drawn
+export function groupCards(groups: Group[]): StageCard[] {
+  return groups
     .filter((group) => group.isSeeded)
     .map((group) => ({ name: group.name, finished: group.isFinished, progress: matchProgress(group.matches) }));
+}
 
+// Bracket rounds once the bracket is seeded
+export function roundCards(bracket: Bracket | null): StageCard[] {
   const rounds = bracketRounds(bracket);
-  const roundCards = rounds.map((matches, index) => ({
+  return rounds.map((matches, index) => ({
     name: roundName(1 / 2 ** (rounds.length - 1 - index)),
     finished: allWon(matches),
     progress: matchProgress(matches),
   }));
-
-  return [...groupCards, ...roundCards];
 }
 
 function startText(tournament: Tournament): string {

@@ -15,8 +15,8 @@ export interface ConfirmRequest {
 }
 
 /**
- * Stage actions (start groups/bracket, cancel, delete) behind one confirm dialog, shared by the header
- * and the Overview's next-step card. Provided on the shell route next to the store.
+ * Stage actions (start groups/bracket, cancel, delete) behind one confirm dialog, shared by the header menu
+ * and the Overview's status card. Provided on the shell route next to the store.
  */
 @Injectable()
 export class TournamentActions {

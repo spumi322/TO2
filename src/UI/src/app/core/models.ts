@@ -37,6 +37,8 @@ export interface Tournament {
   currentTeams: number;
   numberOfGroups: number;
   advancingPerGroup: number | null;
+  createdBy: string;
+  createdDate: string;
 }
 
 export interface TournamentState {

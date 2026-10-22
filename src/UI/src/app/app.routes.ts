@@ -6,7 +6,6 @@ import { NotFoundPage } from './pages/not-found-page';
 const tournamentTabs: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'overview' },
   { path: 'overview', loadComponent: () => import('./features/tournament/tabs/overview-tab').then((m) => m.OverviewTab) },
-  { path: 'teams', loadComponent: () => import('./features/tournament/tabs/teams-tab').then((m) => m.TeamsTab) },
   { path: 'groups', loadComponent: () => import('./features/tournament/tabs/groups-tab').then((m) => m.GroupsTab) },
   { path: 'bracket', loadComponent: () => import('./features/tournament/tabs/bracket-tab').then((m) => m.BracketTab) },
   { path: 'results', loadComponent: () => import('./features/tournament/tabs/results-tab').then((m) => m.ResultsTab) },

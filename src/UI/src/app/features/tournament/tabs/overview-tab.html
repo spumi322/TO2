@@ -1,124 +1,97 @@
 @if (store.tournament(); as t) {
   <div class="overview">
-    <div class="main stack">
-      @if (isCancelled()) {
-        <div class="banner danger" role="status">
-          <strong>Cancelled</strong>
-          @if (t.cancelledBy) {
-            by {{ t.cancelledBy }}
-          }
-          @if (t.cancelledAt) {
-            on {{ t.cancelledAt | date: 'd MMM y, HH:mm' }}
-          }
-          @if (t.cancellationReason) {
-            <p class="pre-line reason">{{ t.cancellationReason }}</p>
+    @if (status(); as card) {
+      <section class="card status">
+        <div class="status-head">
+          <div class="status-text">
+            <span class="status-label" [style.color]="statusColor()">{{ card.label }}</span>
+            <h2>{{ card.headline }}</h2>
+            <p class="muted pre-line">{{ card.text }}</p>
+          </div>
+          @if (card.action; as action) {
+            <p-button
+              [label]="actionLabels[action]"
+              icon="pi pi-play"
+              [disabled]="!!store.state()?.isTransitionState"
+              (onClick)="run(action)"
+            />
           }
         </div>
-      }
-
-      @switch (nextStep().kind) {
-        @case ('addTeams') {
-          <section class="card next">
-            <h3>Next: add teams</h3>
-            <p class="muted">
-              {{ t.currentTeams }} of {{ t.maxTeams }} teams registered.
-              @if (t.currentTeams < 2) {
-                At least 2 teams are needed to start.
-              }
-            </p>
-            <div><p-button label="Add teams" routerLink="../teams" /></div>
-          </section>
-        }
-        @case ('startGroups') {
-          <section class="card next">
-            <h3>Next: start the groups</h3>
-            <p class="muted">
-              {{ t.currentTeams }} of {{ t.maxTeams }} teams registered. Starting draws the groups and closes registration.
-              You can still <a routerLink="../teams">add teams</a> before that.
-            </p>
-            <div><p-button label="Start groups" icon="pi pi-play" (onClick)="actions.startGroups()" /></div>
-          </section>
-        }
-        @case ('startBracket') {
-          <section class="card next">
-            @if (isGroupsAndBracket()) {
-              <h3>Next: start the bracket</h3>
-              <p class="muted">All groups are finished. The top {{ t.advancingPerGroup }} of each group advance.</p>
-            } @else {
-              <h3>Next: start the bracket</h3>
-              <p class="muted">
-                {{ t.currentTeams }} of {{ t.maxTeams }} teams registered. Starting seeds the bracket and closes registration.
-                You can still <a routerLink="../teams">add teams</a> before that.
-              </p>
-            }
-            <div><p-button label="Start bracket" icon="pi pi-play" (onClick)="actions.startBracket()" /></div>
-          </section>
-        }
-        @case ('play') {
-          <section class="card next">
-            <h3>{{ playStage() === 'groups' ? 'Groups are live' : 'Playoffs are live' }}</h3>
-            <p class="muted">
-              {{ playStage() === 'groups' ? 'Press +1 next to a team to give it the next game.' : 'Click a team in the bracket to give it the next game.' }}
-            </p>
-            <div>
-              <p-button
-                [label]="playStage() === 'groups' ? 'Go to groups' : 'Go to bracket'"
-                [routerLink]="'../' + playStage()"
-              />
-            </div>
-          </section>
-        }
-        @case ('finished') {
-          <section class="card next champion">
-            <span class="muted small"><i class="pi pi-trophy"></i> {{ champions().length > 1 ? 'Group winners' : 'Champion' }}</span>
-            @for (team of champions(); track team.teamId) {
-              <strong class="champion-name">{{ team.teamName }}</strong>
-            } @empty {
-              <h3>Tournament finished</h3>
-            }
-            <div><p-button label="See results" [outlined]="true" routerLink="../results" /></div>
-          </section>
-        }
-      }
-
-      <section class="card">
-        <h3>Format</h3>
-        <p class="description">{{ formatSummary() }}</p>
-        @if (t.description) {
-          <p class="pre-line description muted about">{{ t.description }}</p>
+        @if (counts(); as counts) {
+          <app-stage-track [format]="t.format" [status]="t.status" [counts]="counts" [showCounts]="true" />
         }
       </section>
-    </div>
+    }
 
-    <aside class="card facts">
-      <dl>
-        <dt>Format</dt>
-        <dd>{{ formatLabel() }}</dd>
-        <dt>Teams</dt>
-        <dd class="num">{{ t.currentTeams }} / {{ t.maxTeams }}</dd>
-        @if (hasGroups()) {
-          <dt>Groups</dt>
-          <dd class="num">{{ t.numberOfGroups }}</dd>
+    <div class="columns">
+      <div class="main stack">
+        @if (store.state()?.canModifyTeams) {
+          <app-team-manager />
+        } @else {
+          @if (groupCards().length) {
+            <section class="card stack">
+              <h3>Groups</h3>
+              <ul class="stage-cards">
+                @for (stage of groupCards(); track stage.name) {
+                  <li>
+                    <span class="stage-name">{{ stage.name }}</span>
+                    <span class="stage-progress" [class.finished]="stage.finished">
+                      {{ stage.finished ? 'Finished' : stage.progress }}
+                    </span>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+          @if (roundCards().length) {
+            <section class="card stack">
+              <h3>Bracket</h3>
+              <ul class="stage-cards">
+                @for (stage of roundCards(); track stage.name) {
+                  <li>
+                    <span class="stage-name">{{ stage.name }}</span>
+                    <span class="stage-progress" [class.finished]="stage.finished">
+                      {{ stage.finished ? 'Finished' : stage.progress }}
+                    </span>
+                  </li>
+                }
+              </ul>
+            </section>
+          }
         }
-        @if (isGroupsAndBracket()) {
-          <dt>Advance per group</dt>
-          <dd class="num">{{ t.advancingPerGroup }}</dd>
+      </div>
+
+      <aside class="card facts">
+        <h3>Format</h3>
+        <p class="summary">{{ formatSummary() }}</p>
+        <dl>
+          @if (isSetup()) {
+            <dt>Max teams</dt>
+            <dd class="num">{{ t.maxTeams }}</dd>
+          } @else {
+            <dt>Teams</dt>
+            <dd class="num">{{ t.currentTeams }}</dd>
+          }
+          @if (hasGroups()) {
+            <dt>Groups</dt>
+            <dd class="num">{{ t.numberOfGroups }}</dd>
+          }
+          @if (isGroupsAndBracket()) {
+            <dt>Advance per group</dt>
+            <dd class="num">{{ t.advancingPerGroup }}</dd>
+          }
+          <dt>Created by</dt>
+          <dd>{{ t.createdBy }}</dd>
+          <dt>Created</dt>
+          <dd>{{ t.createdDate | date: 'd MMM y' }}</dd>
+        </dl>
+        @if (t.description) {
+          <div class="about">
+            <h3>About</h3>
+            <p class="muted pre-line">{{ t.description }}</p>
+          </div>
         }
-        <dt>Matches</dt>
-        <dd>Best of 3</dd>
-      </dl>
-      @for (stage of progress(); track stage.label) {
-        <div class="progress">
-          <div class="row small">
-            <span class="muted">{{ stage.label }}</span>
-            <span class="spacer"></span>
-            <span class="num">{{ stage.played }} / {{ stage.total }}</span>
-          </div>
-          <div class="bar" aria-hidden="true">
-            <div class="bar-fill" [style.width.%]="(stage.played / stage.total) * 100"></div>
-          </div>
-        </div>
-      }
-    </aside>
+      </aside>
+    </div>
   </div>
 }

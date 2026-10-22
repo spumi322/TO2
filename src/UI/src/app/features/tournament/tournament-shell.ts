@@ -53,21 +53,13 @@ export class TournamentShell {
     if (!tournament) return [];
     return [
       { path: 'overview', label: 'Overview' },
-      { path: 'teams', label: `Teams (${tournament.currentTeams})` },
       ...(formatHasGroups(tournament.format) ? [{ path: 'groups', label: 'Groups' }] : []),
       ...(formatHasBracket(tournament.format) ? [{ path: 'bracket', label: 'Bracket' }] : []),
       ...(tournament.status === TournamentStatus.Finished ? [{ path: 'results', label: 'Results' }] : []),
     ];
   });
 
-  readonly primaryAction = computed(() => {
-    const state = this.store.state();
-    if (state?.canStartGroups) return { label: 'Start groups', run: () => this.actions.startGroups() };
-    if (state?.canStartBracket) return { label: 'Start bracket', run: () => this.actions.startBracket() };
-    return null;
-  });
-
-  // Destructive actions live in the menu, never next to the primary action
+  // Destructive actions live in the menu; start actions are on the Overview's status card
   readonly menuItems = computed<MenuItem[]>(() => {
     const state = this.store.state();
     const items: MenuItem[] = [];

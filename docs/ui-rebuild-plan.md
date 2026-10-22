@@ -104,6 +104,8 @@ Done when: create each format, see it in the list; a second browser session sees
 
 ## Phase 4: tournament page, teams, groups
 
+Overview and team management were later redesigned (Teams tab merged into Overview): `docs/tournament-overview-plan.md`.
+
 - **CP 4.1** Shell + store:
   - Route `/tournaments/:id` with child routes (overview, teams, groups, bracket, results); tab visibility from format.
   - `TournamentStore` on the shell route: tournament, state, teams (+ id → name map), groups, bracket, results; parallel load, in-place reloads.

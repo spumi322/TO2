@@ -1,7 +1,7 @@
 import { Bracket, Group, StandingMatch, TeamPlacement, Tournament, TournamentState } from '../../../core/models';
 import { Format, TournamentStatus } from '../../../shared/enums';
 import { stageCount, stageSteps } from '../../tournaments/stage-steps';
-import { stageCards, stageCounts, statusCard } from './overview-status';
+import { groupCards, roundCards, stageCounts, statusCard } from './overview-status';
 
 const tournament = (overrides: Partial<Tournament> = {}): Tournament =>
   ({
@@ -52,11 +52,15 @@ describe('overview status', () => {
     expect(counts.roundsTotal).toBe(0);
   });
 
-  it('makes one card per started group and bracket round, BYEs not counted as matches', () => {
-    const cards = stageCards([group('Group A', true, [match(1, 1), match(1, 2)])], bracket([3, null], [null, null], null));
-
-    expect(cards).toEqual([
+  it('makes one card per drawn group', () => {
+    const notDrawn = { ...group('Group B', false, []), isSeeded: false };
+    expect(groupCards([group('Group A', true, [match(1, 1), match(1, 2)]), notDrawn])).toEqual([
       { name: 'Group A', finished: true, progress: '2 / 2 matches' },
+    ]);
+  });
+
+  it('makes one card per bracket round, BYEs not counted as matches', () => {
+    expect(roundCards(bracket([3, null], [null, null], null))).toEqual([
       { name: 'Quarterfinals', finished: false, progress: '1 / 2 matches' },
       { name: 'Semifinals', finished: false, progress: '0 / 2 matches' },
       { name: 'Final', finished: false, progress: '0 / 1 match' },

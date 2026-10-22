@@ -1,100 +1,112 @@
 .overview {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
-  gap: 24px;
-  align-items: start;
-}
-
-.facts {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.progress {
+/* Status card: text and the one action on top, the stage track below */
+.status {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 20px;
+  padding: 20px 24px;
 }
 
-.bar {
-  height: 6px;
-  border-radius: 999px;
-  background: var(--surface-2);
-  overflow: hidden;
+.status-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px;
 }
 
-.bar-fill {
-  height: 100%;
-  background: var(--primary);
+.status-text {
+  flex: 999 1 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.champion-name {
-  font-family: var(--font-display);
+.status-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.status h2 {
+  margin: 0;
   font-size: 26px;
-  color: var(--status-finished);
 }
 
-.next h3 {
-  font-size: 18px;
+.status p {
+  margin: 0;
 }
 
-.description {
-  margin-top: 8px;
-}
-
-.about {
-  padding-top: 8px;
-  border-top: 1px solid var(--border);
+/* Teams or stage cards on the left, facts on the right; stacked on phones */
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 16px;
+  align-items: start;
 }
 
 @media (max-width: 760px) {
-  .overview {
+  .columns {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 
-.next {
+.stage-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.stage-cards li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.stage-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.stage-progress {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.stage-progress.finished {
+  color: var(--status-groups);
+}
+
+.facts {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  border-left: 3px solid var(--primary);
+  gap: 14px;
 }
 
-.next p,
-.description {
+.summary {
   margin: 0;
-}
-
-.champion {
-  border-left-color: var(--status-finished);
-}
-
-.champion i {
-  color: var(--status-finished);
-}
-
-.banner {
-  padding: 12px 16px;
-  border-radius: var(--radius);
-}
-
-.banner.danger {
-  color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent);
-}
-
-.reason {
-  margin: 6px 0 0;
-  color: var(--text);
+  line-height: 1.5;
 }
 
 dl {
   margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 8px 16px;
+  font-size: 13px;
 }
 
 dt {
@@ -105,4 +117,17 @@ dd {
   margin: 0;
   font-weight: 500;
   text-align: right;
+}
+
+.about {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.about p {
+  margin: 0;
+  line-height: 1.6;
 }
