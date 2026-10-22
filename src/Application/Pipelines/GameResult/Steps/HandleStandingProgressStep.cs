@@ -51,6 +51,7 @@ namespace Application.Pipelines.GameResult.Steps
 
             // Map result to context
             context.StandingFinished = result.StandingFinished;
+            context.RoundFinished = result.RoundFinished;
             context.AllGroupsFinished = result.AllGroupsFinished;
             context.TournamentFinished = result.TournamentFinished;
             context.NewTournamentStatus = result.NewTournamentStatus;

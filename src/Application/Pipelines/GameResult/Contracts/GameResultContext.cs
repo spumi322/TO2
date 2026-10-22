@@ -25,6 +25,7 @@ namespace Application.Pipelines.GameResult.Contracts
         // Standing data
         public StandingType? StandingType { get; set; }
         public bool StandingFinished { get; set; }
+        public bool RoundFinished { get; set; }
         public bool AllGroupsFinished { get; set; }
 
         // Tournament state

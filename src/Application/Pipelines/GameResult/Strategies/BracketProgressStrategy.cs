@@ -62,7 +62,10 @@ namespace Application.Pipelines.GameResult.Strategies
                 return new StandingProgressResult(
                     shouldContinuePipeline: false,
                     message: "Match completed. Winner advanced to next round."
-                );
+                )
+                {
+                    RoundFinished = await IsRoundFinished(matchId, standingId)
+                };
             }
         }
 
@@ -93,6 +96,18 @@ namespace Application.Pipelines.GameResult.Strategies
             }
 
             return isFinal;
+        }
+
+        /// <summary>
+        /// Checks if every match of the given match's round has a winner (BYE matches are resolved at creation).
+        /// </summary>
+        private async Task<bool> IsRoundFinished(long matchId, long standingId)
+        {
+            var match = await _matchRepository.GetByIdAsync(matchId)
+                ?? throw new InvalidOperationException($"Match {matchId} not found");
+
+            var roundMatches = await _matchRepository.FindAllAsync(m => m.StandingId == standingId && m.Round == match.Round);
+            return roundMatches.All(m => m.WinnerId.HasValue);
         }
 
         /// <summary>

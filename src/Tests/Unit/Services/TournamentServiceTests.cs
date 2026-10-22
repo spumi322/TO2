@@ -14,6 +14,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Tests.Base;
 using Tests.Helpers;
+using Match = Domain.AggregateRoots.Match;
 
 namespace Tests.Unit.Services
 {
@@ -217,6 +218,41 @@ namespace Tests.Unit.Services
             item.WinnerName.Should().BeNull();
             item.FinishedAt.Should().BeNull();
             item.CurrentTeams.Should().Be(2);
+        }
+
+        [Fact]
+        public async Task List_Should_ReturnFinishedGroupsAndRounds()
+        {
+            var tournament = TestDataBuilder.Tournaments.CreateDefault(format: Format.GroupsAndBracket);
+            tournament.Status = TournamentStatus.BracketInProgress;
+            DbContext.Tournaments.Add(tournament);
+            await DbContext.SaveChangesAsync();
+
+            var groupA = TestDataBuilder.Standings.CreateGroup(tournament.Id, "Group A");
+            groupA.IsFinished = true;
+            var groupB = TestDataBuilder.Standings.CreateGroup(tournament.Id, "Group B");
+            var bracket = TestDataBuilder.Standings.CreateBracket(tournament.Id);
+            DbContext.Standings.AddRange(groupA, groupB, bracket);
+            await DbContext.SaveChangesAsync();
+
+            // Round 1 done (a BYE and a played match), round 2 open
+            Match BracketMatch(int round, int seed, long? winnerId)
+            {
+                var match = TestDataBuilder.Matches.CreateWithoutTeams(bracket.Id);
+                match.Round = round;
+                match.Seed = seed;
+                match.WinnerId = winnerId;
+                return match;
+            }
+            DbContext.Matches.AddRange(BracketMatch(1, 1, 1), BracketMatch(1, 2, 2), BracketMatch(2, 1, null));
+            await SaveAndDetachAsync();
+
+            var item = (await _service.GetTournamentListAsync()).Single(t => t.Id == tournament.Id);
+
+            item.GroupsFinished.Should().Be(1);
+            item.GroupsTotal.Should().Be(2);
+            item.RoundsFinished.Should().Be(1);
+            item.RoundsTotal.Should().Be(2);
         }
 
         [Fact]

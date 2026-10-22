@@ -10,6 +10,8 @@ namespace Application.Pipelines.GameResult.Contracts
     {
         public bool ShouldContinuePipeline { get; set; }
         public bool StandingFinished { get; set; }
+        // Bracket: every match of the finished match's round has a winner
+        public bool RoundFinished { get; set; }
         public bool AllGroupsFinished { get; set; }
         public bool TournamentFinished { get; set; }
         public TournamentStatus? NewTournamentStatus { get; set; }

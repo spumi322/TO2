@@ -27,12 +27,12 @@ namespace Tests.Unit.Pipelines.GameResult
             DbContext.SaveChanges();
         }
 
-        // One fake step stands in for the real ones: it only sets the status change the pipeline reports
-        private GameResultPipeline CreatePipeline(TournamentStatus? newStatus)
+        // One fake step stands in for the real ones: it only sets what the pipeline reports (status change, finished group/round)
+        private GameResultPipeline CreatePipeline(Action<GameResultContext> outcome)
         {
             var step = new Mock<IGameResultPipelineStep>();
             step.Setup(s => s.ExecuteAsync(It.IsAny<GameResultContext>()))
-                .Callback<GameResultContext>(c => c.NewTournamentStatus = newStatus)
+                .Callback(outcome)
                 .ReturnsAsync(true);
 
             return new GameResultPipeline(
@@ -75,18 +75,38 @@ namespace Tests.Unit.Pipelines.GameResult
         {
             var request = await SeedGameAsync();
 
-            await CreatePipeline(TournamentStatus.Finished).ExecuteAsync(request);
+            await CreatePipeline(c => c.NewTournamentStatus = TournamentStatus.Finished).ExecuteAsync(request);
 
             _signalRMock.Verify(s => s.BroadcastGameUpdated(It.IsAny<GameUpdatedEvent>()), Times.Once);
             _signalRMock.Verify(s => s.BroadcastTournamentUpdated(request.TournamentId, It.IsAny<string>()), Times.Once);
         }
 
         [Fact]
-        public async Task Should_NotBroadcastTournamentUpdated_When_StatusUnchanged()
+        public async Task Should_BroadcastTournamentUpdated_When_GroupFinished()
         {
             var request = await SeedGameAsync();
 
-            await CreatePipeline(null).ExecuteAsync(request);
+            await CreatePipeline(c => c.StandingFinished = true).ExecuteAsync(request);
+
+            _signalRMock.Verify(s => s.BroadcastTournamentUpdated(request.TournamentId, It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Should_BroadcastTournamentUpdated_When_BracketRoundFinished()
+        {
+            var request = await SeedGameAsync();
+
+            await CreatePipeline(c => c.RoundFinished = true).ExecuteAsync(request);
+
+            _signalRMock.Verify(s => s.BroadcastTournamentUpdated(request.TournamentId, It.IsAny<string>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task Should_NotBroadcastTournamentUpdated_When_NothingFinished()
+        {
+            var request = await SeedGameAsync();
+
+            await CreatePipeline(_ => { }).ExecuteAsync(request);
 
             _signalRMock.Verify(s => s.BroadcastGameUpdated(It.IsAny<GameUpdatedEvent>()), Times.Once);
             _signalRMock.Verify(s => s.BroadcastTournamentUpdated(It.IsAny<long>(), It.IsAny<string>()), Times.Never);

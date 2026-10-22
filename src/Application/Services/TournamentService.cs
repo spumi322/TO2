@@ -108,7 +108,11 @@ namespace Application.Services
                 .Select(r => r.Tournament.ToGetTournamentListResponseDTO(
                     r.TeamCount,
                     r.WinnerName,
-                    r.Tournament.Status == TournamentStatus.Finished ? r.Tournament.LastModifiedDate : null))
+                    r.Tournament.Status == TournamentStatus.Finished ? r.Tournament.LastModifiedDate : null,
+                    r.GroupsFinished,
+                    r.GroupsTotal,
+                    r.RoundsFinished,
+                    r.RoundsTotal))
                 .ToList();
         }
 

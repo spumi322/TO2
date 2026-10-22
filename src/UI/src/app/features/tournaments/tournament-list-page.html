@@ -54,7 +54,7 @@
                   <span class="tile" [style.--tile-color]="statusColor(t)"><app-format-icon [format]="t.format" /></span>
                   <span class="text">{{ t.name }}</span>
                 </span>
-                <app-stage-track [format]="t.format" [status]="t.status" [teams]="t.currentTeams" [maxTeams]="t.maxTeams" />
+                <app-stage-track [format]="t.format" [status]="t.status" [counts]="t" />
                 <app-status-chip [status]="t.status" />
                 <span class="muted">{{ formatLabels[t.format] }}</span>
                 <span class="num right">{{ t.currentTeams }}</span>

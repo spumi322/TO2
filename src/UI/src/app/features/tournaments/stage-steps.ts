@@ -1,3 +1,4 @@
+import { TournamentListItem } from '../../core/models';
 import { Format, TournamentStatus } from '../../shared/enums';
 
 export type StageKey = 'registration' | 'groups' | 'playoffs' | 'finished';
@@ -49,4 +50,22 @@ export function stageSteps(format: Format, status: TournamentStatus): StageStep[
     label: LABELS[key],
     state: i < index ? 'done' : i === index ? position.state : 'todo',
   }));
+}
+
+export type StageCounts = Pick<
+  TournamentListItem,
+  'currentTeams' | 'maxTeams' | 'groupsFinished' | 'groupsTotal' | 'roundsFinished' | 'roundsTotal'
+>;
+
+const percent = (done: number, total: number) => (total > 0 ? Math.min(100, (done / total) * 100) : 0);
+
+// How full a segment is (0-100). Registration always shows registered / max teams, like the slots bar;
+// the current Groups/Playoffs segment fills by finished groups / bracket rounds; other done stages are full
+export function stageFill(step: StageStep, counts: StageCounts): number {
+  if (step.state === 'todo' || step.state === 'ready') return 0;
+  if (step.key === 'registration') return percent(counts.currentTeams, counts.maxTeams);
+  if (step.state === 'done') return 100;
+  if (step.key === 'groups') return percent(counts.groupsFinished, counts.groupsTotal);
+  if (step.key === 'playoffs') return percent(counts.roundsFinished, counts.roundsTotal);
+  return 100;
 }

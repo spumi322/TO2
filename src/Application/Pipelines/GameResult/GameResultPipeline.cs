@@ -154,8 +154,8 @@ namespace Application.Pipelines.GameResult
                 await _signalRService.BroadcastGameUpdated(eventPayload);
                 _logger.LogInformation("Broadcasted comprehensive GameUpdated event for GameId: {GameId}", context.GameResult.gameId);
 
-                // A status change (groups done, tournament finished) also concerns pages outside the tournament (tournament list)
-                if (context.NewTournamentStatus is not null)
+                // A status change, a finished group or bracket round also concerns the tournament list (its stage track fills)
+                if (context.NewTournamentStatus is not null || context.StandingFinished || context.RoundFinished)
                     await _signalRService.BroadcastTournamentUpdated(context.Tournament.Id, _tenantService.GetCurrentUserName());
             }
             catch (Exception ex)

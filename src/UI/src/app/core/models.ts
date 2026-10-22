@@ -13,6 +13,11 @@ export interface TournamentListItem {
   version: number;
   // The only team placed 1st; null when not finished or several group winners (GroupsOnly)
   winnerName: string | null;
+  // Finished group standings and bracket rounds (BYE matches count as played)
+  groupsFinished: number;
+  groupsTotal: number;
+  roundsFinished: number;
+  roundsTotal: number;
   finishedAt: string | null;
   cancelledAt: string | null;
   cancellationReason: string | null;

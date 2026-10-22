@@ -1,5 +1,5 @@
 import { Format, TournamentStatus } from '../../shared/enums';
-import { stageSteps } from './stage-steps';
+import { StageCounts, stageFill, stageSteps } from './stage-steps';
 
 const states = (format: Format, status: TournamentStatus) => stageSteps(format, status).map((s) => `${s.key}:${s.state}`);
 
@@ -42,5 +42,28 @@ describe('stage steps', () => {
   it('marks every stage done when finished, none when cancelled', () => {
     expect(states(Format.GroupsOnly, TournamentStatus.Finished)).toEqual(['registration:done', 'groups:done', 'finished:done']);
     expect(stageSteps(Format.BracketOnly, TournamentStatus.Cancelled)).toEqual([]);
+  });
+
+  describe('fill', () => {
+    const counts: StageCounts = { currentTeams: 6, maxTeams: 8, groupsFinished: 1, groupsTotal: 4, roundsFinished: 2, roundsTotal: 4 };
+    const fills = (format: Format, status: TournamentStatus) => stageSteps(format, status).map((s) => stageFill(s, counts));
+
+    it('fills registration by registered / max teams', () => {
+      expect(fills(Format.BracketOnly, TournamentStatus.Setup)).toEqual([75, 0, 0]);
+    });
+
+    it('fills the current groups segment by finished groups', () => {
+      expect(fills(Format.GroupsAndBracket, TournamentStatus.GroupsInProgress)).toEqual([75, 25, 0, 0]);
+    });
+
+    it('fills the current playoffs segment by finished rounds, earlier stages full', () => {
+      expect(fills(Format.GroupsAndBracket, TournamentStatus.BracketInProgress)).toEqual([75, 100, 50, 0]);
+    });
+
+    it('leaves playoffs empty while ready, and a stage without standings empty', () => {
+      expect(fills(Format.GroupsAndBracket, TournamentStatus.GroupsCompleted)).toEqual([75, 100, 0, 0]);
+      const none = { ...counts, roundsFinished: 0, roundsTotal: 0 };
+      expect(stageSteps(Format.BracketOnly, TournamentStatus.SeedingBracket).map((s) => stageFill(s, none))).toEqual([75, 0, 0]);
+    });
   });
 });
