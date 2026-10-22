@@ -143,6 +143,21 @@ namespace Tests.Unit.Services
         }
 
         [Fact]
+        public async Task Get_Should_ReturnCreatedByAndDate()
+        {
+            var tournament = TestDataBuilder.Tournaments.CreateDefault();
+            tournament.CreatedBy = "anna";
+            tournament.CreatedDate = new DateTime(2026, 10, 22, 9, 30, 0, DateTimeKind.Utc);
+            DbContext.Tournaments.Add(tournament);
+            await SaveAndDetachAsync();
+
+            var result = await _service.GetTournamentAsync(tournament.Id);
+
+            result.CreatedBy.Should().Be("anna");
+            result.CreatedDate.Should().Be(new DateTime(2026, 10, 22, 9, 30, 0, DateTimeKind.Utc));
+        }
+
+        [Fact]
         public async Task Get_Should_ReturnNoGroups_When_BracketOnly()
         {
             var created = await _service.CreateTournamentAsync(
