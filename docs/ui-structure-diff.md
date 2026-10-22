@@ -109,7 +109,7 @@ Compares the old Angular 17 UI (`src/UI`, about 5900 lines of ts/html) with the 
 **Score games (winner only)**
 - Old groups: `+` button per team scores the next unscored game, with an optimistic update. Old bracket: click a team inside the library's DOM. No way to fix a mis-tap.
 - Blind: dialog per match, one row per game.
-- New: `MatchCard` used in groups and bracket: tap a team = it wins the next game (keeps the old one-tap speed); played games shown as small chips, tapping one lets you change its winner until the match has a winner (backend allows re-scoring with the current version). No dialog.
+- New: `MatchCard` used in groups and bracket: tap a team = it wins the next game (keeps the old one-tap speed); played games shown as small chips, tapping one lets you change its winner until the match has a winner (backend allows re-scoring with the current version). No dialog. Later replaced by a draft score saved on Confirm: `docs/match-confirm-plan.md`.
 
 **Live updates, cancel/delete, results:** see sections 2 and 4.
 

@@ -13,7 +13,7 @@ Working rules:
 
 From the diff (section 0) plus these defaults for its open questions:
 - No `/organization` page; invite code stays a dialog in the user menu.
-- Scoring: tap a team = it wins the next game; played games as chips, tap one to change its winner until the match has a winner. No dialog.
+- Scoring: tap a team = it wins the next game; played games as chips, tap one to change its winner until the match has a winner. No dialog. Later replaced by a draft score saved on Confirm: `docs/match-confirm-plan.md`.
 - `CanStartGroups`/`CanStartBracket` also require >= 2 registered teams (no team-count rule in the client).
 - No tournament edit page (`PUT tournaments/{id}` stays unused).
 - Team remove keeps its current route.
