@@ -5,7 +5,7 @@
     icon="pi-th-large"
   />
 } @else {
-  <div class="board">
+  <div class="board" #board>
     <p class="muted small summary">{{ summary() }}</p>
 
     <div class="cards">
@@ -32,7 +32,7 @@
                 [class.draft]="line.state === 'draft'"
                 [class.selected]="line.id === selectedMatchId()"
                 [attr.aria-label]="line.teamA + ' ' + line.score + ' ' + line.teamB + ', round ' + line.round"
-                (click)="selectedMatchId.set(line.id)"
+                (click)="open(line.id, $any($event.currentTarget))"
               >
                 <span class="round">R{{ line.round }}</span>
                 <span class="team" [class.won]="line.winner === 'A'" [class.lost]="line.winner === 'B'" [title]="line.teamA">
@@ -48,33 +48,39 @@
         </section>
       }
     </div>
-  </div>
 
-  @if (selected(); as sel) {
-    <aside class="card panel" [attr.aria-label]="sel.title">
-      <div class="row">
-        <h3>{{ sel.title }}</h3>
-        <span class="muted small">Best of {{ sel.match.bestOf }}</span>
-        <span class="spacer"></span>
-        <p-button
-          icon="pi pi-times"
-          [text]="true"
-          [rounded]="true"
-          severity="secondary"
-          ariaLabel="Close"
-          (onClick)="selectedMatchId.set(null)"
+    @if (selected(); as sel) {
+      <aside
+        class="card panel"
+        [class.above]="anchor()?.above"
+        [style.top.px]="anchor()?.top"
+        [style.left.px]="anchor()?.left"
+        [attr.aria-label]="sel.title"
+      >
+        <div class="row">
+          <h3>{{ sel.title }}</h3>
+          <span class="muted small">Best of {{ sel.match.bestOf }}</span>
+          <span class="spacer"></span>
+          <p-button
+            icon="pi pi-times"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            ariaLabel="Close"
+            (onClick)="close()"
+          />
+        </div>
+        <app-match-card
+          [match]="sel.match"
+          [teamNames]="store.teamNames()"
+          [draft]="store.drafts().get(sel.match.id)"
+          [canScore]="canScore()"
+          [busy]="scoring.savingMatchId() === sel.match.id"
+          [stacked]="true"
+          (draftChange)="store.setDraft($event.match, $event.teamAWins, $event.teamBWins)"
+          (confirm)="scoring.confirm($event)"
         />
-      </div>
-      <app-match-card
-        [match]="sel.match"
-        [teamNames]="store.teamNames()"
-        [draft]="store.drafts().get(sel.match.id)"
-        [canScore]="canScore()"
-        [busy]="scoring.savingMatchId() === sel.match.id"
-        [stacked]="true"
-        (draftChange)="store.setDraft($event.match, $event.teamAWins, $event.teamBWins)"
-        (confirm)="scoring.confirm($event)"
-      />
-    </aside>
-  }
+      </aside>
+    }
+  </div>
 }
