@@ -32,7 +32,7 @@
                 [class.draft]="line.state === 'draft'"
                 [class.selected]="line.id === selectedMatchId()"
                 [attr.aria-label]="line.teamA + ' ' + line.score + ' ' + line.teamB + ', round ' + line.round"
-                (click)="open(line.id, $any($event.currentTarget))"
+                (click)="open(line.id, $event)"
               >
                 <span class="round">R{{ line.round }}</span>
                 <span class="team" [class.won]="line.winner === 'A'" [class.lost]="line.winner === 'B'" [title]="line.teamA">
@@ -78,7 +78,7 @@
           [busy]="scoring.savingMatchId() === sel.match.id"
           [stacked]="true"
           (draftChange)="store.setDraft($event.match, $event.teamAWins, $event.teamBWins)"
-          (confirm)="scoring.confirm($event)"
+          (confirm)="confirm($event)"
         />
       </aside>
     }
