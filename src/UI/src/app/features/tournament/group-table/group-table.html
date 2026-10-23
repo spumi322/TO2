@@ -1,14 +1,14 @@
 <table class="num">
-  <thead>
-    <tr>
-      <th class="rank" scope="col">#</th>
-      <th class="team" scope="col">Team</th>
-      <th scope="col" title="Matches won - lost">Matches</th>
-      @if (!compact()) {
+  @if (!compact()) {
+    <thead>
+      <tr>
+        <th class="rank" scope="col">#</th>
+        <th class="team" scope="col">Team</th>
+        <th scope="col" title="Matches won - lost">Matches</th>
         <th scope="col" title="Games won - lost">Games</th>
-      }
-    </tr>
-  </thead>
+      </tr>
+    </thead>
+  }
   <tbody>
     @for (team of group().teams; track team.id; let i = $index) {
       <tr

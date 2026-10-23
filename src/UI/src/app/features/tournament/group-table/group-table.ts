@@ -13,7 +13,7 @@ export class GroupTable {
   readonly group = input.required<Group>();
   // Draws the cut line under the last advancing position (GroupsAndBracket)
   readonly advancing = input<number | null>(null);
-  // Small version for the Overview: no Games column, no status words (the row tint shows them)
+  // Small version for the Overview: no header row, no Games column, no status words (the row tint shows them)
   readonly compact = input(false);
 
   protected readonly statusLabels = TEAM_STATUS_LABELS;

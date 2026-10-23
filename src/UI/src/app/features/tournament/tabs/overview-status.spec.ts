@@ -1,7 +1,7 @@
 import { Bracket, Group, StandingMatch, TeamPlacement, Tournament, TournamentState } from '../../../core/models';
 import { Format, TournamentStatus } from '../../../shared/enums';
 import { stageCount, stageSteps } from '../../tournaments/stage-steps';
-import { groupCards, roundCards, stageCounts, statusCard } from './overview-status';
+import { currentRound, groupCards, roundCards, stageCounts, statusCard, topSlots } from './overview-status';
 
 const tournament = (overrides: Partial<Tournament> = {}): Tournament =>
   ({
@@ -19,7 +19,7 @@ const state = (overrides: Partial<TournamentState> = {}) =>
   ({ canStartGroups: false, canStartBracket: false, ...overrides }) as TournamentState;
 
 const match = (round: number, winnerId: number | null, teams: [number | null, number | null] = [1, 2]): StandingMatch =>
-  ({ round, winnerId, teamAId: teams[0], teamBId: teams[1] }) as StandingMatch;
+  ({ round, winnerId, teamAId: teams[0], teamBId: teams[1], teamAWins: 0, teamBWins: 0 }) as StandingMatch;
 
 const group = (name: string, isFinished: boolean, matches: StandingMatch[]): Group =>
   ({ name, isFinished, isSeeded: true, matches }) as Group;
@@ -114,5 +114,65 @@ describe('overview status', () => {
     const labels = stageSteps(t.format, t.status).map((step) => stageCount(step, counts));
 
     expect(labels).toEqual(['16 / 16', '1 / 2', null, null]);
+  });
+
+  it('shows the first unfinished round match by match, without BYEs', () => {
+    const names = new Map([[1, 'Alpha'], [2, 'Bravo'], [3, 'Charlie'], [4, 'Delta']]);
+    // Round 1 done; semifinal 1 (teams 1, 2) won by team 1, semifinal 2 still waits for an opponent
+    const b = bracket([3, 5], [1, null], null);
+    b.matches[4] = { ...b.matches[4], teamAWins: 2, teamBWins: 1 };
+    b.matches[5] = { ...b.matches[5], teamAId: 3, teamBId: null };
+    const round = currentRound(b, names);
+
+    expect(round?.name).toBe('Semifinals');
+    expect(round?.matches.map((m) => [m.teamA, m.teamB, m.winner, `${m.teamAWins}-${m.teamBWins}`])).toEqual([
+      ['Alpha', 'Bravo', 'A', '2-1'],
+      ['Charlie', null, null, '0-0'],
+    ]);
+    expect(currentRound(bracket([3, 5], [1, 3], 1), names)).toBeNull();
+  });
+
+  describe('top placements', () => {
+    const names = new Map([1, 2, 3, 4, 5, 6].map((id) => [id, `Team ${id}`]));
+    const show = (slots: ReturnType<typeof topSlots>) => slots.map((slot) => [slot.rankLabel, slot.teamName, slot.groupName]);
+
+    it('fills 3rd-4th with the semifinal losers before the final', () => {
+      const t = tournament({ status: TournamentStatus.BracketInProgress });
+      // Semifinal 1: team 1 beat team 2
+      const slots = topSlots(t, [], bracket([3, 5], [1, null], null), [], names);
+
+      expect(show(slots)).toEqual([
+        ['1st', null, null],
+        ['2nd', null, null],
+        ['3rd-4th', 'Team 2', null],
+        ['3rd-4th', null, null],
+      ]);
+    });
+
+    it('shows the positions of finished groups in GroupsOnly', () => {
+      const t = tournament({ format: Format.GroupsOnly, status: TournamentStatus.GroupsInProgress, currentTeams: 8 });
+      const teams = [{ name: 'Alpha' }, { name: 'Bravo' }] as Group['teams'];
+      const groups = [{ ...group('Group A', true, []), teams }, { ...group('Group B', false, []), teams }];
+
+      expect(show(topSlots(t, groups, null, [], names))).toEqual([
+        ['1st', 'Alpha', 'Group A'],
+        ['1st', null, 'Group B'],
+        ['2nd', 'Bravo', 'Group A'],
+        ['2nd', null, 'Group B'],
+      ]);
+    });
+
+    it('uses the final placements once finished', () => {
+      const t = tournament({ status: TournamentStatus.Finished, format: Format.BracketOnly });
+      const placement = (teamName: string, rank: number) => ({ teamName, placement: rank, groupName: null }) as TeamPlacement;
+      const results = [placement('A', 1), placement('B', 2), placement('C', 3), placement('D', 3), placement('E', 5)];
+
+      expect(show(topSlots(t, [], null, results, names))).toEqual([
+        ['1st', 'A', null],
+        ['2nd', 'B', null],
+        ['3rd-4th', 'C', null],
+        ['3rd-4th', 'D', null],
+      ]);
+    });
   });
 });

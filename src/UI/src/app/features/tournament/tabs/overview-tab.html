@@ -24,6 +24,67 @@
     }
 
     <div class="columns">
+      <div class="side stack">
+        <aside class="card facts">
+          <h3>Format</h3>
+          <p class="summary">{{ formatSummary() }}</p>
+          <dl>
+            @if (isSetup()) {
+              <dt>Max teams</dt>
+              <dd class="num">{{ t.maxTeams }}</dd>
+            } @else {
+              <dt>Teams</dt>
+              <dd class="num">{{ t.currentTeams }}</dd>
+            }
+            @if (hasGroups()) {
+              <dt>Groups</dt>
+              <dd class="num">{{ t.numberOfGroups }}</dd>
+            }
+            @if (isGroupsAndBracket()) {
+              <dt>Advance per group</dt>
+              <dd class="num">{{ t.advancingPerGroup }}</dd>
+            }
+            <dt>Created by</dt>
+            <dd>{{ t.createdBy }}</dd>
+            <dt>Created</dt>
+            <dd>{{ t.createdDate | date: 'd MMM y' }}</dd>
+          </dl>
+          @if (t.description) {
+            <div class="about">
+              <h3>About</h3>
+              <p class="muted pre-line">{{ t.description }}</p>
+            </div>
+          }
+        </aside>
+
+        @if (topSlots().length) {
+          <section class="card top" aria-label="Top 4">
+            <div class="row">
+              <h3>Top 4</h3>
+              <span class="spacer"></span>
+              @if (isFinished()) {
+                <a routerLink="../results" class="small">Full results</a>
+              }
+            </div>
+            <ol class="top-list">
+              @for (slot of topSlots(); track $index) {
+                <li [class.champion]="slot.winner">
+                  <span class="rank num">{{ slot.rankLabel }}</span>
+                  @if (slot.teamName) {
+                    <span class="team">{{ slot.teamName }}</span>
+                  } @else {
+                    <span class="team muted tbd">TBD</span>
+                  }
+                  @if (slot.groupName) {
+                    <span class="muted small">{{ slot.groupName }}</span>
+                  }
+                </li>
+              }
+            </ol>
+          </section>
+        }
+      </div>
+
       <div class="main stack">
         @if (store.state()?.canModifyTeams) {
           <app-team-manager />
@@ -51,7 +112,7 @@
               <h3>Bracket</h3>
               <ul class="stage-cards">
                 @for (stage of roundCards(); track stage.name) {
-                  <li>
+                  <li [class.current]="stage.name === currentRound()?.name">
                     <span class="stage-name">{{ stage.name }}</span>
                     <span class="stage-progress" [class.finished]="stage.finished">
                       {{ stage.finished ? 'Finished' : stage.progress }}
@@ -59,42 +120,22 @@
                   </li>
                 }
               </ul>
+              @if (currentRound(); as round) {
+                <h3>Current matches</h3>
+                <ul class="match-lines" [attr.aria-label]="round.name + ' matches'">
+                  @for (line of round.matches; track line.id) {
+                    <li [class.decided]="line.winner">
+                      <span class="side" [class.won]="line.winner === 'A'" [title]="line.teamA ?? ''">{{ line.teamA ?? 'TBD' }}</span>
+                      <span class="score num">{{ line.winner ? line.teamAWins + '-' + line.teamBWins : 'vs' }}</span>
+                      <span class="side b" [class.won]="line.winner === 'B'" [title]="line.teamB ?? ''">{{ line.teamB ?? 'TBD' }}</span>
+                    </li>
+                  }
+                </ul>
+              }
             </section>
           }
         }
       </div>
-
-      <aside class="card facts">
-        <h3>Format</h3>
-        <p class="summary">{{ formatSummary() }}</p>
-        <dl>
-          @if (isSetup()) {
-            <dt>Max teams</dt>
-            <dd class="num">{{ t.maxTeams }}</dd>
-          } @else {
-            <dt>Teams</dt>
-            <dd class="num">{{ t.currentTeams }}</dd>
-          }
-          @if (hasGroups()) {
-            <dt>Groups</dt>
-            <dd class="num">{{ t.numberOfGroups }}</dd>
-          }
-          @if (isGroupsAndBracket()) {
-            <dt>Advance per group</dt>
-            <dd class="num">{{ t.advancingPerGroup }}</dd>
-          }
-          <dt>Created by</dt>
-          <dd>{{ t.createdBy }}</dd>
-          <dt>Created</dt>
-          <dd>{{ t.createdDate | date: 'd MMM y' }}</dd>
-        </dl>
-        @if (t.description) {
-          <div class="about">
-            <h3>About</h3>
-            <p class="muted pre-line">{{ t.description }}</p>
-          </div>
-        }
-      </aside>
     </div>
   </div>
 }

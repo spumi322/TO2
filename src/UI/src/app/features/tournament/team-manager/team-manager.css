@@ -1,3 +1,13 @@
+/* Fills the height the parent gives it (the Overview stretches its last card) */
+:host {
+  display: flex;
+  flex-direction: column;
+}
+
+:host > section {
+  flex: 1;
+}
+
 /* Input with its button beside it; the button drops below on narrow screens */
 .add {
   display: flex;

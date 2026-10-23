@@ -2,6 +2,7 @@ import { Bracket, Group, StandingMatch, TeamPlacement, Tournament, TournamentSta
 import { Format, TournamentStatus } from '../../../shared/enums';
 import { StageCounts } from '../../tournaments/stage-steps';
 import { roundName } from '../bracket-view/bracket-adapter';
+import { ordinal, toPlacementRows, topPlacements } from '../placements';
 
 export type StatusAction = 'startGroups' | 'startBracket';
 
@@ -24,6 +25,30 @@ export interface StageCard {
 // A group's card also shows its table
 export interface GroupCard extends StageCard {
   group: Group;
+}
+
+// One match of the round being played; team null = not known yet
+export interface MatchLine {
+  id: number;
+  teamA: string | null;
+  teamB: string | null;
+  teamAWins: number;
+  teamBWins: number;
+  winner: 'A' | 'B' | null;
+}
+
+// The first bracket round that still has matches to play, shown match by match on the Overview
+export interface CurrentRound {
+  name: string;
+  matches: MatchLine[];
+}
+
+// One row of the Overview's top placements; teamName null = not decided yet
+export interface TopSlot {
+  rankLabel: string;
+  teamName: string | null;
+  groupName: string | null;
+  winner: boolean;
 }
 
 // A round 1 match with an empty slot is a BYE: it has its winner from the start and is never played
@@ -68,14 +93,38 @@ export function groupCards(groups: Group[]): GroupCard[] {
     .map((group) => ({ name: group.name, finished: group.isFinished, progress: matchProgress(group.matches), group }));
 }
 
+const bracketRoundName = (index: number, roundCount: number) => roundName(1 / 2 ** (roundCount - 1 - index));
+
 // Bracket rounds once the bracket is seeded
 export function roundCards(bracket: Bracket | null): StageCard[] {
   const rounds = bracketRounds(bracket);
   return rounds.map((matches, index) => ({
-    name: roundName(1 / 2 ** (rounds.length - 1 - index)),
+    name: bracketRoundName(index, rounds.length),
     finished: allWon(matches),
     progress: matchProgress(matches),
   }));
+}
+
+// null when the bracket is not seeded or every round is finished; BYEs are left out
+export function currentRound(bracket: Bracket | null, teamNames: Map<number, string>): CurrentRound | null {
+  const rounds = bracketRounds(bracket);
+  const index = rounds.findIndex((matches) => !allWon(matches));
+  if (index < 0) return null;
+
+  const name = (id: number | null) => (id ? (teamNames.get(id) ?? null) : null);
+  return {
+    name: bracketRoundName(index, rounds.length),
+    matches: rounds[index]
+      .filter((match) => !isBye(match))
+      .map((match) => ({
+        id: match.id,
+        teamA: name(match.teamAId),
+        teamB: name(match.teamBId),
+        teamAWins: match.teamAWins,
+        teamBWins: match.teamBWins,
+        winner: !match.winnerId ? null : match.winnerId === match.teamAId ? 'A' : 'B',
+      })),
+  };
 }
 
 function startText(tournament: Tournament): string {
@@ -138,4 +187,71 @@ export function statusCard(
         tournament.cancellationReason ?? 'No reason given.',
       );
   }
+}
+
+// The other team of a decided match with two teams
+function loserName(match: StandingMatch, teamNames: Map<number, string>): string | null {
+  if (!match.winnerId || !match.teamAId || !match.teamBId) return null;
+  return teamNames.get(match.winnerId === match.teamAId ? match.teamBId : match.teamAId) ?? null;
+}
+
+// GroupsOnly: the first positions of each group (whole tiers until 4 teams), filled when a group is finished
+function groupSlots(tournament: Tournament, groups: Group[]): TopSlot[] {
+  if (!groups.length) return [];
+  const teamCount = tournament.status === TournamentStatus.Setup ? tournament.maxTeams : tournament.currentTeams;
+  const tiers = Math.min(Math.ceil(4 / groups.length), Math.max(1, Math.floor(teamCount / groups.length)));
+  const slots: TopSlot[] = [];
+  for (let position = 1; position <= tiers; position++) {
+    for (const group of groups) {
+      if (group.isSeeded && group.teams.length < position) continue;
+      const team = group.isFinished ? group.teams[position - 1] : undefined;
+      slots.push({
+        rankLabel: ordinal(position),
+        teamName: team?.name ?? null,
+        groupName: groups.length > 1 ? group.name : null,
+        winner: position === 1 && !!team,
+      });
+    }
+  }
+  return slots;
+}
+
+// Bracket formats: 1st, 2nd, 3rd-4th; the semifinal losers are known before the final is played
+function bracketSlots(tournament: Tournament, bracket: Bracket | null, teamNames: Map<number, string>): TopSlot[] {
+  const rounds = bracketRounds(bracket);
+  const size = rounds.length
+    ? new Set(rounds[0].flatMap((match) => [match.teamAId, match.teamBId]).filter((id) => !!id)).size
+    : tournament.format === Format.BracketOnly
+      ? tournament.status === TournamentStatus.Setup ? tournament.maxTeams : tournament.currentTeams
+      : (tournament.advancingPerGroup ?? 0) * tournament.numberOfGroups;
+
+  const slot = (rankLabel: string, teamName: string | null = null): TopSlot => ({ rankLabel, teamName, groupName: null, winner: false });
+  const slots = [slot('1st'), slot('2nd')].slice(0, Math.max(size, 2));
+  const thirds = Math.min(2, size - 2);
+  if (thirds > 0) {
+    const semifinals = rounds.length >= 2 ? rounds[rounds.length - 2] : [];
+    const losers = semifinals.map((match) => loserName(match, teamNames)).filter((name) => name !== null);
+    for (let i = 0; i < thirds; i++) slots.push(slot(thirds === 2 ? '3rd-4th' : '3rd', losers[i] ?? null));
+  }
+  return slots;
+}
+
+// Always shown: the server's final placements once finished, before that what the groups and bracket already decided
+export function topSlots(
+  tournament: Tournament,
+  groups: Group[],
+  bracket: Bracket | null,
+  results: TeamPlacement[],
+  teamNames: Map<number, string>,
+): TopSlot[] {
+  const groupsOnly = tournament.format === Format.GroupsOnly;
+  if (tournament.status === TournamentStatus.Finished && results.length) {
+    return topPlacements(toPlacementRows(results, 0, groupsOnly)).map((row) => ({
+      rankLabel: row.rankLabel,
+      teamName: row.teamName,
+      groupName: row.groupName,
+      winner: row.placement === 1,
+    }));
+  }
+  return groupsOnly ? groupSlots(tournament, groups) : bracketSlots(tournament, bracket, teamNames);
 }

@@ -8,8 +8,8 @@
 .status {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 20px 24px;
+  gap: 14px;
+  padding: 16px 24px;
 }
 
 .status-head {
@@ -42,10 +42,10 @@
   margin: 0;
 }
 
-/* Teams or stage cards on the left, facts on the right; stacked on phones */
+/* Format and top placements on the left, teams or stage cards on the right; stacked on phones */
 .columns {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-columns: 300px minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
@@ -53,6 +53,33 @@
 @media (max-width: 760px) {
   .columns {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/*
+ * Wide screens: the Overview takes exactly the visible height (fit-height minus the 40px of page padding below it),
+ * both columns end on one line (their last card grows), longer content scrolls inside its column
+ */
+@media (min-width: 761px) {
+  .overview {
+    height: calc(var(--fit-height) - 40px);
+  }
+
+  .columns {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+  }
+
+  .side,
+  .main {
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .side > :last-child,
+  .main > :last-child {
+    flex: 1;
   }
 }
 
@@ -76,7 +103,7 @@
 
 /* Group cards: name and progress, the group's table below */
 .group-cards {
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
 }
 
@@ -92,6 +119,54 @@
   gap: 10px;
 }
 
+/* The round being played: outlined card, its matches below */
+.stage-cards li.current {
+  box-shadow: inset 0 0 0 1px var(--status-bracket);
+}
+
+.match-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.match-lines li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 13px;
+}
+
+.match-lines .side {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match-lines .side.b {
+  text-align: right;
+}
+
+.match-lines li.decided .side {
+  color: var(--text-muted);
+}
+
+.match-lines li.decided .side.won {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.match-lines .score {
+  color: var(--text-muted);
+}
+
 .stage-name {
   flex: 1;
   font-weight: 600;
@@ -104,6 +179,51 @@
 
 .stage-progress.finished {
   color: var(--status-groups);
+}
+
+/* Top 4: place and team per row (TBD right-aligned), the winner in gold */
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.top-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.top-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 0;
+  border-top: 1px solid var(--border);
+}
+
+.top-list .rank {
+  width: 56px;
+  flex: none;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.top-list .team {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.top-list .tbd {
+  font-weight: 400;
+  text-align: right;
+}
+
+.top-list li.champion .rank,
+.top-list li.champion .team {
+  color: var(--status-finished);
 }
 
 .facts {

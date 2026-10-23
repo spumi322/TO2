@@ -54,3 +54,13 @@ export function podiumTiers(placements: TeamPlacement[], tiers = 3): TeamPlaceme
     .slice(0, tiers)
     .map(([, teams]) => teams);
 }
+
+// The Overview's short list: whole placement tiers until at least `teams` teams (1st, 2nd, 3rd-4th; 4+ groups in GroupsOnly: the group winners)
+export function topPlacements(rows: PlacementRow[], teams = 4): PlacementRow[] {
+  const top: PlacementRow[] = [];
+  for (const row of rows) {
+    if (top.length >= teams && row.placement !== top[top.length - 1].placement) break;
+    top.push(row);
+  }
+  return top;
+}
