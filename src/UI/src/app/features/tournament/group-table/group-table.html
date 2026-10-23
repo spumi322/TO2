@@ -4,7 +4,9 @@
       <th class="rank" scope="col">#</th>
       <th class="team" scope="col">Team</th>
       <th scope="col" title="Matches won - lost">Matches</th>
-      <th scope="col" title="Games won - lost">Games</th>
+      @if (!compact()) {
+        <th scope="col" title="Games won - lost">Games</th>
+      }
     </tr>
   </thead>
   <tbody>
@@ -17,12 +19,14 @@
         <td class="rank">{{ i + 1 }}</td>
         <td class="team">
           <span class="name">{{ team.name }}</span>
-          @if (team.status === advanced || team.status === eliminated || team.status === champion) {
+          @if (!compact() && (team.status === advanced || team.status === eliminated || team.status === champion)) {
             <span class="status small">{{ statusLabels[team.status] }}</span>
           }
         </td>
         <td><strong>{{ team.wins }}-{{ team.losses }}</strong></td>
-        <td>{{ team.gameWins }}-{{ team.gameLosses }}</td>
+        @if (!compact()) {
+          <td>{{ team.gameWins }}-{{ team.gameLosses }}</td>
+        }
       </tr>
     }
   </tbody>

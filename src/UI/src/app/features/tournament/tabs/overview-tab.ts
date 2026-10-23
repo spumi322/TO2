@@ -4,6 +4,7 @@ import { Button } from 'primeng/button';
 import { Format, formatHasGroups, STATUS_INFO, TournamentStatus } from '../../../shared/enums';
 import { distributeTeams } from '../../tournaments/tournament-config';
 import { StageTrack } from '../../tournaments/stage-track';
+import { GroupTable } from '../group-table/group-table';
 import { TeamManager } from '../team-manager/team-manager';
 import { TournamentActions } from '../tournament-actions';
 import { TournamentStore } from '../tournament.store';
@@ -17,7 +18,7 @@ const ACTION_LABELS: Record<StatusAction, string> = {
 // Status card (where are we, the one next action), then teams or stage cards, facts beside them
 @Component({
   selector: 'app-overview-tab',
-  imports: [DatePipe, Button, StageTrack, TeamManager],
+  imports: [DatePipe, Button, GroupTable, StageTrack, TeamManager],
   templateUrl: './overview-tab.html',
   styleUrl: './overview-tab.css',
 })
@@ -55,6 +56,8 @@ export class OverviewTab {
     return !!t && formatHasGroups(t.format);
   });
   readonly isGroupsAndBracket = computed(() => this.store.tournament()?.format === Format.GroupsAndBracket);
+  // Cut line in the group tables
+  readonly advancing = computed(() => (this.isGroupsAndBracket() ? this.store.tournament()!.advancingPerGroup : null));
 
   // The format in one plain sentence, e.g. "16 teams in 4 groups of 4, round robin, best of 3. The top 2 ..."
   readonly formatSummary = computed(() => {

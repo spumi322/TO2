@@ -74,6 +74,24 @@
   background: var(--surface-2);
 }
 
+/* Group cards: name and progress, the group's table below */
+.group-cards {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.group-cards li {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 12px 14px 8px;
+}
+
+.stage-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .stage-name {
   flex: 1;
   font-weight: 600;

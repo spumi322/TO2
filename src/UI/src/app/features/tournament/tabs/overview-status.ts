@@ -21,6 +21,11 @@ export interface StageCard {
   progress: string;
 }
 
+// A group's card also shows its table
+export interface GroupCard extends StageCard {
+  group: Group;
+}
+
 // A round 1 match with an empty slot is a BYE: it has its winner from the start and is never played
 const isBye = (match: StandingMatch) => match.round === 1 && (!match.teamAId || !match.teamBId);
 
@@ -57,10 +62,10 @@ export function stageCounts(tournament: Tournament, groups: Group[], bracket: Br
 }
 
 // Groups that are drawn
-export function groupCards(groups: Group[]): StageCard[] {
+export function groupCards(groups: Group[]): GroupCard[] {
   return groups
     .filter((group) => group.isSeeded)
-    .map((group) => ({ name: group.name, finished: group.isFinished, progress: matchProgress(group.matches) }));
+    .map((group) => ({ name: group.name, finished: group.isFinished, progress: matchProgress(group.matches), group }));
 }
 
 // Bracket rounds once the bracket is seeded

@@ -23,6 +23,23 @@ td {
   border-bottom: 1px solid var(--border);
 }
 
+/* Compact: smaller text and rows */
+:host(.compact) table {
+  font-size: 13px;
+}
+
+:host(.compact) th {
+  padding: 4px 6px;
+}
+
+:host(.compact) td {
+  padding: 5px 6px;
+}
+
+:host(.compact) .rank {
+  width: 28px;
+}
+
 th.team,
 td.team {
   text-align: left;

@@ -7,11 +7,14 @@ import { TEAM_STATUS_LABELS, TeamStatus } from '../../../shared/enums';
   selector: 'app-group-table',
   templateUrl: './group-table.html',
   styleUrl: './group-table.css',
+  host: { '[class.compact]': 'compact()' },
 })
 export class GroupTable {
   readonly group = input.required<Group>();
   // Draws the cut line under the last advancing position (GroupsAndBracket)
   readonly advancing = input<number | null>(null);
+  // Small version for the Overview: no Games column, no status words (the row tint shows them)
+  readonly compact = input(false);
 
   protected readonly statusLabels = TEAM_STATUS_LABELS;
   protected readonly advanced = TeamStatus.Advanced;

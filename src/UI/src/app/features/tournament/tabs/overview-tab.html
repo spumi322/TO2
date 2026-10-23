@@ -31,13 +31,16 @@
           @if (groupCards().length) {
             <section class="card stack">
               <h3>Groups</h3>
-              <ul class="stage-cards">
-                @for (stage of groupCards(); track stage.name) {
+              <ul class="stage-cards group-cards">
+                @for (stage of groupCards(); track stage.group.id) {
                   <li>
-                    <span class="stage-name">{{ stage.name }}</span>
-                    <span class="stage-progress" [class.finished]="stage.finished">
-                      {{ stage.finished ? 'Finished' : stage.progress }}
-                    </span>
+                    <div class="stage-head">
+                      <span class="stage-name">{{ stage.name }}</span>
+                      <span class="stage-progress" [class.finished]="stage.finished">
+                        {{ stage.finished ? 'Finished' : stage.progress }}
+                      </span>
+                    </div>
+                    <app-group-table [group]="stage.group" [advancing]="advancing()" [compact]="true" />
                   </li>
                 }
               </ul>

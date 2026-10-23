@@ -53,9 +53,10 @@ describe('overview status', () => {
   });
 
   it('makes one card per drawn group', () => {
+    const drawn = group('Group A', true, [match(1, 1), match(1, 2)]);
     const notDrawn = { ...group('Group B', false, []), isSeeded: false };
-    expect(groupCards([group('Group A', true, [match(1, 1), match(1, 2)]), notDrawn])).toEqual([
-      { name: 'Group A', finished: true, progress: '2 / 2 matches' },
+    expect(groupCards([drawn, notDrawn])).toEqual([
+      { name: 'Group A', finished: true, progress: '2 / 2 matches', group: drawn },
     ]);
   });
 
