@@ -29,21 +29,6 @@
           <h3>Format</h3>
           <p class="summary">{{ formatSummary() }}</p>
           <dl>
-            @if (isSetup()) {
-              <dt>Max teams</dt>
-              <dd class="num">{{ t.maxTeams }}</dd>
-            } @else {
-              <dt>Teams</dt>
-              <dd class="num">{{ t.currentTeams }}</dd>
-            }
-            @if (hasGroups()) {
-              <dt>Groups</dt>
-              <dd class="num">{{ t.numberOfGroups }}</dd>
-            }
-            @if (isGroupsAndBracket()) {
-              <dt>Advance per group</dt>
-              <dd class="num">{{ t.advancingPerGroup }}</dd>
-            }
             <dt>Created by</dt>
             <dd>{{ t.createdBy }}</dd>
             <dt>Created</dt>
@@ -52,7 +37,7 @@
           @if (t.description) {
             <div class="about">
               <h3>About</h3>
-              <p class="muted pre-line">{{ t.description }}</p>
+              <p class="muted pre-line clamp" [title]="t.description">{{ t.description }}</p>
             </div>
           }
         </aside>

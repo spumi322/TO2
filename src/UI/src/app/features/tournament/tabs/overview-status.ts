@@ -140,44 +140,61 @@ function finishedHeadline(champions: TeamPlacement[]): string {
   return 'Tournament finished';
 }
 
-// Text per status; the action only from the state flags (no status rules here)
+const plural = (n: number, word: string) => `${n} ${n === 1 ? word : `${word}es`}`;
+
+// "18 of 40 matches played" over all groups
+function groupMatchesText(groups: Group[]): string {
+  const matches = groups.flatMap((group) => group.matches);
+  const played = matches.filter((match) => match.winnerId !== null).length;
+  return `${played} of ${plural(matches.length, 'match')} played`;
+}
+
+// The round being played and how many of its matches are left (BYEs not counted)
+function roundStatus(bracket: Bracket | null): { name: string; text: string } {
+  const rounds = bracketRounds(bracket);
+  const index = rounds.findIndex((matches) => !allWon(matches));
+  if (index < 0) return { name: 'Playoffs', text: '' };
+  const played = rounds[index].filter((match) => !isBye(match));
+  const left = played.filter((match) => match.winnerId === null).length;
+  return {
+    name: bracketRoundName(index, rounds.length),
+    text: played.length === 1 ? 'Not played yet' : `${left} of ${plural(played.length, 'match')} left in this round`,
+  };
+}
+
+// Headline = what is happening now, text = the detail the stage track does not show; the action only from the state flags
 export function statusCard(
   tournament: Tournament,
   state: TournamentState,
   counts: StageCounts,
   champions: TeamPlacement[],
+  groups: Group[] = [],
+  bracket: Bracket | null = null,
 ): StatusCard {
   const action: StatusAction | null = state.canStartGroups ? 'startGroups' : state.canStartBracket ? 'startBracket' : null;
-  const advancing = tournament.advancingPerGroup;
   const card = (label: string, headline: string, text: string): StatusCard => ({ label, headline, text, action });
 
   switch (tournament.status) {
-    case TournamentStatus.Setup:
-      return card('Registration open', `${counts.currentTeams} of ${counts.maxTeams} teams registered`, startText(tournament));
+    case TournamentStatus.Setup: {
+      const free = counts.maxTeams - counts.currentTeams;
+      return card('Registration open', free > 0 ? `${free} ${free === 1 ? 'place' : 'places'} left` : 'Full', startText(tournament));
+    }
     case TournamentStatus.SeedingGroups:
       return card('Drawing groups', 'Drawing the groups', 'The teams are being drawn into the groups.');
     case TournamentStatus.GroupsInProgress:
-      return card(
-        'Groups live',
-        `${counts.groupsFinished} of ${counts.groupsTotal} groups finished`,
-        tournament.format === Format.GroupsOnly
-          ? 'When every group is finished, the group positions are the final result.'
-          : `When every group is finished, the top ${advancing} of each group go to the bracket.`,
-      );
+      return card('Groups live', 'Group stage', groupMatchesText(groups));
     case TournamentStatus.GroupsCompleted:
       return card(
         'Ready for playoffs',
-        `All ${counts.groupsTotal} groups finished`,
-        `The top ${advancing} of each group go to the bracket. Group winners meet runners-up in round 1.`,
+        'Groups finished',
+        `The top ${tournament.advancingPerGroup} of each group go to the bracket. Group winners meet runners-up in round 1.`,
       );
     case TournamentStatus.SeedingBracket:
       return card('Seeding bracket', 'Seeding the bracket', 'The teams are being placed in the bracket.');
-    case TournamentStatus.BracketInProgress:
-      return card(
-        'Playoffs live',
-        `${counts.roundsFinished} of ${counts.roundsTotal} rounds finished`,
-        'The winner of the final wins the tournament.',
-      );
+    case TournamentStatus.BracketInProgress: {
+      const round = roundStatus(bracket);
+      return card('Playoffs live', round.name, round.text);
+    }
     case TournamentStatus.Finished:
       return card('Finished', finishedHeadline(champions), 'The final placements are in Results.');
     case TournamentStatus.Cancelled:

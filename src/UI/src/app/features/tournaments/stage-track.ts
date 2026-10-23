@@ -50,9 +50,10 @@ const STATE_WORDS: Record<StepState, string> = {
       gap: 4px;
       min-width: 0;
     }
+    /* --seg-height: the tournament page sets a thicker bar than the list */
     .seg {
       display: block;
-      height: 6px;
+      height: var(--seg-height, 6px);
       border-radius: 3px;
       background: var(--border);
       overflow: hidden;

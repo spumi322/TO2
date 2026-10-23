@@ -33,6 +33,10 @@
   text-transform: uppercase;
 }
 
+.status app-stage-track {
+  --seg-height: 10px;
+}
+
 .status h2 {
   margin: 0;
   font-size: 26px;
@@ -40,6 +44,8 @@
 
 .status p {
   margin: 0;
+  /* Keeps its line when a status has no text, so the card has the same height in every status */
+  min-height: 1.5em;
 }
 
 /* Format and top placements on the left, teams or stage cards on the right; stacked on phones */
@@ -57,29 +63,23 @@
 }
 
 /*
- * Wide screens: the Overview takes exactly the visible height (fit-height minus the 40px of page padding below it),
- * both columns end on one line (their last card grows), longer content scrolls inside its column
+ * Wide screens: the Overview takes at most the visible height (fit-height minus the 40px of page padding below it);
+ * cards keep their own height, longer content scrolls inside its column
  */
 @media (min-width: 761px) {
   .overview {
-    height: calc(var(--fit-height) - 40px);
+    max-height: calc(var(--fit-height) - 40px);
   }
 
   .columns {
-    flex: 1;
     min-height: 0;
-    align-items: stretch;
+    grid-template-rows: minmax(0, 1fr);
   }
 
   .side,
   .main {
-    min-height: 0;
+    max-height: 100%;
     overflow-y: auto;
-  }
-
-  .side > :last-child,
-  .main > :last-child {
-    flex: 1;
   }
 }
 
@@ -268,4 +268,14 @@ dd {
 .about p {
   margin: 0;
   line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* Long descriptions: 3 lines, the full text on hover */
+.clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }

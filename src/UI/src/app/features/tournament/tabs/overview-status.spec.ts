@@ -74,7 +74,7 @@ describe('overview status', () => {
 
     expect(card).toEqual({
       label: 'Registration open',
-      headline: '11 of 16 teams registered',
+      headline: '5 places left',
       text: 'Start the groups when everyone is in. Starting draws the groups and closes registration.',
       action: 'startGroups',
     });
@@ -83,14 +83,32 @@ describe('overview status', () => {
   it('has no action while groups are played, Start bracket when they are done', () => {
     const groups = [group('Group A', true, []), group('Group B', false, [])];
     const live = tournament({ status: TournamentStatus.GroupsInProgress, currentTeams: 16 });
-    const liveCard = statusCard(live, state(), stageCounts(live, groups, null), []);
-    expect(liveCard.headline).toBe('1 of 2 groups finished');
+    groups[0].matches = [match(1, 1), match(1, 2), match(1, null)];
+    const liveCard = statusCard(live, state(), stageCounts(live, groups, null), [], groups);
+    expect(liveCard).toMatchObject({ headline: 'Group stage', text: '2 of 3 matches played' });
     expect(liveCard.action).toBeNull();
 
     const done = tournament({ status: TournamentStatus.GroupsCompleted });
     const doneCard = statusCard(done, state({ canStartBracket: true }), stageCounts(done, groups, null), []);
-    expect(doneCard.headline).toBe('All 2 groups finished');
+    expect(doneCard.headline).toBe('Groups finished');
     expect(doneCard.action).toBe('startBracket');
+  });
+
+  it('names the round being played and its matches left', () => {
+    const t = tournament({ status: TournamentStatus.BracketInProgress });
+    const card = (b: Bracket) => statusCard(t, state(), stageCounts(t, [], b), [], [], b);
+
+    // Round 1: 2 BYEs (not counted) and 2 played matches, one decided
+    expect(card(bracket([3, null], [null, null], null))).toMatchObject({
+      headline: 'Quarterfinals',
+      text: '1 of 2 matches left in this round',
+    });
+    expect(card(bracket([3, 5], [1, 3], null))).toMatchObject({ headline: 'Final', text: 'Not played yet' });
+  });
+
+  it('counts the places left, Full when there are none', () => {
+    const full = tournament({ currentTeams: 16 });
+    expect(statusCard(full, state(), stageCounts(full, [], null), []).headline).toBe('Full');
   });
 
   it('names the champion, or the group winners', () => {

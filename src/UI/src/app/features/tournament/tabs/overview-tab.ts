@@ -2,7 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
-import { Format, formatHasGroups, STATUS_INFO, TournamentStatus } from '../../../shared/enums';
+import { Format, STATUS_INFO, TournamentStatus } from '../../../shared/enums';
 import { distributeTeams } from '../../tournaments/tournament-config';
 import { StageTrack } from '../../tournaments/stage-track';
 import { GroupTable } from '../group-table/group-table';
@@ -40,7 +40,7 @@ export class OverviewTab {
     const t = this.store.tournament();
     const state = this.store.state();
     const counts = this.counts();
-    return t && state && counts ? statusCard(t, state, counts, this.champions()) : null;
+    return t && state && counts ? statusCard(t, state, counts, this.champions(), this.store.groups(), this.store.bracket()) : null;
   });
 
   readonly statusColor = computed(() => {
@@ -58,12 +58,7 @@ export class OverviewTab {
   readonly roundCards = computed(() => roundCards(this.store.bracket()));
   readonly currentRound = computed(() => currentRound(this.store.bracket(), this.store.teamNames()));
 
-  readonly isSetup = computed(() => this.store.tournament()?.status === TournamentStatus.Setup);
   readonly isFinished = computed(() => this.store.tournament()?.status === TournamentStatus.Finished);
-  readonly hasGroups = computed(() => {
-    const t = this.store.tournament();
-    return !!t && formatHasGroups(t.format);
-  });
   readonly isGroupsAndBracket = computed(() => this.store.tournament()?.format === Format.GroupsAndBracket);
   // Cut line in the group tables
   readonly advancing = computed(() => (this.isGroupsAndBracket() ? this.store.tournament()!.advancingPerGroup : null));
