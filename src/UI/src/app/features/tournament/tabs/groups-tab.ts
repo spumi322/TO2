@@ -1,5 +1,4 @@
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { Button } from 'primeng/button';
 import { StandingMatch } from '../../../core/models';
 import { EmptyState } from '../../../shared/empty-state';
 import { Format } from '../../../shared/enums';
@@ -12,7 +11,7 @@ import { matchLines } from './groups-board';
 // All groups on one page: each card has its table and its matches; a clicked match is scored in a panel that pops up at it
 @Component({
   selector: 'app-groups-tab',
-  imports: [EmptyState, Button, GroupTable, MatchCard],
+  imports: [EmptyState, GroupTable, MatchCard],
   providers: [Scoring],
   templateUrl: './groups-tab.html',
   styleUrl: './groups-tab.css',
