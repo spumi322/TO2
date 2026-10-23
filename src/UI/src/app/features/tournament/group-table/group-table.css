@@ -5,7 +5,7 @@
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 th {
@@ -19,7 +19,7 @@ th {
 
 td {
   text-align: center;
-  padding: 9px 8px;
+  padding: 6px 8px;
   border-bottom: 1px solid var(--border);
 }
 
@@ -36,30 +36,20 @@ td {
   padding: 5px 6px;
 }
 
-:host(.compact) .rank {
-  width: 28px;
-}
-
 th.team,
 td.team {
   text-align: left;
-  width: 55%;
+  width: 45%;
 }
 
 .rank {
-  width: 36px;
+  width: 28px;
   color: var(--text-muted);
 }
 
 .name {
   font-weight: 600;
   overflow-wrap: anywhere;
-}
-
-.status {
-  margin-left: 8px;
-  color: var(--text-muted);
-  font-weight: 500;
 }
 
 /* Whole rows tinted once decided: green = advances (or won), red = out */
@@ -69,10 +59,6 @@ tr.advanced td {
 
 tr.advanced td.rank {
   box-shadow: inset 3px 0 var(--success);
-}
-
-tr.advanced .status {
-  color: var(--success);
 }
 
 tr.eliminated td {
@@ -91,4 +77,28 @@ tr.eliminated .name {
 /* Cut line under the last advancing position */
 tr.cut td {
   border-bottom: 1px dashed var(--text-muted);
+}
+
+/* Form: last results as small W / L squares, oldest first */
+.form {
+  white-space: nowrap;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin: 0 1px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 16%, transparent);
+}
+
+.pill.win {
+  color: var(--primary-contrast);
+  background: var(--success);
 }

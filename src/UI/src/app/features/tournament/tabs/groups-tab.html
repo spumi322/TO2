@@ -5,62 +5,76 @@
     icon="pi-th-large"
   />
 } @else {
-  <div class="groups-tab">
-    @if (store.groups().length > 1) {
-      <div class="group-picker" role="tablist" aria-label="Groups">
-        @for (group of store.groups(); track group.id) {
-          <button
-            type="button"
-            role="tab"
-            class="group-button"
-            [class.active]="selected()?.id === group.id"
-            [attr.aria-selected]="selected()?.id === group.id"
-            (click)="pick(group)"
-          >
-            {{ group.name }}
-            @if (group.isFinished) {
-              <span class="done">Finished</span>
-            } @else {
-              <span class="muted num">{{ played(group) }} / {{ group.matches.length }}</span>
-            }
-          </button>
-        }
-      </div>
-    }
+  <div class="board">
+    <p class="muted small summary">{{ summary() }}</p>
 
-    @if (selected(); as group) {
-      <div class="group-view">
-        <section class="card table-card">
+    <div class="cards">
+      @for (group of store.groups(); track group.id) {
+        <section class="card group-card" [attr.aria-label]="group.name">
           <div class="row">
             <h3>{{ group.name }}</h3>
             <span class="spacer"></span>
             @if (group.isFinished) {
               <span class="done small"><i class="pi pi-check"></i> Finished</span>
             } @else {
-              <span class="muted small num">{{ played(group) }} / {{ group.matches.length }} confirmed</span>
+              <span class="muted small num">{{ played(group.matches) }} / {{ group.matches.length }} played</span>
             }
           </div>
-          <p class="muted small rule">{{ rule() }} Drafts count once confirmed.</p>
-          <app-group-table [group]="group" [advancing]="advancing()" />
-        </section>
 
-        <section class="card matches" [attr.aria-label]="group.name + ' matches'">
-          @for (round of rounds(group); track round.round) {
-            <h4 class="round muted small">Round {{ round.round }}</h4>
-            @for (match of round.matches; track match.id) {
-              <app-match-card
-                [match]="match"
-                [teamNames]="store.teamNames()"
-                [draft]="store.drafts().get(match.id)"
-                [canScore]="canScore()"
-                [busy]="scoring.savingMatchId() === match.id"
-                (draftChange)="store.setDraft($event.match, $event.teamAWins, $event.teamBWins)"
-                (confirm)="scoring.confirm($event)"
-              />
+          <app-group-table [group]="group" [advancing]="advancing()" />
+
+          <div class="lines">
+            @for (line of lines().get(group.id); track line.id) {
+              <button
+                type="button"
+                class="line"
+                [class.done]="line.state === 'done'"
+                [class.draft]="line.state === 'draft'"
+                [class.selected]="line.id === selectedMatchId()"
+                [attr.aria-label]="line.teamA + ' ' + line.score + ' ' + line.teamB + ', round ' + line.round"
+                (click)="selectedMatchId.set(line.id)"
+              >
+                <span class="round">R{{ line.round }}</span>
+                <span class="team" [class.won]="line.winner === 'A'" [class.lost]="line.winner === 'B'" [title]="line.teamA">
+                  {{ line.teamA }}
+                </span>
+                <span class="score num">{{ line.score }}</span>
+                <span class="team b" [class.won]="line.winner === 'B'" [class.lost]="line.winner === 'A'" [title]="line.teamB">
+                  {{ line.teamB }}
+                </span>
+              </button>
             }
-          }
+          </div>
         </section>
-      </div>
-    }
+      }
+    </div>
   </div>
+
+  @if (selected(); as sel) {
+    <aside class="card panel" [attr.aria-label]="sel.title">
+      <div class="row">
+        <h3>{{ sel.title }}</h3>
+        <span class="muted small">Best of {{ sel.match.bestOf }}</span>
+        <span class="spacer"></span>
+        <p-button
+          icon="pi pi-times"
+          [text]="true"
+          [rounded]="true"
+          severity="secondary"
+          ariaLabel="Close"
+          (onClick)="selectedMatchId.set(null)"
+        />
+      </div>
+      <app-match-card
+        [match]="sel.match"
+        [teamNames]="store.teamNames()"
+        [draft]="store.drafts().get(sel.match.id)"
+        [canScore]="canScore()"
+        [busy]="scoring.savingMatchId() === sel.match.id"
+        [stacked]="true"
+        (draftChange)="store.setDraft($event.match, $event.teamAWins, $event.teamBWins)"
+        (confirm)="scoring.confirm($event)"
+      />
+    </aside>
+  }
 }

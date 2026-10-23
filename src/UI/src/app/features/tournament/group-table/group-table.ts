@@ -1,6 +1,7 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { Group } from '../../../core/models';
-import { TEAM_STATUS_LABELS, TeamStatus } from '../../../shared/enums';
+import { TeamStatus } from '../../../shared/enums';
+import { teamForm } from '../tabs/groups-board';
 
 // Teams arrive ranked by the server (GroupRanking); this only displays them
 @Component({
@@ -13,10 +14,17 @@ export class GroupTable {
   readonly group = input.required<Group>();
   // Draws the cut line under the last advancing position (GroupsAndBracket)
   readonly advancing = input<number | null>(null);
-  // Small version for the Overview: no header row, no Games column, no status words (the row tint shows them)
+  // Small version for the Overview: no header row, no form, no game difference
   readonly compact = input(false);
 
-  protected readonly statusLabels = TEAM_STATUS_LABELS;
+  readonly rows = computed(() => {
+    const group = this.group();
+    return group.teams.map((team) => {
+      const difference = team.gameWins - team.gameLosses;
+      return { team, form: teamForm(group, team.id), difference: difference > 0 ? `+${difference}` : `${difference}` };
+    });
+  });
+
   protected readonly advanced = TeamStatus.Advanced;
   protected readonly eliminated = TeamStatus.Eliminated;
   protected readonly champion = TeamStatus.Champion;

@@ -10,12 +10,12 @@ The Groups tab shows one group at a time (group buttons), its table beside a lon
 
 ## Decisions
 - **All groups on one page**, no group picker. A summary line on top: "16 of 24 matches played · Top 2 of each group advance · Best of 3 · Ranked by match wins, then game difference" (advance part only for GroupsAndBracket).
-- **Cards per row**: plain CSS grid, `repeat(auto-fill, minmax(340px, 1fr))` (no count rule in code); phones: 1.
+- **Cards per row**: plain CSS grid, `repeat(auto-fit, minmax(340px, 1fr))` (no count rule in code, few groups stretch); phones: 1.
 - **Group card**: name, progress ("4 / 6 played") or a "Finished" chip; table; matches.
   - Table: `#`, Team, Form (last 5 results as W/L pills, oldest first), W-L, +/- (game difference). Cut line under the last advancing place; rows tinted advanced/eliminated once the group is finished (as now). Order from the server (`GroupRanking`), the UI only displays.
-  - Matches: all of the group's matches in round order, two per line, each with its round tag (R1, R2, ...). Big groups simply make a long card (scroll).
+  - Matches: all of the group's matches in round order as lines (as many per row as fit at 220px), each with its round tag (R1, R2, ...). Big groups simply make a long card (scroll).
   - Match line = a button: `Team A  2–1  Team B`, winner bold and loser muted once decided; "vs" when open; a draft in progress shows its score in green (from `store.drafts`, live via `MatchDraftUpdated`); "TBD" never happens in groups (teams known at the draw).
-- **Scoring**: clicking a match line opens the match panel beside the cards (as the Bracket tab: docked, sticky, below on narrow screens): group + round + best of, `MatchCard` (draft `−`/`+`, Confirm), close with × or Esc; the clicked line is outlined green. Without a selected match the cards use the full width. Read-only tournaments (demo, not scoring state) open the same panel without the controls (`MatchCard` already handles `canScore`).
+- **Scoring**: clicking a match line opens the match panel floating over the cards on the right (a docked panel made the cards jump to another row count; a sheet at the bottom on phones): group + round + best of, `MatchCard` (draft `−`/`+`, Confirm), close with × or Esc; the clicked line is outlined green. Read-only tournaments (demo, not scoring state) open the same panel without the controls (`MatchCard` already handles `canScore`).
 - Unchanged: `GroupTable` stays the one table component (Overview uses its compact mode); `Scoring`, `TournamentStore`, drafts, `confirmMatch`, hub events.
 
 ## Phase 1: pure logic
