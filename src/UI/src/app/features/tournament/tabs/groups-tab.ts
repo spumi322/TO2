@@ -1,25 +1,22 @@
 import { Component, computed, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { StandingMatch } from '../../../core/models';
 import { EmptyState } from '../../../shared/empty-state';
 import { Format } from '../../../shared/enums';
 import { GroupTable } from '../group-table/group-table';
-import { MatchCard } from '../match-card/match-card';
+import { MatchPopup, PopupAnchor, popupAnchor } from '../match-popup/match-popup';
 import { Scoring } from '../scoring';
 import { TournamentStore } from '../tournament.store';
 import { matchLines } from './groups-board';
 
-// All groups on one page: each card has its table and its matches; a clicked match is scored in a panel that pops up at it
+// All groups on one page: each card has its table and its matches; a clicked match is scored in a popup at the click
 @Component({
   selector: 'app-groups-tab',
-  imports: [EmptyState, GroupTable, MatchCard],
+  imports: [EmptyState, GroupTable, MatchPopup],
   providers: [Scoring],
   templateUrl: './groups-tab.html',
   styleUrl: './groups-tab.css',
-  host: { '(document:keydown.escape)': 'close()', '(document:click)': 'closeOutside($event)' },
 })
 export class GroupsTab {
   readonly store = inject(TournamentStore);
-  readonly scoring = inject(Scoring);
 
   readonly canScore = computed(() => !!this.store.state()?.canScoreMatches);
   readonly seeded = computed(() => this.store.groups().some((group) => group.isSeeded));
@@ -49,9 +46,9 @@ export class GroupsTab {
   });
 
   readonly selectedMatchId = signal<number | null>(null);
-  // Where the panel pops up, in board pixels: centered on the click, under the line (above it near the bottom of the screen)
-  readonly anchor = signal<{ top: number; left: number; above: boolean } | null>(null);
+  readonly anchor = signal<PopupAnchor | null>(null);
   private readonly board = viewChild<ElementRef<HTMLElement>>('board');
+  private openedBy: MouseEvent | null = null;
   readonly selected = computed(() => {
     const id = this.selectedMatchId();
     const group = this.store.groups().find((g) => g.matches.some((match) => match.id === id));
@@ -65,34 +62,15 @@ export class GroupsTab {
 
   open(matchId: number, event: MouseEvent): void {
     const board = this.board()?.nativeElement;
-    const line = event.currentTarget as HTMLElement;
     if (!board) return;
-    const box = board.getBoundingClientRect();
-    const rect = line.getBoundingClientRect();
-    const panelWidth = Math.min(340, box.width);
-    // Keyboard clicks have no pointer position: use the middle of the line
-    const x = event.detail > 0 ? event.clientX : rect.left + rect.width / 2;
-    const above = rect.bottom + 240 > window.innerHeight && rect.top > 240;
-    this.anchor.set({
-      top: (above ? rect.top : rect.bottom) - box.top + (above ? -6 : 6),
-      left: Math.max(0, Math.min(x - box.left - panelWidth / 2, box.width - panelWidth)),
-      above,
-    });
+    this.anchor.set(popupAnchor(board, event.currentTarget as HTMLElement, event));
     this.selectedMatchId.set(matchId);
+    this.openedBy = event;
   }
 
-  // Closes once the result is saved (the match has its winner then)
-  async confirm(match: StandingMatch): Promise<void> {
-    await this.scoring.confirm(match);
-    if (this.selected()?.match.winnerId != null) this.close();
-  }
-
-  // A click anywhere but the panel or a match line closes the panel
-  closeOutside(event: MouseEvent): void {
-    if (!(event.target as Element | null)?.closest('.panel, .line')) this.close();
-  }
-
-  close(): void {
+  // The click that just opened a match also reaches the popup's outside-click check: that one keeps it open
+  close(event: MouseEvent | null = null): void {
+    if (event && event === this.openedBy) return;
     this.selectedMatchId.set(null);
     this.anchor.set(null);
   }

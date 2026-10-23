@@ -1,14 +1,6 @@
-/* Bracket, and the clicked match's panel beside it (below it on narrow screens) */
-.layout {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 16px;
-}
-
+/* The bracket card; the clicked match's popup is placed inside this wrapper (the card itself scrolls sideways) */
 .bracket-wrap {
   position: relative;
-  flex: 999 1 560px;
   min-width: 0;
 }
 
@@ -19,19 +11,6 @@
 
 .hint {
   margin: 0 0 4px;
-}
-
-.panel {
-  flex: 1 1 300px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  position: sticky;
-  top: calc(var(--fit-offset) - 8px);
-}
-
-.panel h3 {
-  margin: 0;
 }
 
 /* Snap points at the top and the middle of a big bracket (page scroll snaps one half per step) */

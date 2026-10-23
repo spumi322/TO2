@@ -5,51 +5,31 @@
     icon="pi-sitemap"
   />
 } @else {
-  <div class="layout">
-    <div class="bracket-wrap">
-      <!-- Big brackets scroll in two halves: one screen per half (outside the card, which scrolls sideways) -->
-      @if (halves()) {
-        <span class="snap top" aria-hidden="true"></span>
-        <span class="snap middle" aria-hidden="true"></span>
-      }
-      <div class="card bracket">
-        <p class="muted small hint">Click a match to {{ canScore() ? 'score it' : 'see it' }}.</p>
-        <app-bracket-view
-          [bracket]="store.bracket()!"
-          [teamNames]="store.teamNames()"
-          [tournamentId]="store.id()"
-          [compact]="halves()"
-          (matchClick)="selectedMatchId.set($event)"
-        />
-      </div>
+  <div class="bracket-wrap" #board>
+    <!-- Big brackets scroll in two halves: one screen per half (outside the card, which scrolls sideways) -->
+    @if (halves()) {
+      <span class="snap top" aria-hidden="true"></span>
+      <span class="snap middle" aria-hidden="true"></span>
+    }
+    <div class="card bracket">
+      <p class="muted small hint">Click a match to {{ canScore() ? 'score it' : 'see it' }}.</p>
+      <app-bracket-view
+        [bracket]="store.bracket()!"
+        [teamNames]="store.teamNames()"
+        [tournamentId]="store.id()"
+        [compact]="halves()"
+        (matchClick)="open($event)"
+      />
     </div>
 
     @if (selectedMatch(); as match) {
-      <aside class="card panel" [attr.aria-label]="selectedRound()">
-        <div class="row">
-          <h3>{{ selectedRound() }}</h3>
-          <span class="muted small">Best of {{ match.bestOf }}</span>
-          <span class="spacer"></span>
-          <p-button
-            icon="pi pi-times"
-            [text]="true"
-            [rounded]="true"
-            severity="secondary"
-            ariaLabel="Close"
-            (onClick)="selectedMatchId.set(null)"
-          />
-        </div>
-        <app-match-card
-          [match]="match"
-          [teamNames]="store.teamNames()"
-          [draft]="store.drafts().get(match.id)"
-          [canScore]="canScore()"
-          [busy]="scoring.savingMatchId() === match.id"
-          [stacked]="true"
-          (draftChange)="store.setDraft($event.match, $event.teamAWins, $event.teamBWins)"
-          (confirm)="scoring.confirm($event)"
-        />
-      </aside>
+      <app-match-popup
+        [match]="match"
+        [title]="selectedRound()"
+        [anchor]="anchor()!"
+        [canScore]="canScore()"
+        (closed)="close($event)"
+      />
     }
   </div>
 }

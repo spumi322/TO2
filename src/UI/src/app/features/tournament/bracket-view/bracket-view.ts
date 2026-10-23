@@ -44,9 +44,15 @@ function loadViewer(): Promise<BracketsViewerApi> {
 
 let nextId = 0;
 
+export interface MatchClick {
+  matchId: number;
+  element: HTMLElement;
+  event: MouseEvent;
+}
+
 /**
  * The only place that touches brackets-viewer: data goes through the pure adapter, the library renders it,
- * and one click listener on the container turns a click on a match into its id.
+ * and one click listener on the container turns a click on a match into its id (plus the element and the click, to place a popup).
  * Re-renders whenever an input changes.
  */
 @Component({
@@ -70,7 +76,7 @@ export class BracketView {
   readonly tournamentId = input.required<number>();
   // Tight spacing between matches (big brackets)
   readonly compact = input(false);
-  readonly matchClick = output<number>();
+  readonly matchClick = output<MatchClick>();
 
   protected readonly elementId = `bracket-view-${++nextId}`;
   protected readonly failed = signal(false);
@@ -82,11 +88,13 @@ export class BracketView {
     });
   }
 
-  // The library marks matches with data-match-id
+  // The library marks matches with data-match-id; a match element is the whole slot of its round (later rounds are
+  // tall), the visible box is its .opponents: only a click on the box counts, and the box is what a popup points at
   protected onClick(event: MouseEvent): void {
     if (!(event.target instanceof Element)) return;
-    const match = event.target.closest<HTMLElement>('[data-match-id]');
-    if (match) this.matchClick.emit(Number(match.dataset['matchId']));
+    const box = event.target.closest<HTMLElement>('.opponents');
+    const match = box?.closest<HTMLElement>('[data-match-id]');
+    if (box && match) this.matchClick.emit({ matchId: Number(match.dataset['matchId']), element: box, event });
   }
 
   private async render(data: ViewerData): Promise<void> {

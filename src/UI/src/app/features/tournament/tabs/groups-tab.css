@@ -1,4 +1,4 @@
-/* Group cards; the clicked match's panel pops up over them at the line */
+/* Group cards; the clicked match's popup is placed inside the board */
 .board {
   position: relative;
   min-width: 0;
@@ -108,23 +108,4 @@
 .line.draft .score {
   color: var(--text);
   font-weight: 700;
-}
-
-/* Pops up under the clicked line (above it near the bottom of the screen) */
-.panel {
-  position: absolute;
-  z-index: 4;
-  width: min(340px, 100%);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
-}
-
-.panel.above {
-  transform: translateY(-100%);
-}
-
-.panel h3 {
-  margin: 0;
 }

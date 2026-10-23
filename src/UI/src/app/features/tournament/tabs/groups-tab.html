@@ -50,28 +50,13 @@
     </div>
 
     @if (selected(); as sel) {
-      <aside
-        class="card panel"
-        [class.above]="anchor()?.above"
-        [style.top.px]="anchor()?.top"
-        [style.left.px]="anchor()?.left"
-        [attr.aria-label]="sel.title"
-      >
-        <div class="row">
-          <h3>{{ sel.title }}</h3>
-          <span class="muted small">Best of {{ sel.match.bestOf }}</span>
-        </div>
-        <app-match-card
-          [match]="sel.match"
-          [teamNames]="store.teamNames()"
-          [draft]="store.drafts().get(sel.match.id)"
-          [canScore]="canScore()"
-          [busy]="scoring.savingMatchId() === sel.match.id"
-          [stacked]="true"
-          (draftChange)="store.setDraft($event.match, $event.teamAWins, $event.teamBWins)"
-          (confirm)="confirm($event)"
-        />
-      </aside>
+      <app-match-popup
+        [match]="sel.match"
+        [title]="sel.title"
+        [anchor]="anchor()!"
+        [canScore]="canScore()"
+        (closed)="close($event)"
+      />
     }
   </div>
 }
