@@ -47,7 +47,7 @@ Test tournaments left in Org1 (all prefixed `ST `):
 - Result: toast "Groups cannot be started while the tournament is GroupsInProgress."
 - Open confirm dialogs (Start groups / Start bracket) don't update or close when the state changes in another tab ("2 teams are seeded..." after a team was removed elsewhere).
 
-### 8. Long unbroken word in the cancel reason overflows
+### 8. Long unbroken word in the cancel reason overflows (fixed: all user-written text blocks wrap long words)
 - Repro: cancel with a reason containing a 200-character word (tournament 340).
 - Result: Overview status card text runs past the card, page scrolls sideways (scrollWidth 2031 vs 1920). At 390px even the headline "Cancelled by testuser-org1" is clipped. The list page truncates correctly.
 

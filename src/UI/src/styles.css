@@ -163,8 +163,10 @@ html.snap-blocks {
   font-variant-numeric: tabular-nums;
 }
 
+/* User-written text (descriptions, cancel reasons): keeps line breaks, a long word without spaces wraps instead of overflowing */
 .pre-line {
   white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
 /* Forms */
