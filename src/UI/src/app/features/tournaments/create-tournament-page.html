@@ -133,8 +133,8 @@
               }
             </div>
 
-            @if (isGroupsAndBracket()) {
-              <span class="hint">Group winners meet runners-up; teams of the same group are kept apart in round 1.</span>
+            @if (seedingText(); as text) {
+              <span class="hint">{{ text }}</span>
             }
           </section>
         }

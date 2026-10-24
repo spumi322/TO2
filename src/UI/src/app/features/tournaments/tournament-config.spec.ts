@@ -81,6 +81,12 @@ describe('tournament config', () => {
     expect(tree[2][0][0].top.label).toBe('');
   });
 
+  it('shows no seed numbers for a random draw', () => {
+    const labels = bracketTreeRounds(generateMatchups(8), 6, false)[0].flat().flatMap((m) => [m.top.label, m.bottom.label]);
+
+    expect(labels).toEqual(['Team', 'BYE', 'Team', 'Team', 'Team', 'BYE', 'Team', 'Team']);
+  });
+
   it('mirrors the server validation rules', () => {
     expect(validateConfig(config())).toEqual({});
     expect(validateConfig(config({ name: ' ab ' })).name).toBeDefined();

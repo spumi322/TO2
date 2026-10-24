@@ -51,7 +51,7 @@ Test tournaments left in Org1 (all prefixed `ST `):
 - Repro: cancel with a reason containing a 200-character word (tournament 340).
 - Result: Overview status card text runs past the card, page scrolls sideways (scrollWidth 2031 vs 1920). At 390px even the headline "Cancelled by testuser-org1" is clipped. The list page truncates correctly.
 
-### 9. Structure preview text wrong for some setups
+### 9. Structure preview text wrong for some setups (fixed: one accurate seeding sentence, only where it applies; singular advance text; no seed numbers for a random draw)
 - Create page, Groups+Bracket: with 1 group or advance 1 the preview still says "Group winners meet runners-up; teams of the same group are kept apart in round 1."
 - 32 teams, 10 groups, advance 2: BYEs go to seeds 1-12, so round 1 is runners-up vs runners-up, contradicting that sentence.
 - Format card: "The top 1 of each group advance..." (grammar).

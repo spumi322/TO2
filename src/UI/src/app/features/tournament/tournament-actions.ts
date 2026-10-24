@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ErrorToast } from '../../core/http/error-toast';
 import { Format } from '../../shared/enums';
+import { advanceText, groupSeedingText } from '../../shared/format-text';
 import { distributeTeams } from '../tournaments/tournament-config';
 import { TournamentStore } from './tournament.store';
 
@@ -51,7 +52,7 @@ export class TournamentActions {
     const message =
       t.format === Format.BracketOnly
         ? `${t.currentTeams} teams are seeded randomly into the bracket, every match best of 3.\nRegistration closes: teams can not be changed afterwards.`
-        : `The top ${t.advancingPerGroup} of each group advance. Group winners meet runners-up, and teams of the same group are kept apart in round 1.`;
+        : [`${advanceText(t.advancingPerGroup ?? 0)}.`, groupSeedingText(t.numberOfGroups, t.advancingPerGroup ?? 0)].filter(Boolean).join(' ');
     this.request.set({
       header: 'Start bracket',
       message,

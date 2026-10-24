@@ -3,6 +3,7 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button } from 'primeng/button';
 import { Format, STATUS_INFO, TournamentStatus } from '../../../shared/enums';
+import { advanceText } from '../../../shared/format-text';
 import { distributeTeams } from '../../tournaments/tournament-config';
 import { StageTrack } from '../../tournaments/stage-track';
 import { GroupTable } from '../group-table/group-table';
@@ -81,7 +82,7 @@ export class OverviewTab {
     const stage = `${teams} in ${groups}, round robin, every match best of 3.`;
 
     return t.format === Format.GroupsAndBracket
-      ? `${stage} The top ${t.advancingPerGroup} of each group advance to a single elimination bracket.`
+      ? `${stage} ${advanceText(t.advancingPerGroup ?? 0)} to a single elimination bracket.`
       : `${stage} The group position is the final result.`;
   });
 

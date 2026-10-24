@@ -118,7 +118,7 @@ export function buildCreateRequest(config: TournamentConfig): CreateTournamentRe
 }
 
 export interface PreviewSlot {
-  label: string; // '#3', 'BYE', or '' while the team is not known yet
+  label: string; // '#3' (seeded), 'Team' (random draw), 'BYE', or '' while the team is not known yet
   bye: boolean;
   byeOpponent: boolean; // goes to round 2 without playing
 }
@@ -130,12 +130,13 @@ export interface PreviewMatch {
 
 /**
  * The preview's bracket tree: rounds of pairs (the two matches that feed one match of the next round).
- * Round 1 shows seeds and BYEs, later rounds are empty slots. The final is one pair of one match.
+ * Round 1 shows seeds (or just "Team" for a random draw, where seed numbers mean nothing) and BYEs,
+ * later rounds are empty slots. The final is one pair of one match.
  */
-export function bracketTreeRounds(matchups: [number, number][], teamCount: number): PreviewMatch[][][] {
+export function bracketTreeRounds(matchups: [number, number][], teamCount: number, seeded = true): PreviewMatch[][][] {
   const empty: PreviewSlot = { label: '', bye: false, byeOpponent: false };
   const seedSlot = (seed: number, opponent: number): PreviewSlot => ({
-    label: seed > teamCount ? 'BYE' : `#${seed}`,
+    label: seed > teamCount ? 'BYE' : seeded ? `#${seed}` : 'Team',
     bye: seed > teamCount,
     byeOpponent: seed <= teamCount && opponent > teamCount,
   });
@@ -174,6 +175,7 @@ export function previewConfig(config: TournamentConfig): ConfigPreview {
     bracketSize,
     byes: computeByeCount(bracketSize, bracketTeams),
     rounds: bracketSize ? Math.log2(bracketSize) : 0,
-    tree: bracketTreeRounds(generateMatchups(bracketSize), bracketTeams),
+    // Groups + Bracket seeds by group results; Bracket draws randomly
+    tree: bracketTreeRounds(generateMatchups(bracketSize), bracketTeams, config.format === Format.GroupsAndBracket),
   };
 }

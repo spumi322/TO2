@@ -9,6 +9,7 @@ import { Textarea } from 'primeng/textarea';
 import { TournamentsApi } from '../../core/api/tournaments.api';
 import { applyFieldErrors, toApiError } from '../../core/http/api-error';
 import { Format, FORMAT_DESCRIPTIONS, FORMAT_LABELS, formatHasBracket, formatHasGroups } from '../../shared/enums';
+import { groupSeedingText } from '../../shared/format-text';
 import {
   buildCreateRequest,
   DESCRIPTION_MAX,
@@ -55,6 +56,12 @@ export class CreateTournamentPage {
   readonly hasBracket = computed(() => formatHasBracket(this.config().format));
   readonly isGroupsAndBracket = computed(() => this.config().format === Format.GroupsAndBracket);
   readonly preview = computed(() => previewConfig(this.config()));
+  readonly seedingText = computed(() => {
+    const config = this.config();
+    return config.format === Format.GroupsAndBracket
+      ? groupSeedingText(config.numberOfGroups ?? 0, config.advancingPerGroup ?? 0)
+      : null;
+  });
   readonly clientErrors = computed(() => validateConfig(this.config()));
   // The preview draws only a structure the server would accept
   readonly previewIssue = computed(() => {

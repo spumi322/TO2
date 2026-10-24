@@ -1,5 +1,6 @@
 import { Bracket, Group, StandingMatch, TeamPlacement, Tournament, TournamentState } from '../../../core/models';
 import { Format, formatHasGroups, TournamentStatus } from '../../../shared/enums';
+import { advanceText, groupSeedingText } from '../../../shared/format-text';
 import { StageCounts } from '../../tournaments/stage-steps';
 import { roundName } from '../bracket-view/bracket-adapter';
 import { ordinal, toPlacementRows, topPlacements } from '../placements';
@@ -193,7 +194,9 @@ export function statusCard(
       return card(
         'Ready for playoffs',
         'Groups finished',
-        `The top ${tournament.advancingPerGroup} of each group go to the bracket. Group winners meet runners-up in round 1.`,
+        [`${advanceText(tournament.advancingPerGroup ?? 0)} to the bracket.`, groupSeedingText(tournament.numberOfGroups, tournament.advancingPerGroup ?? 0)]
+          .filter(Boolean)
+          .join(' '),
       );
     case TournamentStatus.SeedingBracket:
       return card('Seeding bracket', 'Seeding the bracket', 'The teams are being placed in the bracket.');

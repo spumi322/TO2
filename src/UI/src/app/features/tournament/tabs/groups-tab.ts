@@ -39,7 +39,7 @@ export class GroupsTab {
     const advancing = this.advancing();
     return [
       `${played} of ${matches.length} matches played`,
-      ...(advancing ? [`Top ${advancing} of each group advance`] : []),
+      ...(advancing ? [advancing === 1 ? 'Group winners advance' : `Top ${advancing} of each group advance`] : []),
       ...(matches.length ? [`Best of ${matches[0].bestOf}`] : []),
       'Ranked by match wins, game difference, then head-to-head',
     ].join(' · ');
