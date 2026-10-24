@@ -1,6 +1,6 @@
 // Client checks for the bulk add input, for instant feedback only (the server checks again)
 
-export const MAX_TEAM_NAME_LENGTH = 24;
+export const MAX_TEAM_NAME_LENGTH = 20;
 
 export function parseTeamNames(input: string): string[] {
   return input

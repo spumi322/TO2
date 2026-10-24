@@ -6,10 +6,10 @@ describe('team names', () => {
   });
 
   it('finds long, duplicate and registered names ignoring case, and capacity', () => {
-    const problems = checkTeamNames(['Alpha', 'ALPHA', 'bravo', 'x'.repeat(25)], ['Bravo'], 3);
+    const problems = checkTeamNames(['Alpha', 'ALPHA', 'bravo', 'x'.repeat(21)], ['Bravo'], 3);
 
     expect(problems).toEqual([
-      `Longer than 24 characters: ${'x'.repeat(25)}`,
+      `Longer than 20 characters: ${'x'.repeat(21)}`,
       'Listed twice: ALPHA',
       'Already registered: bravo',
       'Only 3 slots left.',

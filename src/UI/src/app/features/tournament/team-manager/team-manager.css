@@ -18,35 +18,71 @@ textarea {
   margin-top: 26px;
 }
 
-.none {
-  margin: 0;
-}
-
-/* As many columns as fit (32 teams on one screen) */
-.teams {
+.slots {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 6px;
 }
 
-.teams li {
+.slot {
   display: flex;
   align-items: center;
-  gap: 4px;
-  min-height: 40px;
-  padding: 4px 4px 4px 12px;
+  gap: 10px;
+  min-height: 38px;
+  padding: 2px 2px 2px 10px;
+  border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface-2);
+}
+
+.slot.open {
+  border-style: dashed;
+  background: transparent;
+}
+
+.slot.busy {
+  opacity: 0.6;
+}
+
+.number {
+  min-width: 18px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.emblem {
+  flex: none;
+  width: 22px;
+  height: 26px;
+}
+
+.emblem text {
+  fill: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
 }
 
 .team-name {
   flex: 1;
   min-width: 0;
-  font-weight: 500;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* The remove button shows on hover or keyboard focus; always on touch screens */
+@media (hover: hover) {
+  .slot .remove {
+    opacity: 0;
+  }
+
+  .slot:hover .remove,
+  .slot:focus-within .remove,
+  .slot.busy .remove {
+    opacity: 1;
+  }
 }

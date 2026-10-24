@@ -14,7 +14,7 @@
           pTextarea
           id="team-names"
           rows="2"
-          placeholder="Alpha, Bravo, Charlie"
+          placeholder="Team Nebula, Vortex Gaming, Iron Hawks"
           [ngModel]="input()"
           (ngModelChange)="input.set($event)"
           (keydown)="onKeydown($event)"
@@ -23,7 +23,7 @@
         @for (problem of problems(); track problem) {
           <span class="field-error">{{ problem }}</span>
         }
-        <span class="hint">Max 24 characters per name. Enter adds, Shift+Enter starts a new line.</span>
+        <span class="hint">Max {{ maxNameLength }} characters per name. Enter adds, Shift+Enter starts a new line.</span>
       </div>
       <p-button
         [label]="names().length > 1 ? 'Add ' + names().length + ' teams' : 'Add team'"
@@ -35,37 +35,34 @@
     </div>
   }
 
-  @if (sortedTeams().length) {
-    <ul class="teams">
-      @for (team of sortedTeams(); track team.id) {
-        <li>
-          <span class="team-name" [title]="team.name">{{ team.name }}</span>
+  <ol class="slots">
+    @for (slot of slots(); track slot?.team?.id ?? 'open-' + $index) {
+      @if (slot; as filled) {
+        <li class="slot" [class.busy]="removing().has(filled.team.id)">
+          <span class="number num">{{ $index + 1 }}</span>
+          <svg class="emblem" viewBox="0 0 24 28" aria-hidden="true">
+            <path d="M12 1 22 4.5V13c0 6.5-4.5 11.5-10 14C6.5 24.5 2 19.5 2 13V4.5Z" [attr.fill]="filled.emblem.color" />
+            <text x="12" y="13" text-anchor="middle" dominant-baseline="central">{{ filled.emblem.initials }}</text>
+          </svg>
+          <span class="team-name" [title]="filled.team.name">{{ filled.team.name }}</span>
           <p-button
+            class="remove"
             icon="pi pi-times"
             [text]="true"
             [rounded]="true"
             size="small"
             severity="secondary"
-            [ariaLabel]="'Remove ' + team.name"
-            (onClick)="teamToRemove.set(team)"
+            [ariaLabel]="'Remove ' + filled.team.name"
+            [loading]="removing().has(filled.team.id)"
+            (onClick)="remove(filled.team)"
           />
         </li>
+      } @else {
+        <li class="slot open">
+          <span class="number num">{{ $index + 1 }}</span>
+          <span class="muted">Open</span>
+        </li>
       }
-    </ul>
-  } @else {
-    <p class="muted none">No teams yet.</p>
-  }
+    }
+  </ol>
 </section>
-
-@if (teamToRemove(); as team) {
-  <app-confirm-dialog
-    [visible]="true"
-    (visibleChange)="closeRemoveDialog($event)"
-    header="Remove team"
-    [message]="'Remove ' + team.name + ' from this tournament?'"
-    confirmLabel="Remove"
-    [danger]="true"
-    [busy]="removing()"
-    (confirmed)="remove()"
-  />
-}

@@ -6,7 +6,7 @@ namespace Application.Validations.Team
     public class AddTeamsValidator : AbstractValidator<AddTeamsRequestDTO>
     {
         public const int MaxNames = 32;
-        public const int MaxNameLength = 24;
+        public const int MaxNameLength = 20;
 
         public AddTeamsValidator()
         {

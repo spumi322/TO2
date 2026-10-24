@@ -5,14 +5,15 @@ import { Button } from 'primeng/button';
 import { Textarea } from 'primeng/textarea';
 import { ErrorToast } from '../../../core/http/error-toast';
 import { Team } from '../../../core/models';
-import { ConfirmDialog } from '../../../shared/confirm-dialog';
 import { TournamentStore } from '../tournament.store';
-import { checkTeamNames, parseTeamNames } from './team-names';
+import { teamEmblem, TeamEmblem } from './team-emblem';
+import { checkTeamNames, MAX_TEAM_NAME_LENGTH, parseTeamNames } from './team-names';
 
-// Registration on the Overview: add teams in bulk, remove one (with confirm). Shown only while teams can change.
+// Registration on the Overview: add teams in bulk, remove one with a click. Shown only while teams can change.
+// One slot per place: teams in registration order, then the open places.
 @Component({
   selector: 'app-team-manager',
-  imports: [FormsModule, Button, Textarea, ConfirmDialog],
+  imports: [FormsModule, Button, Textarea],
   templateUrl: './team-manager.html',
   styleUrl: './team-manager.css',
 })
@@ -23,8 +24,8 @@ export class TeamManager {
 
   readonly input = signal('');
   readonly adding = signal(false);
-  readonly removing = signal(false);
-  readonly teamToRemove = signal<Team | null>(null);
+  readonly removing = signal<ReadonlySet<number>>(new Set());
+  protected readonly maxNameLength = MAX_TEAM_NAME_LENGTH;
 
   readonly maxTeams = computed(() => this.store.tournament()?.maxTeams ?? 0);
   readonly freeSlots = computed(() => Math.max(0, this.maxTeams() - this.store.teams().length));
@@ -36,7 +37,10 @@ export class TeamManager {
       this.freeSlots(),
     ),
   );
-  readonly sortedTeams = computed(() => [...this.store.teams()].sort((a, b) => a.name.localeCompare(b.name)));
+  readonly slots = computed<({ team: Team; emblem: TeamEmblem } | null)[]>(() => {
+    const teams = [...this.store.teams()].sort((a, b) => a.id - b.id).map((team) => ({ team, emblem: teamEmblem(team.name) }));
+    return [...teams, ...Array<null>(this.freeSlots()).fill(null)];
+  });
 
   async add(): Promise<void> {
     const names = this.names();
@@ -66,23 +70,22 @@ export class TeamManager {
     }
   }
 
-  async remove(): Promise<void> {
-    const team = this.teamToRemove();
-    if (!team) return;
+  // No confirm: a team is just a name, adding it back is quick
+  async remove(team: Team): Promise<void> {
+    if (this.removing().has(team.id)) return;
 
-    this.removing.set(true);
+    this.removing.update((ids) => new Set(ids).add(team.id));
     try {
       await this.store.removeTeam(team.id);
     } catch (error) {
       this.errorToast.show(error, 'Team not removed');
       await this.store.reloadTeams().catch(() => undefined);
     } finally {
-      this.removing.set(false);
-      this.teamToRemove.set(null);
+      this.removing.update((ids) => {
+        const next = new Set(ids);
+        next.delete(team.id);
+        return next;
+      });
     }
-  }
-
-  closeRemoveDialog(visible: boolean): void {
-    if (!visible && !this.removing()) this.teamToRemove.set(null);
   }
 }

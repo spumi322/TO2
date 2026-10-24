@@ -13,7 +13,7 @@ namespace Tests.Unit.Validators
         [Fact]
         public void Should_NotHaveError_When_NamesValid()
         {
-            var result = _validator.TestValidate(Names("Alpha", " Bravo ", new string('c', 24)));
+            var result = _validator.TestValidate(Names("Alpha", " Bravo ", new string('c', 20)));
             result.ShouldNotHaveAnyValidationErrors();
         }
 
@@ -42,8 +42,8 @@ namespace Tests.Unit.Validators
         [Fact]
         public void Should_HaveError_When_NameTooLongAfterTrim()
         {
-            _validator.TestValidate(Names(new string('a', 25))).ShouldHaveValidationErrorFor("Names[0]");
-            _validator.TestValidate(Names($"  {new string('a', 24)}  ")).ShouldNotHaveAnyValidationErrors();
+            _validator.TestValidate(Names(new string('a', 21))).ShouldHaveValidationErrorFor("Names[0]");
+            _validator.TestValidate(Names($"  {new string('a', 20)}  ")).ShouldNotHaveAnyValidationErrors();
         }
 
         [Fact]
