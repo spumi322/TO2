@@ -119,7 +119,9 @@ namespace Application.Services
 
         public async Task FinalizeGroupTeams(long standingId)
         {
-            var groupEntries = GroupRanking.Rank(await _groupRepository.GetByStandingIdAsync(standingId));
+            var groupEntries = GroupRanking.Rank(
+                await _groupRepository.GetByStandingIdAsync(standingId),
+                await _matchRepository.FindAllAsync(m => m.StandingId == standingId));
             int position = 1;
             foreach (var entry in groupEntries)
             {
@@ -190,13 +192,16 @@ namespace Application.Services
 
             var allGroupIds = groups.Select(g => g.Id).ToList();
             var allGroupEntries = await _groupRepository.FindAllAsync(g => allGroupIds.Contains(g.StandingId));
+            var allGroupMatches = (await _matchRepository.FindAllAsync(m => allGroupIds.Contains(m.StandingId))).ToList();
 
             // Advancing group entries with their placement in the group (1 = group winner)
             var advancing = new List<(GroupEntry Entry, int Placement)>();
 
             foreach (var group in groups)
             {
-                var ranked = GroupRanking.Rank(allGroupEntries.Where(g => g.StandingId == group.Id));
+                var ranked = GroupRanking.Rank(
+                    allGroupEntries.Where(g => g.StandingId == group.Id),
+                    allGroupMatches.Where(m => m.StandingId == group.Id));
 
                 var groupAdvancing = ranked.Take(teamsAdvancingPerGroup).ToList();
                 groupAdvancing.ForEach(e => e.Status = TeamStatus.Advanced);
@@ -272,7 +277,7 @@ namespace Application.Services
 
         private GetGroupsWithDetailsResponseDTO BuildGroupDTO(Standing standing, IEnumerable<GroupEntry> entries)
         {
-            var groupEntries = GroupRanking.Rank(entries);
+            var groupEntries = GroupRanking.Rank(entries, standing.Matches);
 
             var matches = standing.Matches.Select(m => m.ToStandingMatchDTO() with
             {

@@ -9,7 +9,7 @@ The Groups tab shows one group at a time (group buttons), its table beside a lon
 - **Designed for regular use**: up to 4 groups of 4 fit one screen. Bigger configurations (more or bigger groups) scroll the page normally; no snap blocks, no special layouts for them.
 
 ## Decisions
-- **All groups on one page**, no group picker. A summary line on top: "16 of 24 matches played · Top 2 of each group advance · Best of 3 · Ranked by match wins, then game difference" (advance part only for GroupsAndBracket).
+- **All groups on one page**, no group picker. A summary line on top: "16 of 24 matches played · Top 2 of each group advance · Best of 3 · Ranked by match wins, game difference, then head-to-head" (advance part only for GroupsAndBracket).
 - **Cards per row**: plain CSS grid, `repeat(auto-fit, minmax(340px, 1fr))` (no count rule in code, few groups stretch); phones: 1.
 - **Group card**: name, progress ("4 / 6 played") or a "Finished" chip; table; matches.
   - Table: `#`, Team, Form (last 5 results as W/L pills, oldest first), W-L, +/- (game difference). Cut line under the last advancing place; rows tinted advanced/eliminated once the group is finished (as now). Order from the server (`GroupRanking`), the UI only displays.

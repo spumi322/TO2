@@ -87,7 +87,9 @@ namespace Application.Services
             foreach (var group in groupStandings)
             {
                 // Placement = position in the group (team statuses were already set when the group finished)
-                var teams = GroupRanking.Rank(await _groupRepository.GetByStandingIdAsync(group.Id));
+                var teams = GroupRanking.Rank(
+                    await _groupRepository.GetByStandingIdAsync(group.Id),
+                    await _matchRepository.FindAllAsync(m => m.StandingId == group.Id));
                 placements.AddRange(teams.Select((team, index) => (team.TeamId, index + 1, (int?)null)));
             }
 
@@ -97,11 +99,13 @@ namespace Application.Services
         public async Task<List<(long TeamId, int Placement, int? EliminatedInRound)>> CalculateGroupStageKnockoutPlacements(long tournamentId)
         {
             var entries = await _groupRepository.GetByTournamentIdAsync(tournamentId);
+            var groupIds = entries.Select(e => e.StandingId).Distinct().ToList();
+            var matches = (await _matchRepository.FindAllAsync(m => groupIds.Contains(m.StandingId))).ToList();
 
             // Group position of each knocked-out team (Eliminated was set when the bracket started)
             var knockedOut = entries
                 .GroupBy(e => e.StandingId)
-                .SelectMany(group => GroupRanking.Rank(group).Select((entry, index) => (Entry: entry, GroupPosition: index + 1)))
+                .SelectMany(group => GroupRanking.Rank(group, matches.Where(m => m.StandingId == group.Key)).Select((entry, index) => (Entry: entry, GroupPosition: index + 1)))
                 .Where(x => x.Entry.Eliminated)
                 .ToList();
 

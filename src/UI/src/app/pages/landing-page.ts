@@ -17,7 +17,7 @@ export class LandingPage {
       icon: 'pi-table',
       name: 'Groups',
       description: 'Round robin: every team plays every other team in its group. The group table is the result.',
-      features: ['Round robin schedule', 'Automatic standings', 'Several groups', 'Tie-break by game difference'],
+      features: ['Round robin schedule', 'Automatic standings', 'Several groups', 'Tie-break by game difference and head-to-head'],
     },
     {
       icon: 'pi-sitemap',

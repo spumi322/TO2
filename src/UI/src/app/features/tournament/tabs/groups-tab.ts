@@ -32,7 +32,7 @@ export class GroupsTab {
 
   private readonly matches = computed(() => this.store.groups().flatMap((group) => group.matches));
 
-  // "16 of 24 matches played · Top 2 of each group advance · Best of 3 · Ranked by match wins, then game difference"
+  // "16 of 24 matches played · Top 2 of each group advance · Best of 3 · Ranked by match wins, game difference, then head-to-head"
   readonly summary = computed(() => {
     const matches = this.matches();
     const played = matches.filter((match) => match.winnerId !== null).length;
@@ -41,7 +41,7 @@ export class GroupsTab {
       `${played} of ${matches.length} matches played`,
       ...(advancing ? [`Top ${advancing} of each group advance`] : []),
       ...(matches.length ? [`Best of ${matches[0].bestOf}`] : []),
-      'Ranked by match wins, then game difference',
+      'Ranked by match wins, game difference, then head-to-head',
     ].join(' · ');
   });
 
