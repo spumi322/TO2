@@ -117,6 +117,23 @@ namespace Tests.Unit.Services
             state.CanStartBracket.Should().Be(canStartBracket);
         }
 
+        [Theory]
+        [InlineData(3, 5, false)]
+        [InlineData(3, 6, true)]
+        [InlineData(4, 10, true)]
+        public async Task State_Should_RequireTwoTeamsPerGroupToStartGroups(int groupCount, int teamCount, bool canStartGroups)
+        {
+            var id = await SeedTournamentWithTeamsAsync(Format.GroupsOnly, TournamentStatus.Setup, teamCount);
+            for (var i = 1; i <= groupCount; i++)
+                DbContext.Standings.Add(TestDataBuilder.Standings.CreateGroup(id, $"Group {i}", 4));
+            await SaveAndDetachAsync();
+
+            var state = await _service.GetTournamentStateAsync(id);
+
+            state.MinTeamsToStart.Should().Be(groupCount * 2);
+            state.CanStartGroups.Should().Be(canStartGroups);
+        }
+
         #endregion
 
         #region Get

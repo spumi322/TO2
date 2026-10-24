@@ -12,6 +12,7 @@ namespace Application.DTOs.Tournament
         bool CanDelete,
         bool CanStartGroups,
         bool CanStartBracket,
+        int MinTeamsToStart,
         long Version
     );
 }

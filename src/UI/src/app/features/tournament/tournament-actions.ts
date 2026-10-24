@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ErrorToast } from '../../core/http/error-toast';
 import { Format } from '../../shared/enums';
+import { distributeTeams } from '../tournaments/tournament-config';
 import { TournamentStore } from './tournament.store';
 
 export interface ConfirmRequest {
@@ -33,10 +34,9 @@ export class TournamentActions {
   startGroups(): void {
     const t = this.store.tournament();
     if (!t) return;
-    const groups = t.numberOfGroups === 1 ? '1 group' : `${t.numberOfGroups} groups`;
     this.request.set({
       header: 'Start groups',
-      message: `${t.currentTeams} teams are drawn into ${groups}, every match best of 3.\nRegistration closes: teams can not be changed afterwards.`,
+      message: `${t.currentTeams} teams are drawn into ${groupsText(t.currentTeams, t.numberOfGroups)}, every match best of 3.\nRegistration closes: teams can not be changed afterwards.`,
       confirmLabel: 'Start groups',
       run: async () => {
         await this.store.startGroups();
@@ -115,4 +115,12 @@ export class TournamentActions {
   dismiss(): void {
     if (!this.busy()) this.request.set(null);
   }
+}
+
+// "4 groups of 4", or the sizes when the registered teams don't split evenly: "4 groups (3, 3, 2, 2)"
+export function groupsText(teams: number, groups: number): string {
+  const sizes = distributeTeams(teams, groups);
+  const label = groups === 1 ? '1 group' : `${groups} groups`;
+  if (!sizes.length) return label;
+  return new Set(sizes).size === 1 ? `${label} of ${sizes[0]}` : `${label} (${sizes.join(', ')})`;
 }

@@ -68,6 +68,22 @@ namespace Tests.Unit.Services
         }
 
         [Fact]
+        public async Task GroupsAndBracket_GroupSmallerThanAdvancing_SendsAllItsTeams()
+        {
+            // 10 of 16 teams showed up: groups of 3, 3, 2, 2 with the top 2 advancing
+            var tournamentId = await SeedFinishedGroupsAsync(new[] { 3, 3, 2, 2 }, advancingPerGroup: 2);
+
+            var entrants = await _service.GetTeamsForBracketByFormat(tournamentId);
+            await SaveAndDetachAsync();
+
+            entrants.Select(e => e.Team.Name)
+                .Should().BeEquivalentTo("A1", "A2", "B1", "B2", "C1", "C2", "D1", "D2");
+            var entries = await DbContext.GroupEntries.ToListAsync();
+            entries.Where(e => e.Status == TeamStatus.Eliminated).Select(e => e.TeamName)
+                .Should().BeEquivalentTo("A3", "B3");
+        }
+
+        [Fact]
         public async Task BracketOnly_ReturnsAllRegisteredTeamsWithoutGroup()
         {
             var tournament = TestDataBuilder.Tournaments.CreateDefault(format: Format.BracketOnly);
@@ -92,17 +108,20 @@ namespace Tests.Unit.Services
         /// Creates finished groups with one more team than advance (so 1 is eliminated per group).
         /// Team names are group letter + placement; teams are inserted worst-first.
         /// </summary>
-        private async Task<long> SeedFinishedGroupsAsync(int groupCount, int advancingPerGroup)
-        {
-            int groupSize = advancingPerGroup + 1;
+        private Task<long> SeedFinishedGroupsAsync(int groupCount, int advancingPerGroup) =>
+            SeedFinishedGroupsAsync(Enumerable.Repeat(advancingPerGroup + 1, groupCount).ToArray(), advancingPerGroup);
 
-            var tournament = TestDataBuilder.Tournaments.CreateGroupsAndBracket(maxTeams: groupCount * groupSize);
+        /// <summary>Same with the given group sizes (groups A, B, ...).</summary>
+        private async Task<long> SeedFinishedGroupsAsync(int[] groupSizes, int advancingPerGroup)
+        {
+            var tournament = TestDataBuilder.Tournaments.CreateGroupsAndBracket(maxTeams: groupSizes.Sum());
             tournament.AdvancingPerGroup = advancingPerGroup;
             DbContext.Tournaments.Add(tournament);
             await DbContext.SaveChangesAsync();
 
-            for (int g = 0; g < groupCount; g++)
+            for (int g = 0; g < groupSizes.Length; g++)
             {
+                int groupSize = groupSizes[g];
                 var groupName = ((char)('A' + g)).ToString();
                 var group = TestDataBuilder.Standings.CreateGroup(tournament.Id, $"Group {groupName}", groupSize);
                 DbContext.Standings.Add(group);

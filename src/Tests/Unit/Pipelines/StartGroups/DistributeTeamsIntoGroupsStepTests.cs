@@ -120,7 +120,38 @@ namespace Tests.Unit.Pipelines.StartGroups
             var act = () => _step.ExecuteAsync(context);
 
             // Assert
-            await act.Should().ThrowAsync<ConflictException>().WithMessage("Not enough teams*");
+            await act.Should().ThrowAsync<ConflictException>().WithMessage("4 groups need at least 8 teams (2 per group); 3 registered.");
+        }
+
+        [Theory]
+        [InlineData(3, 3, false)]  // groups of 1 have no match and never finish
+        [InlineData(5, 3, false)]
+        [InlineData(6, 3, true)]   // 2, 2, 2
+        [InlineData(10, 4, true)]  // 3, 3, 2, 2
+        public async Task ExecuteAsync_Should_RequireTwoTeamsPerGroup(int teamCount, int groupCount, bool starts)
+        {
+            var context = new StartGroupsContext
+            {
+                TournamentId = 1,
+                GroupStandings = Enumerable.Range(1, groupCount)
+                    .Select(i => TestDataBuilder.Standings.CreateGroup(1, $"Group {i}", 4))
+                    .ToList()
+            };
+            _mockTeamRepo
+                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<Team, bool>>>()))
+                .ReturnsAsync(TestDataBuilder.Teams.CreateMultiple(teamCount));
+
+            var act = () => _step.ExecuteAsync(context);
+
+            if (starts)
+            {
+                await act.Should().NotThrowAsync();
+                context.GroupAssignments.Values.Should().AllSatisfy(teams => teams.Count.Should().BeGreaterThanOrEqualTo(2));
+            }
+            else
+            {
+                await act.Should().ThrowAsync<ConflictException>();
+            }
         }
     }
 }

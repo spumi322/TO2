@@ -16,7 +16,7 @@ const tournament = (overrides: Partial<Tournament> = {}): Tournament =>
   }) as Tournament;
 
 const state = (overrides: Partial<TournamentState> = {}) =>
-  ({ canStartGroups: false, canStartBracket: false, ...overrides }) as TournamentState;
+  ({ canStartGroups: false, canStartBracket: false, minTeamsToStart: 2, ...overrides }) as TournamentState;
 
 const match = (round: number, winnerId: number | null, teams: [number | null, number | null] = [1, 2]): StandingMatch =>
   ({ round, winnerId, teamAId: teams[0], teamBId: teams[1], teamAWins: 0, teamBWins: 0 }) as StandingMatch;
@@ -66,6 +66,16 @@ describe('overview status', () => {
       { name: 'Semifinals', finished: false, progress: '0 / 2 matches' },
       { name: 'Final', finished: false, progress: '0 / 1 match' },
     ]);
+  });
+
+  it('says how many teams are needed while there are fewer than the server minimum', () => {
+    const groups = tournament({ currentTeams: 5, numberOfGroups: 4 });
+    const bracketOnly = tournament({ format: Format.BracketOnly, currentTeams: 1 });
+
+    expect(statusCard(groups, state({ minTeamsToStart: 8 }), stageCounts(groups, [], null), []).text).toBe(
+      'At least 8 teams are needed to start: 2 in each of the 4 groups.',
+    );
+    expect(statusCard(bracketOnly, state(), stageCounts(bracketOnly, [], null), []).text).toBe('At least 2 teams are needed to start.');
   });
 
   it('shows registration with the start action from the state flags', () => {

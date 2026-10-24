@@ -52,6 +52,7 @@ export class DemoShell implements OnInit {
           canDelete: false,
           canStartGroups: false,
           canStartBracket: false,
+          minTeamsToStart: 2,
           version: demo.tournament.version,
         },
       });

@@ -3,6 +3,7 @@ using Application.Contracts.Repositories;
 using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using Application.Mappings;
+using Application.Utilities;
 using Domain.AggregateRoots;
 using Domain.Enums;
 using Domain.Exceptions;
@@ -14,9 +15,6 @@ namespace Application.Services
 {
     public class TournamentService : ITournamentService
     {
-        // A stage needs at least two teams to start
-        private const int MinTeamsToStart = 2;
-
         private readonly ITournamentRepository _tournamentRepository;
         private readonly ITournamentTeamRepository _tournamentTeamRepository;
         private readonly IStandingRepository _standingRepository;
@@ -56,7 +54,9 @@ namespace Application.Services
             var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
                 ?? throw new NotFoundException("Tournament", tournamentId);
 
-            var hasEnoughTeams = await _tournamentTeamRepository.GetCountByTournamentAsync(tournamentId) >= MinTeamsToStart;
+            var groupCount = (await _standingRepository.FindAllAsync(s => s.TournamentId == tournamentId && s.StandingType == StandingType.Group)).Count();
+            var minTeamsToStart = StartRules.MinTeamsToStart(groupCount);
+            var hasEnoughTeams = await _tournamentTeamRepository.GetCountByTournamentAsync(tournamentId) >= minTeamsToStart;
 
             return new TournamentStateDTO(
                 CurrentStatus: tournament.Status,
@@ -70,6 +70,7 @@ namespace Application.Services
                     && _stateMachine.IsTransitionValid(tournament.Status, TournamentStatus.SeedingGroups, tournament.Format),
                 CanStartBracket: hasEnoughTeams
                     && _stateMachine.IsTransitionValid(tournament.Status, TournamentStatus.SeedingBracket, tournament.Format),
+                MinTeamsToStart: minTeamsToStart,
                 Version: tournament.Version
             );
         }

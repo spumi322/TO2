@@ -51,6 +51,8 @@ export interface TournamentState {
   canDelete: boolean;
   canStartGroups: boolean;
   canStartBracket: boolean;
+  // Fewest registered teams the tournament can start with (2 per group, or 2 for a bracket)
+  minTeamsToStart: number;
   version: number;
 }
 

@@ -1,5 +1,5 @@
 import { Bracket, Group, StandingMatch, TeamPlacement, Tournament, TournamentState } from '../../../core/models';
-import { Format, TournamentStatus } from '../../../shared/enums';
+import { Format, formatHasGroups, TournamentStatus } from '../../../shared/enums';
 import { StageCounts } from '../../tournaments/stage-steps';
 import { roundName } from '../bracket-view/bracket-adapter';
 import { ordinal, toPlacementRows, topPlacements } from '../placements';
@@ -127,8 +127,14 @@ export function currentRound(bracket: Bracket | null, teamNames: Map<number, str
   };
 }
 
-function startText(tournament: Tournament): string {
-  if (tournament.currentTeams < 2) return 'At least 2 teams are needed to start.';
+// The minimum comes from the server (state), so the text and the start button agree
+function startText(tournament: Tournament, state: TournamentState): string {
+  const min = state.minTeamsToStart;
+  if (tournament.currentTeams < min) {
+    return formatHasGroups(tournament.format)
+      ? `At least ${min} teams are needed to start: 2 in each of the ${tournament.numberOfGroups} ${tournament.numberOfGroups === 1 ? 'group' : 'groups'}.`
+      : `At least ${min} teams are needed to start.`;
+  }
   return tournament.format === Format.BracketOnly
     ? 'Start the bracket when everyone is in. Starting seeds the bracket and closes registration.'
     : 'Start the groups when everyone is in. Starting draws the groups and closes registration.';
@@ -177,7 +183,7 @@ export function statusCard(
   switch (tournament.status) {
     case TournamentStatus.Setup: {
       const free = counts.maxTeams - counts.currentTeams;
-      return card('Registration open', free > 0 ? `${free} ${free === 1 ? 'place' : 'places'} left` : 'Full', startText(tournament));
+      return card('Registration open', free > 0 ? `${free} ${free === 1 ? 'place' : 'places'} left` : 'Full', startText(tournament, state));
     }
     case TournamentStatus.SeedingGroups:
       return card('Drawing groups', 'Drawing the groups', 'The teams are being drawn into the groups.');

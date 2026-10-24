@@ -1,5 +1,6 @@
 using Application.Contracts;
 using Application.Pipelines.StartGroups.Contracts;
+using Application.Utilities;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
@@ -35,8 +36,9 @@ namespace Application.Pipelines.StartGroups.Steps
                 .Any(tp => tp.TournamentId == context.TournamentId)))
                 .ToList();
 
-            if (teams.Count < context.GroupStandings.Count)
-                throw new ConflictException($"Not enough teams ({teams.Count}) for {context.GroupStandings.Count} groups");
+            // Every group needs a match, else it can never finish
+            if (teams.Count < StartRules.MinTeamsToStart(context.GroupStandings.Count))
+                throw new ConflictException(StartRules.NotEnoughTeamsMessage(context.GroupStandings.Count, teams.Count));
 
             // Shuffle teams into equal groups
             var groupAssignments = ShuffleTeamsIntoEqualGroups(teams, context.GroupStandings);

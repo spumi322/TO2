@@ -73,7 +73,7 @@ namespace Tests.Unit.Pipelines.StartGroups
 
             var act = () => _pipeline.ExecuteAsync(tournament.Id);
 
-            await act.Should().ThrowAsync<ConflictException>().WithMessage("Not enough teams*");
+            await act.Should().ThrowAsync<ConflictException>().WithMessage("2 groups need at least 4 teams*");
 
             DbContext.ChangeTracker.Clear();
             var stored = await DbContext.Tournaments.AsNoTracking().SingleAsync(t => t.Id == tournament.Id);
@@ -86,7 +86,7 @@ namespace Tests.Unit.Pipelines.StartGroups
         public async Task Should_KeepCommittedChanges_When_BroadcastFails()
         {
             var tournament = TestDataBuilder.Tournaments.CreateDefault(format: Format.GroupsOnly);
-            var teams = TestDataBuilder.Teams.CreateMultiple(2);
+            var teams = TestDataBuilder.Teams.CreateMultiple(4);
             DbContext.Tournaments.Add(tournament);
             DbContext.Teams.AddRange(teams);
             await DbContext.SaveChangesAsync();
