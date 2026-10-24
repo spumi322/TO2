@@ -96,7 +96,7 @@ export class TournamentActions {
 
   async confirm(reason: string | null): Promise<void> {
     const request = this.request();
-    if (!request) return;
+    if (!request || this.busy()) return;
 
     this.busy.set(true);
     try {

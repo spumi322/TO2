@@ -44,7 +44,7 @@ export class TeamManager {
 
   async add(): Promise<void> {
     const names = this.names();
-    if (!names.length || this.problems().length) return;
+    if (this.adding() || !names.length || this.problems().length) return;
 
     this.adding.set(true);
     try {
