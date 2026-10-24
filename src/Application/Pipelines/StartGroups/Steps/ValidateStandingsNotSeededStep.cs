@@ -33,7 +33,7 @@ namespace Application.Pipelines.StartGroups.Steps
 
             // Check if any standings are already seeded
             if (standings.Any(standing => standing.IsSeeded))
-                throw new ConflictException("Standings are already seeded.");
+                throw new ConflictException("The groups are already drawn.");
 
             // Filter to group standings
             var groupStandings = standings.Where(s => s.StandingType == StandingType.Group).ToList();

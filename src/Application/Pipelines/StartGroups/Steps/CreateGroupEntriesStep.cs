@@ -41,7 +41,7 @@ namespace Application.Pipelines.StartGroups.Steps
                     var existingEntry = allGroupEntries.FirstOrDefault(ge => ge.TeamId == team.Id);
 
                     if (existingEntry != null)
-                        throw new ConflictException($"Group entry already exists on tournament: {existingEntry.TournamentId}, team: {existingEntry.TeamId}");
+                        throw new ConflictException("The groups are already drawn.");
 
                     // Create new entry
                     var groupEntry = new GroupEntry(context.TournamentId, standing.Id, team.Id, team.Name);

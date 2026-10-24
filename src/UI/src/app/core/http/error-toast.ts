@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { MessageService } from 'primeng/api';
 import { ApiError, toApiError } from './api-error';
 
-// Shows a failed request as a toast; server errors carry the traceId to quote in a report
+// Shows a failed request as a toast; server errors carry a reference (the traceId) to quote in a report
 @Injectable({ providedIn: 'root' })
 export class ErrorToast {
   private readonly messages = inject(MessageService);
@@ -11,7 +11,7 @@ export class ErrorToast {
     const apiError = toApiError(error);
     const detail =
       apiError.kind === 'server' && apiError.traceId
-        ? `${apiError.message} Trace id: ${apiError.traceId}`
+        ? `${apiError.message} Reference: ${apiError.traceId}`
         : apiError.message;
 
     this.messages.add({ severity: 'error', summary, detail, life: apiError.kind === 'server' ? 10_000 : 5_000 });

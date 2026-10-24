@@ -16,7 +16,7 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
         RuleFor(x => x.Name)
             .NotEmpty()
             .Length(4, 60)
-            .WithMessage("Tournament name must be 4-60 characters long!");
+            .WithMessage("Tournament name must be 4-60 characters long.");
 
         RuleFor(x => x.Description)
             .MaximumLength(120)
@@ -33,13 +33,13 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
             // 1. NumberOfGroups must be null
             RuleFor(x => x)
                 .Must(dto => dto.NumberOfGroups == null)
-                .WithMessage("NumberOfGroups should not be set for BracketOnly format.")
+                .WithMessage("The Bracket format has no groups.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.NumberOfGroups));
 
             // 2. AdvancingPerGroup must be null
             RuleFor(x => x)
                 .Must(dto => dto.AdvancingPerGroup == null)
-                .WithMessage("AdvancingPerGroup should not be set for BracketOnly format.")
+                .WithMessage("The Bracket format has no group stage to advance from.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.AdvancingPerGroup));
 
             // 3. MaxTeams range check
@@ -52,7 +52,7 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
                 .WithMessage(dto =>
                 {
                     var metadata = _formatService.GetFormatMetadata(dto.Format);
-                    return $"MaxTeams must be between {metadata.MinTeams} and {metadata.MaxTeams}.";
+                    return $"Max teams must be between {metadata.MinTeams} and {metadata.MaxTeams}.";
                 })
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.MaxTeams));
         });
@@ -64,13 +64,13 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
             // 1. NumberOfGroups required
             RuleFor(x => x)
                 .Must(dto => dto.NumberOfGroups.HasValue)
-                .WithMessage("NumberOfGroups is required for GroupsAndBracket format.")
+                .WithMessage("Set the number of groups.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.NumberOfGroups));
 
             // 2. AdvancingPerGroup required
             RuleFor(x => x)
                 .Must(dto => dto.AdvancingPerGroup.HasValue)
-                .WithMessage("AdvancingPerGroup is required for GroupsAndBracket format.")
+                .WithMessage("Set how many teams advance per group.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.AdvancingPerGroup));
 
             // 3. MaxTeams range check
@@ -83,27 +83,27 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
                 .WithMessage(dto =>
                 {
                     var metadata = _formatService.GetFormatMetadata(dto.Format);
-                    return $"MaxTeams must be between {metadata.MinTeams} and {metadata.MaxTeams}.";
+                    return $"Max teams must be between {metadata.MinTeams} and {metadata.MaxTeams}.";
                 })
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.MaxTeams));
 
             // 4. NumberOfGroups >= 1
             RuleFor(x => x)
                 .Must(dto => !dto.NumberOfGroups.HasValue || dto.NumberOfGroups.Value >= 1)
-                .WithMessage("NumberOfGroups must be at least 1.")
+                .WithMessage("At least 1 group.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.NumberOfGroups));
 
             // 5. Minimum group size >= 3
             RuleFor(x => x)
                 .Must(dto => !dto.NumberOfGroups.HasValue || dto.NumberOfGroups.Value == 0 ||
                              dto.MaxTeams / dto.NumberOfGroups.Value >= 3)
-                .WithMessage("Each group must have at least 3 teams (MaxTeams / NumberOfGroups >= 3).")
+                .WithMessage("Each group needs at least 3 teams.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.NumberOfGroups));
 
             // 6. AdvancingPerGroup >= 1
             RuleFor(x => x)
                 .Must(dto => !dto.AdvancingPerGroup.HasValue || dto.AdvancingPerGroup.Value >= 1)
-                .WithMessage("AdvancingPerGroup must be at least 1.")
+                .WithMessage("At least 1 team must advance.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.AdvancingPerGroup));
 
             // 7. When NumberOfGroups == 1, AdvancingPerGroup must be >= 2 (bracket needs at least 2 teams)
@@ -114,7 +114,7 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
                     if (dto.NumberOfGroups.Value != 1) return true;
                     return dto.AdvancingPerGroup.Value >= 2;
                 })
-                .WithMessage("When using a single group, at least 2 teams must advance to the bracket.")
+                .WithMessage("With one group, at least 2 teams must advance.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.AdvancingPerGroup));
 
             // 8. AdvancingPerGroup < floor(MaxTeams / NumberOfGroups) — at least 1 eliminated per group
@@ -126,7 +126,7 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
                     int minGroupSize = dto.MaxTeams / dto.NumberOfGroups.Value;
                     return dto.AdvancingPerGroup.Value < minGroupSize;
                 })
-                .WithMessage("AdvancingPerGroup must be less than the minimum group size (at least 1 team eliminated per group).")
+                .WithMessage("At least one team per group must be eliminated.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.AdvancingPerGroup));
         });
 
@@ -137,13 +137,13 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
             // 1. NumberOfGroups required
             RuleFor(x => x)
                 .Must(dto => dto.NumberOfGroups.HasValue)
-                .WithMessage("NumberOfGroups is required for GroupsOnly format.")
+                .WithMessage("Set the number of groups.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.NumberOfGroups));
 
             // 2. AdvancingPerGroup must be null
             RuleFor(x => x)
                 .Must(dto => dto.AdvancingPerGroup == null)
-                .WithMessage("AdvancingPerGroup should not be set for GroupsOnly format.")
+                .WithMessage("The Groups format has no advancing teams.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.AdvancingPerGroup));
 
             // 3. MaxTeams range check
@@ -156,21 +156,21 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
                 .WithMessage(dto =>
                 {
                     var metadata = _formatService.GetFormatMetadata(dto.Format);
-                    return $"MaxTeams must be between {metadata.MinTeams} and {metadata.MaxTeams}.";
+                    return $"Max teams must be between {metadata.MinTeams} and {metadata.MaxTeams}.";
                 })
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.MaxTeams));
 
             // 4. NumberOfGroups >= 1
             RuleFor(x => x)
                 .Must(dto => !dto.NumberOfGroups.HasValue || dto.NumberOfGroups.Value >= 1)
-                .WithMessage("NumberOfGroups must be at least 1.")
+                .WithMessage("At least 1 group.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.NumberOfGroups));
 
             // 5. Minimum group size >= 3
             RuleFor(x => x)
                 .Must(dto => !dto.NumberOfGroups.HasValue || dto.NumberOfGroups.Value == 0 ||
                              dto.MaxTeams / dto.NumberOfGroups.Value >= 3)
-                .WithMessage("Each group must have at least 3 teams (MaxTeams / NumberOfGroups >= 3).")
+                .WithMessage("Each group needs at least 3 teams.")
                 .OverridePropertyName(nameof(CreateTournamentRequestDTO.NumberOfGroups));
         });
     }

@@ -77,7 +77,7 @@ namespace Application.Services
             if (freeSlots <= 0)
                 throw new ConflictException("Tournament is full.");
             if (names.Count > freeSlots)
-                throw new ConflictException($"Only {freeSlots} slots left.");
+                throw new ConflictException($"Only {freeSlots} {(freeSlots == 1 ? "place" : "places")} left.");
 
             var alreadyRegistered = names
                 .Where(n => registeredNames.Contains(n, StringComparer.OrdinalIgnoreCase))
@@ -104,7 +104,7 @@ namespace Application.Services
                 ?? throw new NotFoundException("Tournament", tournamentId);
 
             if (!_stateMachine.CanModifyTeams(existingTournament.Status))
-                throw new ConflictException("Cannot remove teams after tournament has started");
+                throw new ConflictException("Teams cannot be removed once the tournament has started.");
 
             var tournamentTeam = await _tournamentTeamRepository.GetByTeamAndTournamentAsync(teamId, tournamentId)
                 ?? throw new NotFoundException("Team is not registered in this tournament");

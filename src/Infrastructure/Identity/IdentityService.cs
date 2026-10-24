@@ -49,7 +49,7 @@ namespace Infrastructure.Identity
             if (!result.Succeeded)
             {
                 var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-                throw new ValidationException($"User creation failed: {errors}");
+                throw new ValidationException($"Registration failed: {errors}");
             }
 
             return ToAuthUser(user);

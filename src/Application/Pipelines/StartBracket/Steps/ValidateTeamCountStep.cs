@@ -26,7 +26,7 @@ namespace Application.Pipelines.StartBracket.Steps
             int teamCount = context.AdvancedTeams.Count;
 
             if (teamCount < 2)
-                throw new ConflictException($"At least 2 teams are required to start a bracket. Got {teamCount}");
+                throw new ConflictException($"At least 2 teams are needed for the bracket; {teamCount} available.");
 
             _logger.LogInformation("Team count {TeamCount} validated for tournament {TournamentId} (bracket size will be {BracketSize})",
                 teamCount, context.TournamentId, BracketSeedingUtility.NextPowerOfTwo(teamCount));

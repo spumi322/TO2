@@ -1,3 +1,4 @@
+using Application.Utilities;
 using Application.Contracts;
 using Application.DTOs.Game;
 using Application.DTOs.Match;
@@ -146,7 +147,7 @@ namespace Application.Pipelines.MatchResult
                 throw new ValidationException("Match does not belong to the given standing and tournament.");
 
             if (!_stateMachine.CanScoreMatches(tournament.Status))
-                throw new ConflictException($"Matches cannot be scored while the tournament is {tournament.Status}.");
+                throw new ConflictException($"Matches cannot be scored while the tournament is {TournamentStatusText.Describe(tournament.Status)}.");
 
             if (match.WinnerId.HasValue)
                 throw new ConflictException("Match is already confirmed.");

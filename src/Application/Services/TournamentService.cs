@@ -139,7 +139,9 @@ namespace Application.Services
                 ?? throw new NotFoundException("Tournament", id);
 
             if (!_stateMachine.CanCancel(tournament.Status))
-                throw new ConflictException($"A tournament in {tournament.Status} state cannot be cancelled.");
+                throw new ConflictException(tournament.Status == TournamentStatus.Setup
+                    ? "A tournament that has not started can be deleted instead."
+                    : $"The tournament is already {TournamentStatusText.Describe(tournament.Status)}.");
 
             var cancelledBy = _tenantService.GetCurrentUserName();
             var reason = string.IsNullOrWhiteSpace(request.Reason) ? null : request.Reason.Trim();
@@ -156,7 +158,7 @@ namespace Application.Services
                 ?? throw new NotFoundException("Tournament", id);
 
             if (!_stateMachine.CanDelete(tournament.Status))
-                throw new ConflictException($"A tournament in {tournament.Status} state cannot be deleted.");
+                throw new ConflictException("Only a tournament that has not started can be deleted.");
 
             var exclusiveTeams = tournament.TournamentTeams
                 .Where(tt => tt.Team.TournamentParticipations.Count == 1)

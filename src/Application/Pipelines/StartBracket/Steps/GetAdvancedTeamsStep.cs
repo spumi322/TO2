@@ -32,7 +32,7 @@ namespace Application.Pipelines.StartBracket.Steps
             var teams = await _standingService.GetTeamsForBracketByFormat(context.TournamentId);
 
             if (teams == null || teams.Count == 0)
-                throw new ConflictException("No teams available to advance to bracket");
+                throw new ConflictException("No teams advanced to the bracket.");
 
             // Store in context
             context.AdvancedTeams = teams;

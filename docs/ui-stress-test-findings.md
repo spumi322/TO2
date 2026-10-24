@@ -42,7 +42,7 @@ Test tournaments left in Org1 (all prefixed `ST `):
 - Repro: tournament 343 (8 groups of 4): in groups 2, 3, 4, 5, 7 and 8 the top two are both 2-1 with +2; the team that won the direct match is ranked 2nd (Group 7: T24 beat T04 2-1, T04 is 1st). 337 Group 2: 3-way tie (1-1, 0 each).
 - The last tiebreaker is team id (documented rule), but the page only says "Ranked by match wins, then game difference". The tie decides who advances, winner vs runner-up, and bracket seeding.
 
-### 7. Error text shows an internal state name; dialogs go stale
+### 7. Error text shows an internal state name; dialogs go stale (fixed: every user-facing server and validator message reviewed, statuses in words; console checked clean; stale dialogs not handled, the server's refusal is readable)
 - Repro: open Start groups in two tabs, confirm in A, then in B.
 - Result: toast "Groups cannot be started while the tournament is GroupsInProgress."
 - Open confirm dialogs (Start groups / Start bracket) don't update or close when the state changes in another tab ("2 teams are seeded..." after a team was removed elsewhere).

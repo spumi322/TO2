@@ -1,3 +1,4 @@
+using Application.Utilities;
 using Application.Contracts;
 using Application.Pipelines.StartGroups.Contracts;
 using Domain.AggregateRoots;
@@ -43,10 +44,10 @@ namespace Application.Pipelines.StartGroups.Steps
             // Validate format supports groups
             var metadata = _formatService.GetFormatMetadata(tournament.Format);
             if (!metadata.RequiresGroups)
-                throw new ConflictException($"Cannot start groups for {metadata.DisplayName} format");
+                throw new ConflictException("This format has no group stage.");
 
             if (!_stateMachine.IsTransitionValid(tournament.Status, TournamentStatus.SeedingGroups, tournament.Format))
-                throw new ConflictException($"Groups cannot be started while the tournament is {tournament.Status}.");
+                throw new ConflictException($"The groups cannot be started while the tournament is {TournamentStatusText.Describe(tournament.Status)}.");
 
             tournament.Status = TournamentStatus.SeedingGroups;
             tournament.IsRegistrationOpen = false; // Close registration when starting groups

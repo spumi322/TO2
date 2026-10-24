@@ -75,7 +75,7 @@ namespace Tests.Unit.Pipelines.GameResult
 
             var act = () => _pipeline.ExecuteAsync(request);
 
-            await act.Should().ThrowAsync<ConflictException>().WithMessage("Match already has a winner");
+            await act.Should().ThrowAsync<ConflictException>().WithMessage("This match is already decided.");
             _signalRMock.Verify(s => s.BroadcastGameUpdated(It.IsAny<Application.DTOs.SignalR.GameUpdatedEvent>()), Times.Never);
         }
     }

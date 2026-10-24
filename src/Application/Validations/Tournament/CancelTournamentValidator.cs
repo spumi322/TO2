@@ -9,7 +9,7 @@ namespace Application.Validations.Tournament
         {
             RuleFor(x => x.Reason)
                 .MaximumLength(250)
-                .WithMessage("Cancellation reason must be at most 250 characters!");
+                .WithMessage("Cancellation reason must be at most 250 characters.");
         }
     }
 }

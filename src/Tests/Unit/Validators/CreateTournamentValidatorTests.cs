@@ -104,7 +104,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.BracketOnly, maxTeams: maxTeams);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.MaxTeams)
-                .WithErrorMessage("MaxTeams must be between 4 and 32.");
+                .WithErrorMessage("Max teams must be between 4 and 32.");
         }
 
         [Theory]
@@ -115,7 +115,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.BracketOnly, maxTeams: maxTeams);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.MaxTeams)
-                .WithErrorMessage("MaxTeams must be between 4 and 32.");
+                .WithErrorMessage("Max teams must be between 4 and 32.");
         }
 
         [Theory]
@@ -142,7 +142,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.GroupsAndBracket, maxTeams: maxTeams, numberOfGroups: 1, advancingPerGroup: 1);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.MaxTeams)
-                .WithErrorMessage("MaxTeams must be between 4 and 32.");
+                .WithErrorMessage("Max teams must be between 4 and 32.");
         }
 
         [Theory]
@@ -152,7 +152,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.GroupsAndBracket, maxTeams: maxTeams, numberOfGroups: 2, advancingPerGroup: 1);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.MaxTeams)
-                .WithErrorMessage("MaxTeams must be between 4 and 32.");
+                .WithErrorMessage("Max teams must be between 4 and 32.");
         }
 
         [Theory]
@@ -162,7 +162,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.GroupsOnly, maxTeams: maxTeams, numberOfGroups: 1);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.MaxTeams)
-                .WithErrorMessage("MaxTeams must be between 4 and 32.");
+                .WithErrorMessage("Max teams must be between 4 and 32.");
         }
 
         [Theory]
@@ -172,7 +172,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.GroupsOnly, maxTeams: maxTeams, numberOfGroups: 2);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.MaxTeams)
-                .WithErrorMessage("MaxTeams must be between 4 and 32.");
+                .WithErrorMessage("Max teams must be between 4 and 32.");
         }
 
         #endregion
@@ -237,7 +237,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.GroupsAndBracket, maxTeams: 12, numberOfGroups: null, advancingPerGroup: 1);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.NumberOfGroups)
-                .WithErrorMessage("NumberOfGroups is required for GroupsAndBracket format.");
+                .WithErrorMessage("Set the number of groups.");
         }
 
         [Fact]
@@ -246,7 +246,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.GroupsAndBracket, maxTeams: 12, numberOfGroups: 3, advancingPerGroup: null);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.AdvancingPerGroup)
-                .WithErrorMessage("AdvancingPerGroup is required for GroupsAndBracket format.");
+                .WithErrorMessage("Set how many teams advance per group.");
         }
 
         [Theory]
@@ -257,7 +257,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.GroupsAndBracket, maxTeams: maxTeams, numberOfGroups: numberOfGroups, advancingPerGroup: 1);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.NumberOfGroups)
-                .WithErrorMessage("Each group must have at least 3 teams (MaxTeams / NumberOfGroups >= 3).");
+                .WithErrorMessage("Each group needs at least 3 teams.");
         }
 
         [Theory]
@@ -283,7 +283,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.GroupsAndBracket, maxTeams: 12, numberOfGroups: 3, advancingPerGroup: 4);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.AdvancingPerGroup)
-                .WithErrorMessage("AdvancingPerGroup must be less than the minimum group size (at least 1 team eliminated per group).");
+                .WithErrorMessage("At least one team per group must be eliminated.");
         }
 
         [Fact]
@@ -314,7 +314,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.GroupsOnly, maxTeams: 12, numberOfGroups: null);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.NumberOfGroups)
-                .WithErrorMessage("NumberOfGroups is required for GroupsOnly format.");
+                .WithErrorMessage("Set the number of groups.");
         }
 
         [Fact]
@@ -323,7 +323,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.GroupsOnly, maxTeams: 12, numberOfGroups: 3, advancingPerGroup: 1);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.AdvancingPerGroup)
-                .WithErrorMessage("AdvancingPerGroup should not be set for GroupsOnly format.");
+                .WithErrorMessage("The Groups format has no advancing teams.");
         }
 
         [Theory]
@@ -334,7 +334,7 @@ namespace Tests.Unit.Validators
             var request = CreateValidDTO(format: Format.GroupsOnly, maxTeams: maxTeams, numberOfGroups: numberOfGroups);
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.NumberOfGroups)
-                .WithErrorMessage("Each group must have at least 3 teams (MaxTeams / NumberOfGroups >= 3).");
+                .WithErrorMessage("Each group needs at least 3 teams.");
         }
 
         [Fact]

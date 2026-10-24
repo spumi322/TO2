@@ -41,7 +41,7 @@ namespace Application.Pipelines.StartBracket.Steps
 
             // Check if bracket is already seeded
             if (bracket.IsSeeded)
-                throw new ConflictException("Bracket is already seeded.");
+                throw new ConflictException("The bracket has already started.");
 
             // Store in context
             context.Standings = standings.ToList();

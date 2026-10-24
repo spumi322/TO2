@@ -13,17 +13,17 @@ namespace Application.Validations.Team
             RuleFor(x => x.Names)
                 .Cascade(CascadeMode.Stop)
                 .NotEmpty()
-                .WithMessage("Add at least one team name!")
+                .WithMessage("Add at least one team name.")
                 .Must(names => names.Count <= MaxNames)
-                .WithMessage($"At most {MaxNames} teams can be added at once!")
+                .WithMessage($"At most {MaxNames} teams can be added at once.")
                 .Must(names => names.Select(n => n?.Trim()).Distinct(StringComparer.OrdinalIgnoreCase).Count() == names.Count)
-                .WithMessage("Team names must be unique!");
+                .WithMessage("Team names must be unique.");
 
             RuleForEach(x => x.Names)
                 .Must(name => !string.IsNullOrWhiteSpace(name))
-                .WithMessage("Team name cannot be empty!")
+                .WithMessage("Team name cannot be empty.")
                 .Must(name => name == null || name.Trim().Length <= MaxNameLength)
-                .WithMessage($"Team name cannot exceed {MaxNameLength} characters!");
+                .WithMessage($"Team name cannot exceed {MaxNameLength} characters.");
         }
     }
 }

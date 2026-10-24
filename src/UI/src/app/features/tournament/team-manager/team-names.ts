@@ -29,7 +29,7 @@ export function checkTeamNames(names: string[], registered: string[], freeSlots:
   if (taken.length) problems.push(`Already registered: ${taken.join(', ')}`);
 
   if (names.length > freeSlots) {
-    problems.push(freeSlots === 0 ? 'The tournament is full.' : `Only ${freeSlots} ${freeSlots === 1 ? 'slot' : 'slots'} left.`);
+    problems.push(freeSlots === 0 ? 'The tournament is full.' : `Only ${freeSlots} ${freeSlots === 1 ? 'place' : 'places'} left.`);
   }
 
   return problems;

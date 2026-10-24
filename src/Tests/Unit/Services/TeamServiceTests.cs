@@ -155,7 +155,7 @@ namespace Tests.Unit.Services
 
             var act = () => _service.AddTeamsToTournamentAsync(id, Names("Charlie", "Delta", "Echo"));
 
-            (await act.Should().ThrowAsync<ConflictException>()).WithMessage("Only 2 slots left.");
+            (await act.Should().ThrowAsync<ConflictException>()).WithMessage("Only 2 places left.");
             (await RegisteredNamesAsync(id)).Should().HaveCount(2);
             (await DbContext.Teams.CountAsync()).Should().Be(2);
         }

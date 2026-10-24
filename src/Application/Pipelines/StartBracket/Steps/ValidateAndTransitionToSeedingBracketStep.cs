@@ -1,3 +1,4 @@
+using Application.Utilities;
 using Application.Contracts;
 using Application.Pipelines.StartBracket.Contracts;
 using Domain.AggregateRoots;
@@ -43,10 +44,10 @@ namespace Application.Pipelines.StartBracket.Steps
             // Validate format supports bracket
             var metadata = _formatService.GetFormatMetadata(tournament.Format);
             if (!metadata.RequiresBracket)
-                throw new ConflictException($"Cannot start bracket for {metadata.DisplayName} format");
+                throw new ConflictException("This format has no bracket.");
 
             if (!_stateMachine.IsTransitionValid(tournament.Status, TournamentStatus.SeedingBracket, tournament.Format))
-                throw new ConflictException($"Bracket cannot be started while the tournament is {tournament.Status}.");
+                throw new ConflictException($"The bracket cannot be started while the tournament is {TournamentStatusText.Describe(tournament.Status)}.");
 
             tournament.Status = TournamentStatus.SeedingBracket;
             tournament.IsRegistrationOpen = false;

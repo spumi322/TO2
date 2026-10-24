@@ -38,7 +38,7 @@ namespace Application.Services
                 if (gamesAlreadyGenerated.Count > 0)
                 {
                     _logger.LogWarning("Attempted to generate games for match {MatchId}, but games already exist.", match.Id);
-                    throw new ConflictException("Games already generated for this match");
+                    throw new ConflictException("This match already has its games.");
                 }
             }
 
@@ -64,7 +64,7 @@ namespace Application.Services
                 ?? throw new NotFoundException("Match", existingGame.MatchId);
 
             if (match.WinnerId.HasValue)
-                throw new ConflictException("Match already has a winner");
+                throw new ConflictException("This match is already decided.");
 
             var teamAId = existingGame.TeamAId;
             var teamBId = existingGame.TeamBId;

@@ -30,10 +30,10 @@ namespace Application.Services
         {
             var tenantId = _tenantService.GetCurrentTenantId();
             var tenant = await _tenantRepository.GetByIdAsync(tenantId)
-                ?? throw new NotFoundException(nameof(Tenant), tenantId);
+                ?? throw new NotFoundException("Organization", tenantId);
 
             if (!tenant.IsActive)
-                throw new ForbiddenException("Tenant account is inactive");
+                throw new ForbiddenException("This organization is inactive.");
 
             var code = InviteCode.Generate();
             var expiresAt = DateTime.UtcNow.Add(InviteCode.Lifetime);

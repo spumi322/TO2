@@ -12,7 +12,7 @@ describe('team names', () => {
       `Longer than 20 characters: ${'x'.repeat(21)}`,
       'Listed twice: ALPHA',
       'Already registered: bravo',
-      'Only 3 slots left.',
+      'Only 3 places left.',
     ]);
   });
 

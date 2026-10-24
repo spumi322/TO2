@@ -1,3 +1,4 @@
+using Application.Utilities;
 using Application.Contracts;
 using Application.DTOs.Game;
 using Application.DTOs.Orchestration;
@@ -259,7 +260,7 @@ namespace Application.Pipelines.GameResult
                 throw new ValidationException("Game does not belong to the given match, standing and tournament.");
 
             if (!_stateMachine.CanScoreMatches(tournament.Status))
-                throw new ConflictException($"Matches cannot be scored while the tournament is {tournament.Status}.");
+                throw new ConflictException($"Matches cannot be scored while the tournament is {TournamentStatusText.Describe(tournament.Status)}.");
 
             if (game.Version != gameResult.Version)
                 throw new ConflictException("Game was modified by another user. Reload and try again.");

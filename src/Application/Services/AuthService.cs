@@ -134,7 +134,7 @@ namespace Application.Services
                 throw new UnauthorizedException("Invalid email or password");
 
             if (!tenant.IsActive)
-                throw new ForbiddenException("Tenant account is inactive");
+                throw new ForbiddenException("This organization is inactive.");
 
             _logger.LogInformation("User {Email} logged in successfully", request.Email);
 
@@ -146,15 +146,15 @@ namespace Application.Services
             var refreshToken = await FindRefreshTokenAsync(request.RefreshToken);
 
             if (refreshToken == null || !refreshToken.IsActive)
-                throw new UnauthorizedException("Invalid or expired refresh token");
+                throw new UnauthorizedException("Your session has expired. Sign in again.");
 
             var user = await _identityService.FindByIdAsync(refreshToken.UserId);
             if (user == null)
-                throw new UnauthorizedException("Invalid or expired refresh token");
+                throw new UnauthorizedException("Your session has expired. Sign in again.");
 
             var tenant = await _tenantRepository.GetByIdAsync(user.TenantId);
             if (tenant == null)
-                throw new UnauthorizedException("Invalid or expired refresh token");
+                throw new UnauthorizedException("Your session has expired. Sign in again.");
 
             // Revoke old refresh token
             refreshToken.Revoked = DateTime.UtcNow;
@@ -174,10 +174,10 @@ namespace Application.Services
             var token = await FindRefreshTokenAsync(refreshToken);
 
             if (token == null)
-                throw new UnauthorizedException("Invalid refresh token");
+                throw new UnauthorizedException("Your session has expired. Sign in again.");
 
             if (!token.IsActive)
-                throw new ValidationException("Token is already revoked");
+                throw new ValidationException("You are already signed out.");
 
             token.Revoked = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync();

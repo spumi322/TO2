@@ -110,7 +110,7 @@ export class BracketView {
       });
       this.failed.set(false);
     } catch (error) {
-      console.error(error);
+      console.error('Bracket not drawn', error);
       this.failed.set(true);
     }
   }
