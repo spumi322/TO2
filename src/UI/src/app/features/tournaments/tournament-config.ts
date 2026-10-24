@@ -7,6 +7,8 @@ import { Format, formatHasBracket, formatHasGroups } from '../../shared/enums';
 export const MIN_TEAMS = 4;
 export const MAX_TEAMS = 32;
 export const MIN_GROUP_SIZE = 3;
+// Fits the Overview's 3-line About box
+export const DESCRIPTION_MAX = 120;
 
 export interface TournamentConfig {
   name: string;
@@ -76,7 +78,7 @@ export function validateConfig(config: TournamentConfig): Partial<Record<keyof T
   const name = config.name.trim();
 
   if (name.length < 4 || name.length > 60) errors.name = 'Name must be 4-60 characters long.';
-  if (config.description.length > 250) errors.description = 'Description cannot exceed 250 characters.';
+  if (config.description.length > DESCRIPTION_MAX) errors.description = `Description cannot exceed ${DESCRIPTION_MAX} characters.`;
   if (!Number.isInteger(config.maxTeams) || config.maxTeams < MIN_TEAMS || config.maxTeams > MAX_TEAMS) {
     errors.maxTeams = `Max teams must be between ${MIN_TEAMS} and ${MAX_TEAMS}.`;
   }
@@ -115,6 +117,41 @@ export function buildCreateRequest(config: TournamentConfig): CreateTournamentRe
   };
 }
 
+export interface PreviewSlot {
+  label: string; // '#3', 'BYE', or '' while the team is not known yet
+  bye: boolean;
+  byeOpponent: boolean; // goes to round 2 without playing
+}
+
+export interface PreviewMatch {
+  top: PreviewSlot;
+  bottom: PreviewSlot;
+}
+
+/**
+ * The preview's bracket tree: rounds of pairs (the two matches that feed one match of the next round).
+ * Round 1 shows seeds and BYEs, later rounds are empty slots. The final is one pair of one match.
+ */
+export function bracketTreeRounds(matchups: [number, number][], teamCount: number): PreviewMatch[][][] {
+  const empty: PreviewSlot = { label: '', bye: false, byeOpponent: false };
+  const seedSlot = (seed: number, opponent: number): PreviewSlot => ({
+    label: seed > teamCount ? 'BYE' : `#${seed}`,
+    bye: seed > teamCount,
+    byeOpponent: seed <= teamCount && opponent > teamCount,
+  });
+
+  const rounds: PreviewMatch[][] = [];
+  let matches = matchups.map(([a, b]) => ({ top: seedSlot(a, b), bottom: seedSlot(b, a) }));
+  while (matches.length) {
+    rounds.push(matches);
+    matches = Array.from({ length: matches.length >> 1 }, () => ({ top: empty, bottom: empty }));
+  }
+
+  return rounds.map((round) =>
+    round.length === 1 ? [round] : Array.from({ length: round.length / 2 }, (_, i) => round.slice(i * 2, i * 2 + 2)),
+  );
+}
+
 export interface ConfigPreview {
   groupSizes: number[];
   groupMatches: number;
@@ -122,7 +159,7 @@ export interface ConfigPreview {
   bracketSize: number;
   byes: number;
   rounds: number;
-  matchups: [number, number][];
+  tree: PreviewMatch[][][];
 }
 
 export function previewConfig(config: TournamentConfig): ConfigPreview {
@@ -137,6 +174,6 @@ export function previewConfig(config: TournamentConfig): ConfigPreview {
     bracketSize,
     byes: computeByeCount(bracketSize, bracketTeams),
     rounds: bracketSize ? Math.log2(bracketSize) : 0,
-    matchups: generateMatchups(bracketSize),
+    tree: bracketTreeRounds(generateMatchups(bracketSize), bracketTeams),
   };
 }

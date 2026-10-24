@@ -19,8 +19,8 @@ public class CreateTournamentValidator : AbstractValidator<CreateTournamentReque
             .WithMessage("Tournament name must be 4-60 characters long!");
 
         RuleFor(x => x.Description)
-            .MaximumLength(250)
-            .WithMessage("Description cannot exceed 250 characters.");
+            .MaximumLength(120)
+            .WithMessage("Description cannot exceed 120 characters.");
 
         RuleFor(x => x.Format)
             .IsInEnum()

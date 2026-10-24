@@ -13,7 +13,7 @@ namespace Application.Validations.Tournament
                 .WithMessage("Tournament name must be 4-60 characters long!");
 
             RuleFor(x => x.Description)
-                .MaximumLength(250);
+                .MaximumLength(120);
         }
     }
 }

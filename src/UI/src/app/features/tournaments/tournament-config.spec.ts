@@ -1,6 +1,7 @@
 import { Format } from '../../shared/enums';
 import {
   bracketTeamCount,
+  bracketTreeRounds,
   buildCreateRequest,
   computeBracketSize,
   computeByeCount,
@@ -61,6 +62,23 @@ describe('tournament config', () => {
     expect(preview.groupSizes).toEqual([4, 3, 3]);
     expect(preview.groupMatches).toBe(6 + 3 + 3);
     expect(preview).toMatchObject({ bracketTeams: 6, bracketSize: 8, byes: 2, rounds: 3 });
+  });
+
+  it('builds the bracket tree: seeds and BYEs in round 1, empty slots after, pairs feeding one match', () => {
+    const tree = bracketTreeRounds(generateMatchups(8), 6);
+
+    expect(tree.map((round) => round.map((pair) => pair.length))).toEqual([[2, 2], [2], [1]]);
+    const first = tree[0].flat();
+    expect(first.map((m) => [m.top.label, m.bottom.label])).toEqual([
+      ['#1', 'BYE'],
+      ['#4', '#5'],
+      ['#2', 'BYE'],
+      ['#3', '#6'],
+    ]);
+    expect(first[0].top).toMatchObject({ byeOpponent: true, bye: false });
+    expect(first[0].bottom).toMatchObject({ byeOpponent: false, bye: true });
+    expect(first[1].top.byeOpponent).toBe(false);
+    expect(tree[2][0][0].top.label).toBe('');
   });
 
   it('mirrors the server validation rules', () => {

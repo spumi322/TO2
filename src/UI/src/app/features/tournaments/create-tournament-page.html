@@ -1,4 +1,4 @@
-<div class="page stack">
+<div class="page stack create-page">
   <div class="row">
     <a routerLink="/tournaments" class="muted back"><i class="pi pi-arrow-left"></i> Tournaments</a>
   </div>
@@ -19,9 +19,10 @@
       </div>
 
       <div class="field">
-        <label for="description">Description <span class="muted">(optional)</span></label>
-        <textarea pTextarea id="description" formControlName="description" rows="3" maxlength="250"></textarea>
-        <span class="hint num">{{ form.controls.description.value.length }} / 250</span>
+        <label for="description">Description</label>
+        <textarea pTextarea id="description" formControlName="description" rows="3" [maxlength]="descriptionMax"
+          placeholder="Dates, prizes, rules..."></textarea>
+        <span class="hint num">{{ form.controls.description.value.length }} / {{ descriptionMax }}</span>
         @if (fieldError('description'); as message) {
           <span class="field-error">{{ message }}</span>
         }
@@ -46,35 +47,28 @@
         </div>
       </fieldset>
 
+      <!-- Always three columns: a field the format doesn't use keeps its place, so the form doesn't jump -->
       <div class="numbers">
         <div class="field">
           <label for="maxTeams">Max teams</label>
-          <p-inputnumber inputId="maxTeams" formControlName="maxTeams" [showButtons]="true" [min]="minTeams" [max]="maxTeams" [useGrouping]="false" />
-          @if (fieldError('maxTeams'); as message) {
-            <span class="field-error">{{ message }}</span>
-          }
+          <p-inputnumber inputId="maxTeams" formControlName="maxTeams" [showButtons]="true" [min]="minTeams" [max]="maxTeams" [useGrouping]="false" [fluid]="true" />
         </div>
 
-        @if (hasGroups()) {
-          <div class="field">
-            <label for="numberOfGroups">Groups</label>
-            <p-inputnumber inputId="numberOfGroups" formControlName="numberOfGroups" [showButtons]="true" [min]="1" [max]="16" [useGrouping]="false" />
-            @if (fieldError('numberOfGroups'); as message) {
-              <span class="field-error">{{ message }}</span>
-            }
-          </div>
-        }
+        <div class="field" [class.unused]="!hasGroups()">
+          <label for="numberOfGroups">Groups</label>
+          <p-inputnumber inputId="numberOfGroups" formControlName="numberOfGroups" [showButtons]="true" [min]="1" [max]="16" [useGrouping]="false" [fluid]="true" />
+        </div>
 
-        @if (isGroupsAndBracket()) {
-          <div class="field">
-            <label for="advancingPerGroup">Advance per group</label>
-            <p-inputnumber inputId="advancingPerGroup" formControlName="advancingPerGroup" [showButtons]="true" [min]="1" [max]="16" [useGrouping]="false" />
-            @if (fieldError('advancingPerGroup'); as message) {
-              <span class="field-error">{{ message }}</span>
-            }
-          </div>
-        }
+        <div class="field" [class.unused]="!isGroupsAndBracket()">
+          <label for="advancingPerGroup">Advance per group</label>
+          <p-inputnumber inputId="advancingPerGroup" formControlName="advancingPerGroup" [showButtons]="true" [min]="1" [max]="16" [useGrouping]="false" [fluid]="true" />
+        </div>
       </div>
+      @for (field of numberFields; track field) {
+        @if (fieldError(field); as message) {
+          <span class="field-error">{{ message }}</span>
+        }
+      }
 
       <p class="hint">Every match is best of 3. You add teams after creating the tournament.</p>
 
@@ -85,58 +79,65 @@
       </div>
     </form>
 
-    <aside class="card stack preview" aria-label="Preview">
-      <h2>Preview</h2>
+    <aside class="card preview" aria-label="Structure preview">
+      <h2 class="preview-title">Structure preview</h2>
       @let p = preview();
 
-      @if (hasGroups()) {
-        <section class="stack-sm">
-          <h3>Groups</h3>
-          @if (p.groupSizes.length) {
+      @if (previewIssue(); as issue) {
+        <span class="muted">{{ issue }}</span>
+      } @else {
+        @if (hasGroups()) {
+          <section class="stack-sm">
             <div class="groups">
               @for (size of p.groupSizes; track $index) {
-                <div class="group num">
-                  <span class="muted small">Group {{ $index + 1 }}</span>
-                  <strong>{{ size }} teams</strong>
+                <div class="group">
+                  <div class="group-head">Group {{ $index + 1 }}</div>
+                  <div class="group-body">
+                    <span class="big num">{{ size }}</span>
+                    <span class="muted small">teams</span>
+                  </div>
                 </div>
               }
             </div>
-            <span class="muted num">{{ p.groupMatches }} group matches, round robin</span>
-          } @else {
-            <span class="muted">Set the number of groups.</span>
-          }
-        </section>
-      }
+            <span class="muted small num">{{ p.groupMatches }} group matches, round robin</span>
+          </section>
+        }
 
-      @if (hasBracket()) {
-        <section class="stack-sm">
-          <h3>Bracket</h3>
-          @if (p.bracketSize) {
-            <span class="num">
-              {{ p.bracketTeams }} teams, {{ p.bracketSize }} slots, {{ p.rounds }} {{ p.rounds === 1 ? 'round' : 'rounds' }}
+        @if (hasBracket()) {
+          <section class="bracket">
+            <div class="stats num">
+              <div class="stat"><span class="big">{{ p.bracketSize }}</span><span class="stat-label">Bracket size</span></div>
+              <div class="stat"><span class="big">{{ p.bracketTeams }}</span><span class="stat-label">Teams</span></div>
               @if (p.byes) {
-                <span class="muted">({{ p.byes }} {{ p.byes === 1 ? 'BYE' : 'BYEs' }} for the top seeds)</span>
+                <div class="stat"><span class="big">{{ p.byes }}</span><span class="stat-label">{{ p.byes === 1 ? 'BYE' : 'BYEs' }}</span></div>
               }
-            </span>
-            <ol class="matchups num">
-              @for (m of p.matchups; track $index) {
-                <li>
-                  Seed {{ m[0] }} vs
-                  @if (m[1] > p.bracketTeams) {
-                    <span class="muted">BYE</span>
-                  } @else {
-                    seed {{ m[1] }}
+            </div>
+
+            <div class="tree num" [style.--r1]="p.tree[0].flat().length" [attr.data-r1]="p.tree[0].flat().length" role="img" [attr.aria-label]="p.bracketTeams + ' team bracket, ' + p.rounds + ' rounds'">
+              @for (round of p.tree; track $index) {
+                <div class="round">
+                  @for (pair of round; track $index) {
+                    <div class="pair" [class.joined]="pair.length === 2">
+                      @for (m of pair; track $index) {
+                        <div class="cell">
+                          <div class="match">
+                            @for (slot of [m.top, m.bottom]; track $index) {
+                              <div class="slot" [class.bye]="slot.bye" [class.bye-opponent]="slot.byeOpponent">{{ slot.label }}</div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
                   }
-                </li>
+                </div>
               }
-            </ol>
+            </div>
+
             @if (isGroupsAndBracket()) {
               <span class="hint">Group winners meet runners-up; teams of the same group are kept apart in round 1.</span>
             }
-          } @else {
-            <span class="muted">Not enough teams for a bracket.</span>
-          }
-        </section>
+          </section>
+        }
       }
     </aside>
   </div>

@@ -11,6 +11,7 @@ import { applyFieldErrors, toApiError } from '../../core/http/api-error';
 import { Format, FORMAT_DESCRIPTIONS, FORMAT_LABELS, formatHasBracket, formatHasGroups } from '../../shared/enums';
 import {
   buildCreateRequest,
+  DESCRIPTION_MAX,
   MAX_TEAMS,
   MIN_TEAMS,
   previewConfig,
@@ -35,6 +36,8 @@ export class CreateTournamentPage {
   }));
   protected readonly minTeams = MIN_TEAMS;
   protected readonly maxTeams = MAX_TEAMS;
+  protected readonly descriptionMax = DESCRIPTION_MAX;
+  protected readonly numberFields = ['maxTeams', 'numberOfGroups', 'advancingPerGroup'] as const;
 
   readonly form = new FormGroup({
     name: new FormControl('', { nonNullable: true }),
@@ -53,6 +56,11 @@ export class CreateTournamentPage {
   readonly isGroupsAndBracket = computed(() => this.config().format === Format.GroupsAndBracket);
   readonly preview = computed(() => previewConfig(this.config()));
   readonly clientErrors = computed(() => validateConfig(this.config()));
+  // The preview draws only a structure the server would accept
+  readonly previewIssue = computed(() => {
+    const errors = this.clientErrors();
+    return errors.maxTeams ?? errors.numberOfGroups ?? errors.advancingPerGroup ?? null;
+  });
 
   readonly submitted = signal(false);
   readonly submitting = signal(false);

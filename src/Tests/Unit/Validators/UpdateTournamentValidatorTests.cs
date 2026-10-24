@@ -69,7 +69,7 @@ namespace Tests.Unit.Validators
         [Fact]
         public void Should_HaveError_When_Description_ExceedsMaxLength()
         {
-            var request = CreateValidDTO(description: new string('A', 251));
+            var request = CreateValidDTO(description: new string('A', 121));
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.Description);
         }
@@ -77,7 +77,7 @@ namespace Tests.Unit.Validators
         [Fact]
         public void Should_NotHaveError_When_Description_IsAtMaxLength()
         {
-            var request = CreateValidDTO(description: new string('A', 250));
+            var request = CreateValidDTO(description: new string('A', 120));
             var result = _validator.TestValidate(request);
             result.ShouldNotHaveValidationErrorFor(x => x.Description);
         }
