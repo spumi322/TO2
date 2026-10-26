@@ -35,8 +35,8 @@
           <span class="pulse" aria-hidden="true"></span>In play <span class="muted count">{{ ongoing().length }}</span>
         </h2>
         @if (liveHasMore()) {
-          <button type="button" class="toggle" (click)="liveExpanded.set(!liveExpanded())">
-            {{ liveExpanded() ? 'Show less' : 'Show all ' + live().length }}
+          <button type="button" class="toggle" (click)="toggleLive()">
+            {{ liveOpen() ? 'Show less' : 'Show all ' + live().length }}
           </button>
         }
       </div>

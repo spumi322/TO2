@@ -18,7 +18,8 @@ import { StageTrack } from './stage-track';
 
 type Tab = 'registration' | 'finished' | 'cancelled';
 
-// One-screen rule: In play shows every row (or half the screen after "Show less"), the open tab gets the rows left.
+// One-screen rule: In play shows every row while the running ones fit (or half the screen after "Show less"),
+// the open tab gets the rows left.
 // Page parts that are not rows: top bar, page header, section title, tab bar (+56px margin), list headers, paddings
 const PAGE_CHROME_HEIGHT = 436;
 const ROW_HEIGHT = 49;
@@ -43,13 +44,17 @@ export class TournamentListPage implements OnInit {
   readonly error = signal<string | null>(null);
   // null = not picked yet: Registration, or Finished when nothing is in registration
   private readonly pickedTab = signal<Tab | null>(null);
-  readonly liveExpanded = signal(true);
+  // null = not toggled: every row while the running ones fit (MIN_ROWS left for the tab), else the rows that fit
+  private readonly liveExpanded = signal<boolean | null>(null);
   readonly tabExpanded = signal(false);
 
   private readonly windowHeight = signal(window.innerHeight);
   // Rows that fit the window, both lists together
   private readonly rowsOnScreen = computed(() => Math.floor((this.windowHeight() - PAGE_CHROME_HEIGHT) / ROW_HEIGHT));
-  readonly liveLimit = computed(() => Math.max(MIN_ROWS, Math.floor(this.rowsOnScreen() / 2)));
+  private readonly liveFit = computed(() => Math.max(MIN_ROWS, this.rowsOnScreen() - MIN_ROWS));
+  private readonly liveHalf = computed(() => Math.max(MIN_ROWS, Math.floor(this.rowsOnScreen() / 2)));
+  // "Show less" = half the screen; too many running tournaments = the rows that fit
+  readonly liveLimit = computed(() => (this.liveExpanded() === false ? this.liveHalf() : this.liveFit()));
 
   protected readonly formatLabels = FORMAT_LABELS;
 
@@ -81,10 +86,15 @@ export class TournamentListPage implements OnInit {
     }
   });
 
-  readonly liveShown = computed(() => (this.liveExpanded() ? this.live() : this.live().slice(0, this.liveLimit())));
+  readonly liveOpen = computed(() => this.liveExpanded() ?? this.ongoing().length <= this.liveFit());
+  readonly liveShown = computed(() => (this.liveOpen() ? this.live() : this.live().slice(0, this.liveLimit())));
   private readonly tabLimit = computed(() => Math.max(MIN_ROWS, this.rowsOnScreen() - this.liveShown().length));
   readonly tabShown = computed(() => (this.tabExpanded() ? this.tabItems() : this.tabItems().slice(0, this.tabLimit())));
-  readonly liveHasMore = computed(() => this.live().length > this.liveLimit());
+  readonly liveHasMore = computed(() => this.live().length > this.liveHalf());
+
+  toggleLive(): void {
+    this.liveExpanded.set(!this.liveOpen());
+  }
   readonly tabHasMore = computed(() => this.tabItems().length > this.tabLimit());
   readonly tabCount = computed(() => this.tabItems().length);
 
