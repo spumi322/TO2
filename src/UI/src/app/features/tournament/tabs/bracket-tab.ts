@@ -19,10 +19,12 @@ export class BracketTab {
 
   readonly canScore = computed(() => !!this.store.state()?.canScoreMatches);
   readonly seeded = computed(() => !!this.store.bracket()?.isSeeded);
-  // Up to 8 first-round matches (16 teams) fit one screen; bigger brackets scroll one half per step
-  readonly halves = computed(
-    () => (this.store.bracket()?.matches.filter((match) => match.round === 1).length ?? 0) > 8,
+  private readonly firstRound = computed(
+    () => this.store.bracket()?.matches.filter((match) => match.round === 1).length ?? 0,
   );
+  // 16 teams fit one screen with tighter spacing; bigger brackets scroll one half per step, each half with tight spacing
+  readonly halves = computed(() => this.firstRound() > 8);
+  readonly matchGap = computed(() => (this.halves() ? 4 : this.firstRound() === 8 ? 7 : 12));
 
   // The clicked match, scored in a popup at the click (as in the groups)
   readonly selectedMatchId = signal<number | null>(null);

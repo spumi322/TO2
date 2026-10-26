@@ -22,6 +22,7 @@
   --round-margin: 36px;
   --match-vertical-padding: 5px;
   --match-border-radius: 6px;
+  --match-gap: 12px;
 
   margin: 0;
   padding: 0;
@@ -49,12 +50,7 @@
 }
 
 :host ::ng-deep .brackets-viewer .match {
-  margin: 12px 0;
-}
-
-/* Big brackets (more than 16 teams): tight spacing, so one half fits a screen */
-:host ::ng-deep .brackets-viewer.compact .match {
-  margin: 4px 0;
+  margin: var(--match-gap) 0;
 }
 
 :host ::ng-deep .brackets-viewer .participant.win .name {

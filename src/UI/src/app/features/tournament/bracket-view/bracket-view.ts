@@ -64,7 +64,7 @@ export interface MatchClick {
     <div
       class="brackets-viewer clickable"
       [id]="elementId"
-      [class.compact]="compact()"
+      [style.--match-gap]="matchGap() + 'px'"
       (click)="onClick($event)"
     ></div>
   `,
@@ -74,8 +74,8 @@ export class BracketView {
   readonly bracket = input.required<Bracket>();
   readonly teamNames = input.required<Map<number, string>>();
   readonly tournamentId = input.required<number>();
-  // Tight spacing between matches (big brackets)
-  readonly compact = input(false);
+  // Space above and below each match, in px (big brackets are tighter)
+  readonly matchGap = input(12);
   readonly matchClick = output<MatchClick>();
 
   protected readonly elementId = `bracket-view-${++nextId}`;
