@@ -1,0 +1,5 @@
+# Editor configuration, see https://editorconfig.org (src/UI has its own)
+root = true
+
+[*]
+end_of_line = lf
