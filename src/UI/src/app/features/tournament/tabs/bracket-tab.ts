@@ -34,10 +34,14 @@ export class BracketTab {
   readonly selectedMatch = computed(
     () => this.store.bracket()?.matches.find((match) => match.id === this.selectedMatchId()) ?? null,
   );
+  // "Semifinals · Match 2" (top to bottom in the round); the final has just one match
   readonly selectedRound = computed(() => {
     const match = this.selectedMatch();
+    if (!match) return '';
     const rounds = Math.max(...(this.store.bracket()?.matches.map((m) => m.round ?? 1) ?? [1]));
-    return match ? roundName(1 / 2 ** (rounds - (match.round ?? 1))) : '';
+    const round = match.round ?? 1;
+    const name = roundName(1 / 2 ** (rounds - round));
+    return round === rounds ? name : `${name} · Match ${match.seed ?? 1}`;
   });
 
   constructor() {
