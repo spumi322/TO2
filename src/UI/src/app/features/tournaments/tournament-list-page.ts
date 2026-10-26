@@ -18,8 +18,8 @@ import { StageTrack } from './stage-track';
 
 type Tab = 'registration' | 'finished' | 'cancelled';
 
-// One-screen rule: In play shows every row while the running ones fit (or half the screen after "Show less"),
-// the open tab gets the rows left.
+// One-screen rule: In play shows every row while the running ones fit, else (and after "Show less") the rows that
+// fit with MIN_ROWS left for the tab; the open tab gets the rows left.
 // Page parts that are not rows: top bar, page header, section title, tab bar (+56px margin), list headers, paddings
 const PAGE_CHROME_HEIGHT = 436;
 const ROW_HEIGHT = 49;
@@ -51,10 +51,7 @@ export class TournamentListPage implements OnInit {
   private readonly windowHeight = signal(window.innerHeight);
   // Rows that fit the window, both lists together
   private readonly rowsOnScreen = computed(() => Math.floor((this.windowHeight() - PAGE_CHROME_HEIGHT) / ROW_HEIGHT));
-  private readonly liveFit = computed(() => Math.max(MIN_ROWS, this.rowsOnScreen() - MIN_ROWS));
-  private readonly liveHalf = computed(() => Math.max(MIN_ROWS, Math.floor(this.rowsOnScreen() / 2)));
-  // "Show less" = half the screen; too many running tournaments = the rows that fit
-  readonly liveLimit = computed(() => (this.liveExpanded() === false ? this.liveHalf() : this.liveFit()));
+  private readonly liveLimit = computed(() => Math.max(MIN_ROWS, this.rowsOnScreen() - MIN_ROWS));
 
   protected readonly formatLabels = FORMAT_LABELS;
 
@@ -86,17 +83,17 @@ export class TournamentListPage implements OnInit {
     }
   });
 
-  readonly liveOpen = computed(() => this.liveExpanded() ?? this.ongoing().length <= this.liveFit());
+  readonly liveOpen = computed(() => this.liveExpanded() ?? this.ongoing().length <= this.liveLimit());
   readonly liveShown = computed(() => (this.liveOpen() ? this.live() : this.live().slice(0, this.liveLimit())));
   private readonly tabLimit = computed(() => Math.max(MIN_ROWS, this.rowsOnScreen() - this.liveShown().length));
   readonly tabShown = computed(() => (this.tabExpanded() ? this.tabItems() : this.tabItems().slice(0, this.tabLimit())));
-  readonly liveHasMore = computed(() => this.live().length > this.liveHalf());
+  readonly liveHasMore = computed(() => this.live().length > this.liveLimit());
+  readonly tabHasMore = computed(() => this.tabItems().length > this.tabLimit());
+  readonly tabCount = computed(() => this.tabItems().length);
 
   toggleLive(): void {
     this.liveExpanded.set(!this.liveOpen());
   }
-  readonly tabHasMore = computed(() => this.tabItems().length > this.tabLimit());
-  readonly tabCount = computed(() => this.tabItems().length);
 
   readonly tabs = computed(() => [
     { key: 'registration' as Tab, title: 'Registration', count: this.registration().length },
