@@ -159,8 +159,8 @@ export interface MatchDraft {
 }
 
 export interface MatchResultResponse {
-  matchWinnerId: number | null;
-  matchLoserId: number | null;
+  matchWinnerId: number;
+  matchLoserId: number;
   standingFinished: boolean;
   allGroupsFinished: boolean;
   tournamentFinished: boolean;

@@ -1,3 +1,8 @@
+/* Less space below the lists than other pages: the rows fill the screen (PAGE_CHROME_HEIGHT counts this padding) */
+.page {
+  padding-bottom: 16px;
+}
+
 .count {
   font-size: 14px;
   font-weight: 500;

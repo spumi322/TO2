@@ -5,8 +5,8 @@ namespace Application.DTOs.Match
 {
     // Response of a confirmed match result: what the result changed (match, standing, tournament)
     public record MatchResultResponseDTO(
-        long? MatchWinnerId = null,
-        long? MatchLoserId = null,
+        long MatchWinnerId,
+        long MatchLoserId,
         bool StandingFinished = false,
         bool AllGroupsFinished = false,
         bool TournamentFinished = false,

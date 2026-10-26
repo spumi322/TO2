@@ -21,7 +21,8 @@ type Tab = 'registration' | 'finished' | 'cancelled';
 // One-screen rule: In play shows every row while the running ones fit, else (and after "Show less") the rows that
 // fit with MIN_ROWS left for the tab; the open tab gets the rows left.
 // Page parts that are not rows: top bar, page header, section title, tab bar (+56px margin), list headers, paddings
-const PAGE_CHROME_HEIGHT = 436;
+// (measured: everything but the rows, with the page's 16px bottom padding)
+const PAGE_CHROME_HEIGHT = 393;
 const ROW_HEIGHT = 49;
 const MIN_ROWS = 3;
 
