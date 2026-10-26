@@ -237,19 +237,19 @@
   line-height: 1.5;
 }
 
-/* The tournament's own description opens the card, no heading */
-.about {
+.meta {
   margin: 0;
   padding-bottom: 14px;
   border-bottom: 1px solid var(--border);
-  line-height: 1.6;
+  font-size: 13px;
 }
 
-.meta {
+/* The tournament's own description closes the card, no heading */
+.about {
   margin: 0;
   padding-top: 14px;
   border-top: 1px solid var(--border);
-  font-size: 13px;
+  line-height: 1.6;
 }
 
 /* Long descriptions: 3 lines, the full text on hover */
