@@ -25,6 +25,11 @@
   .layout > .card {
     overflow: auto;
   }
+
+  /* Tighter than the default stack, so the form fits without its own scrollbar (also with an error line) */
+  .layout > form {
+    gap: 12px;
+  }
 }
 
 @media (max-width: 860px) {
@@ -63,7 +68,7 @@ legend {
   flex-direction: column;
   gap: 4px;
   text-align: left;
-  padding: 12px;
+  padding: 8px 12px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--surface);
