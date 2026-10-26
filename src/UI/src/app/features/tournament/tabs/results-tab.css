@@ -66,6 +66,7 @@ td {
 
 .team-col {
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 tr.champion td {
