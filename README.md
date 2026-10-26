@@ -34,7 +34,7 @@ Each format uses its own subset (BracketOnly skips the group states, GroupsOnly 
 
 ## Technical Decisions
 
-**Pipeline pattern.** Scoring a game can cascade into match completion, standing updates, state transitions, and placement calculation. `GameResultPipeline` breaks this into 7 sequential steps with a shared context that short-circuits on failure.
+**Pipeline pattern.** Confirming a match result can cascade into group stats, standing updates, state transitions, and placement calculation. `MatchResultPipeline` writes the match's games and winner, then runs 4 sequential steps with a shared context in one transaction that rolls back on failure.
 
 **State machine in the domain layer.** Tournament lifecycle rules are enforced by `TournamentStateMachine` with explicit transition dictionaries and format-specific overloads. Pipelines validate every stage transition with `ValidateTransition()`; which user actions are allowed per state (`CanScoreMatches`, `CanCancel`, `CanDelete`, …) is also decided there and exposed to the UI, so the frontend never re-implements status rules.
 
@@ -44,7 +44,7 @@ Each format uses its own subset (BracketOnly skips the group states, GroupsOnly 
 
 **Single SaveChanges per request.** The pipeline mutates entities in memory across multiple steps; `UnitOfWork` commits once at the end. If any step fails, nothing is persisted.
 
-**Optimistic concurrency (app-managed, provider-agnostic).** Every entity has a `Version` concurrency token that an EF interceptor increments on each update. EF checks the loaded version in the `UPDATE`/`DELETE` `WHERE` clause, so a write that lost a race fails with 409 instead of silently overwriting. Tournament updates and game results carry the `Version` the client loaded; a stale one is rejected with 409, so one admin can't silently overwrite another's result. No database-specific row-version feature is used.
+**Optimistic concurrency (app-managed, provider-agnostic).** Every entity has a `Version` concurrency token that an EF interceptor increments on each update. EF checks the loaded version in the `UPDATE`/`DELETE` `WHERE` clause, so a write that lost a race fails with 409 instead of silently overwriting. Tournament updates and match results carry the `Version` the client loaded; a stale one is rejected with 409, so one admin can't silently overwrite another's result. No database-specific row-version feature is used.
 
 ## Running Locally
 

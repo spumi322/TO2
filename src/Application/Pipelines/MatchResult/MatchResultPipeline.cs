@@ -1,13 +1,9 @@
 using Application.Utilities;
 using Application.Contracts;
-using Application.DTOs.Game;
 using Application.DTOs.Match;
-using Application.DTOs.Orchestration;
 using Application.DTOs.SignalR;
-using Application.Pipelines.GameResult;
-using Application.Pipelines.GameResult.Contracts;
-using Application.Pipelines.GameResult.Steps;
 using Application.Pipelines.MatchResult.Contracts;
+using Application.Pipelines.MatchResult.Steps;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -18,13 +14,23 @@ using Microsoft.Extensions.Logging;
 namespace Application.Pipelines.MatchResult
 {
     /// <summary>
-    /// Saves a confirmed match result in one transaction: writes all its games (the loser's wins first,
-    /// the deciding game last), then runs the game result pipeline's steps after ScoreGameStep unchanged
-    /// (match winner, group stats, standing progress, state change, placements).
+    /// Saves a confirmed match result in one transaction: writes its games (the loser's wins first, the deciding
+    /// game last) and the match winner, then runs the steps (group stats, standing progress, state change, placements).
     /// Until Confirm, the result is only a draft shared through the hub.
     /// </summary>
     public class MatchResultPipeline : IMatchResultPipeline
     {
+        /// <summary>
+        /// Step execution order. The constructor sorts the injected steps by it, so DI registration order doesn't matter.
+        /// </summary>
+        public static readonly Type[] StepOrder =
+        {
+            typeof(UpdateGroupStatsStep),
+            typeof(HandleStandingProgressStep),
+            typeof(TransitionTournamentStateStep),
+            typeof(CalculateFinalPlacementsStep),
+        };
+
         private readonly ILogger<MatchResultPipeline> _logger;
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly IRepository<Standing> _standingRepository;
@@ -32,7 +38,7 @@ namespace Application.Pipelines.MatchResult
         private readonly IRepository<Game> _gameRepository;
         private readonly ITournamentStateMachine _stateMachine;
         private readonly IFormatService _formatService;
-        private readonly IReadOnlyList<IGameResultPipelineStep> _steps;
+        private readonly IReadOnlyList<IMatchResultPipelineStep> _steps;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ISignalRService _signalRService;
         private readonly ITenantService _tenantService;
@@ -46,7 +52,7 @@ namespace Application.Pipelines.MatchResult
             IRepository<Game> gameRepository,
             ITournamentStateMachine stateMachine,
             IFormatService formatService,
-            IEnumerable<IGameResultPipelineStep> steps,
+            IEnumerable<IMatchResultPipelineStep> steps,
             IUnitOfWork unitOfWork,
             ISignalRService signalRService,
             ITenantService tenantService,
@@ -59,18 +65,14 @@ namespace Application.Pipelines.MatchResult
             _gameRepository = gameRepository;
             _stateMachine = stateMachine;
             _formatService = formatService;
-            // Same steps and order as the game result pipeline, without ScoreGameStep: this pipeline writes the games itself
-            _steps = steps
-                .Where(step => step is not ScoreGameStep)
-                .OrderBy(step => Array.IndexOf(GameResultPipeline.StepOrder, step.GetType()))
-                .ToList();
+            _steps = steps.OrderBy(step => Array.IndexOf(StepOrder, step.GetType())).ToList();
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
             _tenantService = tenantService;
             _standingService = standingService;
         }
 
-        public async Task<GameProcessResultDTO> ExecuteAsync(SetMatchResultDTO request)
+        public async Task<MatchResultResponseDTO> ExecuteAsync(SetMatchResultDTO request)
         {
             var tournament = await _tournamentRepository.GetByIdAsync(request.TournamentId)
                 ?? throw new NotFoundException("Tournament", request.TournamentId);
@@ -97,11 +99,17 @@ namespace Application.Pipelines.MatchResult
             try
             {
                 var decidingGame = WriteGames(games, winnerId, loserId, winnerWins, loserWins);
+                match.WinnerId = winnerId;
+                match.LoserId = loserId;
 
-                var context = new GameResultContext
+                var context = new MatchResultContext
                 {
-                    GameResult = new SetGameResultDTO(decidingGame.Id, winnerId, null, null, match.Id, standing.Id, tournament.Id, decidingGame.Version),
-                    Tournament = tournament
+                    Tournament = tournament,
+                    StandingId = standing.Id,
+                    MatchId = match.Id,
+                    WinnerId = winnerId,
+                    LoserId = loserId,
+                    DecidingGameId = decidingGame.Id
                 };
 
                 foreach (var step in _steps)
@@ -116,17 +124,15 @@ namespace Application.Pipelines.MatchResult
                 await _unitOfWork.CommitTransactionAsync();
                 await BroadcastUpdatesAsync(context);
 
-                return new GameProcessResultDTO(
-                    Success: context.Success,
-                    MatchFinished: context.MatchFinished,
-                    MatchWinnerId: context.MatchWinnerId,
-                    MatchLoserId: context.MatchLoserId,
+                return new MatchResultResponseDTO(
+                    MatchWinnerId: winnerId,
+                    MatchLoserId: loserId,
                     StandingFinished: context.StandingFinished,
                     AllGroupsFinished: context.AllGroupsFinished,
                     TournamentFinished: context.TournamentFinished,
                     NewTournamentStatus: context.NewTournamentStatus,
                     FinalStandings: context.FinalStandings,
-                    Message: context.Message
+                    Message: context.Message ?? "Match result saved."
                 );
             }
             catch (Exception ex)
@@ -177,27 +183,27 @@ namespace Application.Pipelines.MatchResult
         }
 
         // After commit; a failed broadcast is logged and doesn't fail the request (clients can reload)
-        private async Task BroadcastUpdatesAsync(GameResultContext context)
+        private async Task BroadcastUpdatesAsync(MatchResultContext context)
         {
             try
             {
                 await _signalRService.BroadcastGameUpdated(await BuildGameUpdatedEventAsync(context));
 
-                // Same rule as the game result pipeline: the tournament list's stage track moves
+                // The tournament list's stage track moves: tell the tenant group too
                 if (context.NewTournamentStatus is not null || context.StandingFinished || context.RoundFinished)
                     await _signalRService.BroadcastTournamentUpdated(context.Tournament.Id, _tenantService.GetCurrentUserName());
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to broadcast the result of match {MatchId}. Users can refresh manually.", context.GameResult.MatchId);
+                _logger.LogWarning(ex, "Failed to broadcast the result of match {MatchId}. Users can refresh manually.", context.MatchId);
             }
         }
 
-        // Same payload as the game result pipeline: the changed group or bracket with the match and its deciding game
-        private async Task<GameUpdatedEvent> BuildGameUpdatedEventAsync(GameResultContext context)
+        // The changed group or bracket with the match and its deciding game
+        private async Task<GameUpdatedEvent> BuildGameUpdatedEventAsync(MatchResultContext context)
         {
-            var standing = await _standingRepository.GetByIdAsync(context.GameResult.StandingId)
-                ?? throw new InvalidOperationException($"Standing {context.GameResult.StandingId} not found");
+            var standing = await _standingRepository.GetByIdAsync(context.StandingId)
+                ?? throw new InvalidOperationException($"Standing {context.StandingId} not found");
 
             var updatedGroup = standing.StandingType == StandingType.Group
                 ? await _standingService.GetGroupWithDetailsByStandingIdAsync(standing.Id)
@@ -206,18 +212,17 @@ namespace Application.Pipelines.MatchResult
                 ? null
                 : await _standingService.GetBracketWithDetailsAsync(context.Tournament.Id);
 
-            var match = (updatedGroup?.Matches ?? updatedBracket?.Matches)?.FirstOrDefault(m => m.Id == context.GameResult.MatchId);
-            var game = match?.Games.FirstOrDefault(g => g.Id == context.GameResult.gameId);
+            var match = (updatedGroup?.Matches ?? updatedBracket?.Matches)?.FirstOrDefault(m => m.Id == context.MatchId);
+            var game = match?.Games.FirstOrDefault(g => g.Id == context.DecidingGameId);
 
             return new GameUpdatedEvent(
                 TournamentId: context.Tournament.Id,
-                GameId: context.GameResult.gameId,
-                MatchId: context.GameResult.MatchId,
-                StandingId: context.GameResult.StandingId,
+                GameId: context.DecidingGameId,
+                MatchId: context.MatchId,
+                StandingId: context.StandingId,
                 UpdatedBy: _tenantService.GetCurrentUserName(),
                 Game: game,
                 Match: match,
-                MatchFinished: context.MatchFinished,
                 StandingFinished: context.StandingFinished,
                 AllGroupsFinished: context.AllGroupsFinished,
                 TournamentFinished: context.TournamentFinished,

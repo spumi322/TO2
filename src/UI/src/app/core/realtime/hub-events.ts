@@ -22,7 +22,6 @@ export interface GameUpdatedEvent extends TournamentEvent {
   standingId: number;
   game: StandingGame | null;
   match: StandingMatch | null;
-  matchFinished: boolean;
   standingFinished: boolean;
   allGroupsFinished: boolean;
   tournamentFinished: boolean;

@@ -1,6 +1,6 @@
 using Domain.Enums;
 
-namespace Application.Pipelines.GameResult.Contracts
+namespace Application.Pipelines.MatchResult.Contracts
 {
     /// <summary>
     /// Result returned by standing progress strategies.

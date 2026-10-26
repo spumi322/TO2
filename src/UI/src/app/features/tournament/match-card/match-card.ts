@@ -37,7 +37,7 @@ export class MatchCard {
     () => this.canScore() && !this.confirmed() && !!this.match().teamAId && !!this.match().teamBId,
   );
 
-  // Saved score once confirmed; before that the draft (or games saved by the old per-game scoring)
+  // Saved score once confirmed; before that the draft (or games saved before the confirm flow existed)
   readonly score = computed(() => {
     const m = this.match();
     const draft = this.draft();

@@ -7,7 +7,7 @@ import { TournamentsApi } from '../../core/api/tournaments.api';
 import { toApiError } from '../../core/http/api-error';
 import {
   Bracket,
-  GameResult,
+  MatchResultResponse,
   Group,
   MatchDraft,
   StandingMatch,
@@ -243,7 +243,7 @@ export class TournamentStore {
   }
 
   // Saves the match's draft as its result; sends the match version the page loaded
-  async confirmMatch(match: StandingMatch): Promise<GameResult> {
+  async confirmMatch(match: StandingMatch): Promise<MatchResultResponse> {
     const draft = this.drafts().get(match.id) ?? { teamAWins: match.teamAWins, teamBWins: match.teamBWins };
     try {
       const result = await firstValueFrom(
@@ -257,7 +257,7 @@ export class TournamentStore {
         }),
       );
       this.putDraft(match.id, null);
-      await this.afterGameResult(result);
+      await this.afterMatchResult(result);
       return result;
     } catch (error) {
       // 409: someone else confirmed it, or the state moved on: show fresh data
@@ -275,7 +275,7 @@ export class TournamentStore {
     });
   }
 
-  private async afterGameResult(result: GameResult): Promise<void> {
+  private async afterMatchResult(result: MatchResultResponse): Promise<void> {
     const reloads: Promise<void>[] = [this.reloadStandings()];
     if (result.newTournamentStatus !== null) reloads.push(this.reloadTournament());
     if (result.finalStandings) this.results.set(result.finalStandings);

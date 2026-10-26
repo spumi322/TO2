@@ -1,14 +1,14 @@
 ﻿using Application.Contracts;
 using Application.Pipelines.Common;
-using Application.Pipelines.GameResult.Contracts;
-using Application.Pipelines.GameResult.Strategies;
+using Application.Pipelines.MatchResult.Contracts;
+using Application.Pipelines.MatchResult.Strategies;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Pipelines.GameResult.Steps
+namespace Application.Pipelines.MatchResult.Steps
 {
     /// <summary>
-    /// Step 4: Handles standing progression after match completion.
+    /// Step 2: Handles standing progression after match completion.
     /// Uses strategy pattern to handle Group vs Bracket logic differently.
     /// Strategy determines if standing/tournament is finished and controls pipeline flow.
     /// </summary>
@@ -26,12 +26,12 @@ namespace Application.Pipelines.GameResult.Steps
             _strategies = strategies;
         }
 
-        protected override async Task<bool> ExecuteStepAsync(GameResultContext context)
+        protected override async Task<bool> ExecuteStepAsync(MatchResultContext context)
         {
-            var tournamentId = context.GameResult.TournamentId;
-            var standingId = context.GameResult.StandingId;
-            var matchId = context.GameResult.MatchId;
-            var winnerId = context.MatchWinnerId!.Value;
+            var tournamentId = context.Tournament.Id;
+            var standingId = context.StandingId;
+            var matchId = context.MatchId;
+            var winnerId = context.WinnerId;
 
             // Get standing to determine type
             var standing = await _standingRepository.GetByIdAsync(standingId)

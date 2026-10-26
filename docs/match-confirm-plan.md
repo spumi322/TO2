@@ -33,5 +33,6 @@ Scoring saved every game at once, and the game that decided a match ran everythi
 ## Phase 5: docs
 - CLAUDE.md (scoring, hub events, pipelines), this plan current.
 
-## Later (after acceptance)
-- Remove the old per-game endpoint, `ScoreGameStep` path and their tests.
+## Later (after acceptance): done 2026-10-26
+- Removed the old per-game endpoint, `GameResultPipeline`, `ScoreGameStep` and their tests.
+- Match level only: the steps moved to `Pipelines/MatchResult` (`MatchResultContext`, `IMatchResultPipelineStep`); the pipeline sets the match winner itself, so `CheckMatchCompletionStep`, `BuildResponseStep`, `GameService.SetMatchWinner` and `SetGameResultDTO` are gone.

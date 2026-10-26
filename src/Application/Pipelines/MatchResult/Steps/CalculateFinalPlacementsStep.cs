@@ -1,12 +1,12 @@
 using Application.Contracts;
 using Application.Pipelines.Common;
-using Application.Pipelines.GameResult.Contracts;
+using Application.Pipelines.MatchResult.Contracts;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Pipelines.GameResult.Steps
+namespace Application.Pipelines.MatchResult.Steps
 {
     /// <summary>
-    /// Step 6: Calculates and saves final tournament placements.
+    /// Step 4: Calculates and saves final tournament placements.
     /// Only executes if tournament has finished.
     /// </summary>
     public class CalculateFinalPlacementsStep : PipeLineBase<CalculateFinalPlacementsStep>
@@ -20,7 +20,7 @@ namespace Application.Pipelines.GameResult.Steps
             _placementService = placementService;
         }
 
-        protected override async Task<bool> ExecuteStepAsync(GameResultContext context)
+        protected override async Task<bool> ExecuteStepAsync(MatchResultContext context)
         {
             // Only execute if tournament finished
             if (!context.TournamentFinished)
@@ -29,7 +29,7 @@ namespace Application.Pipelines.GameResult.Steps
             }
 
             var tournamentId = context.Tournament.Id;
-            var standingId = context.GameResult.StandingId;
+            var standingId = context.StandingId;
 
             // Calculate final placements based on format
             var placements = context.Tournament.Format == Domain.Enums.Format.GroupsOnly
@@ -54,13 +54,8 @@ namespace Application.Pipelines.GameResult.Steps
             Logger.LogInformation("Stored {PlacementCount} final placements for tournament {TournamentId}",
                 placements.Count, tournamentId);
 
-            // Update message
-            if (context.MatchWinnerId.HasValue)
-            {
-                context.Message = $"TOURNAMENT FINISHED! Champion: Team {context.MatchWinnerId.Value}";
-            }
+            context.Message = $"TOURNAMENT FINISHED! Champion: Team {context.WinnerId}";
 
-            // Continue to BuildResponseStep
             return true;
         }
     }

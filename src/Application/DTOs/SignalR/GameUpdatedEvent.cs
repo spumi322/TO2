@@ -12,7 +12,6 @@ public record GameUpdatedEvent(
     string UpdatedBy,
     StandingGameDTO? Game,
     StandingMatchDTO? Match,
-    bool MatchFinished,
     bool StandingFinished,
     bool AllGroupsFinished,
     bool TournamentFinished,

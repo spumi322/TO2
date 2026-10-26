@@ -1,4 +1,4 @@
-﻿using Application.Pipelines.GameResult.Contracts;
+﻿using Application.Pipelines.MatchResult.Contracts;
 using Microsoft.Extensions.Logging;
 
 namespace Application.Pipelines.Common
@@ -8,7 +8,7 @@ namespace Application.Pipelines.Common
     /// Provides step logging. Exceptions propagate to the pipeline, which rolls back the transaction
     /// and lets GlobalExceptionHandler map them to an HTTP status.
     /// </summary>
-    public abstract class PipeLineBase<TLogger> : IGameResultPipelineStep
+    public abstract class PipeLineBase<TLogger> : IMatchResultPipelineStep
     {
         protected readonly ILogger<TLogger> Logger;
 
@@ -17,7 +17,7 @@ namespace Application.Pipelines.Common
             Logger = logger;
         }
 
-        public async Task<bool> ExecuteAsync(GameResultContext context)
+        public async Task<bool> ExecuteAsync(MatchResultContext context)
         {
             Logger.LogInformation("Executing step: {StepName}", GetType().Name);
             var result = await ExecuteStepAsync(context);
@@ -30,6 +30,6 @@ namespace Application.Pipelines.Common
         /// </summary>
         /// <param name="context">The pipeline context</param>
         /// <returns>True to continue, False to stop pipeline</returns>
-        protected abstract Task<bool> ExecuteStepAsync(GameResultContext context);
+        protected abstract Task<bool> ExecuteStepAsync(MatchResultContext context);
     }
 }

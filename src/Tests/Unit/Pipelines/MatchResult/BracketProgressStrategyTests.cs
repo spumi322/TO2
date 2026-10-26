@@ -1,5 +1,5 @@
 using Application.Contracts;
-using Application.Pipelines.GameResult.Strategies;
+using Application.Pipelines.MatchResult.Strategies;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Enums;
@@ -11,7 +11,7 @@ using Tests.Base;
 using Tests.Helpers;
 using Match = Domain.AggregateRoots.Match;
 
-namespace Tests.Unit.Pipelines.GameResult
+namespace Tests.Unit.Pipelines.MatchResult
 {
     public class BracketProgressStrategyTests : IntegrationTestBase
     {

@@ -1,11 +1,10 @@
 using Application.DTOs.Tournament;
 using Domain.Enums;
 
-namespace Application.DTOs.Orchestration
+namespace Application.DTOs.Match
 {
-    public record GameProcessResultDTO(
-        bool Success,
-        bool MatchFinished,
+    // Response of a confirmed match result: what the result changed (match, standing, tournament)
+    public record MatchResultResponseDTO(
         long? MatchWinnerId = null,
         long? MatchLoserId = null,
         bool StandingFinished = false,

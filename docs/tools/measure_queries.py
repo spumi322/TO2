@@ -61,20 +61,19 @@ call("POST start-groups", "POST", f"/tournaments/{tid}/start-groups")
 groups = call("GET /standings/{id}/groups", "GET", f"/standings/{tid}/groups")
 
 
-def score(kind, standing_id, m, game):
-    r = call("tmp", "PUT", f"/matches/{m['id']}/games/{game['id']}/result",
-             {"gameId": game["id"], "winnerId": m["teamAId"], "matchId": m["id"], "standingId": standing_id,
-              "tournamentId": tid, "version": game["version"]})
+def score(kind, standing_id, m):
+    r = call("tmp", "POST", f"/matches/{m['id']}/result",
+             {"matchId": m["id"], "standingId": standing_id, "tournamentId": tid,
+              "teamAWins": 2, "teamBWins": 0, "version": m["version"]})
     flag = ("[tournament done]" if r.get("tournamentFinished") else "[all groups done]" if r.get("allGroupsFinished")
-            else "[group done]" if r.get("standingFinished") else "[match done]" if r.get("matchFinished") else "[game only]")
-    rows[-1]["label"] = f"PUT game result ({kind}) {flag}"
+            else "[group done]" if r.get("standingFinished") else "[match done]")
+    rows[-1]["label"] = f"POST match result ({kind}) {flag}"
     return r
 
 
 for g in groups:
     for m in g["matches"]:
-        for game in m["games"][:2]:
-            score("group", g["id"], m, game)
+        score("group", g["id"], m)
 
 call("GET /standings/{id}/groups (finished)", "GET", f"/standings/{tid}/groups")
 call("POST start-bracket", "POST", f"/tournaments/{tid}/start-bracket")
@@ -86,9 +85,8 @@ while not done:
     if not ready:
         break
     for m in ready:
-        for game in m["games"][:2]:
-            if score("bracket", br["id"], m, game).get("tournamentFinished"):
-                done = True
+        if score("bracket", br["id"], m).get("tournamentFinished"):
+            done = True
 
 call("GET final-standings", "GET", f"/tournaments/{tid}/final-standings")
 call("GET /tournaments (list, end)", "GET", "/tournaments")

@@ -1,10 +1,8 @@
 using Application.Contracts;
 using Application.Contracts.Repositories;
-using Application.Pipelines.GameResult;
-using Application.Pipelines.GameResult.Contracts;
-using Application.Pipelines.GameResult.Strategies;
 using Application.Pipelines.MatchResult;
 using Application.Pipelines.MatchResult.Contracts;
+using Application.Pipelines.MatchResult.Strategies;
 using Application.Pipelines.StartBracket;
 using Application.Pipelines.StartBracket.Contracts;
 using Application.Pipelines.StartBracket.Strategies;
@@ -91,13 +89,11 @@ namespace TO2
 
             // Workflow orchestration (delegates to the pipelines below)
             builder.Services.AddScoped<IWorkFlowService, WorkFlowService>();
-            // Game Result Pipeline - SOLID refactoring of ProcessGameResult
-            builder.Services.AddScoped<IGameResultPipeline, GameResultPipeline>();
-            // Pipeline Steps (order defined in GameResultPipeline.StepOrder)
-            foreach (var step in GameResultPipeline.StepOrder)
-                builder.Services.AddScoped(typeof(IGameResultPipelineStep), step);
-            // Match Result Pipeline - confirmed match result; reuses the game result steps above (without ScoreGameStep)
+            // Match Result Pipeline - confirmed match result
             builder.Services.AddScoped<IMatchResultPipeline, MatchResultPipeline>();
+            // Pipeline Steps (order defined in MatchResultPipeline.StepOrder)
+            foreach (var step in MatchResultPipeline.StepOrder)
+                builder.Services.AddScoped(typeof(IMatchResultPipelineStep), step);
             // Standing Progress Strategies
             builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
             builder.Services.AddScoped<IStandingProgressStrategy, BracketProgressStrategy>();

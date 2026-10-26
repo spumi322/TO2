@@ -1,9 +1,8 @@
 using Application.Contracts;
 using Application.DTOs.Match;
 using Application.DTOs.SignalR;
-using Application.Pipelines.GameResult.Contracts;
-using Application.Pipelines.GameResult.Steps;
 using Application.Pipelines.MatchResult;
+using Application.Pipelines.MatchResult.Contracts;
 using Application.Services;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -28,31 +27,18 @@ namespace Tests.Unit.Pipelines.MatchResult
         private const long TeamB = 2;
 
         private readonly Mock<ISignalRService> _signalRMock = new();
-        private readonly Mock<IGameService> _scoreGameServiceMock = new();
-        private readonly Mock<IGameResultPipelineStep> _laterStepMock = new();
-        private GameResultContext? _seenContext;
+        private readonly Mock<IMatchResultPipelineStep> _stepMock = new();
+        private MatchResultContext? _seenContext;
         private readonly MatchResultPipeline _pipeline;
 
         public MatchResultPipelineTests()
         {
-            _laterStepMock.Setup(s => s.ExecuteAsync(It.IsAny<GameResultContext>()))
-                .Callback<GameResultContext>(c => _seenContext = c)
+            _stepMock.Setup(s => s.ExecuteAsync(It.IsAny<MatchResultContext>()))
+                .Callback<MatchResultContext>(c => _seenContext = c)
                 .ReturnsAsync(true);
 
-            var gameService = new GameService(
-                new Repository<Game>(DbContext),
-                new Repository<Match>(DbContext),
-                new FormatService(),
-                new Mock<ILogger<GameService>>().Object);
-
-            // Real match completion step (sets the winner from the written games), a fake later step,
-            // and ScoreGameStep, which this pipeline must skip
-            IGameResultPipelineStep[] steps =
-            {
-                _laterStepMock.Object,
-                new ScoreGameStep(new Mock<ILogger<ScoreGameStep>>().Object, _scoreGameServiceMock.Object),
-                new CheckMatchCompletionStep(new Mock<ILogger<CheckMatchCompletionStep>>().Object, gameService),
-            };
+            // One fake step: sees the context the real steps get
+            IMatchResultPipelineStep[] steps = { _stepMock.Object };
 
             _pipeline = new MatchResultPipeline(
                 new Mock<ILogger<MatchResultPipeline>>().Object,
@@ -110,9 +96,11 @@ namespace Tests.Unit.Pipelines.MatchResult
             var match = await DbContext.Matches.AsNoTracking().SingleAsync(m => m.Id == request.MatchId);
             match.WinnerId.Should().Be(TeamB);
             result.MatchWinnerId.Should().Be(TeamB);
-            // Later steps see the deciding (last) game, like after a deciding game result
+            // Steps see the winner and the deciding (last) game
             var lastGameId = await DbContext.Games.Where(g => g.MatchId == request.MatchId).MaxAsync(g => g.Id);
-            _seenContext!.GameResult.gameId.Should().Be(lastGameId);
+            _seenContext!.WinnerId.Should().Be(TeamB);
+            _seenContext.LoserId.Should().Be(TeamA);
+            _seenContext.DecidingGameId.Should().Be(lastGameId);
         }
 
         [Fact]
@@ -126,14 +114,27 @@ namespace Tests.Unit.Pipelines.MatchResult
         }
 
         [Fact]
-        public async Task Should_SkipScoreGameStep_AndBroadcastOnce()
+        public async Task Should_BroadcastOnce()
         {
             var request = await SeedMatchAsync() with { TeamAWins = 2, TeamBWins = 1 };
 
             await _pipeline.ExecuteAsync(request);
 
-            _scoreGameServiceMock.Verify(s => s.SetGameResult(It.IsAny<long>(), It.IsAny<long>(), It.IsAny<int?>(), It.IsAny<int?>()), Times.Never);
             _signalRMock.Verify(s => s.BroadcastGameUpdated(It.Is<GameUpdatedEvent>(e => e.MatchId == request.MatchId)), Times.Once);
+        }
+
+        [Fact]
+        public async Task Should_RollBackAndNotBroadcast_When_StepFails()
+        {
+            var request = await SeedMatchAsync() with { TeamAWins = 2, TeamBWins = 0 };
+            _stepMock.Setup(s => s.ExecuteAsync(It.IsAny<MatchResultContext>()))
+                .ThrowsAsync(new InvalidOperationException("Step failed"));
+
+            var act = () => _pipeline.ExecuteAsync(request);
+
+            await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("Step failed");
+            (await GameWinnersAsync(request.MatchId)).Should().AllSatisfy(winner => winner.Should().BeNull());
+            _signalRMock.Verify(s => s.BroadcastGameUpdated(It.IsAny<GameUpdatedEvent>()), Times.Never);
         }
 
         [Theory]

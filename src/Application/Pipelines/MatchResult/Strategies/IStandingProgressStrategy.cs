@@ -1,7 +1,7 @@
-﻿using Application.Pipelines.GameResult.Contracts;
+﻿using Application.Pipelines.MatchResult.Contracts;
 using Domain.Enums;
 
-namespace Application.Pipelines.GameResult.Strategies
+namespace Application.Pipelines.MatchResult.Strategies
 {
     /// <summary>
     /// Strategy interface for progressing a standing after a match completes.

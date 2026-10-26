@@ -56,13 +56,10 @@ name = {t["id"]: t["name"] for t in teams}
 def play(standing_id, m, winner=None, loser_games=0):
     if winner is None:
         winner = min(m["teamAId"], m["teamBId"], key=lambda t: name[t])  # S01 beats S02 ...
-    loser = m["teamBId"] if winner == m["teamAId"] else m["teamAId"]
-    game_winners = [winner, loser, winner] if loser_games == 1 else [winner, winner]
-    for game, game_winner in zip(m["games"], game_winners):
-        r = call("PUT", f"/matches/{m['id']}/games/{game['id']}/result",
-                 {"gameId": game["id"], "winnerId": game_winner, "matchId": m["id"], "standingId": standing_id,
-                  "tournamentId": tid, "version": game["version"]})
-    return r
+    a_wins, b_wins = (2, loser_games) if winner == m["teamAId"] else (loser_games, 2)
+    return call("POST", f"/matches/{m['id']}/result",
+                {"matchId": m["id"], "standingId": standing_id, "tournamentId": tid,
+                 "teamAWins": a_wins, "teamBWins": b_wins, "version": m["version"]})
 
 
 def play_scripted(standing_id, m, group_names):
@@ -103,7 +100,7 @@ with open(OUT, "w", encoding="utf-8") as f:
     w("\n== API final-standings (team | placement | status | eliminationRound)")
     for p in final:
         w(" | ".join([name.get(p['teamId'], str(p['teamId']))] + [f"{k}={v}" for k, v in p.items() if k not in ("teamId", "teamName")]))
-    w("\n== Last game result response: finalStandings (pipeline, before commit)")
+    w("\n== Last match result response: finalStandings (pipeline, before commit)")
     for p in last.get("finalStandings") or []:
         w(" | ".join([name.get(p['teamId'], str(p['teamId']))] + [f"{k}={v}" for k, v in p.items() if k not in ("teamId", "teamName")]))
     w("\n== API group tables, in returned order (team W-L, games, status)")

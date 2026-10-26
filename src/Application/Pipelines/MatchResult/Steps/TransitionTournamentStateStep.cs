@@ -1,15 +1,15 @@
 using Application.Contracts;
 using Application.Pipelines.Common;
-using Application.Pipelines.GameResult.Contracts;
+using Application.Pipelines.MatchResult.Contracts;
 using Domain.AggregateRoots;
 using Domain.Enums;
 using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Pipelines.GameResult.Steps
+namespace Application.Pipelines.MatchResult.Steps
 {
     /// <summary>
-    /// Step 5: Transitions tournament state when all groups finish or tournament finishes.
+    /// Step 3: Transitions tournament state when all groups finish or tournament finishes.
     /// Only executes if a state transition is needed (indicated by context flags).
     /// </summary>
     public class TransitionTournamentStateStep : PipeLineBase<TransitionTournamentStateStep>
@@ -29,7 +29,7 @@ namespace Application.Pipelines.GameResult.Steps
             _unitOfWork = unitOfWork;
         }
 
-        protected override async Task<bool> ExecuteStepAsync(GameResultContext context)
+        protected override async Task<bool> ExecuteStepAsync(MatchResultContext context)
         {
             // Only execute if a state transition is needed
             if (!context.AllGroupsFinished && !context.TournamentFinished)

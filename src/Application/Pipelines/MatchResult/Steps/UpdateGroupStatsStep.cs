@@ -1,11 +1,14 @@
 ﻿using Application.Contracts;
 using Application.Pipelines.Common;
-using Application.Pipelines.GameResult.Contracts;
+using Application.Pipelines.MatchResult.Contracts;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
 
-namespace Application.Pipelines.GameResult.Steps
+namespace Application.Pipelines.MatchResult.Steps
 {
+    /// <summary>
+    /// Step 1: Adds the match to both teams' group stats (match win/loss, games won/lost). Bracket matches have no group entries.
+    /// </summary>
     public class UpdateGroupStatsStep : PipeLineBase<UpdateGroupStatsStep>
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -23,18 +26,18 @@ namespace Application.Pipelines.GameResult.Steps
             _gameRepository = gameRepository;
         }
 
-        protected override async Task<bool> ExecuteStepAsync(GameResultContext context)
+        protected override async Task<bool> ExecuteStepAsync(MatchResultContext context)
         {
             // Entries of this match's standing only: a bracket standing has none, so bracket matches don't change group stats
-            var groupEntries = await _groupRepository.FindAllAsync(ge => ge.StandingId == context.GameResult.StandingId);
+            var groupEntries = await _groupRepository.FindAllAsync(ge => ge.StandingId == context.StandingId);
 
             if (groupEntries.Any())
             {
-                var winner = groupEntries.First(ge => ge.TeamId == context.MatchWinnerId);
-                var loser = groupEntries.First(ge => ge.TeamId == context.MatchLoserId);
+                var winner = groupEntries.First(ge => ge.TeamId == context.WinnerId);
+                var loser = groupEntries.First(ge => ge.TeamId == context.LoserId);
 
                 // Game score of the finished match, e.g. 2-1
-                var games = await _gameRepository.FindAllAsync(g => g.MatchId == context.GameResult.MatchId);
+                var games = await _gameRepository.FindAllAsync(g => g.MatchId == context.MatchId);
                 int winnerGames = games.Count(g => g.WinnerId == winner.TeamId);
                 int loserGames = games.Count(g => g.WinnerId == loser.TeamId);
 

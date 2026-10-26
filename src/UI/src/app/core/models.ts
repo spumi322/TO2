@@ -158,9 +158,7 @@ export interface MatchDraft {
   by: string | null;
 }
 
-export interface GameResult {
-  success: boolean;
-  matchFinished: boolean;
+export interface MatchResultResponse {
   matchWinnerId: number | null;
   matchLoserId: number | null;
   standingFinished: boolean;

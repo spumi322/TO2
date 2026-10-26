@@ -1,5 +1,5 @@
-using Application.Pipelines.GameResult;
-using Application.Pipelines.GameResult.Contracts;
+using Application.Pipelines.MatchResult;
+using Application.Pipelines.MatchResult.Contracts;
 using Application.Pipelines.StartBracket;
 using Application.Pipelines.StartBracket.Contracts;
 using Application.Pipelines.StartGroups;
@@ -12,7 +12,7 @@ namespace Tests.Unit.Pipelines
     {
         public static TheoryData<Type[], Type> StepOrders => new()
         {
-            { GameResultPipeline.StepOrder, typeof(IGameResultPipelineStep) },
+            { MatchResultPipeline.StepOrder, typeof(IMatchResultPipelineStep) },
             { StartGroupsPipeline.StepOrder, typeof(IStartGroupsPipelineStep) },
             { StartBracketPipeline.StepOrder, typeof(IStartBracketPipelineStep) },
         };
