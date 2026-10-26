@@ -61,7 +61,7 @@
 
         <div class="field" [class.unused]="!isGroupsAndBracket()">
           <label for="advancingPerGroup">Advance per group</label>
-          <p-inputnumber inputId="advancingPerGroup" formControlName="advancingPerGroup" [showButtons]="true" [min]="1" [max]="16" [useGrouping]="false" [fluid]="true" />
+          <p-inputnumber inputId="advancingPerGroup" formControlName="advancingPerGroup" [showButtons]="true" [min]="1" [max]="maxTeams - 1" [useGrouping]="false" [fluid]="true" />
         </div>
       </div>
       @for (field of numberFields; track field) {
