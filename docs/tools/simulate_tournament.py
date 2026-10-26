@@ -1,6 +1,7 @@
 """Plays one tournament (16 teams, 4 groups) through the API and writes the results + DB rows to a text file.
 
-GroupsAndBracket (2 advance per group) by default, GroupsOnly with the "groups-only" argument.
+GroupsAndBracket (2 advance per group) by default, GroupsOnly with the "groups-only" argument,
+BracketOnly with "bracket-only" (13 teams, so round 1 has 3 BYEs).
 Teams are S01..S16; the lower number always wins 2-0, so the outcome only depends on the random group draw.
 "tiebreak": group matches follow TIEBREAK_SCRIPT instead (A..D = the group's teams by name, A = lowest team id),
 so A, B and C all win 2 matches. Expected group order: B, C, A, D
@@ -8,7 +9,7 @@ so A, B and C all win 2 matches. Expected group order: B, C, A, D
 Creates a throwaway tenant "SimTenantsim..." each run.
 
 Usage: start the API (http://localhost:5161) with the local docker DB (container to2-postgres), then
-    python -I docs/tools/simulate_tournament.py <out-file> [groups-only] [tiebreak]
+    python -I docs/tools/simulate_tournament.py <out-file> [groups-only | bracket-only] [tiebreak]
 Example (Git Bash, from repo root):
     cd src/webAPI && dotnet run                                                    # terminal 1
     python -I docs/tools/simulate_tournament.py "$TEMP/sim.txt" && cat "$TEMP/sim.txt"   # terminal 2
@@ -18,6 +19,7 @@ import json, random, subprocess, sys, urllib.request, urllib.error
 BASE = "http://localhost:5161/api"
 OUT = sys.argv[1]
 GROUPS_ONLY = "groups-only" in sys.argv[2:]
+BRACKET_ONLY = "bracket-only" in sys.argv[2:]
 TIEBREAK = "tiebreak" in sys.argv[2:]
 # group match -> (winner, games won by the loser)
 TIEBREAK_SCRIPT = {"AB": ("A", 1), "BC": ("B", 1), "AC": ("C", 0), "AD": ("A", 0), "BD": ("B", 0), "CD": ("C", 1)}
@@ -47,9 +49,10 @@ u = f"sim{random.randint(0, 10**9)}"
 token = call("POST", "/auth/register", {"userName": u, "email": f"{u}@example.com", "password": "Passw0rd!",
                                         "tenantName": f"SimTenant{u}"})["accessToken"]
 setup = ({"format": 3, "numberOfGroups": 4} if GROUPS_ONLY
+         else {"format": 1} if BRACKET_ONLY
          else {"format": 2, "numberOfGroups": 4, "advancingPerGroup": 2})
 tid = call("POST", "/tournaments", {"name": "Sim Cup", "description": "d", "maxTeams": 16, **setup})["id"]
-teams = call("POST", f"/tournaments/{tid}/teams", {"names": [f"S{i:02d}" for i in range(1, 17)]})
+teams = call("POST", f"/tournaments/{tid}/teams", {"names": [f"S{i:02d}" for i in range(1, 14 if BRACKET_ONLY else 17)]})
 name = {t["id"]: t["name"] for t in teams}
 
 
@@ -70,13 +73,14 @@ def play_scripted(standing_id, m, group_names):
 
 
 finished, last = False, {}
-call("POST", f"/tournaments/{tid}/start-groups")
-for g in call("GET", f"/standings/{tid}/groups"):
-    group_names = sorted(t["name"] for t in g["teams"])
-    for m in g["matches"]:
-        r = play_scripted(g["id"], m, group_names) if TIEBREAK else play(g["id"], m)
-        if r.get("tournamentFinished"):
-            finished, last = True, r
+if not BRACKET_ONLY:
+    call("POST", f"/tournaments/{tid}/start-groups")
+    for g in call("GET", f"/standings/{tid}/groups"):
+        group_names = sorted(t["name"] for t in g["teams"])
+        for m in g["matches"]:
+            r = play_scripted(g["id"], m, group_names) if TIEBREAK else play(g["id"], m)
+            if r.get("tournamentFinished"):
+                finished, last = True, r
 
 if not GROUPS_ONLY:
     call("POST", f"/tournaments/{tid}/start-bracket")
@@ -91,7 +95,7 @@ while not finished:
             finished, last = True, r
 
 final = call("GET", f"/tournaments/{tid}/final-standings")
-group_tables = call("GET", f"/standings/{tid}/groups")
+group_tables = [] if BRACKET_ONLY else call("GET", f"/standings/{tid}/groups")
 state = call("GET", f"/tournaments/{tid}/state")
 
 with open(OUT, "w", encoding="utf-8") as f:

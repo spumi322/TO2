@@ -144,14 +144,10 @@ namespace Tests.Helpers
                 Match match,
                 long? teamAId,
                 long? teamBId,
-                long winnerId,
-                int teamAScore = 10,
-                int teamBScore = 5)
+                long winnerId)
             {
                 var game = new Game(match, teamAId, teamBId);
                 game.WinnerId = winnerId;
-                game.TeamAScore = teamAScore;
-                game.TeamBScore = teamBScore;
                 return game;
             }
         }

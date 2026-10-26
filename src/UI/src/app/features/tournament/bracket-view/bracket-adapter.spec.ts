@@ -27,7 +27,7 @@ function match(partial: Partial<StandingMatch>): StandingMatch {
 }
 
 function game(id: number, matchId: number, winnerId: number | null): StandingGame {
-  return { id, matchId, teamAId: 2, teamAScore: null, teamBId: 3, teamBScore: null, winnerId, version: 0 };
+  return { id, matchId, teamAId: 2, teamBId: 3, winnerId, version: 0 };
 }
 
 // 3 teams in a 4-slot bracket: Alpha has a BYE, Bravo vs Charlie is played 1-1, the final waits for its winner

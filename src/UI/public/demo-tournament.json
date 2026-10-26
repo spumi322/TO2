@@ -119,9 +119,7 @@
               "id": 9376,
               "matchId": 3228,
               "teamAId": 993,
-              "teamAScore": 0,
               "teamBId": 991,
-              "teamBScore": 0,
               "winnerId": 993,
               "version": 1
             },
@@ -129,9 +127,7 @@
               "id": 9377,
               "matchId": 3228,
               "teamAId": 993,
-              "teamAScore": 0,
               "teamBId": 991,
-              "teamBScore": 0,
               "winnerId": 993,
               "version": 1
             },
@@ -139,9 +135,7 @@
               "id": 9378,
               "matchId": 3228,
               "teamAId": 993,
-              "teamAScore": 0,
               "teamBId": 991,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             }
@@ -165,9 +159,7 @@
               "id": 9379,
               "matchId": 3229,
               "teamAId": 993,
-              "teamAScore": 0,
               "teamBId": 995,
-              "teamBScore": 0,
               "winnerId": 993,
               "version": 1
             },
@@ -175,9 +167,7 @@
               "id": 9380,
               "matchId": 3229,
               "teamAId": 993,
-              "teamAScore": 0,
               "teamBId": 995,
-              "teamBScore": 0,
               "winnerId": 993,
               "version": 1
             },
@@ -185,9 +175,7 @@
               "id": 9381,
               "matchId": 3229,
               "teamAId": 993,
-              "teamAScore": 0,
               "teamBId": 995,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             }
@@ -211,9 +199,7 @@
               "id": 9382,
               "matchId": 3230,
               "teamAId": 993,
-              "teamAScore": 0,
               "teamBId": 990,
-              "teamBScore": 0,
               "winnerId": 993,
               "version": 1
             },
@@ -221,9 +207,7 @@
               "id": 9383,
               "matchId": 3230,
               "teamAId": 993,
-              "teamAScore": 0,
               "teamBId": 990,
-              "teamBScore": 0,
               "winnerId": 993,
               "version": 1
             },
@@ -231,9 +215,7 @@
               "id": 9384,
               "matchId": 3230,
               "teamAId": 993,
-              "teamAScore": 0,
               "teamBId": 990,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             }
@@ -257,9 +239,7 @@
               "id": 9385,
               "matchId": 3231,
               "teamAId": 991,
-              "teamAScore": 0,
               "teamBId": 995,
-              "teamBScore": 0,
               "winnerId": 991,
               "version": 1
             },
@@ -267,9 +247,7 @@
               "id": 9387,
               "matchId": 3231,
               "teamAId": 991,
-              "teamAScore": 0,
               "teamBId": 995,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             },
@@ -277,9 +255,7 @@
               "id": 9386,
               "matchId": 3231,
               "teamAId": 991,
-              "teamAScore": 0,
               "teamBId": 995,
-              "teamBScore": 0,
               "winnerId": 991,
               "version": 1
             }
@@ -303,9 +279,7 @@
               "id": 9388,
               "matchId": 3232,
               "teamAId": 991,
-              "teamAScore": 0,
               "teamBId": 990,
-              "teamBScore": 0,
               "winnerId": 991,
               "version": 1
             },
@@ -313,9 +287,7 @@
               "id": 9389,
               "matchId": 3232,
               "teamAId": 991,
-              "teamAScore": 0,
               "teamBId": 990,
-              "teamBScore": 0,
               "winnerId": 991,
               "version": 1
             },
@@ -323,9 +295,7 @@
               "id": 9390,
               "matchId": 3232,
               "teamAId": 991,
-              "teamAScore": 0,
               "teamBId": 990,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             }
@@ -349,9 +319,7 @@
               "id": 9391,
               "matchId": 3233,
               "teamAId": 995,
-              "teamAScore": 0,
               "teamBId": 990,
-              "teamBScore": 0,
               "winnerId": 995,
               "version": 1
             },
@@ -359,9 +327,7 @@
               "id": 9393,
               "matchId": 3233,
               "teamAId": 995,
-              "teamAScore": 0,
               "teamBId": 990,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             },
@@ -369,9 +335,7 @@
               "id": 9392,
               "matchId": 3233,
               "teamAId": 995,
-              "teamAScore": 0,
               "teamBId": 990,
-              "teamBScore": 0,
               "winnerId": 995,
               "version": 1
             }
@@ -446,9 +410,7 @@
               "id": 9394,
               "matchId": 3234,
               "teamAId": 996,
-              "teamAScore": 0,
               "teamBId": 994,
-              "teamBScore": 0,
               "winnerId": 996,
               "version": 1
             },
@@ -456,9 +418,7 @@
               "id": 9395,
               "matchId": 3234,
               "teamAId": 996,
-              "teamAScore": 0,
               "teamBId": 994,
-              "teamBScore": 0,
               "winnerId": 996,
               "version": 1
             },
@@ -466,9 +426,7 @@
               "id": 9396,
               "matchId": 3234,
               "teamAId": 996,
-              "teamAScore": 0,
               "teamBId": 994,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             }
@@ -492,9 +450,7 @@
               "id": 9397,
               "matchId": 3235,
               "teamAId": 996,
-              "teamAScore": 0,
               "teamBId": 989,
-              "teamBScore": 0,
               "winnerId": 996,
               "version": 1
             },
@@ -502,9 +458,7 @@
               "id": 9398,
               "matchId": 3235,
               "teamAId": 996,
-              "teamAScore": 0,
               "teamBId": 989,
-              "teamBScore": 0,
               "winnerId": 996,
               "version": 1
             },
@@ -512,9 +466,7 @@
               "id": 9399,
               "matchId": 3235,
               "teamAId": 996,
-              "teamAScore": 0,
               "teamBId": 989,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             }
@@ -538,9 +490,7 @@
               "id": 9402,
               "matchId": 3236,
               "teamAId": 996,
-              "teamAScore": 0,
               "teamBId": 992,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             },
@@ -548,9 +498,7 @@
               "id": 9400,
               "matchId": 3236,
               "teamAId": 996,
-              "teamAScore": 0,
               "teamBId": 992,
-              "teamBScore": 0,
               "winnerId": 996,
               "version": 1
             },
@@ -558,9 +506,7 @@
               "id": 9401,
               "matchId": 3236,
               "teamAId": 996,
-              "teamAScore": 0,
               "teamBId": 992,
-              "teamBScore": 0,
               "winnerId": 996,
               "version": 1
             }
@@ -584,9 +530,7 @@
               "id": 9405,
               "matchId": 3237,
               "teamAId": 994,
-              "teamAScore": 0,
               "teamBId": 989,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             },
@@ -594,9 +538,7 @@
               "id": 9404,
               "matchId": 3237,
               "teamAId": 994,
-              "teamAScore": 0,
               "teamBId": 989,
-              "teamBScore": 0,
               "winnerId": 994,
               "version": 1
             },
@@ -604,9 +546,7 @@
               "id": 9403,
               "matchId": 3237,
               "teamAId": 994,
-              "teamAScore": 0,
               "teamBId": 989,
-              "teamBScore": 0,
               "winnerId": 994,
               "version": 1
             }
@@ -630,9 +570,7 @@
               "id": 9406,
               "matchId": 3238,
               "teamAId": 994,
-              "teamAScore": 0,
               "teamBId": 992,
-              "teamBScore": 0,
               "winnerId": 994,
               "version": 1
             },
@@ -640,9 +578,7 @@
               "id": 9407,
               "matchId": 3238,
               "teamAId": 994,
-              "teamAScore": 0,
               "teamBId": 992,
-              "teamBScore": 0,
               "winnerId": 994,
               "version": 1
             },
@@ -650,9 +586,7 @@
               "id": 9408,
               "matchId": 3238,
               "teamAId": 994,
-              "teamAScore": 0,
               "teamBId": 992,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             }
@@ -676,9 +610,7 @@
               "id": 9411,
               "matchId": 3239,
               "teamAId": 989,
-              "teamAScore": 0,
               "teamBId": 992,
-              "teamBScore": 0,
               "winnerId": null,
               "version": 0
             },
@@ -686,9 +618,7 @@
               "id": 9410,
               "matchId": 3239,
               "teamAId": 989,
-              "teamAScore": 0,
               "teamBId": 992,
-              "teamBScore": 0,
               "winnerId": 989,
               "version": 1
             },
@@ -696,9 +626,7 @@
               "id": 9409,
               "matchId": 3239,
               "teamAId": 989,
-              "teamAScore": 0,
               "teamBId": 992,
-              "teamBScore": 0,
               "winnerId": 989,
               "version": 1
             }
@@ -732,9 +660,7 @@
             "id": 9412,
             "matchId": 3240,
             "teamAId": 993,
-            "teamAScore": 0,
             "teamBId": 994,
-            "teamBScore": 0,
             "winnerId": 993,
             "version": 1
           },
@@ -742,9 +668,7 @@
             "id": 9413,
             "matchId": 3240,
             "teamAId": 993,
-            "teamAScore": 0,
             "teamBId": 994,
-            "teamBScore": 0,
             "winnerId": 993,
             "version": 1
           },
@@ -752,9 +676,7 @@
             "id": 9414,
             "matchId": 3240,
             "teamAId": 993,
-            "teamAScore": 0,
             "teamBId": 994,
-            "teamBScore": 0,
             "winnerId": null,
             "version": 0
           }
@@ -778,9 +700,7 @@
             "id": 9415,
             "matchId": 3241,
             "teamAId": 996,
-            "teamAScore": 0,
             "teamBId": 991,
-            "teamBScore": 0,
             "winnerId": 996,
             "version": 1
           },
@@ -788,9 +708,7 @@
             "id": 9416,
             "matchId": 3241,
             "teamAId": 996,
-            "teamAScore": 0,
             "teamBId": 991,
-            "teamBScore": 0,
             "winnerId": 996,
             "version": 1
           },
@@ -798,9 +716,7 @@
             "id": 9417,
             "matchId": 3241,
             "teamAId": 996,
-            "teamAScore": 0,
             "teamBId": 991,
-            "teamBScore": 0,
             "winnerId": null,
             "version": 0
           }
@@ -824,9 +740,7 @@
             "id": 9419,
             "matchId": 3242,
             "teamAId": 993,
-            "teamAScore": 0,
             "teamBId": 996,
-            "teamBScore": 0,
             "winnerId": 993,
             "version": 1
           },
@@ -834,9 +748,7 @@
             "id": 9420,
             "matchId": 3242,
             "teamAId": 993,
-            "teamAScore": 0,
             "teamBId": 996,
-            "teamBScore": 0,
             "winnerId": null,
             "version": 0
           },
@@ -844,9 +756,7 @@
             "id": 9418,
             "matchId": 3242,
             "teamAId": 993,
-            "teamAScore": 0,
             "teamBId": 996,
-            "teamBScore": 0,
             "winnerId": 993,
             "version": 1
           }

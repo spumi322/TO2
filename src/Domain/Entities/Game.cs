@@ -11,8 +11,6 @@ namespace Domain.Entities
         {
             Match = match;
             MatchId = match.Id;
-            TeamAScore = 0;
-            TeamBScore = 0;
             TeamAId = teamAId;
             TeamBId = teamBId;
         }
@@ -27,12 +25,6 @@ namespace Domain.Entities
 
         public long? TeamAId { get; set; }
 
-        public int? TeamAScore { get; set; }
-
         public long? TeamBId { get; set; }
-
-        public int? TeamBScore { get; set; }
-
-        public TimeSpan? Duration { get; set; }
     }
 }

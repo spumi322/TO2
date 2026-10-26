@@ -265,9 +265,6 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<TimeSpan?>("Duration")
-                        .HasColumnType("interval");
-
                     b.Property<string>("LastModifiedBy")
                         .IsRequired()
                         .HasColumnType("text");
@@ -281,14 +278,8 @@ namespace Infrastructure.Migrations
                     b.Property<long?>("TeamAId")
                         .HasColumnType("bigint");
 
-                    b.Property<int?>("TeamAScore")
-                        .HasColumnType("integer");
-
                     b.Property<long?>("TeamBId")
                         .HasColumnType("bigint");
-
-                    b.Property<int?>("TeamBScore")
-                        .HasColumnType("integer");
 
                     b.Property<long>("TenantId")
                         .HasColumnType("bigint");

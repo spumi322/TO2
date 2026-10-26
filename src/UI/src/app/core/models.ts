@@ -79,9 +79,7 @@ export interface StandingGame {
   id: number;
   matchId: number;
   teamAId: number | null;
-  teamAScore: number | null;
   teamBId: number | null;
-  teamBScore: number | null;
   winnerId: number | null;
   version: number;
 }

@@ -56,7 +56,7 @@ namespace Tests.Unit.Services
             await DbContext.SaveChangesAsync();
 
             DbContext.Games.AddRange(
-                TestDataBuilder.Games.CreateCompleted(match, teamA.Id, teamB.Id, winnerId: teamA.Id, teamAScore: 16, teamBScore: 9),
+                TestDataBuilder.Games.CreateCompleted(match, teamA.Id, teamB.Id, winnerId: teamA.Id),
                 TestDataBuilder.Games.Create(match, teamA.Id, teamB.Id));
             await SaveAndDetachAsync();
 
@@ -83,7 +83,7 @@ namespace Tests.Unit.Services
             match.TeamAWins.Should().Be(1);
             match.TeamBWins.Should().Be(0);
             match.Games.Should().HaveCount(2);
-            match.Games.Should().ContainSingle(g => g.WinnerId == seeded.TeamA.Id && g.TeamAScore == 16 && g.TeamBScore == 9)
+            match.Games.Should().ContainSingle(g => g.WinnerId == seeded.TeamA.Id)
                 .Which.MatchId.Should().Be(seeded.Match.Id);
         }
 
