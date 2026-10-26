@@ -2,15 +2,17 @@
   display: block;
 }
 
-/* One row: TeamA [− 2 +] – [− 0 +] TeamB  actions */
+/* One line per team (name, [− 2 +]), the actions below */
 .match {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 104px 14px 104px minmax(0, 1fr) 140px;
-  grid-template-areas: 'nameA scoreA dash scoreB nameB actions';
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'nameA scoreA'
+    'nameB scoreB'
+    'actions actions';
   align-items: center;
   gap: 6px;
-  min-height: 44px;
-  padding: 2px 8px;
+  padding: 8px 10px;
   border-radius: var(--radius);
 }
 
@@ -35,7 +37,6 @@
 
 .name.a {
   grid-area: nameA;
-  text-align: right;
 }
 
 .name.b {
@@ -54,17 +55,16 @@
 .score {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 4px;
 }
 
 .score.a {
   grid-area: scoreA;
-  justify-content: flex-end;
 }
 
 .score.b {
   grid-area: scoreB;
-  justify-content: flex-start;
 }
 
 .num {
@@ -73,12 +73,6 @@
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 700;
-}
-
-.dash {
-  grid-area: dash;
-  text-align: center;
-  color: var(--text-muted);
 }
 
 .step {
@@ -129,49 +123,4 @@
 .done {
   font-size: 12px;
   color: var(--status-groups);
-}
-
-/* One line per team: bracket panel, and narrow screens */
-.match.stacked {
-  grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-areas:
-    'nameA scoreA'
-    'nameB scoreB'
-    'actions actions';
-  padding: 8px 10px;
-}
-
-.match.stacked .dash {
-  display: none;
-}
-
-.match.stacked .name.a {
-  text-align: left;
-}
-
-.match.stacked .score.b {
-  justify-content: flex-end;
-}
-
-@media (max-width: 640px) {
-  .match {
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      'nameA scoreA'
-      'nameB scoreB'
-      'actions actions';
-    padding: 8px 10px;
-  }
-
-  .dash {
-    display: none;
-  }
-
-  .name.a {
-    text-align: left;
-  }
-
-  .score.b {
-    justify-content: flex-end;
-  }
 }

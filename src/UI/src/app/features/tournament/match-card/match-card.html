@@ -1,4 +1,4 @@
-<article class="match" [class.ready]="ready()" [class.stacked]="stacked()" [class.busy]="busy()" [attr.aria-busy]="busy()">
+<article class="match" [class.ready]="ready()" [class.busy]="busy()" [attr.aria-busy]="busy()">
   <span class="name a" [class.won]="teamA().won" [class.lost]="teamA().lost" [class.tbd]="!teamA().known" [title]="teamA().name">
     {{ teamA().name }}
   </span>
@@ -16,8 +16,6 @@
       </button>
     }
   </span>
-
-  <span class="dash" aria-hidden="true">–</span>
 
   <span class="score b">
     @if (editable()) {

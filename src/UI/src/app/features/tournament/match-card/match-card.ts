@@ -25,8 +25,6 @@ export class MatchCard {
   readonly draft = input<MatchDraft | null | undefined>(null);
   readonly canScore = input(false);
   readonly busy = input(false);
-  // One line per team (bracket panel) instead of one row
-  readonly stacked = input(false);
   readonly draftChange = output<DraftChange>();
   readonly confirm = output<StandingMatch>();
 
@@ -37,7 +35,7 @@ export class MatchCard {
     () => this.canScore() && !this.confirmed() && !!this.match().teamAId && !!this.match().teamBId,
   );
 
-  // Saved score once confirmed; before that the draft (or games saved before the confirm flow existed)
+  // The draft while one exists, else the saved score
   readonly score = computed(() => {
     const m = this.match();
     const draft = this.draft();

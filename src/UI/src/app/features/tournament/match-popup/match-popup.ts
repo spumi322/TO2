@@ -47,7 +47,6 @@ export function popupAnchor(container: HTMLElement, clicked: HTMLElement, event:
       [draft]="store.drafts().get(match().id)"
       [canScore]="canScore()"
       [busy]="scoring.savingMatchId() === match().id"
-      [stacked]="true"
       (draftChange)="store.setDraft($event.match, $event.teamAWins, $event.teamBWins)"
       (confirm)="confirm($event)"
     />

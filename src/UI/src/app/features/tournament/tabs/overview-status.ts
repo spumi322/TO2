@@ -15,7 +15,7 @@ export interface StatusCard {
   action: StatusAction | null;
 }
 
-// One card per group or bracket round in the Overview's left panel
+// One card per group or bracket round in the Overview's right column
 export interface StageCard {
   name: string;
   finished: boolean;

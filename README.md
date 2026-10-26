@@ -2,7 +2,7 @@
 
 Full-stack tournament management application supporting group stages, single-elimination brackets, and combined formats for 4–32 teams. Real-time updates, multi-tenant isolation, JWT authentication.
 
-**.NET 8 Web API · Angular 17 · PostgreSQL · SignalR · xUnit · FluentAssertions**
+**.NET 8 Web API · Angular 22 · PrimeNG 22 · PostgreSQL · SignalR · xUnit · FluentAssertions · Vitest**
 
 ---
 
@@ -36,6 +36,8 @@ Each format uses its own subset (BracketOnly skips the group states, GroupsOnly 
 
 **Pipeline pattern.** Confirming a match result can cascade into group stats, standing updates, state transitions, and placement calculation. `MatchResultPipeline` writes the match's games and winner, then runs 4 sequential steps with a shared context in one transaction that rolls back on failure.
 
+**Live scoring.** A match is scored as a draft (− / + per team) that every open page of that tournament sees live through SignalR. The hub keeps the latest draft per match in memory, so a page that opens, refreshes or reconnects later still sees it. Confirm saves the whole result in one request with the match version.
+
 **State machine in the domain layer.** Tournament lifecycle rules are enforced by `TournamentStateMachine` with explicit transition dictionaries and format-specific overloads. Pipelines validate every stage transition with `ValidateTransition()`; which user actions are allowed per state (`CanScoreMatches`, `CanCancel`, `CanDelete`, …) is also decided there and exposed to the UI, so the frontend never re-implements status rules.
 
 **EF Core interceptors.** `TenantId` and audit fields (`CreatedBy/Date`, `LastModifiedBy/Date`, declared on `EntityBase`) are filled in by `SaveChangesInterceptor` implementations, and global query filters scope every read to the current tenant. Business code never sets them manually.
@@ -48,7 +50,7 @@ Each format uses its own subset (BracketOnly skips the group states, GroupsOnly 
 
 ## Running Locally
 
-**Prerequisites:** .NET 8 SDK, Node.js 18+, Docker
+**Prerequisites:** .NET 8 SDK, Node.js 22.22+ (or 24.15+), Docker
 
 ```bash
 # Start PostgreSQL
@@ -68,4 +70,4 @@ npm install
 npm start
 ```
 
-Backend: `http://localhost:5161` (`dotnet run --launch-profile https` adds `https://localhost:7221`) — Frontend: `https://127.0.0.1:4200` (dev build calls `http://localhost:5161/api`)
+Backend: `http://localhost:5161` (`dotnet run --launch-profile https` adds `https://localhost:7221`) — Frontend: `http://localhost:4200` (dev build calls `http://localhost:5161/api`). Optional env `PRIMENG_LICENSE` for the PrimeNG license key (empty = license notice).
