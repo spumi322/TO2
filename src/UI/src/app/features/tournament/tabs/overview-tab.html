@@ -26,20 +26,12 @@
     <div class="columns">
       <div class="side stack">
         <aside class="card facts">
+          @if (t.description) {
+            <p class="about muted pre-line clamp" [title]="t.description">{{ t.description }}</p>
+          }
           <h3>Format</h3>
           <p class="summary">{{ formatSummary() }}</p>
-          <dl>
-            <dt>Created by</dt>
-            <dd>{{ t.createdBy }}</dd>
-            <dt>Created</dt>
-            <dd>{{ t.createdDate | date: 'd MMM y' }}</dd>
-          </dl>
-          @if (t.description) {
-            <div class="about">
-              <h3>About</h3>
-              <p class="muted pre-line clamp" [title]="t.description">{{ t.description }}</p>
-            </div>
-          }
+          <p class="meta muted">Created by {{ t.createdBy }} · {{ t.createdDate | date: 'd MMM y' }}</p>
         </aside>
 
         @if (topSlots().length) {

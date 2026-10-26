@@ -237,37 +237,19 @@
   line-height: 1.5;
 }
 
-dl {
-  margin: 0;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 8px 16px;
-  font-size: 13px;
-}
-
-dt {
-  color: var(--text-muted);
-}
-
-dd {
-  margin: 0;
-  font-weight: 500;
-  text-align: right;
-}
-
+/* The tournament's own description opens the card, no heading */
 .about {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border);
+  margin: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  line-height: 1.6;
 }
 
-.about p {
+.meta {
   margin: 0;
-  line-height: 1.6;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
 }
 
 /* Long descriptions: 3 lines, the full text on hover */
