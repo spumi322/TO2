@@ -11,15 +11,18 @@ namespace TO2.Hubs
     {
         private readonly ITenantService _tenantService;
         private readonly IRepository<Tournament> _tournamentRepository;
+        private readonly IMatchDraftStore _draftStore;
         private readonly ILogger<TournamentHub> _logger;
 
         public TournamentHub(
             ITenantService tenantService,
             IRepository<Tournament> tournamentRepository,
+            IMatchDraftStore draftStore,
             ILogger<TournamentHub> logger)
         {
             _tenantService = tenantService;
             _tournamentRepository = tournamentRepository;
+            _draftStore = draftStore;
             _logger = logger;
         }
 
@@ -42,6 +45,10 @@ namespace TO2.Hubs
             }
 
             await Groups.AddToGroupAsync(Context.ConnectionId, $"tournament-{tournamentId}");
+
+            // Drafts made before this page joined (first load, refresh, reconnect)
+            foreach (var draft in _draftStore.GetAll(tournamentId))
+                await Clients.Caller.SendAsync("MatchDraftUpdated", draft);
         }
 
         public async Task LeaveTournament(long tournamentId)
@@ -49,7 +56,8 @@ namespace TO2.Hubs
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, $"tournament-{tournamentId}");
         }
 
-        // Relays a match's draft score to the others on the tournament page. Nothing is saved: Confirm saves the result
+        // Relays a match's draft score to the others on the tournament page and keeps it in memory for pages that join
+        // later. Not saved to the database: Confirm saves the result
         public async Task ShareMatchDraft(long tournamentId, long matchId, int teamAWins, int teamBWins)
         {
             // Same tenant check as JoinTournament: only into a tournament group of the caller's own tenant
@@ -61,9 +69,9 @@ namespace TO2.Hubs
                 throw new HubException("Tournament not found.");
             }
 
-            await Clients.OthersInGroup($"tournament-{tournamentId}").SendAsync(
-                "MatchDraftUpdated",
-                new MatchDraftUpdatedEvent(tournamentId, matchId, teamAWins, teamBWins, _tenantService.GetCurrentUserName()));
+            var draft = new MatchDraftUpdatedEvent(tournamentId, matchId, teamAWins, teamBWins, _tenantService.GetCurrentUserName());
+            _draftStore.Set(draft);
+            await Clients.OthersInGroup($"tournament-{tournamentId}").SendAsync("MatchDraftUpdated", draft);
         }
     }
 }

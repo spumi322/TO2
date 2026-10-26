@@ -56,3 +56,9 @@
 :host ::ng-deep .brackets-viewer .participant.win .name {
   font-weight: 700;
 }
+
+/* A draft in progress (the adapter marks it running): its score in white until it is confirmed, as in the groups */
+:host ::ng-deep .brackets-viewer .match[data-match-status='3'] .result {
+  color: var(--text);
+  font-weight: 700;
+}

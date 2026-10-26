@@ -1,5 +1,5 @@
 import { Component, effect, input, output, signal, untracked } from '@angular/core';
-import { Bracket } from '../../../core/models';
+import { Bracket, MatchDraft } from '../../../core/models';
 import { roundName, toViewerData, ViewerData } from './bracket-adapter';
 
 // The part of the brackets-viewer global this wrapper uses
@@ -74,6 +74,8 @@ export class BracketView {
   readonly bracket = input.required<Bracket>();
   readonly teamNames = input.required<Map<number, string>>();
   readonly tournamentId = input.required<number>();
+  // Draft scores by match id: shown in their open matches
+  readonly drafts = input<ReadonlyMap<number, MatchDraft>>(new Map());
   // Space above and below each match, in px (big brackets are tighter)
   readonly matchGap = input(12);
   readonly matchClick = output<MatchClick>();
@@ -83,7 +85,7 @@ export class BracketView {
 
   constructor() {
     effect(() => {
-      const data = toViewerData(this.bracket(), this.teamNames(), this.tournamentId());
+      const data = toViewerData(this.bracket(), this.teamNames(), this.tournamentId(), this.drafts());
       untracked(() => void this.render(data));
     });
   }

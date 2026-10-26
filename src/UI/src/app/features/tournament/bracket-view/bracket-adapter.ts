@@ -1,8 +1,8 @@
 import type { Match as ViewerMatch, MatchGame as ViewerGame, Participant, ParticipantResult, Stage } from 'brackets-model';
-import { Bracket, StandingMatch } from '../../../core/models';
+import { Bracket, MatchDraft, StandingMatch } from '../../../core/models';
 
 // brackets-model's Status enum, as plain numbers (the package is only used for types)
-const STATUS = { locked: 0, waiting: 1, ready: 2, completed: 4 } as const;
+const STATUS = { locked: 0, waiting: 1, ready: 2, running: 3, completed: 4 } as const;
 
 export interface ViewerData {
   stages: Stage[];
@@ -15,8 +15,14 @@ export interface ViewerData {
  * Our bracket DTO -> brackets-viewer data (pure, no library code).
  * Slot rules of the library: `null` opponent = BYE, `{ id: null }` = not known yet (TBD).
  * Ours: an empty slot in round 1 is a BYE (that match already has its winner); in later rounds it is TBD.
+ * An open match with a draft shows the draft's score, marked running (the view styles it like a draft).
  */
-export function toViewerData(bracket: Bracket, teamNames: Map<number, string>, tournamentId: number): ViewerData {
+export function toViewerData(
+  bracket: Bracket,
+  teamNames: Map<number, string>,
+  tournamentId: number,
+  drafts: ReadonlyMap<number, MatchDraft> = new Map(),
+): ViewerData {
   const stage: Stage = {
     id: bracket.id,
     tournament_id: tournamentId,
@@ -26,7 +32,7 @@ export function toViewerData(bracket: Bracket, teamNames: Map<number, string>, t
     settings: {},
   };
 
-  const matches = bracket.matches.map((match) => toViewerMatch(match, bracket.id));
+  const matches = bracket.matches.map((match) => toViewerMatch(match, bracket.id, drafts.get(match.id)));
 
   const matchGames = bracket.matches.flatMap((match) =>
     [...match.games]
@@ -54,9 +60,10 @@ export function toViewerData(bracket: Bracket, teamNames: Map<number, string>, t
   return { stages: [stage], matches, matchGames, participants };
 }
 
-function toViewerMatch(match: StandingMatch, stageId: number): ViewerMatch {
+function toViewerMatch(match: StandingMatch, stageId: number, draft: MatchDraft | undefined): ViewerMatch {
   const round = match.round ?? 1;
   const isBye = round === 1 && (!match.teamAId || !match.teamBId);
+  const drafted = !!draft && !match.winnerId;
 
   return {
     id: match.id,
@@ -65,9 +72,9 @@ function toViewerMatch(match: StandingMatch, stageId: number): ViewerMatch {
     round_id: round,
     number: match.seed ?? 1,
     child_count: isBye ? 0 : match.bestOf,
-    status: statusOf(match),
-    opponent1: slot(match.teamAId, match.teamAWins, match.winnerId, isBye),
-    opponent2: slot(match.teamBId, match.teamBWins, match.winnerId, isBye),
+    status: drafted ? STATUS.running : statusOf(match),
+    opponent1: slot(match.teamAId, drafted ? draft.teamAWins : match.teamAWins, match.winnerId, isBye),
+    opponent2: slot(match.teamBId, drafted ? draft.teamBWins : match.teamBWins, match.winnerId, isBye),
   };
 }
 

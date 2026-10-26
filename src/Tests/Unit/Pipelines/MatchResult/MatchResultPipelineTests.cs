@@ -27,6 +27,7 @@ namespace Tests.Unit.Pipelines.MatchResult
         private const long TeamB = 2;
 
         private readonly Mock<ISignalRService> _signalRMock = new();
+        private readonly MatchDraftStore _draftStore = new(TimeProvider.System);
         private readonly Mock<IMatchResultPipelineStep> _stepMock = new();
         private MatchResultContext? _seenContext;
         private readonly MatchResultPipeline _pipeline;
@@ -51,6 +52,7 @@ namespace Tests.Unit.Pipelines.MatchResult
                 steps,
                 new UnitOfWork(DbContext),
                 _signalRMock.Object,
+                _draftStore,
                 new Mock<ITenantService>().Object,
                 new Mock<IStandingService>().Object);
 
@@ -121,6 +123,17 @@ namespace Tests.Unit.Pipelines.MatchResult
             await _pipeline.ExecuteAsync(request);
 
             _signalRMock.Verify(s => s.BroadcastGameUpdated(It.Is<GameUpdatedEvent>(e => e.MatchId == request.MatchId)), Times.Once);
+        }
+
+        [Fact]
+        public async Task Should_ClearTheStoredDraft()
+        {
+            var request = await SeedMatchAsync() with { TeamAWins = 2, TeamBWins = 0 };
+            _draftStore.Set(new MatchDraftUpdatedEvent(request.TournamentId, request.MatchId, 1, 0, "Other"));
+
+            await _pipeline.ExecuteAsync(request);
+
+            _draftStore.GetAll(request.TournamentId).Should().BeEmpty();
         }
 
         [Fact]

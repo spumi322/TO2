@@ -41,6 +41,7 @@ namespace Application.Pipelines.MatchResult
         private readonly IReadOnlyList<IMatchResultPipelineStep> _steps;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ISignalRService _signalRService;
+        private readonly IMatchDraftStore _draftStore;
         private readonly ITenantService _tenantService;
         private readonly IStandingService _standingService;
 
@@ -55,6 +56,7 @@ namespace Application.Pipelines.MatchResult
             IEnumerable<IMatchResultPipelineStep> steps,
             IUnitOfWork unitOfWork,
             ISignalRService signalRService,
+            IMatchDraftStore draftStore,
             ITenantService tenantService,
             IStandingService standingService)
         {
@@ -68,6 +70,7 @@ namespace Application.Pipelines.MatchResult
             _steps = steps.OrderBy(step => Array.IndexOf(StepOrder, step.GetType())).ToList();
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
+            _draftStore = draftStore;
             _tenantService = tenantService;
             _standingService = standingService;
         }
@@ -122,6 +125,8 @@ namespace Application.Pipelines.MatchResult
                 }
 
                 await _unitOfWork.CommitTransactionAsync();
+                // The draft is the saved result now: pages that join later get the saved score, not the draft
+                _draftStore.Remove(tournament.Id, match.Id);
                 await BroadcastUpdatesAsync(context);
 
                 return new MatchResultResponseDTO(

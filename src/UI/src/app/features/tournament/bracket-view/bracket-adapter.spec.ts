@@ -97,6 +97,18 @@ describe('toViewerData', () => {
   it('lists every known team once with its name', () => {
     expect(data.participants.map((p) => p.name).sort()).toEqual(['Alpha', 'Bravo', 'Charlie']);
   });
+
+  it('shows an open match with a draft as running with the draft score, a decided one keeps its result', () => {
+    const drafts = new Map([
+      [101, { teamAWins: 2, teamBWins: 1, by: 'anna' }],
+      [100, { teamAWins: 1, teamBWins: 0, by: 'anna' }],
+    ]);
+    const [bye, drafted] = toViewerData(bracket, names, 77, drafts).matches;
+    expect(drafted.status).toBe(3);
+    expect(drafted.opponent1).toEqual(expect.objectContaining({ id: 2, score: 2 }));
+    expect(drafted.opponent2).toEqual(expect.objectContaining({ id: 3, score: 1 }));
+    expect(bye.status).toBe(4);
+  });
 });
 
 describe('roundName', () => {

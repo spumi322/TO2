@@ -86,6 +86,9 @@ namespace TO2
             builder.Services.AddScoped<IIdentityService, IdentityService>();
             builder.Services.AddScoped<ITokenService, JwtTokenService>();
             builder.Services.AddScoped<ITenantInviteService, TenantInviteService>();
+            // Match drafts live in server memory, shared by all requests and hub calls
+            builder.Services.AddSingleton(TimeProvider.System);
+            builder.Services.AddSingleton<IMatchDraftStore, MatchDraftStore>();
 
             // Workflow orchestration (delegates to the pipelines below)
             builder.Services.AddScoped<IWorkFlowService, WorkFlowService>();
