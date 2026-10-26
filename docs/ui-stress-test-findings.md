@@ -79,9 +79,6 @@ Test tournaments left in Org1 (all prefixed `ST `):
 ### 13. Drafts not shown on the bracket
 - Another tab's draft score shows on the Groups tab match line; on the Bracket tab the box stays 0-0 (draft only inside the popup).
 
-### 14. GroupsOnly results mark every non-winner red
-- Finished GroupsOnly (345), Groups tab and Overview cards: 2nd place has the same red bar as last place, though nothing is eliminated in this format.
-
 ### 15. Direct URL to a tab the format doesn't have
 - `/tournaments/339/groups` on a finished Bracket-only tournament: "Groups are not drawn yet - drawn when the tournament starts."
 

@@ -69,7 +69,8 @@ export class MatchCard {
     const known = !!teamId;
     const winnerId = this.match().winnerId;
     return {
-      name: known ? (this.teamNames().get(teamId!) ?? 'Unknown team') : 'TBD',
+      // An empty slot in a decided match is a BYE (drawn with its winner); otherwise the team is not known yet
+      name: known ? (this.teamNames().get(teamId!) ?? 'Unknown team') : winnerId !== null ? 'BYE' : 'TBD',
       known,
       won: known && winnerId === teamId,
       lost: known && winnerId !== null && winnerId !== teamId,
