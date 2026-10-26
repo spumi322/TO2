@@ -97,6 +97,14 @@ describe('tournament config', () => {
     expect(validateConfig(config({ format: Format.BracketOnly, numberOfGroups: null }))).toEqual({});
   });
 
+  it('reports an empty Max teams only once, not as a group size problem', () => {
+    const empty = null as unknown as number;
+    expect(validateConfig(config({ maxTeams: empty }))).toEqual({ maxTeams: 'Max teams must be between 4 and 32.' });
+    expect(validateConfig(config({ format: Format.GroupsOnly, maxTeams: empty, advancingPerGroup: null }))).toEqual({
+      maxTeams: 'Max teams must be between 4 and 32.',
+    });
+  });
+
   it('sends only the fields of the chosen format', () => {
     expect(buildCreateRequest(config({ format: Format.BracketOnly, description: '  ' }))).toEqual({
       name: 'Summer Cup',

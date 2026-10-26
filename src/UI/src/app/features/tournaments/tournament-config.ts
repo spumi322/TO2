@@ -83,10 +83,11 @@ export function validateConfig(config: TournamentConfig): Partial<Record<keyof T
     errors.maxTeams = `Max teams must be between ${MIN_TEAMS} and ${MAX_TEAMS}.`;
   }
 
+  // Group sizes come from Max teams: checked only once Max teams itself is valid
   if (formatHasGroups(config.format)) {
     const groups = config.numberOfGroups ?? 0;
     if (groups < 1) errors.numberOfGroups = 'At least 1 group.';
-    else if (Math.floor(config.maxTeams / groups) < MIN_GROUP_SIZE) {
+    else if (!errors.maxTeams && Math.floor(config.maxTeams / groups) < MIN_GROUP_SIZE) {
       errors.numberOfGroups = `Each group needs at least ${MIN_GROUP_SIZE} teams.`;
     }
   }
@@ -97,7 +98,7 @@ export function validateConfig(config: TournamentConfig): Partial<Record<keyof T
     const minGroupSize = Math.floor(config.maxTeams / groups);
     if (advancing < 1) errors.advancingPerGroup = 'At least 1 team must advance.';
     else if (groups === 1 && advancing < 2) errors.advancingPerGroup = 'With one group, at least 2 teams must advance.';
-    else if (advancing >= minGroupSize) {
+    else if (!errors.maxTeams && advancing >= minGroupSize) {
       errors.advancingPerGroup = 'At least one team per group must be eliminated.';
     }
   }
