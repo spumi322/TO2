@@ -150,7 +150,7 @@
         {
           "id": 3229,
           "standingId": 670,
-          "round": 1,
+          "round": 2,
           "seed": 2,
           "teamAId": 993,
           "teamBId": 995,
@@ -196,7 +196,7 @@
         {
           "id": 3230,
           "standingId": 670,
-          "round": 1,
+          "round": 3,
           "seed": 3,
           "teamAId": 993,
           "teamBId": 990,
@@ -242,7 +242,7 @@
         {
           "id": 3231,
           "standingId": 670,
-          "round": 2,
+          "round": 3,
           "seed": 2,
           "teamAId": 991,
           "teamBId": 995,
@@ -334,7 +334,7 @@
         {
           "id": 3233,
           "standingId": 670,
-          "round": 3,
+          "round": 1,
           "seed": 3,
           "teamAId": 995,
           "teamBId": 990,
@@ -477,7 +477,7 @@
         {
           "id": 3235,
           "standingId": 671,
-          "round": 1,
+          "round": 2,
           "seed": 2,
           "teamAId": 996,
           "teamBId": 989,
@@ -523,7 +523,7 @@
         {
           "id": 3236,
           "standingId": 671,
-          "round": 1,
+          "round": 3,
           "seed": 3,
           "teamAId": 996,
           "teamBId": 992,
@@ -569,7 +569,7 @@
         {
           "id": 3237,
           "standingId": 671,
-          "round": 2,
+          "round": 3,
           "seed": 2,
           "teamAId": 994,
           "teamBId": 989,
@@ -661,7 +661,7 @@
         {
           "id": 3239,
           "standingId": 671,
-          "round": 3,
+          "round": 1,
           "seed": 3,
           "teamAId": 989,
           "teamBId": 992,
