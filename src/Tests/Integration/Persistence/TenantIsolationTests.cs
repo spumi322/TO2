@@ -204,5 +204,17 @@ namespace Tests.Integration.Persistence
             registration.TenantId.Should().Be(2);
         }
 
+        [Fact]
+        public void EveryEntityWithTenantId_HasQueryFilter()
+        {
+            // User is unfiltered on purpose: login and register look users up before a tenant is known
+            var unfiltered = DbContext.Model.GetEntityTypes()
+                .Where(e => e.FindProperty("TenantId") != null && e.ClrType != typeof(User))
+                .Where(e => e.GetQueryFilter() == null)
+                .Select(e => e.ClrType.Name);
+
+            unfiltered.Should().BeEmpty("a tenant entity without a query filter leaks rows across organizations");
+        }
+
     }
 }
