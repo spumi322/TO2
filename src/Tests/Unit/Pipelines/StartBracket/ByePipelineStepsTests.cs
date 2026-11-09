@@ -85,7 +85,7 @@ namespace Tests.Unit.Pipelines.StartBracket
             var (_, logger) = CreateLogger<CalculateBracketStructureStep>();
             var strategies = new IBracketSeedingStrategy[]
             {
-                new RandomSeedingStrategy(CreateLogger<RandomSeedingStrategy>().Logger),
+                new RandomSeedingStrategy(CreateLogger<RandomSeedingStrategy>().Logger, new Random(1)),
                 new GroupResultSeedingStrategy(CreateLogger<GroupResultSeedingStrategy>().Logger)
             };
             _step = new CalculateBracketStructureStep(logger, strategies);

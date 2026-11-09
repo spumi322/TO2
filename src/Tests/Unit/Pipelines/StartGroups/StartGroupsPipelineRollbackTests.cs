@@ -40,7 +40,8 @@ namespace Tests.Unit.Pipelines.StartGroups
                 new DistributeTeamsIntoGroupsStep(
                     new Mock<ILogger<DistributeTeamsIntoGroupsStep>>().Object,
                     new Repository<TournamentTeam>(DbContext),
-                    new Repository<Team>(DbContext)),
+                    new Repository<Team>(DbContext),
+                    new Random(1)),
             };
 
             _pipeline = new StartGroupsPipeline(

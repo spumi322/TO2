@@ -16,14 +16,17 @@ namespace Application.Pipelines.StartGroups.Steps
     {
         private readonly ILogger<DistributeTeamsIntoGroupsStep> _logger;
         private readonly IRepository<Team> _teamRepository;
+        private readonly Random _random;
 
         public DistributeTeamsIntoGroupsStep(
             ILogger<DistributeTeamsIntoGroupsStep> logger,
             IRepository<TournamentTeam> tournamentTeamRepository,
-            IRepository<Team> teamRepository)
+            IRepository<Team> teamRepository,
+            Random random)
         {
             _logger = logger;
             _teamRepository = teamRepository;
+            _random = random;
         }
 
         public async Task<bool> ExecuteAsync(StartGroupsContext context)
@@ -56,7 +59,9 @@ namespace Application.Pipelines.StartGroups.Steps
         private Dictionary<Standing, List<Team>> ShuffleTeamsIntoEqualGroups(List<Team> teams, List<Standing> groupStandings)
         {
             // Shuffle teams randomly
-            var shuffledTeams = teams.OrderBy(t => Guid.NewGuid()).ToList();
+            var shuffled = teams.ToArray();
+            _random.Shuffle(shuffled);
+            var shuffledTeams = shuffled.ToList();
 
             int teamsPerGroup = shuffledTeams.Count / groupStandings.Count;
             int remainingTeams = shuffledTeams.Count % groupStandings.Count;

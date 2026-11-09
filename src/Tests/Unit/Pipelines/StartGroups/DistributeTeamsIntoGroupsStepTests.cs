@@ -26,7 +26,8 @@ namespace Tests.Unit.Pipelines.StartGroups
             _step = new DistributeTeamsIntoGroupsStep(
                 logger,
                 _mockTournamentTeamRepo.Object,
-                _mockTeamRepo.Object);
+                _mockTeamRepo.Object,
+                new Random(1));
         }
 
         [Fact]

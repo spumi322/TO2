@@ -16,7 +16,7 @@ namespace Tests.Unit.Pipelines.StartBracket
 
         public BracketSeedingStrategyTests()
         {
-            _random = new RandomSeedingStrategy(CreateLogger<RandomSeedingStrategy>().Logger);
+            _random = new RandomSeedingStrategy(CreateLogger<RandomSeedingStrategy>().Logger, new Random(1));
             _groupResult = new GroupResultSeedingStrategy(CreateLogger<GroupResultSeedingStrategy>().Logger);
         }
 

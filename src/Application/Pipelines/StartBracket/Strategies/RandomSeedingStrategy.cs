@@ -12,10 +12,12 @@ namespace Application.Pipelines.StartBracket.Strategies
     public class RandomSeedingStrategy : IBracketSeedingStrategy
     {
         private readonly ILogger<RandomSeedingStrategy> _logger;
+        private readonly Random _random;
 
-        public RandomSeedingStrategy(ILogger<RandomSeedingStrategy> logger)
+        public RandomSeedingStrategy(ILogger<RandomSeedingStrategy> logger, Random random)
         {
             _logger = logger;
+            _random = random;
         }
 
         public Format Format => Format.BracketOnly;
@@ -24,12 +26,10 @@ namespace Application.Pipelines.StartBracket.Strategies
         {
             _logger.LogInformation("Randomly seeding {TeamCount} teams", entrants.Count);
 
-            var shuffledTeams = entrants
-                .Select(e => e.Team)
-                .OrderBy(_ => Random.Shared.Next())
-                .ToList();
+            var shuffledTeams = entrants.Select(e => e.Team).ToArray();
+            _random.Shuffle(shuffledTeams);
 
-            var paddedTeams = BracketSeedingUtility.PadToPowerOfTwo(shuffledTeams);
+            var paddedTeams = BracketSeedingUtility.PadToPowerOfTwo(shuffledTeams.ToList());
             return BracketSeedingUtility.CreateSingleEliminationPairs(paddedTeams, _logger);
         }
     }
