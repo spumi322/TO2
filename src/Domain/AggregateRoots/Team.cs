@@ -22,7 +22,7 @@ namespace Domain.AggregateRoots
             Name = name.Trim();
         }
 
-        public long TenantId { get; set; }
+        public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;
 
         public ICollection<TournamentTeam> TournamentParticipations { get; private set; } = new List<TournamentTeam>();

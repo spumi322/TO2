@@ -26,7 +26,7 @@ namespace Domain.Entities
         public long TeamId { get; private set; }
         public Team Team { get; private set; }
 
-        public long TenantId { get; set; }
+        public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;
 
         // Final results (populated when tournament finishes)

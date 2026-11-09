@@ -18,7 +18,7 @@ namespace Domain.Entities
         public long MatchId { get; private set; }
         public Match Match { get; set; }
 
-        public long TenantId { get; set; }
+        public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;
 
         public long? WinnerId { get; set; }

@@ -57,11 +57,18 @@ namespace Tests.Unit.SignalR
         {
             DbContext.Tenants.Add(new Tenant { Id = 1, Name = "Org1" });
             DbContext.Tenants.Add(new Tenant { Id = 2, Name = "Org2" });
+
+            DbFactory.LogInAs(1);
             var own = TestDataBuilder.Tournaments.CreateDefault("Own");
+            DbContext.Tournaments.Add(own);
+            await DbContext.SaveChangesAsync();
+
+            DbFactory.LogInAs(2);
             var other = TestDataBuilder.Tournaments.CreateDefault("Other");
-            other.TenantId = 2;
-            DbContext.Tournaments.AddRange(own, other);
+            DbContext.Tournaments.Add(other);
             await SaveAndDetachAsync();
+
+            DbFactory.LogInAs(1);
             return (own.Id, other.Id);
         }
 

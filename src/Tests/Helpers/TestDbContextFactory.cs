@@ -18,6 +18,9 @@ namespace Tests.Helpers
         private readonly DbContextOptions<TO2DbContext> _options;
         private readonly IConfiguration _configuration;
         private readonly ITenantService _tenantService;
+        private long _currentTenantId = 1;
+        public void LogInAs(long tenantId) => _currentTenantId = tenantId;
+        public ITenantService TenantService => _tenantService;
 
         public TestDbContextFactory()
         {
@@ -27,7 +30,7 @@ namespace Tests.Helpers
 
             // Create a mock tenant service for tests
             var mockTenantService = new Mock<ITenantService>();
-            mockTenantService.Setup(x => x.GetCurrentTenantId()).Returns(1L);
+            mockTenantService.Setup(x => x.GetCurrentTenantId()).Returns(() => _currentTenantId);
             mockTenantService.Setup(x => x.GetCurrentUserName()).Returns("TestUser");
             _tenantService = mockTenantService.Object;
 
@@ -60,5 +63,7 @@ namespace Tests.Helpers
         {
             _connection?.Dispose();
         }
+
+        
     }
 }

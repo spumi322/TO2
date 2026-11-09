@@ -57,7 +57,7 @@ namespace Domain.AggregateRoots
 
         public List<Prize> PrizePool { get; set; }
 
-        public long TenantId { get; set; }
+        public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;
 
         public ICollection<TournamentTeam> TournamentTeams { get; private set; } = new List<TournamentTeam>();

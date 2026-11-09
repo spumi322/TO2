@@ -33,7 +33,7 @@ namespace Domain.Entities
         public long StandingId { get; set; }
         public Standing Standing { get; set; }
 
-        public long TenantId { get; set; }
+        public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;
 
         public long TeamId { get; set; }
