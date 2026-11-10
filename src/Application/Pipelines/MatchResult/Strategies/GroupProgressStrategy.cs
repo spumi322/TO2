@@ -29,6 +29,14 @@ namespace Application.Pipelines.MatchResult.Strategies
 
         public async Task<StandingProgressResult> ProgressStandingAsync(long tournamentId, long standingId, long matchId, long winnerId)
         {
+            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+                ?? throw new InvalidOperationException($"Tournament {tournamentId} not found");
+
+            // Aggregate lock: two results saved at the same moment each see the other's match as still open,
+            // so neither would finish the group (or the group stage). With the tournament's Version bumped by
+            // every group result, the later save is a conflict (409) and that match is confirmed again.
+            _tournamentRepository.BumpVersion(tournament);
+
             // Check if this match finishing caused the standing to finish
             var IsGroupJustFinished = await _standingService.IsGroupFinished(standingId);
 
@@ -46,10 +54,6 @@ namespace Application.Pipelines.MatchResult.Strategies
 
             // Mark the group as finished
             await _standingService.MarkStandingAsFinished(standingId);
-
-            // Load tournament format once (needed for both early-return and all-groups-finished paths)
-            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
-                ?? throw new InvalidOperationException($"Tournament {tournamentId} not found");
 
             // Check if ALL groups are finished
             var allGroupsFinished = await _standingService.CheckAllGroupsAreFinished(tournamentId);

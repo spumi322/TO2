@@ -139,7 +139,7 @@ namespace Tests.Integration.Property
         }
 
         /// <summary>The registrations of Program.cs that playing a tournament needs, with a test DbContext, tenant and seeded Random.</summary>
-        private static ServiceProvider BuildServices(TestDbContextFactory factory, Random random)
+        public static ServiceProvider BuildServices(TestDbContextFactory factory, Random random)
         {
             var services = new ServiceCollection();
             services.AddLogging();
