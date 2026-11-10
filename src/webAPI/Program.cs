@@ -9,6 +9,7 @@ using Application.Pipelines.StartBracket.Strategies;
 using Application.Pipelines.StartGroups;
 using Application.Pipelines.StartGroups.Contracts;
 using Application.Services;
+using Application.Validations.Tournament;
 using Domain.Entities;
 using Domain.StateMachine;
 using FluentValidation;

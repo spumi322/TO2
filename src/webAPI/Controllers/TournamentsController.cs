@@ -29,7 +29,7 @@ namespace TO2.Controllers
         }
 
 
-        // GET: api/Tournament/5
+        // GET: api/tournaments/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(long id)
         {
@@ -43,7 +43,7 @@ namespace TO2.Controllers
             return Ok(await _tournamentService.GetTournamentListAsync());
         }
 
-        // GET: api/Tournament/5/teams
+        // GET: api/tournaments/5/teams
         [HttpGet("{id}/teams")]
         public async Task<IActionResult> GetTeamsByTournament(long id)
         {
@@ -57,7 +57,7 @@ namespace TO2.Controllers
             return Ok(await _teamService.AddTeamsToTournamentAsync(id, request));
         }
 
-        // GET: api/Tournament/5/state
+        // GET: api/tournaments/5/state
         [HttpGet("{id}/state")]
         public async Task<IActionResult> GetTournamentState(long id)
         {
@@ -71,7 +71,7 @@ namespace TO2.Controllers
             return Ok(await _placementService.GetFinalResultsAsync(id));
         }
 
-        // POST: api/Tournament
+        // POST: api/tournaments
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateTournamentRequestDTO request)
         {
@@ -80,21 +80,21 @@ namespace TO2.Controllers
             return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
         }
 
-        // PUT: api/Tournament/5
+        // PUT: api/tournaments/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(long id, [FromBody] UpdateTournamentRequestDTO request)
         {
             return Ok(await _tournamentService.UpdateTournamentAsync(id, request));
         }
 
-        // POST: api/Tournament/5/start-groups
+        // POST: api/tournaments/5/start-groups
         [HttpPost("{id}/start-groups")]
         public async Task<IActionResult> StartGroups(long id)
         {
             return Ok(await _workFlowService.StartGroups(id));
         }
 
-        // POST: api/Tournament/5/start-bracket
+        // POST: api/tournaments/5/start-bracket
         [HttpPost("{id}/start-bracket")]
         public async Task<IActionResult> StartBracket(long id)
         {

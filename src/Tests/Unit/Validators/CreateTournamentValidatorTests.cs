@@ -1,6 +1,7 @@
 using Application.Contracts;
 using Application.DTOs.Tournament;
 using Application.Services;
+using Application.Validations.Tournament;
 using Domain.Enums;
 using FluentValidation.TestHelper;
 

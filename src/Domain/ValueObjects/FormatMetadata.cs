@@ -18,7 +18,7 @@ namespace Domain.ValueObjects
 
         private FormatMetadata() { } // private constructor ensures controlled creation
 
-        // Static instances (the �typed constants�)
+        // Static instances (the "typed constants")
         public static readonly FormatMetadata GroupsOnly = new FormatMetadata
         {
             Format = Format.GroupsOnly,
