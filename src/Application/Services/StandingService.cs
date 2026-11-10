@@ -4,6 +4,7 @@ using Application.DTOs.Standing;
 using Application.DTOs.Team;
 using Application.DTOs.Tournament;
 using Application.Mappings;
+using Application.Pipelines.StartBracket.Utilities;
 using Application.Utilities;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -49,8 +50,8 @@ namespace Application.Services
             if (metadata.RequiresBracket)
             {
                 int bracketSize = tournament.Format == Format.BracketOnly
-                    ? NextPowerOfTwo(tournament.MaxTeams)
-                    : NextPowerOfTwo(numberOfGroups!.Value * tournament.AdvancingPerGroup!.Value);
+                    ? BracketSeedingUtility.NextPowerOfTwo(tournament.MaxTeams)
+                    : BracketSeedingUtility.NextPowerOfTwo(numberOfGroups!.Value * tournament.AdvancingPerGroup!.Value);
 
                 var standing = new Standing("Main Bracket", bracketSize, StandingType.Bracket);
                 standing.Tournament = tournament;
@@ -79,14 +80,6 @@ namespace Application.Services
             var standings = await _standingRepository.FindAllAsync(s => s.TournamentId == tournamentId);
 
             return standings.ToList();
-        }
-
-        private static int NextPowerOfTwo(int n)
-        {
-            if (n <= 1) return 2;
-            int p = 1;
-            while (p < n) p <<= 1;
-            return p;
         }
 
         // Standing progress
