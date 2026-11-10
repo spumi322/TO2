@@ -11,18 +11,15 @@ namespace Application.Pipelines.MatchResult.Steps
     /// </summary>
     public class UpdateGroupStatsStep : PipeLineBase<UpdateGroupStatsStep>
     {
-        private readonly IUnitOfWork _unitOfWork;
         private readonly IRepository<GroupEntry> _groupRepository;
         private readonly IRepository<Game> _gameRepository;
 
         public UpdateGroupStatsStep(
             ILogger<UpdateGroupStatsStep> logger,
-            IUnitOfWork unitOfWork,
             IRepository<GroupEntry> groupRepository,
             IRepository<Game> gameRepository) : base(logger)
         {
             _groupRepository = groupRepository;
-            _unitOfWork = unitOfWork;
             _gameRepository = gameRepository;
         }
 

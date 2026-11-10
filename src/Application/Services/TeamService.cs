@@ -14,7 +14,6 @@ namespace Application.Services
     {
         private readonly IRepository<Team> _teamRepository;
         private readonly IRepository<Tournament> _tournamentRepository;
-        private readonly ILogger<TeamService> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ISignalRService _signalRService;
         private readonly ITenantService _tenantService;
@@ -22,7 +21,6 @@ namespace Application.Services
 
         public TeamService(IRepository<Team> teamRepository,
                            IRepository<Tournament> tournamentRepository,
-                           ILogger<TeamService> logger,
                            IUnitOfWork unitOfWork,
                            ISignalRService signalRService,
                            ITenantService tenantService,
@@ -30,7 +28,6 @@ namespace Application.Services
         {
             _teamRepository = teamRepository;
             _tournamentRepository = tournamentRepository;
-            _logger = logger;
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
             _tenantService = tenantService;

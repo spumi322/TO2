@@ -13,16 +13,13 @@ namespace Application.Pipelines.StartGroups.Steps
     public class TransitionToGroupsInProgressStep : IStartGroupsPipelineStep
     {
         private readonly ILogger<TransitionToGroupsInProgressStep> _logger;
-        private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
 
         public TransitionToGroupsInProgressStep(
             ILogger<TransitionToGroupsInProgressStep> logger,
-            IRepository<Tournament> tournamentRepository,
             ITournamentStateMachine stateMachine)
         {
             _logger = logger;
-            _tournamentRepository = tournamentRepository;
             _stateMachine = stateMachine;
         }
 

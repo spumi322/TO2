@@ -50,7 +50,6 @@ namespace Tests.Integration.Persistence
                 new StandingRepository(DbContext),
                 new Repository<Team>(DbContext),
                 standingService,
-                new Mock<ILogger<TournamentService>>().Object,
                 new TournamentStateMachine(),
                 unitOfWork,
                 signalR,
@@ -59,7 +58,6 @@ namespace Tests.Integration.Persistence
             _teamService = new TeamService(
                 new Repository<Team>(DbContext),
                 new Repository<Tournament>(DbContext),
-                new Mock<ILogger<TeamService>>().Object,
                 unitOfWork,
                 signalR,
                 DbFactory.TenantService,

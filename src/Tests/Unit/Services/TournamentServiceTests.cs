@@ -47,7 +47,6 @@ namespace Tests.Unit.Services
                 new StandingRepository(DbContext),
                 new Repository<Team>(DbContext),
                 standingService,
-                new Mock<ILogger<TournamentService>>().Object,
                 new TournamentStateMachine(),
                 unitOfWork,
                 _signalRMock.Object,

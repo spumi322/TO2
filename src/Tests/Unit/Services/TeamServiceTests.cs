@@ -39,7 +39,6 @@ namespace Tests.Unit.Services
             return new TeamService(
                 new Repository<Team>(context),
                 new Repository<Tournament>(context),
-                new Mock<ILogger<TeamService>>().Object,
                 new UnitOfWork(context),
                 _signalRMock.Object,
                 tenantMock.Object,

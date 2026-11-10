@@ -19,7 +19,6 @@ namespace Application.Services
         private readonly IStandingRepository _standingRepository;
         private readonly IRepository<Team> _teamRepository;
         private readonly IStandingService _standingService;
-        private readonly ILogger<TournamentService> _logger;
         private readonly ITournamentStateMachine _stateMachine;
         private readonly ISignalRService _signalRService;
         private readonly ITenantService _tenantService;
@@ -29,7 +28,6 @@ namespace Application.Services
                                  IStandingRepository standingRepository,
                                  IRepository<Team> teamRepository,
                                  IStandingService standingService,
-                                 ILogger<TournamentService> logger,
                                  ITournamentStateMachine stateMachine,
                                  IUnitOfWork unitOfWork,
                                  ISignalRService signalRService,
@@ -39,7 +37,6 @@ namespace Application.Services
             _standingRepository = standingRepository;
             _teamRepository = teamRepository;
             _standingService = standingService;
-            _logger = logger;
             _stateMachine = stateMachine;
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;

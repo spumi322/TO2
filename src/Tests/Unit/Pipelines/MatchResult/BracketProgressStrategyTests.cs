@@ -21,7 +21,6 @@ namespace Tests.Unit.Pipelines.MatchResult
         {
             _strategy = new BracketProgressStrategy(
                 new Repository<Match>(DbContext),
-                new Mock<IUnitOfWork>().Object,
                 new Mock<IGameService>().Object,
                 new Mock<IStandingService>().Object,
                 new Mock<ILogger<BracketProgressStrategy>>().Object);

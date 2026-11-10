@@ -9,15 +9,12 @@ namespace Application.Services
     {
         private readonly IMatchRepository _matchRepository;
         private readonly IFormatService _formatService;
-        private readonly ILogger<MatchService> _logger;
 
         public MatchService(IMatchRepository matchRepository,
-                            IFormatService formatService,
-                            ILogger<MatchService> logger)
+                            IFormatService formatService)
         {
             _matchRepository = matchRepository;
             _formatService = formatService;
-            _logger = logger;
         }
 
         public async Task<Match> GenerateMatch(Team? teamA, Team? teamB, int round, int seed, long standingId)

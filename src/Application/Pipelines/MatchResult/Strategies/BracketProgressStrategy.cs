@@ -12,7 +12,6 @@ namespace Application.Pipelines.MatchResult.Strategies
     /// </summary>
     public class BracketProgressStrategy : IStandingProgressStrategy
     {
-        private readonly IUnitOfWork _unitOfWork;
         private readonly IRepository<Match> _matchRepository;
         private readonly IGameService _gameService;
         private readonly IStandingService _standingService;
@@ -22,7 +21,6 @@ namespace Application.Pipelines.MatchResult.Strategies
 
         public BracketProgressStrategy(
             IRepository<Match> matchRepository,
-            IUnitOfWork unitOfWork,
             IGameService gameService,
             IStandingService standingService,
             ILogger<BracketProgressStrategy> logger)
@@ -31,7 +29,6 @@ namespace Application.Pipelines.MatchResult.Strategies
             _gameService = gameService;
             _standingService = standingService;
             _logger = logger;
-            _unitOfWork = unitOfWork;
         }
 
         public async Task<StandingProgressResult> ProgressStandingAsync(long tournamentId, long standingId, long matchId, long winnerId)

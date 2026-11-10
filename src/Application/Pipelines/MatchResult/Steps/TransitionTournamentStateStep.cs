@@ -14,19 +14,13 @@ namespace Application.Pipelines.MatchResult.Steps
     /// </summary>
     public class TransitionTournamentStateStep : PipeLineBase<TransitionTournamentStateStep>
     {
-        private readonly IUnitOfWork _unitOfWork;
-        private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
 
         public TransitionTournamentStateStep(
             ILogger<TransitionTournamentStateStep> logger,
-            IRepository<Tournament> tournamentRepository,
-            IUnitOfWork unitOfWork,
             ITournamentStateMachine stateMachine) : base(logger)
         {
-            _tournamentRepository = tournamentRepository;
             _stateMachine = stateMachine;
-            _unitOfWork = unitOfWork;
         }
 
         protected override async Task<bool> ExecuteStepAsync(MatchResultContext context)
