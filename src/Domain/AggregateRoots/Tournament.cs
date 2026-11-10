@@ -1,7 +1,6 @@
 ﻿using Domain.Common;
 using Domain.Entities;
 using Domain.Enums;
-using Domain.ValueObjects;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -54,8 +53,6 @@ namespace Domain.AggregateRoots
 
         [MaxLength(250)]
         public string? CancellationReason { get; private set; }
-
-        public List<Prize> PrizePool { get; set; }
 
         public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;

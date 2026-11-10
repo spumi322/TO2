@@ -2,7 +2,6 @@ using Application.Contracts;
 using Domain.AggregateRoots;
 using Domain.Common;
 using Domain.Entities;
-using Domain.ValueObjects;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -57,8 +56,6 @@ namespace Infrastructure.Persistence
         {
             modelBuilder.Ignore<AggregateRootBase>();
             modelBuilder.Ignore<EntityBase>(); 
-            modelBuilder.Ignore<ValueObjectBase>();
-            modelBuilder.Ignore<Prize>();
 
             base.OnModelCreating(modelBuilder);
 
