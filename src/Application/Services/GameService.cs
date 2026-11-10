@@ -1,6 +1,5 @@
 ﻿
 using Application.Contracts;
-using Application.DTOs.Game;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Exceptions;
@@ -23,7 +22,7 @@ namespace Application.Services
             _logger = logger;
         }
 
-        public async Task<GenerateGamesDTO> GenerateGames(Match match)
+        public async Task GenerateGames(Match match)
         {
             if (match == null)
                 throw new ArgumentNullException(nameof(match));
@@ -48,8 +47,6 @@ namespace Application.Services
             }
 
             await _gameRepository.AddRangeAsync(games);
-
-            return new GenerateGamesDTO(true, $"{games.Count} games generated for match {match.Id}");
         }
     }
 }

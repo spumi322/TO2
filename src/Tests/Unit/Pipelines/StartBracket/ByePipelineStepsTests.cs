@@ -1,5 +1,4 @@
 using Application.Contracts;
-using Application.DTOs.Game;
 using Application.DTOs.Standing;
 using Application.Pipelines.StartBracket.Contracts;
 using Application.Pipelines.StartBracket.Steps;
@@ -200,7 +199,7 @@ namespace Tests.Unit.Pipelines.StartBracket
 
             _gameService
                 .Setup(x => x.GenerateGames(It.IsAny<DomainMatch>()))
-                .ReturnsAsync(new GenerateGamesDTO(true, null));
+                .Returns(Task.CompletedTask);
         }
 
         [Fact]

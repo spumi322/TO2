@@ -19,23 +19,14 @@ namespace Infrastructure.Persistence.Repository
         public async Task<TEntity?> GetByIdAsync(long id)
           => await _dbSet.FindAsync(id);
 
-        public async Task<IReadOnlyList<TEntity>> GetAllAsync()
-            => await _dbSet.ToListAsync();
-
         public async Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate)
             => await _dbSet.FirstOrDefaultAsync(predicate);
 
         public async Task<IReadOnlyList<TEntity>> FindAllAsync(Expression<Func<TEntity, bool>> predicate)
             => await _dbSet.Where(predicate).ToListAsync();
 
-        public async Task<bool> ExistsAsync(long id)
-            => await _dbSet.FindAsync(id) != null;
-
         public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> predicate)
             => await _dbSet.AnyAsync(predicate);
-
-        public async Task<int> CountAsync()
-            => await _dbSet.CountAsync();
 
         public async Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
             => await _dbSet.CountAsync(predicate);

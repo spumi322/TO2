@@ -185,13 +185,6 @@ namespace Application.Services
             _logger.LogInformation("Refresh token revoked for user {UserId}", token.UserId);
         }
 
-        public async Task<bool> ValidateRefreshTokenAsync(string refreshToken)
-        {
-            var token = await FindRefreshTokenAsync(refreshToken);
-
-            return token != null && token.IsActive;
-        }
-
         public async Task<OrganizationExistsResponse> OrganizationExistsAsync(string name)
         {
             return new OrganizationExistsResponse(await FindTenantByNameAsync(name) != null);

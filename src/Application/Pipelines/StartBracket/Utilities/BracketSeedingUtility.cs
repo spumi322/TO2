@@ -10,14 +10,6 @@ namespace Application.Pipelines.StartBracket.Utilities
     public static class BracketSeedingUtility
     {
         /// <summary>
-        /// Checks if a number is a power of 2.
-        /// </summary>
-        public static bool IsPowerOfTwo(int n)
-        {
-            return n > 0 && (n & (n - 1)) == 0;
-        }
-
-        /// <summary>
         /// Returns the smallest power of 2 >= n.
         /// </summary>
         public static int NextPowerOfTwo(int n)

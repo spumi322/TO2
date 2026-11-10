@@ -7,12 +7,9 @@ namespace Application.Contracts
     {
         // Query operations (nullable returns)
         Task<T?> GetByIdAsync(long id);
-        Task<IReadOnlyList<T>> GetAllAsync();
         Task<T?> FindAsync(Expression<Func<T, bool>> predicate);
         Task<IReadOnlyList<T>> FindAllAsync(Expression<Func<T, bool>> predicate);
-        Task<bool> ExistsAsync(long id);
         Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate);
-        Task<int> CountAsync();
         Task<int> CountAsync(Expression<Func<T, bool>> predicate);
 
         // Command operations (void returns for CQS)
