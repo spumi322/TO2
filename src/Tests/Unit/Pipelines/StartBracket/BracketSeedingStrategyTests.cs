@@ -70,7 +70,7 @@ namespace Tests.Unit.Pipelines.StartBracket
             // Plain seeding would pair C1 vs C2 (seed 3 vs 6)
             var pairs = _groupResult.CreateFirstRoundPairs(MakeGroupEntrants(groupCount: 3, advancingPerGroup: 2));
 
-            PairNames(pairs).Should().Equal("A1 vs BYE", "C1 vs B2", "B1 vs BYE", "A2 vs C2");
+            PairNames(pairs).Should().Equal("A1 vs BYE", "A2 vs C2", "B1 vs BYE", "C1 vs B2");
         }
 
         [Theory]
