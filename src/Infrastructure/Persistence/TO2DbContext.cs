@@ -107,7 +107,14 @@ namespace Infrastructure.Persistence
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Team>().Property(t => t.Name).HasMaxLength(24);
-            modelBuilder.Entity<Tournament>().Property(t => t.Name).HasMaxLength(60);
+            // Column sizes only; the input limits are in the validators
+            modelBuilder.Entity<Tournament>(entity =>
+            {
+                entity.Property(t => t.Name).HasMaxLength(60);
+                entity.Property(t => t.Description).HasMaxLength(250);
+                entity.Property(t => t.CancelledBy).HasMaxLength(100);
+                entity.Property(t => t.CancellationReason).HasMaxLength(250);
+            });
 
             modelBuilder.Entity<Tournament>().HasQueryFilter(t => t.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<Team>().HasQueryFilter(t => t.TenantId == GetCurrentTenantId());

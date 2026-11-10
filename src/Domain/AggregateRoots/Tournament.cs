@@ -1,8 +1,6 @@
 ﻿using Domain.Common;
 using Domain.Entities;
 using Domain.Enums;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace Domain.AggregateRoots
 {
@@ -21,35 +19,22 @@ namespace Domain.AggregateRoots
             Format = format;
         }
 
-        [Required]
-        [MaxLength(60)]
         public string Name { get; private set; }
 
-        [MaxLength(250)]
         public string? Description { get; set; }
 
-        [Range(2, 32)]
         public int MaxTeams { get; set; }
 
-        [Required]
-        [EnumDataType(typeof(Format))]
-        [Range(0, 2)]
-        [DefaultValue(Format.BracketOnly)]
         public Format Format { get; set; }
 
-        [Required]
-        [EnumDataType(typeof(TournamentStatus))]
-        [DefaultValue(TournamentStatus.Setup)]
         public TournamentStatus Status { get; set; } = TournamentStatus.Setup;
 
         public int? AdvancingPerGroup { get; set; }
 
         public DateTime? CancelledAt { get; private set; }
 
-        [MaxLength(100)]
         public string? CancelledBy { get; private set; }
 
-        [MaxLength(250)]
         public string? CancellationReason { get; private set; }
 
         public long TenantId { get; private set; }
