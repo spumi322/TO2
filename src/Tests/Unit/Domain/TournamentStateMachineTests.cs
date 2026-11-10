@@ -290,6 +290,8 @@ namespace Tests.Unit.Domain
             // Act & Assert
             _stateMachine.CanCancel(status).Should().Be(canCancel);
             _stateMachine.CanDelete(status).Should().Be(canDelete);
+            // Editable exactly while it can be deleted: before the tournament starts
+            _stateMachine.CanEditDetails(status).Should().Be(canDelete);
         }
 
         [Fact]

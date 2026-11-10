@@ -50,6 +50,7 @@ export class DemoShell implements OnInit {
           canModifyTeams: false,
           canCancel: false,
           canDelete: false,
+          canEditDetails: false,
           canStartGroups: false,
           canStartBracket: false,
           minTeamsToStart: 2,

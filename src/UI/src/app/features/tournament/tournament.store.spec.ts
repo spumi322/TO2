@@ -1,5 +1,6 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { MatchesApi } from '../../core/api/matches.api';
 import { StandingsApi } from '../../core/api/standings.api';
 import { TeamsApi } from '../../core/api/teams.api';
@@ -165,6 +166,26 @@ describe('TournamentStore live updates', () => {
 
     expect(tournamentsApi['teams']).not.toHaveBeenCalled();
     expect(realtime.leaveTournament).toHaveBeenCalledWith(TOURNAMENT_ID);
+  });
+
+  describe('edit details', () => {
+    it('sends the version the form was opened with and reloads the tournament', async () => {
+      tournamentsApi['update'] = vi.fn(() => of({}));
+
+      await store.updateDetails('Winter Cup', null, 3);
+
+      expect(tournamentsApi['update']).toHaveBeenCalledWith(TOURNAMENT_ID, { name: 'Winter Cup', description: null, version: 3 });
+      expect(tournamentsApi['get']).toHaveBeenCalled();
+    });
+
+    it('reloads the tournament on a conflict and passes the error on', async () => {
+      const conflict = new HttpErrorResponse({ status: 409, error: { detail: 'Changed meanwhile.' } });
+      tournamentsApi['update'] = vi.fn(() => throwError(() => conflict));
+
+      await expect(store.updateDetails('Winter Cup', null, 3)).rejects.toBe(conflict);
+
+      expect(tournamentsApi['get']).toHaveBeenCalled();
+    });
   });
 
   describe('match drafts', () => {

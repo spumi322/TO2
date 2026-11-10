@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, effect, inject, input, untracked } from '@angular/core';
+import { Component, computed, DestroyRef, effect, inject, input, signal, untracked } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { MenuItem, MessageService } from 'primeng/api';
 import { Button } from 'primeng/button';
@@ -10,6 +10,7 @@ import { EmptyState } from '../../shared/empty-state';
 import { formatHasBracket, formatHasGroups, TournamentStatus } from '../../shared/enums';
 import { FormatBadge } from '../../shared/format-badge';
 import { StatusChip } from '../../shared/status-chip';
+import { EditDetailsDialog } from './edit-details-dialog';
 import { TournamentActions } from './tournament-actions';
 import { TournamentStore } from './tournament.store';
 
@@ -29,6 +30,7 @@ interface Tab {
     Menu,
     Skeleton,
     ConfirmDialog,
+    EditDetailsDialog,
     EmptyState,
     FormatBadge,
     StatusChip,
@@ -59,10 +61,13 @@ export class TournamentShell {
     ];
   });
 
-  // Destructive actions live in the menu; start actions are on the Overview's status card
+  readonly editing = signal(false);
+
+  // Edit and the destructive actions live in the menu; start actions are on the Overview's status card
   readonly menuItems = computed<MenuItem[]>(() => {
     const state = this.store.state();
     const items: MenuItem[] = [];
+    if (state?.canEditDetails) items.push({ label: 'Edit tournament', icon: 'pi pi-pencil', command: () => this.editing.set(true) });
     if (state?.canCancel) items.push({ label: 'Cancel tournament', icon: 'pi pi-ban', command: () => this.actions.cancel() });
     if (state?.canDelete) items.push({ label: 'Delete tournament', icon: 'pi pi-trash', command: () => this.actions.delete() });
     return items;

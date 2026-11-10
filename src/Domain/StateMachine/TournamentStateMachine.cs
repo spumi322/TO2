@@ -118,5 +118,7 @@ namespace Domain.StateMachine
             status != TournamentStatus.Setup && !IsTerminalState(status);
 
         public bool CanDelete(TournamentStatus status) => status == TournamentStatus.Setup;
+
+        public bool CanEditDetails(TournamentStatus status) => status == TournamentStatus.Setup;
     }
 }

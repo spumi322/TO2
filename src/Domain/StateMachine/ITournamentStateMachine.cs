@@ -58,5 +58,10 @@ namespace Domain.StateMachine
         /// Checks if the tournament can be deleted (Setup only).
         /// </summary>
         bool CanDelete(TournamentStatus status);
+
+        /// <summary>
+        /// Checks if name and description can be edited (Setup only: fixed once the tournament starts).
+        /// </summary>
+        bool CanEditDetails(TournamentStatus status);
     }
 }

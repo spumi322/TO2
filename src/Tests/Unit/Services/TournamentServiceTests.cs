@@ -400,16 +400,32 @@ namespace Tests.Unit.Services
         #region Update
 
         [Fact]
-        public async Task Update_Should_NotChangeStatus()
+        public async Task Update_Should_ChangeNameAndDescription_When_InSetup()
         {
-            // PUT /tournaments/{id} must not be a back door to un-cancel / jump states
-            var id = await SeedTournamentAsync(TournamentStatus.Cancelled);
+            var id = await SeedTournamentAsync(TournamentStatus.Setup);
 
-            await _service.UpdateTournamentAsync(id, new UpdateTournamentRequestDTO("Winter Cup", "Desc", 0));
+            await _service.UpdateTournamentAsync(id, new UpdateTournamentRequestDTO("  Winter Cup ", "  ", 0));
 
             var tournament = await ReloadAsync(id);
             tournament.Name.Should().Be("Winter Cup");
-            tournament.Status.Should().Be(TournamentStatus.Cancelled);
+            tournament.Description.Should().BeNull();
+            tournament.Status.Should().Be(TournamentStatus.Setup);
+        }
+
+        [Theory]
+        [InlineData(TournamentStatus.GroupsInProgress)]
+        [InlineData(TournamentStatus.Finished)]
+        [InlineData(TournamentStatus.Cancelled)]
+        public async Task Update_Should_ThrowConflict_AndKeepName_When_Started(TournamentStatus status)
+        {
+            var id = await SeedTournamentAsync(status);
+            var name = (await ReloadAsync(id)).Name;
+            DbContext.ChangeTracker.Clear();
+
+            var act = () => _service.UpdateTournamentAsync(id, new UpdateTournamentRequestDTO("Winter Cup", "Desc", 0));
+
+            await act.Should().ThrowAsync<ConflictException>();
+            (await ReloadAsync(id)).Name.Should().Be(name);
         }
 
         [Fact]

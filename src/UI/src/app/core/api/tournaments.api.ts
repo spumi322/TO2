@@ -11,6 +11,7 @@ import {
   Tournament,
   TournamentListItem,
   TournamentState,
+  UpdateTournamentRequest,
 } from '../models';
 
 @Injectable({ providedIn: 'root' })
@@ -39,6 +40,10 @@ export class TournamentsApi {
 
   create(request: CreateTournamentRequest): Observable<CreateTournamentResponse> {
     return this.http.post<CreateTournamentResponse>(apiUrl('tournaments'), request);
+  }
+
+  update(id: number, request: UpdateTournamentRequest): Observable<unknown> {
+    return this.http.put(apiUrl(`tournaments/${id}`), request);
   }
 
   addTeams(id: number, names: string[]): Observable<Team[]> {

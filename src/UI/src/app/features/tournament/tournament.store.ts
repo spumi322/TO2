@@ -218,6 +218,17 @@ export class TournamentStore {
     await this.reloadTournament();
   }
 
+  // version: the one the edit form was opened with, so a change made by someone else since then is a 409
+  async updateDetails(name: string, description: string | null, version: number): Promise<void> {
+    try {
+      await firstValueFrom(this.tournamentsApi.update(this._id(), { name, description, version }));
+    } catch (error) {
+      if (toApiError(error).kind === 'conflict') await this.reloadTournament();
+      throw error;
+    }
+    await this.reloadTournament();
+  }
+
   async delete(): Promise<void> {
     await firstValueFrom(this.tournamentsApi.delete(this._id()));
   }

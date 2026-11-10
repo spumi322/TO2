@@ -11,6 +11,7 @@ import {
   previewConfig,
   TournamentConfig,
   validateConfig,
+  validateDetails,
 } from './tournament-config';
 
 const config = (overrides: Partial<TournamentConfig> = {}): TournamentConfig => ({
@@ -24,6 +25,14 @@ const config = (overrides: Partial<TournamentConfig> = {}): TournamentConfig => 
 });
 
 describe('tournament config', () => {
+  it('checks name and description the same way for create and edit', () => {
+    expect(validateDetails({ name: 'Summer Cup', description: '' })).toEqual({});
+    expect(validateDetails({ name: ' ab ', description: '' }).name).toBeDefined();
+    expect(validateDetails({ name: 'a'.repeat(61), description: '' }).name).toBeDefined();
+    expect(validateDetails({ name: 'Summer Cup', description: 'a'.repeat(121) }).description).toBeDefined();
+    expect(validateConfig(config({ name: ' ab ' })).name).toBe(validateDetails({ name: ' ab ', description: '' }).name);
+  });
+
   it('rounds up to the next power of two', () => {
     expect([1, 2, 3, 5, 8, 9, 32].map(nextPowerOfTwo)).toEqual([2, 2, 4, 8, 8, 16, 32]);
   });

@@ -49,10 +49,19 @@ export interface TournamentState {
   canModifyTeams: boolean;
   canCancel: boolean;
   canDelete: boolean;
+  // Name and description: until the tournament starts
+  canEditDetails: boolean;
   canStartGroups: boolean;
   canStartBracket: boolean;
   // Fewest registered teams the tournament can start with (2 per group, or 2 for a bracket)
   minTeamsToStart: number;
+  version: number;
+}
+
+// version = the tournament version the edit form was opened with (409 when someone changed it since)
+export interface UpdateTournamentRequest {
+  name: string;
+  description: string | null;
   version: number;
 }
 

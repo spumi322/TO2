@@ -72,13 +72,20 @@ export function generateMatchups(bracketSize: number): [number, number][] {
   return matchups;
 }
 
-// Client copy of CreateTournamentValidator, for instant feedback; keys are form control names
-export function validateConfig(config: TournamentConfig): Partial<Record<keyof TournamentConfig, string>> {
-  const errors: Partial<Record<keyof TournamentConfig, string>> = {};
-  const name = config.name.trim();
+// Name and description rules, the same when creating and when editing a tournament
+export function validateDetails(details: Pick<TournamentConfig, 'name' | 'description'>): { name?: string; description?: string } {
+  const errors: { name?: string; description?: string } = {};
+  const name = details.name.trim();
 
   if (name.length < 4 || name.length > 60) errors.name = 'Name must be 4-60 characters long.';
-  if (config.description.length > DESCRIPTION_MAX) errors.description = `Description cannot exceed ${DESCRIPTION_MAX} characters.`;
+  if (details.description.length > DESCRIPTION_MAX) errors.description = `Description cannot exceed ${DESCRIPTION_MAX} characters.`;
+  return errors;
+}
+
+// Client copy of CreateTournamentValidator, for instant feedback; keys are form control names
+export function validateConfig(config: TournamentConfig): Partial<Record<keyof TournamentConfig, string>> {
+  const errors: Partial<Record<keyof TournamentConfig, string>> = validateDetails(config);
+
   if (!Number.isInteger(config.maxTeams) || config.maxTeams < MIN_TEAMS || config.maxTeams > MAX_TEAMS) {
     errors.maxTeams = `Max teams must be between ${MIN_TEAMS} and ${MAX_TEAMS}.`;
   }

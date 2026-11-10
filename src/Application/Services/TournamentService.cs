@@ -63,6 +63,7 @@ namespace Application.Services
                 CanModifyTeams: _stateMachine.CanModifyTeams(tournament.Status),
                 CanCancel: _stateMachine.CanCancel(tournament.Status),
                 CanDelete: _stateMachine.CanDelete(tournament.Status),
+                CanEditDetails: _stateMachine.CanEditDetails(tournament.Status),
                 CanStartGroups: hasEnoughTeams
                     && _stateMachine.IsTransitionValid(tournament.Status, TournamentStatus.SeedingGroups, tournament.Format),
                 CanStartBracket: hasEnoughTeams
@@ -118,10 +119,14 @@ namespace Application.Services
             var existingTournament = await _tournamentRepository.GetByIdAsync(id)
                 ?? throw new NotFoundException("Tournament", id);
 
-            if (existingTournament.Version != request.Version)
-                throw new ConflictException("Tournament was modified by another user. Reload and try again.");
+            if (!_stateMachine.CanEditDetails(existingTournament.Status))
+                throw new ConflictException("Name and description can only be changed before the tournament starts.");
 
-            existingTournament.UpdateDetails(request.Name, request.Description);
+            if (existingTournament.Version != request.Version)
+                throw new ConflictException("The tournament was changed by someone else meanwhile. Check it and save again.");
+
+            var description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+            existingTournament.UpdateDetails(request.Name.Trim(), description);
 
             await _unitOfWork.SaveChangesAsync();
             await _signalRService.BroadcastTournamentUpdated(id, _tenantService.GetCurrentUserName());

@@ -47,6 +47,11 @@
   }
 </div>
 
+<!-- Gone as soon as the tournament starts, also when someone else starts it -->
+@if (editing() && store.state()?.canEditDetails) {
+  <app-edit-details-dialog [visible]="true" (visibleChange)="editing.set($event)" />
+}
+
 @if (actions.request(); as request) {
   <app-confirm-dialog
     [visible]="true"

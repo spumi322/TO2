@@ -10,6 +10,7 @@ namespace Application.DTOs.Tournament
         bool CanModifyTeams,
         bool CanCancel,
         bool CanDelete,
+        bool CanEditDetails,
         bool CanStartGroups,
         bool CanStartBracket,
         int MinTeamsToStart,
