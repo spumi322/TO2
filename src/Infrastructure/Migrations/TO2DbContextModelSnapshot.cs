@@ -342,9 +342,6 @@ namespace Infrastructure.Migrations
                     b.Property<int>("Losses")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Points")
-                        .HasColumnType("integer");
-
                     b.Property<long>("StandingId")
                         .HasColumnType("bigint");
 

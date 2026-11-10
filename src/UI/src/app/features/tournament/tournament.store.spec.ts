@@ -20,7 +20,7 @@ const group = (id: number, name: string, wins = 0): Group => ({
   isFinished: false,
   isSeeded: true,
   version: 0,
-  teams: [{ id: 1, name: 'Alpha', wins, losses: 0, points: 0, gameWins: 0, gameLosses: 0, status: 1 }],
+  teams: [{ id: 1, name: 'Alpha', wins, losses: 0, gameWins: 0, gameLosses: 0, status: 1 }],
   matches: [],
 });
 

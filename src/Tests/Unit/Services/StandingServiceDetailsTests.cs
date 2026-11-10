@@ -88,13 +88,13 @@ namespace Tests.Unit.Services
         }
 
         [Fact]
-        public async Task GetGroupsWithDetails_MapsTeamsOrderedByPoints()
+        public async Task GetGroupsWithDetails_MapsTeamsInGroupOrder()
         {
             var seeded = await SeedMatchAsync(TestDataBuilder.Standings.CreateGroup(0));
             var entryA = TestDataBuilder.Groups.CreateWithIds(seeded.Tournament.Id, seeded.Standing.Id, seeded.TeamA.Id, "Alpha");
-            entryA.Wins = 0; entryA.Losses = 1; entryA.Points = 0;
+            entryA.Wins = 0; entryA.Losses = 1;
             var entryB = TestDataBuilder.Groups.CreateWithIds(seeded.Tournament.Id, seeded.Standing.Id, seeded.TeamB.Id, "Bravo");
-            entryB.Wins = 1; entryB.Losses = 0; entryB.Points = 3; entryB.Status = TeamStatus.Advanced;
+            entryB.Wins = 1; entryB.Losses = 0; entryB.Status = TeamStatus.Advanced;
             DbContext.GroupEntries.AddRange(entryA, entryB);
             await SaveAndDetachAsync();
 
@@ -106,7 +106,6 @@ namespace Tests.Unit.Services
             top.Id.Should().Be(seeded.TeamB.Id);
             top.Wins.Should().Be(1);
             top.Losses.Should().Be(0);
-            top.Points.Should().Be(3);
             top.Status.Should().Be((int)TeamStatus.Advanced);
             group.Matches.Should().ContainSingle().Which.TeamAWins.Should().Be(1);
         }

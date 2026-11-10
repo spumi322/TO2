@@ -42,14 +42,13 @@ namespace Application.Pipelines.MatchResult.Steps
                 int loserGames = games.Count(g => g.WinnerId == loser.TeamId);
 
                 winner.Wins++;
-                winner.Points += 3;
                 winner.GameWins += winnerGames;
                 winner.GameLosses += loserGames;
                 loser.Losses++;
                 loser.GameWins += loserGames;
                 loser.GameLosses += winnerGames;
 
-                Logger.LogInformation("Wins and points handed out for {winnerId}. Lose recorded for {loserId}. Group stats updated.", winner.Id, loser.Id);
+                Logger.LogInformation("Win recorded for {winnerId}, loss for {loserId}. Group stats updated.", winner.Id, loser.Id);
 
                 return true;
             }

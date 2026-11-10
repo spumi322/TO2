@@ -105,7 +105,6 @@ export interface GroupTeam {
   name: string;
   wins: number;
   losses: number;
-  points: number;
   gameWins: number;
   gameLosses: number;
   status: TeamStatus;

@@ -35,7 +35,7 @@ namespace Application.Contracts
         // Read models (UI)
         /// <summary>
         /// Gets all groups with teams and matches in optimized response.
-        /// Teams pre-sorted by points descending.
+        /// Teams in group order (GroupRanking.Rank).
         /// </summary>
         Task<List<GetGroupsWithDetailsResponseDTO>> GetGroupsWithDetailsAsync(long tournamentId);
         Task<GetGroupsWithDetailsResponseDTO?> GetGroupWithDetailsByStandingIdAsync(long standingId);

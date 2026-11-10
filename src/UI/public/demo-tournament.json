@@ -63,7 +63,6 @@
           "name": "Echo",
           "wins": 3,
           "losses": 0,
-          "points": 9,
           "gameWins": 6,
           "gameLosses": 0,
           "status": 2
@@ -73,7 +72,6 @@
           "name": "Charlie",
           "wins": 2,
           "losses": 1,
-          "points": 6,
           "gameWins": 4,
           "gameLosses": 2,
           "status": 2
@@ -83,7 +81,6 @@
           "name": "Golf",
           "wins": 1,
           "losses": 2,
-          "points": 3,
           "gameWins": 2,
           "gameLosses": 4,
           "status": 3
@@ -93,7 +90,6 @@
           "name": "Bravo",
           "wins": 0,
           "losses": 3,
-          "points": 0,
           "gameWins": 0,
           "gameLosses": 6,
           "status": 3
@@ -354,7 +350,6 @@
           "name": "Hotel",
           "wins": 3,
           "losses": 0,
-          "points": 9,
           "gameWins": 6,
           "gameLosses": 0,
           "status": 2
@@ -364,7 +359,6 @@
           "name": "Foxtrot",
           "wins": 2,
           "losses": 1,
-          "points": 6,
           "gameWins": 4,
           "gameLosses": 2,
           "status": 2
@@ -374,7 +368,6 @@
           "name": "Alpha",
           "wins": 1,
           "losses": 2,
-          "points": 3,
           "gameWins": 2,
           "gameLosses": 4,
           "status": 3
@@ -384,7 +377,6 @@
           "name": "Delta",
           "wins": 0,
           "losses": 3,
-          "points": 0,
           "gameWins": 0,
           "gameLosses": 6,
           "status": 3
