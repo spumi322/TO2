@@ -323,9 +323,6 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("Eliminated")
-                        .HasColumnType("boolean");
-
                     b.Property<int>("GameLosses")
                         .HasColumnType("integer");
 

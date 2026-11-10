@@ -39,7 +39,6 @@ namespace Domain.Entities
         public long TeamId { get; set; }
         public string TeamName { get; set; }
         public TeamStatus Status { get; set; } = TeamStatus.Competing;
-        public bool Eliminated { get; set; } = false;
         public Team Team { get; set; }
 
         public int Wins { get; set; } = 0;

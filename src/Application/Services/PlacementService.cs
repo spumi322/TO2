@@ -99,17 +99,17 @@ namespace Application.Services
             var groupIds = entries.Select(e => e.StandingId).Distinct().ToList();
             var matches = (await _matchRepository.FindAllAsync(m => groupIds.Contains(m.StandingId))).ToList();
 
-            // Group position of each knocked-out team (Eliminated was set when the bracket started)
+            // Group position of each knocked-out team (the status was set when the bracket started)
             var knockedOut = entries
                 .GroupBy(e => e.StandingId)
                 .SelectMany(group => GroupRanking.Rank(group, matches.Where(m => m.StandingId == group.Key)).Select((entry, index) => (Entry: entry, GroupPosition: index + 1)))
-                .Where(x => x.Entry.Eliminated)
+                .Where(x => x.Entry.Status == TeamStatus.Eliminated)
                 .ToList();
 
             var placements = new List<(long TeamId, int Placement, int? EliminatedInRound)>();
 
             // Below every team that reached the bracket; teams with the same group position share a rank
-            int rank = entries.Count(e => !e.Eliminated) + 1;
+            int rank = entries.Count(e => e.Status != TeamStatus.Eliminated) + 1;
 
             foreach (var samePosition in knockedOut.GroupBy(x => x.GroupPosition).OrderBy(g => g.Key))
             {
@@ -188,7 +188,7 @@ namespace Application.Services
 
             // GroupsOnly: every team; GroupsAndBracket: only teams knocked out in the groups
             return entries
-                .Where(e => tournament.Format == Format.GroupsOnly || e.Eliminated)
+                .Where(e => tournament.Format == Format.GroupsOnly || e.Status == TeamStatus.Eliminated)
                 .ToDictionary(e => e.TeamId, e => groupNames.GetValueOrDefault(e.StandingId, ""));
         }
     }

@@ -116,7 +116,7 @@ with open(OUT, "w", encoding="utf-8") as f:
     w("\n== DB Standings")
     w(sql(f'SELECT "Name", "StandingType", "IsSeeded", "IsFinished" FROM "Standings" WHERE "TournamentId" = {tid} ORDER BY "Id"'))
     w("\n== DB GroupEntries")
-    w(sql(f'SELECT s."Name" AS grp, g."TeamName", g."Wins", g."Losses", g."GameWins", g."GameLosses", g."Status", g."Eliminated" FROM "GroupEntries" g '
+    w(sql(f'SELECT s."Name" AS grp, g."TeamName", g."Wins", g."Losses", g."GameWins", g."GameLosses", g."Status" FROM "GroupEntries" g '
           f'JOIN "Standings" s ON s."Id" = g."StandingId" WHERE g."TournamentId" = {tid} ORDER BY s."Id", g."Wins" DESC, g."TeamName"'))
     w("\n== DB Teams (team | FinalPlacement | EliminatedInRound)")
     w(sql(f'SELECT "Name", "FinalPlacement", "EliminatedInRound" FROM "Teams" WHERE "TournamentId" = {tid} '

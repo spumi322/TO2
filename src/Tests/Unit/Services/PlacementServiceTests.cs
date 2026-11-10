@@ -55,7 +55,7 @@ namespace Tests.Unit.Services
                 if (t.Group != null)
                 {
                     var entry = TestDataBuilder.Groups.CreateWithIds(tournament.Id, groups[t.Group].Id, team.Id, team.Name);
-                    entry.Eliminated = t.Eliminated;
+                    if (t.Eliminated) entry.Status = TeamStatus.Eliminated;
                     DbContext.GroupEntries.Add(entry);
                 }
             }

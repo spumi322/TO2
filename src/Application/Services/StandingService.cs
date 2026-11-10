@@ -123,7 +123,6 @@ namespace Application.Services
             foreach (var entry in groupEntries)
             {
                 entry.Status = position == 1 ? TeamStatus.Champion : TeamStatus.Eliminated;
-                entry.Eliminated = position != 1;
                 position++;
             }
         }
@@ -202,7 +201,7 @@ namespace Application.Services
                 advancing.AddRange(groupAdvancing.Select((entry, index) => (entry, index + 1)));
 
                 ranked.Skip(teamsAdvancingPerGroup).ToList()
-                    .ForEach(e => { e.Status = TeamStatus.Eliminated; e.Eliminated = true; });
+                    .ForEach(e => e.Status = TeamStatus.Eliminated);
             }
 
             // 1 query for all advancing teams
