@@ -69,7 +69,7 @@ namespace Tests.Unit.Pipelines.StartBracket
         {
             TournamentId = 1,
             AdvancedTeams = Enumerable.Range(1, teamCount)
-                .Select(i => new BracketEntrant(new Team($"Team {i}") { Id = i }, null, null))
+                .Select(i => new BracketEntrant(new Team($"Team {i}", 1) { Id = i }, null, null))
                 .ToList()
         };
     }
@@ -177,8 +177,8 @@ namespace Tests.Unit.Pipelines.StartBracket
             BracketStanding = TestDataBuilder.Standings.CreateBracket(1),
             AdvancedTeams = Enumerable.Range(1, teamCount)
                 .Select(i => format == Format.GroupsAndBracket
-                    ? new BracketEntrant(new Team($"Team {i}") { Id = i }, i, 1)
-                    : new BracketEntrant(new Team($"Team {i}") { Id = i }, null, null))
+                    ? new BracketEntrant(new Team($"Team {i}", 1) { Id = i }, i, 1)
+                    : new BracketEntrant(new Team($"Team {i}", 1) { Id = i }, null, null))
                 .ToList()
         };
     }
@@ -206,7 +206,7 @@ namespace Tests.Unit.Pipelines.StartBracket
         [Fact]
         public async Task ExecuteAsync_ByePair_SetsWinnerIdOnMatch()
         {
-            var realTeam = new Team("Team 1") { Id = 1 };
+            var realTeam = new Team("Team 1", 1) { Id = 1 };
             var byeMatch = new DomainMatch { StandingId = 1, BestOf = BestOf.Bo3 };
 
             _matchService
@@ -222,7 +222,7 @@ namespace Tests.Unit.Pipelines.StartBracket
         [Fact]
         public async Task ExecuteAsync_ByePair_DoesNotGenerateGames()
         {
-            var realTeam = new Team("Team 1") { Id = 1 };
+            var realTeam = new Team("Team 1", 1) { Id = 1 };
             var byeMatch = new DomainMatch { StandingId = 1, BestOf = BestOf.Bo3 };
 
             _matchService
@@ -238,8 +238,8 @@ namespace Tests.Unit.Pipelines.StartBracket
         [Fact]
         public async Task ExecuteAsync_NormalPair_GeneratesGames()
         {
-            var teamA = new Team("Team A") { Id = 1 };
-            var teamB = new Team("Team B") { Id = 2 };
+            var teamA = new Team("Team A", 1) { Id = 1 };
+            var teamB = new Team("Team B", 1) { Id = 2 };
             var match = new DomainMatch(teamA, teamB, BestOf.Bo3) { StandingId = 1 };
 
             _matchService
@@ -255,9 +255,9 @@ namespace Tests.Unit.Pipelines.StartBracket
         [Fact]
         public async Task ExecuteAsync_MixedPairs_OnlyNormalPairGetsGames()
         {
-            var realTeam = new Team("Team 1") { Id = 1 };
-            var teamA = new Team("Team A") { Id = 2 };
-            var teamB = new Team("Team B") { Id = 3 };
+            var realTeam = new Team("Team 1", 1) { Id = 1 };
+            var teamA = new Team("Team A", 1) { Id = 2 };
+            var teamB = new Team("Team B", 1) { Id = 3 };
 
             var byeMatch = new DomainMatch { StandingId = 1, BestOf = BestOf.Bo3 };
             var normalMatch = new DomainMatch(teamA, teamB, BestOf.Bo3) { StandingId = 1 };
@@ -280,7 +280,7 @@ namespace Tests.Unit.Pipelines.StartBracket
         [Fact]
         public async Task ExecuteAsync_ByePair_ReturnsTrue()
         {
-            var realTeam = new Team("Team 1") { Id = 1 };
+            var realTeam = new Team("Team 1", 1) { Id = 1 };
             _matchService
                 .Setup(x => x.GenerateMatch(realTeam, null, 1, 1, It.IsAny<long>()))
                 .ReturnsAsync(new DomainMatch { StandingId = 1, BestOf = BestOf.Bo3 });

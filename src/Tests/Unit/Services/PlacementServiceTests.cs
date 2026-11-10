@@ -23,7 +23,6 @@ namespace Tests.Unit.Services
                 new Repository<Tournament>(DbContext),
                 new GroupRepository(DbContext),
                 new Repository<Team>(DbContext),
-                new Repository<TournamentTeam>(DbContext),
                 new Mock<ILogger<PlacementService>>().Object);
 
             DbContext.Tenants.Add(new Tenant { Id = 1, Name = "Org1" });
@@ -48,13 +47,10 @@ namespace Tests.Unit.Services
 
             foreach (var t in teams)
             {
-                var team = new Team(t.Name);
+                var team = new Team(t.Name, tournament.Id);
+                team.SetFinalResult(t.Placement, null);
                 DbContext.Teams.Add(team);
                 await DbContext.SaveChangesAsync();
-
-                var tournamentTeam = TestDataBuilder.TournamentTeams.Create(tournament.Id, team.Id);
-                tournamentTeam.FinalPlacement = t.Placement;
-                DbContext.TournamentTeams.Add(tournamentTeam);
 
                 if (t.Group != null)
                 {

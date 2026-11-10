@@ -3,7 +3,7 @@ using Application.DTOs.Tournament;
 namespace Application.Contracts
 {
     /// <summary>
-    /// Final placements of a finished tournament: calculates them, stores them on TournamentTeam, reads them back.
+    /// Final placements of a finished tournament: calculates them, stores them on Team, reads them back.
     /// </summary>
     public interface IPlacementService
     {

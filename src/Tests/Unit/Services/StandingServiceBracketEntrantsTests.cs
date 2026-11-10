@@ -28,7 +28,6 @@ namespace Tests.Unit.Services
                 new Repository<Tournament>(DbContext),
                 new GroupRepository(DbContext),
                 new Repository<Team>(DbContext),
-                new TournamentTeamRepository(DbContext),
                 new FormatService(),
                 new Mock<ILogger<StandingService>>().Object);
 
@@ -88,10 +87,9 @@ namespace Tests.Unit.Services
         {
             var tournament = TestDataBuilder.Tournaments.CreateDefault(format: Format.BracketOnly);
             DbContext.Tournaments.Add(tournament);
-            var teams = TestDataBuilder.Teams.CreateMultiple(3);
-            DbContext.Teams.AddRange(teams);
             await DbContext.SaveChangesAsync();
-            DbContext.TournamentTeams.AddRange(teams.Select(t => TestDataBuilder.TournamentTeams.Create(tournament.Id, t.Id)));
+            var teams = TestDataBuilder.Teams.CreateMultiple(3, tournament.Id);
+            DbContext.Teams.AddRange(teams);
             await SaveAndDetachAsync();
 
             var entrants = await _service.GetTeamsForBracketByFormat(tournament.Id);
@@ -129,7 +127,7 @@ namespace Tests.Unit.Services
 
                 for (int place = groupSize; place >= 1; place--)
                 {
-                    var team = new Team($"{groupName}{place}");
+                    var team = new Team($"{groupName}{place}", tournament.Id);
                     DbContext.Teams.Add(team);
                     await DbContext.SaveChangesAsync();
 

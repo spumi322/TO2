@@ -153,7 +153,7 @@ namespace Tests.Unit.Pipelines.StartBracket
 
         private static List<Team> MakeTeams(int count) =>
             Enumerable.Range(1, count)
-                .Select(i => new Team($"Team {i}") { Id = i })
+                .Select(i => new Team($"Team {i}", 1) { Id = i })
                 .ToList();
     }
 }

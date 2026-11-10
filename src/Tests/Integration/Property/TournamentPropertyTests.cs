@@ -111,7 +111,7 @@ namespace Tests.Integration.Property
 
         private static void EveryTeamHasAPlacement(FinishedRun run)
         {
-            var missing = run.Registrations.Where(r => r.FinalPlacement == null).Select(r => r.TeamId).ToList();
+            var missing = run.Teams.Where(r => r.FinalPlacement == null).Select(r => r.Id).ToList();
             if (missing.Count > 0)
                 throw new Exception($"Finished without a placement for teams {string.Join(", ", missing)}");
         }
@@ -142,18 +142,18 @@ namespace Tests.Integration.Property
             }
 
             var expected = new Dictionary<long, int>();
-            foreach (var r in run.Registrations)
+            foreach (var r in run.Teams)
             {
                 if (run.Tournament.Format == Format.GroupsOnly)
-                    expected[r.TeamId] = groupPosition[r.TeamId];
-                else if (reached.TryGetValue(r.TeamId, out var round))
-                    expected[r.TeamId] = 1 + reached.Values.Count(other => other > round);
+                    expected[r.Id] = groupPosition[r.Id];
+                else if (reached.TryGetValue(r.Id, out var round))
+                    expected[r.Id] = 1 + reached.Values.Count(other => other > round);
                 else
-                    expected[r.TeamId] = 1 + reached.Count + groupPosition.Count(g => !reached.ContainsKey(g.Key) && g.Value < groupPosition[r.TeamId]);
+                    expected[r.Id] = 1 + reached.Count + groupPosition.Count(g => !reached.ContainsKey(g.Key) && g.Value < groupPosition[r.Id]);
             }
 
-            var wrong = run.Registrations.Where(r => r.FinalPlacement != expected[r.TeamId])
-                .Select(r => $"team {r.TeamId}: {r.FinalPlacement}, expected {expected[r.TeamId]}").ToList();
+            var wrong = run.Teams.Where(r => r.FinalPlacement != expected[r.Id])
+                .Select(r => $"team {r.Id}: {r.FinalPlacement}, expected {expected[r.Id]}").ToList();
             if (wrong.Count > 0)
                 throw new Exception($"Placements break the shared-rank rules: {string.Join("; ", wrong)}");
         }

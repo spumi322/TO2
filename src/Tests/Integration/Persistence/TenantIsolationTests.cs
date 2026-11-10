@@ -42,13 +42,11 @@ namespace Tests.Integration.Persistence
                 new Repository<Tournament>(DbContext),
                 new GroupRepository(DbContext),
                 new Repository<Team>(DbContext),
-                new Repository<TournamentTeam>(DbContext),
                 new FormatService(),
                 new Mock<ILogger<StandingService>>().Object);
 
             _tournamentService = new TournamentService(
                 new TournamentRepository(DbContext),
-                new TournamentTeamRepository(DbContext),
                 new StandingRepository(DbContext),
                 new Repository<Team>(DbContext),
                 standingService,
@@ -61,7 +59,6 @@ namespace Tests.Integration.Persistence
             _teamService = new TeamService(
                 new Repository<Team>(DbContext),
                 new Repository<Tournament>(DbContext),
-                new TournamentTeamRepository(DbContext),
                 new Mock<ILogger<TeamService>>().Object,
                 unitOfWork,
                 signalR,
@@ -76,9 +73,8 @@ namespace Tests.Integration.Persistence
             DbContext.Tournaments.Add(tournament);
             await DbContext.SaveChangesAsync();
 
-            var team = TestDataBuilder.Teams.CreateDefault();
+            var team = TestDataBuilder.Teams.CreateDefault(tournamentId: tournament.Id);
             DbContext.Teams.Add(team);
-            DbContext.TournamentTeams.Add(new TournamentTeam(tournament.Id, team));
             await SaveAndDetachAsync();
 
             DbFactory.LogInAs(1);
@@ -140,12 +136,12 @@ namespace Tests.Integration.Persistence
             await act.Should().ThrowAsync<NotFoundException>();
 
             DbFactory.LogInAs(2);
-            var registered = await DbContext.TournamentTeams.CountAsync(tt => tt.TournamentId == tournamentId);
+            var registered = await DbContext.Teams.CountAsync(t => t.TournamentId == tournamentId);
             registered.Should().Be(1);
         }
 
         [Fact]
-        public async Task RemoveTeam_Throws_AndKeepsRegistration_When_OtherTenantsTournament()
+        public async Task RemoveTeam_Throws_AndKeepsTeam_When_OtherTenantsTournament()
         {
             var (tournamentId, teamId) = await SeedOrg2TournamentWithTeamAsync();
 
@@ -153,8 +149,8 @@ namespace Tests.Integration.Persistence
             await act.Should().ThrowAsync<NotFoundException>();
 
             DbFactory.LogInAs(2);
-            var stillRegistered = await DbContext.TournamentTeams.AnyAsync(tt => tt.TournamentId == tournamentId && tt.TeamId == teamId);
-            stillRegistered.Should().BeTrue();
+            var stillThere = await DbContext.Teams.AnyAsync(t => t.Id == teamId);
+            stillThere.Should().BeTrue();
         }
 
         [Fact]
@@ -187,21 +183,18 @@ namespace Tests.Integration.Persistence
         }
 
         [Fact]
-        public async Task Save_SetsTenantId_OnTeamAndTournamentTeam()
+        public async Task Save_SetsTenantId_OnNewTeam()
         {
             DbFactory.LogInAs(2);
             var tournament = TestDataBuilder.Tournaments.CreateDefault();
-            var team = TestDataBuilder.Teams.CreateDefault();
             DbContext.Tournaments.Add(tournament);
+            await DbContext.SaveChangesAsync();
+
+            var team = TestDataBuilder.Teams.CreateDefault(tournamentId: tournament.Id);
             DbContext.Teams.Add(team);
             await DbContext.SaveChangesAsync();
 
-            var registration = new TournamentTeam(tournament.Id, team.Id);
-            DbContext.TournamentTeams.Add(registration);
-            await DbContext.SaveChangesAsync();
-
             team.TenantId.Should().Be(2);
-            registration.TenantId.Should().Be(2);
         }
 
         [Fact]

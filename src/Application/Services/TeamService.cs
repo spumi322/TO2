@@ -14,7 +14,6 @@ namespace Application.Services
     {
         private readonly IRepository<Team> _teamRepository;
         private readonly IRepository<Tournament> _tournamentRepository;
-        private readonly ITournamentTeamRepository _tournamentTeamRepository;
         private readonly ILogger<TeamService> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ISignalRService _signalRService;
@@ -23,7 +22,6 @@ namespace Application.Services
 
         public TeamService(IRepository<Team> teamRepository,
                            IRepository<Tournament> tournamentRepository,
-                           ITournamentTeamRepository tournamentTeamRepository,
                            ILogger<TeamService> logger,
                            IUnitOfWork unitOfWork,
                            ISignalRService signalRService,
@@ -32,7 +30,6 @@ namespace Application.Services
         {
             _teamRepository = teamRepository;
             _tournamentRepository = tournamentRepository;
-            _tournamentTeamRepository = tournamentTeamRepository;
             _logger = logger;
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
@@ -40,7 +37,7 @@ namespace Application.Services
             _stateMachine = stateMachine;
         }
 
-        // All or nothing: every name becomes a new team (teams are not reused), one save
+        // All or nothing: every name becomes a new team of this tournament, one save
         public async Task<List<GetTeamResponseDTO>> AddTeamsToTournamentAsync(long tournamentId, AddTeamsRequestDTO request)
         {
             var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
@@ -50,7 +47,9 @@ namespace Application.Services
                 throw new ConflictException("Tournament registration is closed.");
 
             var names = request.Names.Select(n => n.Trim()).ToList();
-            var registeredNames = await _tournamentTeamRepository.GetTeamNamesAsync(tournamentId);
+            var registeredNames = (await _teamRepository.FindAllAsync(t => t.TournamentId == tournamentId))
+                .Select(t => t.Name)
+                .ToList();
 
             var freeSlots = tournament.MaxTeams - registeredNames.Count;
             if (freeSlots <= 0)
@@ -64,9 +63,8 @@ namespace Application.Services
             if (alreadyRegistered.Count > 0)
                 throw new ConflictException($"Already registered: {string.Join(", ", alreadyRegistered)}.");
 
-            var teams = names.Select(n => new Team(n)).ToList();
+            var teams = names.Select(n => new Team(n, tournamentId)).ToList();
             await _teamRepository.AddRangeAsync(teams);
-            await _tournamentTeamRepository.AddRangeAsync(teams.Select(t => new TournamentTeam(tournamentId, t)));
 
             // Two batches at once: the second save fails on the version (409) instead of exceeding MaxTeams
             _tournamentRepository.BumpVersion(tournament);
@@ -85,16 +83,10 @@ namespace Application.Services
             if (!_stateMachine.CanModifyTeams(existingTournament.Status))
                 throw new ConflictException("Teams cannot be removed once the tournament has started.");
 
-            var tournamentTeam = await _tournamentTeamRepository.GetByTeamAndTournamentAsync(teamId, tournamentId)
+            var team = await _teamRepository.FindAsync(t => t.Id == teamId && t.TournamentId == tournamentId)
                 ?? throw new NotFoundException("Team is not registered in this tournament");
 
-            await _tournamentTeamRepository.DeleteAsync(tournamentTeam);
-
-            // Same rule as tournament delete: a team in no other tournament is deleted too
-            var inOtherTournament = await _tournamentTeamRepository
-                .ExistsAsync(tt => tt.TeamId == teamId && tt.TournamentId != tournamentId);
-            if (!inOtherTournament)
-                await _teamRepository.DeleteAsync(teamId);
+            await _teamRepository.DeleteAsync(team);
 
             _tournamentRepository.BumpVersion(existingTournament);
             await _unitOfWork.SaveChangesAsync();

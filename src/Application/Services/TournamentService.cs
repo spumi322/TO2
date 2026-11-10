@@ -16,7 +16,6 @@ namespace Application.Services
     public class TournamentService : ITournamentService
     {
         private readonly ITournamentRepository _tournamentRepository;
-        private readonly ITournamentTeamRepository _tournamentTeamRepository;
         private readonly IStandingRepository _standingRepository;
         private readonly IRepository<Team> _teamRepository;
         private readonly IStandingService _standingService;
@@ -27,7 +26,6 @@ namespace Application.Services
         private readonly IUnitOfWork _unitOfWork;
 
         public TournamentService(ITournamentRepository tournamentRepository,
-                                 ITournamentTeamRepository tournamentTeamRepository,
                                  IStandingRepository standingRepository,
                                  IRepository<Team> teamRepository,
                                  IStandingService standingService,
@@ -38,7 +36,6 @@ namespace Application.Services
                                  ITenantService tenantService)
         {
             _tournamentRepository = tournamentRepository;
-            _tournamentTeamRepository = tournamentTeamRepository;
             _standingRepository = standingRepository;
             _teamRepository = teamRepository;
             _standingService = standingService;
@@ -56,7 +53,7 @@ namespace Application.Services
 
             var groupCount = (await _standingRepository.FindAllAsync(s => s.TournamentId == tournamentId && s.StandingType == StandingType.Group)).Count();
             var minTeamsToStart = StartRules.MinTeamsToStart(groupCount);
-            var hasEnoughTeams = await _tournamentTeamRepository.GetCountByTournamentAsync(tournamentId) >= minTeamsToStart;
+            var hasEnoughTeams = await _teamRepository.CountAsync(t => t.TournamentId == tournamentId) >= minTeamsToStart;
 
             return new TournamentStateDTO(
                 CurrentStatus: tournament.Status,
@@ -94,7 +91,7 @@ namespace Application.Services
             var existingTournament = await _tournamentRepository.GetByIdAsync(id)
                 ?? throw new NotFoundException("Tournament", id);
 
-            var currentTeams = await _tournamentTeamRepository.GetCountByTournamentAsync(id);
+            var currentTeams = await _teamRepository.CountAsync(t => t.TournamentId == id);
             var numberOfGroups = await _standingRepository.CountAsync(s => s.TournamentId == id && s.StandingType == StandingType.Group);
 
             return existingTournament.ToGetTournamentResponseDTO(currentTeams, numberOfGroups);
@@ -154,20 +151,13 @@ namespace Application.Services
 
         public async Task DeleteTournamentAsync(long id)
         {
-            var tournament = await _tournamentRepository.GetWithTeamsAsync(id)
+            var tournament = await _tournamentRepository.GetByIdAsync(id)
                 ?? throw new NotFoundException("Tournament", id);
 
             if (!_stateMachine.CanDelete(tournament.Status))
                 throw new ConflictException("Only a tournament that has not started can be deleted.");
 
-            var exclusiveTeams = tournament.TournamentTeams
-                .Where(tt => tt.Team.TournamentParticipations.Count == 1)
-                .Select(tt => tt.Team)
-                .ToList();
-
-            foreach (var team in exclusiveTeams)
-                await _teamRepository.DeleteAsync(team);
-
+            // The database cascades to its teams and standings
             await _tournamentRepository.DeleteAsync(tournament);
             await _unitOfWork.SaveChangesAsync();
 
@@ -176,9 +166,7 @@ namespace Application.Services
 
         public async Task<List<GetTeamResponseDTO>> GetTeamsByTournamentAsync(long tournamentId)
         {
-            var teams = await _teamRepository
-                .FindAllAsync(t => t.TournamentParticipations
-                .Any(tp => tp.TournamentId == tournamentId));
+            var teams = await _teamRepository.FindAllAsync(t => t.TournamentId == tournamentId);
 
             return teams.Select(t => t.ToGetTeamResponseDTO()).ToList();
         }

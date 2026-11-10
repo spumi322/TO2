@@ -14,13 +14,6 @@ namespace Infrastructure.Persistence.Repository
                 .Include(t => t.Standings)
                 .FirstOrDefaultAsync(t => t.Id == id);
 
-        public async Task<Tournament?> GetWithTeamsAsync(long id)
-            => await _dbSet
-                .Include(t => t.TournamentTeams)
-                    .ThenInclude(tt => tt.Team)
-                        .ThenInclude(t => t.TournamentParticipations)
-                .FirstOrDefaultAsync(t => t.Id == id);
-
         public async Task<IReadOnlyList<Tournament>> GetActiveAsync()
             => await _dbSet
                 .Where(t => t.Status != TournamentStatus.Finished
@@ -38,9 +31,9 @@ namespace Infrastructure.Persistence.Repository
                 .Select(t => new
                 {
                     Tournament = t,
-                    TeamCount = t.TournamentTeams.Count(),
-                    WinnerName = t.TournamentTeams.Count(tt => tt.FinalPlacement == 1) == 1
-                        ? t.TournamentTeams.Where(tt => tt.FinalPlacement == 1).Select(tt => tt.Team.Name).FirstOrDefault()
+                    TeamCount = t.Teams.Count(),
+                    WinnerName = t.Teams.Count(team => team.FinalPlacement == 1) == 1
+                        ? t.Teams.Where(team => team.FinalPlacement == 1).Select(team => team.Name).FirstOrDefault()
                         : null,
                     GroupsTotal = t.Standings.Count(s => s.StandingType == StandingType.Group),
                     GroupsFinished = t.Standings.Count(s => s.StandingType == StandingType.Group && s.IsFinished),

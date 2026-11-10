@@ -20,7 +20,6 @@ namespace Application.Services
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly IGroupRepository _groupRepository;
         private readonly IRepository<Team> _teamRepository;
-        private readonly IRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly IFormatService _formatService;
         private readonly ILogger<StandingService> _logger;
 
@@ -29,7 +28,6 @@ namespace Application.Services
                                IRepository<Tournament> tournamentRepository,
                                IGroupRepository groupRepository,
                                IRepository<Team> teamRepository,
-                               IRepository<TournamentTeam> tournamentTeamRepository,
                                IFormatService formatService,
                                ILogger<StandingService> logger)
         {
@@ -38,7 +36,6 @@ namespace Application.Services
             _tournamentRepository = tournamentRepository;
             _groupRepository = groupRepository;
             _teamRepository = teamRepository;
-            _tournamentTeamRepository = tournamentTeamRepository;
             _formatService = formatService;
             _logger = logger;
         }
@@ -166,10 +163,7 @@ namespace Application.Services
             {
                 _logger.LogInformation("Selecting all registered teams for BracketOnly tournament {Id}", tournamentId);
 
-                var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(tt => tt.TournamentId == tournamentId);
-                var teamIds = tournamentTeams.Select(tt => tt.TeamId).ToList();
-
-                var teams = await _teamRepository.FindAllAsync(t => teamIds.Contains(t.Id));
+                var teams = await _teamRepository.FindAllAsync(t => t.TournamentId == tournamentId);
 
                 _logger.LogInformation("{Count} registered teams selected for bracket", teams.Count);
 

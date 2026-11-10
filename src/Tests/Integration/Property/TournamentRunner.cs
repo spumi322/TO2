@@ -36,7 +36,7 @@ namespace Tests.Integration.Property
     }
 
     /// <summary>Final DB rows of a played tournament.</summary>
-    public record FinishedRun(Tournament Tournament, List<Standing> Standings, List<Match> Matches, List<GroupEntry> Entries, List<TournamentTeam> Registrations);
+    public record FinishedRun(Tournament Tournament, List<Standing> Standings, List<Match> Matches, List<GroupEntry> Entries, List<Team> Teams);
 
     /// <summary>
     /// Plays a tournament through the real services and pipelines on SQLite, like docs/tools/simulate_tournament.py:
@@ -118,7 +118,7 @@ namespace Tests.Integration.Property
             await db.Standings.AsNoTracking().ToListAsync(),
             await db.Matches.AsNoTracking().ToListAsync(),
             await db.GroupEntries.AsNoTracking().ToListAsync(),
-            await db.TournamentTeams.AsNoTracking().ToListAsync());
+            await db.Teams.AsNoTracking().ToListAsync());
 
         private static async Task<Dictionary<string, long>> ReadVersions(TestDbContextFactory factory)
         {
@@ -135,9 +135,6 @@ namespace Tests.Integration.Property
             await Add(db.Matches, "Match");
             await Add(db.Games, "Game");
             await Add(db.GroupEntries, "GroupEntry");
-            // TournamentTeam is keyed by (TournamentId, TeamId), it has no Id column
-            foreach (var row in await db.TournamentTeams.AsNoTracking().Select(r => new { r.TeamId, r.Version }).ToListAsync())
-                versions[$"TournamentTeam {row.TeamId}"] = row.Version;
             return versions;
         }
 
@@ -159,7 +156,6 @@ namespace Tests.Integration.Property
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IStandingRepository, StandingRepository>();
             services.AddScoped<IMatchRepository, MatchRepository>();
-            services.AddScoped<ITournamentTeamRepository, TournamentTeamRepository>();
 
             services.AddScoped<ITournamentStateMachine, TournamentStateMachine>();
             services.AddScoped<IFormatService, FormatService>();

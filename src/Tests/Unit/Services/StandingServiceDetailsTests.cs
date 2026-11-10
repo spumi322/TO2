@@ -28,7 +28,6 @@ namespace Tests.Unit.Services
                 new Repository<Tournament>(DbContext),
                 new GroupRepository(DbContext),
                 new Repository<Team>(DbContext),
-                new TournamentTeamRepository(DbContext),
                 new FormatService(),
                 new Mock<ILogger<StandingService>>().Object);
 
@@ -40,8 +39,9 @@ namespace Tests.Unit.Services
         {
             var tournament = TestDataBuilder.Tournaments.CreateDefault();
             DbContext.Tournaments.Add(tournament);
-            var teamA = TestDataBuilder.Teams.CreateDefault("Alpha");
-            var teamB = TestDataBuilder.Teams.CreateDefault("Bravo");
+            await DbContext.SaveChangesAsync();
+            var teamA = TestDataBuilder.Teams.CreateDefault("Alpha", tournament.Id);
+            var teamB = TestDataBuilder.Teams.CreateDefault("Bravo", tournament.Id);
             DbContext.Teams.AddRange(teamA, teamB);
             await DbContext.SaveChangesAsync();
 

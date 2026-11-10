@@ -36,7 +36,7 @@ namespace Tests.Unit.Pipelines.StartBracket
         public void Random_KeepsEveryTeam(int teamCount)
         {
             var entrants = Enumerable.Range(1, teamCount)
-                .Select(i => new BracketEntrant(new Team($"Team {i}") { Id = i }, null, null))
+                .Select(i => new BracketEntrant(new Team($"Team {i}", 1) { Id = i }, null, null))
                 .ToList();
 
             var pairs = _random.CreateFirstRoundPairs(entrants);
@@ -118,7 +118,7 @@ namespace Tests.Unit.Pipelines.StartBracket
             long id = 1;
             for (int g = 0; g < groupCount; g++)
                 for (int place = 1; place <= advancingPerGroup; place++)
-                    entrants.Add(new BracketEntrant(new Team($"{(char)('A' + g)}{place}") { Id = id++ }, g + 1, place));
+                    entrants.Add(new BracketEntrant(new Team($"{(char)('A' + g)}{place}", 1) { Id = id++ }, g + 1, place));
 
             entrants.Reverse();
             return entrants;

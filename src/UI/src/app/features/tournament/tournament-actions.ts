@@ -78,7 +78,7 @@ export class TournamentActions {
   delete(): void {
     this.request.set({
       header: 'Delete tournament',
-      message: 'Deletes the tournament and its teams that are in no other tournament. This cannot be undone.',
+      message: 'Deletes the tournament and its teams. This cannot be undone.',
       confirmLabel: 'Delete',
       danger: true,
       run: async () => {

@@ -20,7 +20,6 @@ namespace Application.Pipelines.StartGroups.Steps
 
         public DistributeTeamsIntoGroupsStep(
             ILogger<DistributeTeamsIntoGroupsStep> logger,
-            IRepository<TournamentTeam> tournamentTeamRepository,
             IRepository<Team> teamRepository,
             Random random)
         {
@@ -34,10 +33,7 @@ namespace Application.Pipelines.StartGroups.Steps
             _logger.LogInformation("Step 3: Distributing teams into groups for tournament {TournamentId}",
                 context.TournamentId);
 
-            var teams = (await _teamRepository
-                .FindAllAsync(t => t.TournamentParticipations
-                .Any(tp => tp.TournamentId == context.TournamentId)))
-                .ToList();
+            var teams = (await _teamRepository.FindAllAsync(t => t.TournamentId == context.TournamentId)).ToList();
 
             // Every group needs a match, else it can never finish
             if (teams.Count < StartRules.MinTeamsToStart(context.GroupStandings.Count))

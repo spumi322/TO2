@@ -17,7 +17,6 @@ namespace Application.Services
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly IGroupRepository _groupRepository;
         private readonly IRepository<Team> _teamRepository;
-        private readonly IRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly ILogger<PlacementService> _logger;
 
         public PlacementService(IStandingRepository standingRepository,
@@ -25,7 +24,6 @@ namespace Application.Services
                                 IRepository<Tournament> tournamentRepository,
                                 IGroupRepository groupRepository,
                                 IRepository<Team> teamRepository,
-                                IRepository<TournamentTeam> tournamentTeamRepository,
                                 ILogger<PlacementService> logger)
         {
             _standingRepository = standingRepository;
@@ -33,7 +31,6 @@ namespace Application.Services
             _tournamentRepository = tournamentRepository;
             _groupRepository = groupRepository;
             _teamRepository = teamRepository;
-            _tournamentTeamRepository = tournamentTeamRepository;
             _logger = logger;
         }
 
@@ -129,24 +126,20 @@ namespace Application.Services
 
         public async Task SetFinalResults(long tournamentId, List<(long TeamId, int Placement, int? EliminatedInRound)> placements)
         {
-            var now = DateTime.UtcNow;
-
-            var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(tt => tt.TournamentId == tournamentId);
+            var teams = await _teamRepository.FindAllAsync(t => t.TournamentId == tournamentId);
 
             foreach (var placement in placements)
             {
-                var tournamentTeam = tournamentTeams.FirstOrDefault(tt => tt.TeamId == placement.TeamId);
+                var team = teams.FirstOrDefault(t => t.Id == placement.TeamId);
 
-                if (tournamentTeam == null)
+                if (team == null)
                 {
                     _logger.LogWarning("Team {TeamId} is not registered in tournament {TournamentId}, placement {Placement} not stored",
                         placement.TeamId, tournamentId, placement.Placement);
                     continue;
                 }
 
-                tournamentTeam.FinalPlacement = placement.Placement;
-                tournamentTeam.EliminatedInRound = placement.EliminatedInRound;
-                tournamentTeam.ResultFinalizedAt = now;
+                team.SetFinalResult(placement.Placement, placement.EliminatedInRound);
             }
         }
 
@@ -163,25 +156,22 @@ namespace Application.Services
             // Single source: the placements stored by SetFinalResults (all formats).
             // FinalPlacement is filtered in memory, not in SQL: CalculateFinalPlacementsStep reads the results
             // before the pipeline commits, and only the tracked entities hold the new placements by then.
-            var tournamentTeams = (await _tournamentTeamRepository.FindAllAsync(tt => tt.TournamentId == tournamentId))
-                .Where(tt => tt.FinalPlacement != null)
+            var teams = (await _teamRepository.FindAllAsync(t => t.TournamentId == tournamentId))
+                .Where(t => t.FinalPlacement != null)
                 .ToList();
 
-            var teamIds = tournamentTeams.Select(tt => tt.TeamId).ToList();
-            var teams = await _teamRepository.FindAllAsync(t => teamIds.Contains(t.Id));
-            var teamNameLookup = teams.ToDictionary(t => t.Id, t => t.Name);
             var groupNameLookup = await GetGroupPlacementNamesAsync(tournament);
 
-            return tournamentTeams
-                .OrderBy(tt => tt.FinalPlacement)
-                .ThenBy(tt => tt.TeamId)
-                .Select(tt => new TeamPlacementDTO(
-                    tt.TeamId,
-                    teamNameLookup.GetValueOrDefault(tt.TeamId, "Unknown Team"),
-                    tt.FinalPlacement!.Value,
-                    tt.FinalPlacement == 1 ? TeamStatus.Champion : TeamStatus.Eliminated,
-                    tt.EliminatedInRound ?? 0,
-                    groupNameLookup.GetValueOrDefault(tt.TeamId)
+            return teams
+                .OrderBy(t => t.FinalPlacement)
+                .ThenBy(t => t.Id)
+                .Select(t => new TeamPlacementDTO(
+                    t.Id,
+                    t.Name,
+                    t.FinalPlacement!.Value,
+                    t.FinalPlacement == 1 ? TeamStatus.Champion : TeamStatus.Eliminated,
+                    t.EliminatedInRound ?? 0,
+                    groupNameLookup.GetValueOrDefault(t.Id)
                 ))
                 .ToList();
         }

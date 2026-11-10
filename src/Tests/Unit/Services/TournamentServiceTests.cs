@@ -39,13 +39,11 @@ namespace Tests.Unit.Services
                 new Repository<Tournament>(DbContext),
                 new GroupRepository(DbContext),
                 new Repository<Team>(DbContext),
-                new Repository<TournamentTeam>(DbContext),
                 new FormatService(),
                 new Mock<ILogger<StandingService>>().Object);
 
             _service = new TournamentService(
                 new TournamentRepository(DbContext),
-                new TournamentTeamRepository(DbContext),
                 new StandingRepository(DbContext),
                 new Repository<Team>(DbContext),
                 standingService,
@@ -76,10 +74,7 @@ namespace Tests.Unit.Services
 
             for (var i = 0; i < teamCount; i++)
             {
-                var team = TestDataBuilder.Teams.CreateDefault();
-                DbContext.Teams.Add(team);
-                await DbContext.SaveChangesAsync();
-                DbContext.TournamentTeams.Add(TestDataBuilder.TournamentTeams.Create(tournament.Id, team.Id));
+                DbContext.Teams.Add(TestDataBuilder.Teams.CreateDefault(tournamentId: tournament.Id));
             }
 
             await SaveAndDetachAsync();
@@ -145,10 +140,7 @@ namespace Tests.Unit.Services
                 new CreateTournamentRequestDTO("Summer Cup", "Desc", 8, Format.GroupsAndBracket, 2, 2));
             for (var i = 0; i < 3; i++)
             {
-                var team = TestDataBuilder.Teams.CreateDefault();
-                DbContext.Teams.Add(team);
-                await DbContext.SaveChangesAsync();
-                DbContext.TournamentTeams.Add(TestDataBuilder.TournamentTeams.Create(created.Id, team.Id));
+                DbContext.Teams.Add(TestDataBuilder.Teams.CreateDefault(tournamentId: created.Id));
             }
             await SaveAndDetachAsync();
 
@@ -201,12 +193,10 @@ namespace Tests.Unit.Services
 
             foreach (var (name, placement) in teams)
             {
-                var team = TestDataBuilder.Teams.CreateDefault(name);
+                var team = TestDataBuilder.Teams.CreateDefault(name, tournament.Id);
+                if (placement != null)
+                    team.SetFinalResult(placement.Value, null);
                 DbContext.Teams.Add(team);
-                await DbContext.SaveChangesAsync();
-                var entry = TestDataBuilder.TournamentTeams.Create(tournament.Id, team.Id);
-                entry.FinalPlacement = placement;
-                DbContext.TournamentTeams.Add(entry);
             }
 
             await SaveAndDetachAsync();
@@ -391,13 +381,11 @@ namespace Tests.Unit.Services
         }
 
         [Fact]
-        public async Task Delete_Should_RemoveExclusiveTeam()
+        public async Task Delete_Should_RemoveItsTeams()
         {
             var id = await SeedTournamentAsync(TournamentStatus.Setup);
-            var team = TestDataBuilder.Teams.CreateDefault("Alpha Squad");
+            var team = TestDataBuilder.Teams.CreateDefault("Alpha Squad", id);
             DbContext.Teams.Add(team);
-            await DbContext.SaveChangesAsync();
-            DbContext.TournamentTeams.Add(TestDataBuilder.TournamentTeams.Create(id, team.Id));
             await DbContext.SaveChangesAsync();
             DbContext.ChangeTracker.Clear();
 

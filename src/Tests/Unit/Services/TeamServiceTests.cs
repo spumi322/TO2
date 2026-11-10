@@ -39,7 +39,6 @@ namespace Tests.Unit.Services
             return new TeamService(
                 new Repository<Team>(context),
                 new Repository<Tournament>(context),
-                new TournamentTeamRepository(context),
                 new Mock<ILogger<TeamService>>().Object,
                 new UnitOfWork(context),
                 _signalRMock.Object,
@@ -56,10 +55,9 @@ namespace Tests.Unit.Services
 
             foreach (var name in teamNames)
             {
-                var team = new Team(name);
-                DbContext.Teams.Add(team);
+                // One save per team: ids follow the order of the names
+                DbContext.Teams.Add(new Team(name, tournament.Id));
                 await DbContext.SaveChangesAsync();
-                DbContext.TournamentTeams.Add(TestDataBuilder.TournamentTeams.Create(tournament.Id, team.Id));
             }
 
             await SaveAndDetachAsync();
@@ -69,9 +67,9 @@ namespace Tests.Unit.Services
         private async Task<List<string>> RegisteredNamesAsync(long tournamentId)
         {
             DbContext.ChangeTracker.Clear();
-            return await DbContext.TournamentTeams
-                .Where(tt => tt.TournamentId == tournamentId)
-                .Select(tt => tt.Team.Name)
+            return await DbContext.Teams
+                .Where(t => t.TournamentId == tournamentId)
+                .Select(t => t.Name)
                 .ToListAsync();
         }
 
@@ -204,7 +202,7 @@ namespace Tests.Unit.Services
         #region Remove team
 
         [Fact]
-        public async Task RemoveTeam_Should_DeleteTeam_When_InNoOtherTournament()
+        public async Task RemoveTeam_Should_DeleteTeam()
         {
             var id = await SeedTournamentAsync(teamNames: "Alpha");
             var teamId = (await DbContext.Teams.SingleAsync()).Id;
@@ -214,28 +212,22 @@ namespace Tests.Unit.Services
 
             DbContext.ChangeTracker.Clear();
             (await DbContext.Teams.AnyAsync()).Should().BeFalse();
-            (await DbContext.TournamentTeams.AnyAsync()).Should().BeFalse();
             (await DbContext.Tournaments.SingleAsync(t => t.Id == id)).Version.Should().Be(1);
             _signalRMock.Verify(x => x.BroadcastTeamRemoved(id, teamId, "admin1"), Times.Once);
         }
 
         [Fact]
-        public async Task RemoveTeam_Should_KeepTeam_When_InAnotherTournament()
+        public async Task RemoveTeam_Should_ThrowNotFound_AndKeepTeam_When_TeamOfAnotherTournament()
         {
             var id = await SeedTournamentAsync(teamNames: "Alpha");
-            var team = await DbContext.Teams.SingleAsync();
-            var other = TestDataBuilder.Tournaments.CreateDefault();
-            DbContext.Tournaments.Add(other);
-            await DbContext.SaveChangesAsync();
-            DbContext.TournamentTeams.Add(TestDataBuilder.TournamentTeams.Create(other.Id, team.Id));
-            await SaveAndDetachAsync();
-
-            await _service.RemoveTeamFromTournamentAsync(team.Id, id);
-
+            var otherId = await SeedTournamentAsync(teamNames: "Bravo");
+            var otherTeamId = (await DbContext.Teams.SingleAsync(t => t.TournamentId == otherId)).Id;
             DbContext.ChangeTracker.Clear();
-            (await DbContext.Teams.AnyAsync(t => t.Id == team.Id)).Should().BeTrue();
-            (await RegisteredNamesAsync(id)).Should().BeEmpty();
-            (await RegisteredNamesAsync(other.Id)).Should().Equal("Alpha");
+
+            var act = () => _service.RemoveTeamFromTournamentAsync(otherTeamId, id);
+
+            await act.Should().ThrowAsync<NotFoundException>();
+            (await RegisteredNamesAsync(otherId)).Should().Equal("Bravo");
         }
 
         [Fact]

@@ -39,7 +39,6 @@ namespace Tests.Unit.Pipelines.StartGroups
                     _standingServiceMock.Object),
                 new DistributeTeamsIntoGroupsStep(
                     new Mock<ILogger<DistributeTeamsIntoGroupsStep>>().Object,
-                    new Repository<TournamentTeam>(DbContext),
                     new Repository<Team>(DbContext),
                     new Random(1)),
             };
@@ -87,10 +86,9 @@ namespace Tests.Unit.Pipelines.StartGroups
         public async Task Should_KeepCommittedChanges_When_BroadcastFails()
         {
             var tournament = TestDataBuilder.Tournaments.CreateDefault(format: Format.GroupsOnly);
-            var teams = TestDataBuilder.Teams.CreateMultiple(4);
             DbContext.Tournaments.Add(tournament);
-            DbContext.Teams.AddRange(teams);
             await DbContext.SaveChangesAsync();
+            DbContext.Teams.AddRange(TestDataBuilder.Teams.CreateMultiple(4, tournament.Id));
 
             var groups = new List<Standing>
             {
@@ -98,7 +96,6 @@ namespace Tests.Unit.Pipelines.StartGroups
                 TestDataBuilder.Standings.CreateGroup(tournament.Id, "Group B"),
             };
             DbContext.Standings.AddRange(groups);
-            DbContext.TournamentTeams.AddRange(teams.Select(t => TestDataBuilder.TournamentTeams.Create(tournament.Id, t.Id)));
             await SaveAndDetachAsync();
             _standingServiceMock.Setup(s => s.GetStandingsAsync(tournament.Id)).ReturnsAsync(groups);
             _signalRMock.Setup(s => s.BroadcastGroupsStarted(It.IsAny<long>(), It.IsAny<string>()))

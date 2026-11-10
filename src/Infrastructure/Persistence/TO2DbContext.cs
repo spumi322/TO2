@@ -34,7 +34,6 @@ namespace Infrastructure.Persistence
         public DbSet<Standing> Standings { get; set; }
         public DbSet<Game> Games { get; set; }
         public DbSet<GroupEntry> GroupEntries { get; set; }
-        public DbSet<TournamentTeam> TournamentTeams { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
@@ -100,22 +99,12 @@ namespace Infrastructure.Persistence
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            modelBuilder.Entity<TournamentTeam>(entity =>
-            {
-                entity.HasKey(tt => new { tt.TournamentId, tt.TeamId });
-
-                entity.HasOne(tt => tt.Tournament)
-                    .WithMany(t => t.TournamentTeams)
-                    .HasForeignKey(tt => tt.TournamentId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(tt => tt.Team)
-                    .WithMany(t => t.TournamentParticipations)
-                    .HasForeignKey(tt => tt.TeamId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.Ignore(tt => tt.Id);
-            });
+            // A team belongs to one tournament and is deleted with it
+            modelBuilder.Entity<Team>()
+                .HasOne(t => t.Tournament)
+                .WithMany(t => t.Teams)
+                .HasForeignKey(t => t.TournamentId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Team>().Property(t => t.Name).HasMaxLength(24);
             modelBuilder.Entity<Tournament>().Property(t => t.Name).HasMaxLength(60);
@@ -126,7 +115,6 @@ namespace Infrastructure.Persistence
             modelBuilder.Entity<Standing>().HasQueryFilter(s => s.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<GroupEntry>().HasQueryFilter(g => g.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<Game>().HasQueryFilter(g => g.TenantId == GetCurrentTenantId());
-            modelBuilder.Entity<TournamentTeam>().HasQueryFilter(tt => tt.TenantId == GetCurrentTenantId());
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(Tournament).Assembly);
 

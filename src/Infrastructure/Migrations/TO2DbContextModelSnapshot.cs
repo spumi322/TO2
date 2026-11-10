@@ -99,6 +99,12 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("EliminatedInRound")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("FinalPlacement")
+                        .HasColumnType("integer");
+
                     b.Property<string>("LastModifiedBy")
                         .IsRequired()
                         .HasColumnType("text");
@@ -114,6 +120,9 @@ namespace Infrastructure.Migrations
                     b.Property<long>("TenantId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("TournamentId")
+                        .HasColumnType("bigint");
+
                     b.Property<long>("Version")
                         .IsConcurrencyToken()
                         .HasColumnType("bigint");
@@ -121,6 +130,8 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId");
+
+                    b.HasIndex("TournamentId");
 
                     b.ToTable("Teams");
                 });
@@ -483,53 +494,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Standings");
                 });
 
-            modelBuilder.Entity("Domain.Entities.TournamentTeam", b =>
-                {
-                    b.Property<long>("TournamentId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("TeamId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("EliminatedInRound")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("FinalPlacement")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("LastModifiedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("LastModifiedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ResultFinalizedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("TenantId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("Version")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint");
-
-                    b.HasKey("TournamentId", "TeamId");
-
-                    b.HasIndex("TeamId");
-
-                    b.HasIndex("TenantId");
-
-                    b.ToTable("TournamentTeams");
-                });
-
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.Property<long>("Id")
@@ -760,7 +724,15 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.AggregateRoots.Tournament", "Tournament")
+                        .WithMany("Teams")
+                        .HasForeignKey("TournamentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Tenant");
+
+                    b.Navigation("Tournament");
                 });
 
             modelBuilder.Entity("Domain.AggregateRoots.Tournament", b =>
@@ -802,7 +774,7 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Domain.AggregateRoots.Team", "Team")
-                        .WithMany("TournamentParticipants")
+                        .WithMany()
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -852,33 +824,6 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("TournamentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Tenant");
-
-                    b.Navigation("Tournament");
-                });
-
-            modelBuilder.Entity("Domain.Entities.TournamentTeam", b =>
-                {
-                    b.HasOne("Domain.AggregateRoots.Team", "Team")
-                        .WithMany("TournamentParticipations")
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.AggregateRoots.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.AggregateRoots.Tournament", "Tournament")
-                        .WithMany("TournamentTeams")
-                        .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Team");
 
                     b.Navigation("Tenant");
 
@@ -952,13 +897,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Games");
                 });
 
-            modelBuilder.Entity("Domain.AggregateRoots.Team", b =>
-                {
-                    b.Navigation("TournamentParticipants");
-
-                    b.Navigation("TournamentParticipations");
-                });
-
             modelBuilder.Entity("Domain.AggregateRoots.Tenant", b =>
                 {
                     b.Navigation("Users");
@@ -968,9 +906,9 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("Standings");
 
-                    b.Navigation("TournamentParticipants");
+                    b.Navigation("Teams");
 
-                    b.Navigation("TournamentTeams");
+                    b.Navigation("TournamentParticipants");
                 });
 
             modelBuilder.Entity("Domain.Entities.Standing", b =>

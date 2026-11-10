@@ -14,18 +14,15 @@ namespace Tests.Unit.Pipelines.StartGroups
 {
     public class DistributeTeamsIntoGroupsStepTests : UnitTestBase
     {
-        private readonly Mock<IRepository<TournamentTeam>> _mockTournamentTeamRepo;
         private readonly Mock<IRepository<Team>> _mockTeamRepo;
         private readonly DistributeTeamsIntoGroupsStep _step;
 
         public DistributeTeamsIntoGroupsStepTests()
         {
             var (_, logger) = CreateLogger<DistributeTeamsIntoGroupsStep>();
-            _mockTournamentTeamRepo = new Mock<IRepository<TournamentTeam>>();
             _mockTeamRepo = new Mock<IRepository<Team>>();
             _step = new DistributeTeamsIntoGroupsStep(
                 logger,
-                _mockTournamentTeamRepo.Object,
                 _mockTeamRepo.Object,
                 new Random(1));
         }

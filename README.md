@@ -28,7 +28,7 @@ Setup → SeedingGroups → GroupsInProgress → GroupsCompleted → SeedingBrac
 
 Each format uses its own subset (BracketOnly skips the group states, GroupsOnly finishes after the groups).
 
-- **Delete** — only in `Setup`. Removes the tournament and teams that are in no other tournament.
+- **Delete** — only in `Setup`. Removes the tournament and its teams.
 - **Cancel** — any started state before `Finished`. Final (no un-cancel); records who/when/optional reason. Played data stays viewable, scoring is blocked.
 - `Finished` and `Cancelled` are terminal.
 
