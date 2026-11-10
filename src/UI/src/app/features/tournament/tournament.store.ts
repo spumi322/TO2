@@ -54,7 +54,6 @@ export class TournamentStore {
   // Draft scores by match id: this page's own (by = null) and the ones others share through the hub. Never saved
   readonly drafts = signal<ReadonlyMap<number, MatchDraft>>(new Map());
 
-  readonly loading = signal(true);
   readonly notFound = signal(false);
   readonly loadError = signal<string | null>(null);
   // Set when the tournament was deleted while open (by name of who deleted it)
@@ -65,7 +64,6 @@ export class TournamentStore {
 
   async load(id: number): Promise<void> {
     this._id.set(id);
-    this.loading.set(true);
     try {
       const data = await firstValueFrom(
         forkJoin({
@@ -89,8 +87,6 @@ export class TournamentStore {
       const apiError = toApiError(error);
       if (apiError.kind === 'notFound') this.notFound.set(true);
       else this.loadError.set(apiError.message);
-    } finally {
-      this.loading.set(false);
     }
   }
 
@@ -103,7 +99,6 @@ export class TournamentStore {
     this.groups.set(snapshot.groups);
     this.bracket.set(snapshot.bracket);
     this.results.set(snapshot.results);
-    this.loading.set(false);
   }
 
   reload(): Promise<void> {
