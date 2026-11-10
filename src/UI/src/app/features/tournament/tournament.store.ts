@@ -154,7 +154,8 @@ export class TournamentStore {
     this.liveSubscription = this.liveUpdates().subscribe((apply) =>
       apply().catch((error: unknown) => console.warn('Live update failed', error)),
     );
-    this.realtime.joinTournament(id).catch(() => this.notFound.set(true));
+    // A failed join only costs the live updates: whether the tournament exists is the REST load's answer
+    this.realtime.joinTournament(id).catch((error: unknown) => console.warn('Joining live updates failed', error));
   }
 
   disconnect(): void {

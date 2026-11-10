@@ -90,6 +90,17 @@ describe('TournamentStore live updates', () => {
     expect(realtime.joinTournament).toHaveBeenCalledWith(TOURNAMENT_ID);
   });
 
+  it('keeps the loaded tournament when joining the hub group fails', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    realtime.joinTournament.mockRejectedValueOnce(new Error('connection lost'));
+
+    store.connect();
+    await flushPromises();
+
+    expect(store.notFound()).toBe(false);
+    expect(store.tournament()).toEqual(tournament);
+  });
+
   it('ignores tenant events of another tournament', async () => {
     realtime.emit('TeamAdded', { tournamentId: 99, updatedBy: 'bob', teamIds: [5] });
     realtime.emit('TournamentCancelled', { tournamentId: 99, updatedBy: 'bob' });
