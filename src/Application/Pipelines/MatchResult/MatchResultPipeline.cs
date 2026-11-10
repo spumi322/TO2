@@ -136,8 +136,7 @@ namespace Application.Pipelines.MatchResult
                     AllGroupsFinished: context.AllGroupsFinished,
                     TournamentFinished: context.TournamentFinished,
                     NewTournamentStatus: context.NewTournamentStatus,
-                    FinalStandings: context.FinalStandings,
-                    Message: context.Message ?? "Match result saved."
+                    FinalStandings: context.FinalStandings
                 );
             }
             catch (Exception ex)

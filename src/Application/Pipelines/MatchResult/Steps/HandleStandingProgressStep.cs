@@ -55,7 +55,6 @@ namespace Application.Pipelines.MatchResult.Steps
             context.AllGroupsFinished = result.AllGroupsFinished;
             context.TournamentFinished = result.TournamentFinished;
             context.NewTournamentStatus = result.NewTournamentStatus;
-            context.Message = result.Message;
 
             // Return strategy's decision on whether to continue pipeline
             return result.ShouldContinuePipeline;

@@ -43,7 +43,6 @@ namespace Application.Pipelines.StartGroups.Steps
                 throw new InvalidOperationException($"No group standings found for tournament {context.TournamentId}");
 
             // Store in context
-            context.Standings = standings.ToList();
             context.GroupStandings = groupStandings;
 
             _logger.LogInformation("Found {Count} group standings for tournament {TournamentId}",

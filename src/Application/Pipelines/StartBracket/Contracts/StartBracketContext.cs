@@ -16,7 +16,6 @@ namespace Application.Pipelines.StartBracket.Contracts
 
         // Loaded entities
         public Tournament Tournament { get; set; } = null!;
-        public List<Standing> Standings { get; set; } = new();
         public Standing BracketStanding { get; set; } = null!;
         public List<BracketEntrant> AdvancedTeams { get; set; } = new();
 
@@ -27,9 +26,5 @@ namespace Application.Pipelines.StartBracket.Contracts
         // Output
         public TournamentStatus NewStatus { get; set; }
         public string Message { get; set; } = string.Empty;
-
-        // Control flags
-        public bool Success { get; set; } = true;
-        public bool ShouldContinue { get; set; } = true;
     }
 }

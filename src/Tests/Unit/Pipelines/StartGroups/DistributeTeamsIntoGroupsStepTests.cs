@@ -53,7 +53,6 @@ namespace Tests.Unit.Pipelines.StartGroups
 
             // Assert
             result.Should().BeTrue();
-            context.Success.Should().BeTrue();
             context.Teams.Should().HaveCount(8);
             context.GroupAssignments.Should().HaveCount(2);
             context.GroupAssignments.Values.Should().AllSatisfy(teams =>

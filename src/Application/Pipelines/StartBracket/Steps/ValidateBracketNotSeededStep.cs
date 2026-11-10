@@ -44,7 +44,6 @@ namespace Application.Pipelines.StartBracket.Steps
                 throw new ConflictException("The bracket has already started.");
 
             // Store in context
-            context.Standings = standings.ToList();
             context.BracketStanding = bracket;
 
             _logger.LogInformation("Found bracket standing '{BracketName}' for tournament {TournamentId}",

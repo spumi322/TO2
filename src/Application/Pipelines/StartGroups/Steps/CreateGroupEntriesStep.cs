@@ -28,7 +28,6 @@ namespace Application.Pipelines.StartGroups.Steps
                 context.TournamentId);
 
             int entriesCreated = 0;
-            int entriesUpdated = 0;
 
             // Get all existing group entries for this tournament once
             var allGroupEntries = await _groupRepository.FindAllAsync(ge => ge.TournamentId == context.TournamentId);
@@ -52,8 +51,8 @@ namespace Application.Pipelines.StartGroups.Steps
                 }
             }
 
-            _logger.LogInformation("Created {Created} and updated {Updated} group entries for tournament {TournamentId}",
-                entriesCreated, entriesUpdated, context.TournamentId);
+            _logger.LogInformation("Created {Created} group entries for tournament {TournamentId}",
+                entriesCreated, context.TournamentId);
 
             return true; // Continue to next step
         }

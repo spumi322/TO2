@@ -54,8 +54,6 @@ namespace Application.Pipelines.MatchResult.Steps
             Logger.LogInformation("Stored {PlacementCount} final placements for tournament {TournamentId}",
                 placements.Count, tournamentId);
 
-            context.Message = $"TOURNAMENT FINISHED! Champion: Team {context.WinnerId}";
-
             return true;
         }
     }

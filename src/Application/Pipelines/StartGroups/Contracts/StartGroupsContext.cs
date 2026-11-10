@@ -15,7 +15,6 @@ namespace Application.Pipelines.StartGroups.Contracts
 
         // Loaded entities
         public Tournament Tournament { get; set; } = null!;
-        public List<Standing> Standings { get; set; } = new();
         public List<Standing> GroupStandings { get; set; } = new();
         public List<Team> Teams { get; set; } = new();
 
@@ -25,9 +24,5 @@ namespace Application.Pipelines.StartGroups.Contracts
         // Output
         public TournamentStatus NewStatus { get; set; }
         public string Message { get; set; } = string.Empty;
-
-        // Control flags
-        public bool Success { get; set; } = true;
-        public bool ShouldContinue { get; set; } = true;
     }
 }

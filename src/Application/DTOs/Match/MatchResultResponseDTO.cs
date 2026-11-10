@@ -11,7 +11,6 @@ namespace Application.DTOs.Match
         bool AllGroupsFinished = false,
         bool TournamentFinished = false,
         TournamentStatus? NewTournamentStatus = null,
-        List<TeamPlacementDTO>? FinalStandings = null,
-        string? Message = null
+        List<TeamPlacementDTO>? FinalStandings = null
     );
 }

@@ -171,11 +171,9 @@ export interface MatchResultResponse {
   tournamentFinished: boolean;
   newTournamentStatus: TournamentStatus | null;
   finalStandings: TeamPlacement[] | null;
-  message: string | null;
 }
 
 export interface StartStageResponse {
-  success: boolean;
   message: string;
   tournamentStatus: TournamentStatus;
   version: number;

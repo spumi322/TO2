@@ -88,14 +88,12 @@ namespace Application.Pipelines.StartGroups
 
                 // Return the result
                 var result = new StartGroupsResponseDTO(
-                    context.Success,
                     context.Message,
                     context.NewStatus,
                     context.Tournament.Version
                 );
 
-                _logger.LogInformation("Pipeline completed successfully for tournament {TournamentId}. Success: {Success}",
-                    tournamentId, result.Success);
+                _logger.LogInformation("Pipeline completed successfully for tournament {TournamentId}", tournamentId);
                 return result;
             }
             catch (Exception ex)

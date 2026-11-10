@@ -30,8 +30,5 @@ namespace Application.Pipelines.MatchResult.Contracts
 
         // Final results
         public List<TeamPlacementDTO>? FinalStandings { get; set; }
-
-        // Response message
-        public string? Message { get; set; }
     }
 }

@@ -289,7 +289,6 @@ namespace Tests.Unit.Pipelines.StartBracket
             var result = await _step.ExecuteAsync(context);
 
             result.Should().BeTrue();
-            context.Success.Should().BeTrue();
         }
 
         private static StartBracketContext MakeContext(
