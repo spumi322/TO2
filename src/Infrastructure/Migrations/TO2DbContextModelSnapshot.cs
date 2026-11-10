@@ -376,46 +376,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("GroupEntries");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Player", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LastModifiedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("LastModifiedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long?>("TeamId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("Version")
-                        .IsConcurrencyToken()
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TeamId");
-
-                    b.ToTable("Players");
-                });
-
             modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
                 {
                     b.Property<long>("Id")
@@ -868,16 +828,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Tournament");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Player", b =>
-                {
-                    b.HasOne("Domain.AggregateRoots.Team", "Team")
-                        .WithMany("Players")
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("Team");
-                });
-
             modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
                 {
                     b.HasOne("Domain.Entities.User", "User")
@@ -1004,8 +954,6 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.AggregateRoots.Team", b =>
                 {
-                    b.Navigation("Players");
-
                     b.Navigation("TournamentParticipants");
 
                     b.Navigation("TournamentParticipations");
