@@ -777,7 +777,7 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Domain.AggregateRoots.Tournament", "Tournament")
-                        .WithMany("TournamentParticipants")
+                        .WithMany()
                         .HasForeignKey("TournamentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -898,8 +898,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Standings");
 
                     b.Navigation("Teams");
-
-                    b.Navigation("TournamentParticipants");
                 });
 
             modelBuilder.Entity("Domain.Entities.Standing", b =>
