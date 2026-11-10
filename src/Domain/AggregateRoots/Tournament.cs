@@ -42,8 +42,6 @@ namespace Domain.AggregateRoots
         [DefaultValue(TournamentStatus.Setup)]
         public TournamentStatus Status { get; set; } = TournamentStatus.Setup;
 
-        public bool IsRegistrationOpen { get; set; } = true;
-
         public int? AdvancingPerGroup { get; set; }
 
         public DateTime? CancelledAt { get; private set; }

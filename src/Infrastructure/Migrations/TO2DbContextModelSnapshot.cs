@@ -226,9 +226,6 @@ namespace Infrastructure.Migrations
                     b.Property<int>("Format")
                         .HasColumnType("integer");
 
-                    b.Property<bool>("IsRegistrationOpen")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("LastModifiedBy")
                         .IsRequired()
                         .HasColumnType("text");

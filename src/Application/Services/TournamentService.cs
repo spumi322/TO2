@@ -75,7 +75,6 @@ namespace Application.Services
         public async Task<CreateTournamentResponseDTO> CreateTournamentAsync(CreateTournamentRequestDTO request)
         {
             var tournament = request.ToTournament();
-            tournament.IsRegistrationOpen = true;
 
             await _tournamentRepository.AddAsync(tournament);
             await _standingService.InitializeStandingsForTournamentAsync(tournament, request.NumberOfGroups);

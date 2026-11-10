@@ -78,7 +78,6 @@ namespace Tests.Unit.Pipelines.StartGroups
             DbContext.ChangeTracker.Clear();
             var stored = await DbContext.Tournaments.AsNoTracking().SingleAsync(t => t.Id == tournament.Id);
             stored.Status.Should().Be(TournamentStatus.Setup);
-            stored.IsRegistrationOpen.Should().BeTrue();
             _signalRMock.Verify(s => s.BroadcastGroupsStarted(It.IsAny<long>(), It.IsAny<string>()), Times.Never);
         }
 

@@ -50,7 +50,6 @@ namespace Application.Pipelines.StartBracket.Steps
                 throw new ConflictException($"The bracket cannot be started while the tournament is {TournamentStatusText.Describe(tournament.Status)}.");
 
             tournament.Status = TournamentStatus.SeedingBracket;
-            tournament.IsRegistrationOpen = false;
 
             // Store in context
             context.Tournament = tournament;

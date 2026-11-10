@@ -49,14 +49,14 @@ namespace Application.Pipelines.StartGroups.Steps
             if (!_stateMachine.IsTransitionValid(tournament.Status, TournamentStatus.SeedingGroups, tournament.Format))
                 throw new ConflictException($"The groups cannot be started while the tournament is {TournamentStatusText.Describe(tournament.Status)}.");
 
+            // Leaving Setup closes registration (CanModifyTeams)
             tournament.Status = TournamentStatus.SeedingGroups;
-            tournament.IsRegistrationOpen = false; // Close registration when starting groups
 
             // Store in context
             context.Tournament = tournament;
             context.NewStatus = TournamentStatus.SeedingGroups;
 
-            _logger.LogInformation("Tournament {TournamentId} transitioned to SeedingGroups. Registration closed.",
+            _logger.LogInformation("Tournament {TournamentId} transitioned to SeedingGroups",
                 context.TournamentId);
 
             return true; // Continue to next step

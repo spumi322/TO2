@@ -6,7 +6,6 @@
     "maxTeams": 8,
     "format": 2,
     "status": 7,
-    "isRegistrationOpen": false,
     "version": 5,
     "cancelledAt": null,
     "cancelledBy": null,
