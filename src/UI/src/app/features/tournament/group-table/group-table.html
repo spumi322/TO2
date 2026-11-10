@@ -13,7 +13,7 @@
   <tbody>
     @for (row of rows(); track row.team.id; let i = $index) {
       <tr
-        [class.advanced]="row.team.status === advanced || row.team.status === champion"
+        [class.advanced]="row.team.status === advanced"
         [class.eliminated]="row.team.status === eliminated"
         [class.cut]="advancing() !== null && i + 1 === advancing() && i < rows().length - 1"
       >

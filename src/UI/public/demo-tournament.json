@@ -760,7 +760,6 @@
       "teamId": 993,
       "teamName": "Echo",
       "placement": 1,
-      "status": 4,
       "eliminatedInRound": 0,
       "groupName": null
     },
@@ -768,7 +767,6 @@
       "teamId": 996,
       "teamName": "Hotel",
       "placement": 2,
-      "status": 3,
       "eliminatedInRound": 2,
       "groupName": null
     },
@@ -776,7 +774,6 @@
       "teamId": 991,
       "teamName": "Charlie",
       "placement": 3,
-      "status": 3,
       "eliminatedInRound": 1,
       "groupName": null
     },
@@ -784,7 +781,6 @@
       "teamId": 994,
       "teamName": "Foxtrot",
       "placement": 3,
-      "status": 3,
       "eliminatedInRound": 1,
       "groupName": null
     },
@@ -792,7 +788,6 @@
       "teamId": 989,
       "teamName": "Alpha",
       "placement": 5,
-      "status": 3,
       "eliminatedInRound": 0,
       "groupName": "Group 2"
     },
@@ -800,7 +795,6 @@
       "teamId": 995,
       "teamName": "Golf",
       "placement": 5,
-      "status": 3,
       "eliminatedInRound": 0,
       "groupName": "Group 1"
     },
@@ -808,7 +802,6 @@
       "teamId": 990,
       "teamName": "Bravo",
       "placement": 7,
-      "status": 3,
       "eliminatedInRound": 0,
       "groupName": "Group 1"
     },
@@ -816,7 +809,6 @@
       "teamId": 992,
       "teamName": "Delta",
       "placement": 7,
-      "status": 3,
       "eliminatedInRound": 0,
       "groupName": "Group 2"
     }

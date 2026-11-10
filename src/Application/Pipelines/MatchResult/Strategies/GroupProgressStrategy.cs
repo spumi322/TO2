@@ -51,12 +51,6 @@ namespace Application.Pipelines.MatchResult.Strategies
             var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
                 ?? throw new InvalidOperationException($"Tournament {tournamentId} not found");
 
-            // For GroupsOnly: finalize team statuses (Champion/Eliminated) as soon as this group completes
-            if (tournament.Format == Format.GroupsOnly)
-            {
-                await _standingService.FinalizeGroupTeams(standingId);
-            }
-
             // Check if ALL groups are finished
             var allGroupsFinished = await _standingService.CheckAllGroupsAreFinished(tournamentId);
 

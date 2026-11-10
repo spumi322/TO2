@@ -27,5 +27,4 @@ export class GroupTable {
 
   protected readonly advanced = TeamStatus.Advanced;
   protected readonly eliminated = TeamStatus.Eliminated;
-  protected readonly champion = TeamStatus.Champion;
 }

@@ -142,7 +142,6 @@ export interface TeamPlacement {
   teamId: number;
   teamName: string;
   placement: number;
-  status: TeamStatus;
   eliminatedInRound: number;
   groupName: string | null;
 }

@@ -18,7 +18,6 @@ namespace Application.Contracts
         /// </summary>
         Task<bool> IsGroupFinished(long standingId);
         Task MarkStandingAsFinished(long standingId);
-        Task FinalizeGroupTeams(long standingId);
         /// <summary>
         /// Checks if all groups are finished. Returns true if all groups finished.
         /// </summary>

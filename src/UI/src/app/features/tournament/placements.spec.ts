@@ -1,12 +1,10 @@
 import { TeamPlacement } from '../../core/models';
-import { TeamStatus } from '../../shared/enums';
 import { ordinal, podiumTiers, toPlacementRows, topPlacements } from './placements';
 
 const p = (teamName: string, placement: number, eliminatedInRound = 0, groupName: string | null = null): TeamPlacement => ({
   teamId: teamName.length,
   teamName,
   placement,
-  status: placement === 1 ? TeamStatus.Champion : TeamStatus.Eliminated,
   eliminatedInRound,
   groupName,
 });

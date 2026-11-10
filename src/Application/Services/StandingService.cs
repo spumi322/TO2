@@ -114,19 +114,6 @@ namespace Application.Services
             standing.IsFinished = true;
         }
 
-        public async Task FinalizeGroupTeams(long standingId)
-        {
-            var groupEntries = GroupRanking.Rank(
-                await _groupRepository.GetByStandingIdAsync(standingId),
-                await _matchRepository.FindAllAsync(m => m.StandingId == standingId));
-            int position = 1;
-            foreach (var entry in groupEntries)
-            {
-                entry.Status = position == 1 ? TeamStatus.Champion : TeamStatus.Eliminated;
-                position++;
-            }
-        }
-
         public async Task<bool> CheckAllGroupsAreFinished(long tournamentId)
         {
             var allStandings = await _standingRepository.FindAllAsync(s => s.TournamentId == tournamentId);

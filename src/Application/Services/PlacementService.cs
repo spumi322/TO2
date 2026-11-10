@@ -83,7 +83,7 @@ namespace Application.Services
 
             foreach (var group in groupStandings)
             {
-                // Placement = position in the group (team statuses were already set when the group finished)
+                // Placement = position in the group
                 var teams = GroupRanking.Rank(
                     await _groupRepository.GetByStandingIdAsync(group.Id),
                     await _matchRepository.FindAllAsync(m => m.StandingId == group.Id));
@@ -169,7 +169,6 @@ namespace Application.Services
                     t.Id,
                     t.Name,
                     t.FinalPlacement!.Value,
-                    t.FinalPlacement == 1 ? TeamStatus.Champion : TeamStatus.Eliminated,
                     t.EliminatedInRound ?? 0,
                     groupNameLookup.GetValueOrDefault(t.Id)
                 ))
