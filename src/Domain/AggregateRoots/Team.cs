@@ -16,11 +16,6 @@ namespace Domain.AggregateRoots
 
         public string Name { get; private set; }
 
-        public void Rename(string name)
-        {
-            Name = name.Trim();
-        }
-
         public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;
 

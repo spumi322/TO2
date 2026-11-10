@@ -40,27 +40,6 @@ namespace Application.Services
             _stateMachine = stateMachine;
         }
 
-        public async Task<UpdateTeamResponseDTO> UpdateTeamAsync(long id, UpdateTeamRequestDTO request)
-        {
-            var existingTeam = await _teamRepository.GetByIdAsync(id)
-                ?? throw new NotFoundException("Team", id);
-
-            if (existingTeam.Version != request.Version)
-                throw new ConflictException("Team was modified by another user. Reload and try again.");
-
-            existingTeam.Rename(request.Name);
-
-            await _unitOfWork.SaveChangesAsync();
-
-            return existingTeam.ToUpdateTeamResponseDTO();
-        }
-
-        public async Task DeleteTeamAsync(long teamId)
-        {
-            await _teamRepository.DeleteAsync(teamId);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
         // All or nothing: every name becomes a new team (teams are not reused), one save
         public async Task<List<GetTeamResponseDTO>> AddTeamsToTournamentAsync(long tournamentId, AddTeamsRequestDTO request)
         {

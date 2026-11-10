@@ -8,7 +8,5 @@ namespace Application.Mappings
     public static partial class TeamMappings
     {
         public static partial GetTeamResponseDTO ToGetTeamResponseDTO(this Team team);
-
-        public static partial UpdateTeamResponseDTO ToUpdateTeamResponseDTO(this Team team);
     }
 }

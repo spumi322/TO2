@@ -1,4 +1,0 @@
-﻿namespace Application.DTOs.Team
-{
-    public record UpdateTeamRequestDTO(string Name, long Version);
-}
