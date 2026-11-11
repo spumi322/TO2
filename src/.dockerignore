@@ -1,0 +1,11 @@
+# Build context is src/ (see webAPI/Dockerfile.production); the API image needs only the four projects
+**/bin
+**/obj
+**/.vs
+**/.vscode
+**/*.user
+**/appsettings.Development.json
+UI/
+Tests/
+webAPI/docker-compose.yml
+webAPI/Dockerfile*
