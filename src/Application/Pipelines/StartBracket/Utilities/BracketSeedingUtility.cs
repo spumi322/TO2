@@ -34,28 +34,38 @@ namespace Application.Pipelines.StartBracket.Utilities
 
         /// <summary>
         /// Generates the seeding order for a single elimination bracket (0-based seed indexes).
-        /// Consecutive entries form round 1 pairs; each pair is seed i vs seed N+1-i, and the top seeds
-        /// are spread so they can only meet late. The create page's preview draws the same order.
-        /// Example for 8 slots (1-based): [1, 8, 4, 5, 2, 7, 3, 6]
+        /// Consecutive entries form round 1 pairs; each pair is seed i vs seed N+1-i, so higher seeds face lower seeds.
+        /// Seed s and seed s + N/2 land in opposite halves: with group result seeding (all winners, then all runners-up,
+        /// both in group order) a group's winner and runner-up can only meet in the final.
+        /// The create page's preview (UI generateMatchups) draws the same order.
+        /// Example for 8 slots (1-based): [1, 8, 3, 6, 2, 7, 4, 5]
         /// </summary>
         public static int[] GenerateSeedingOrder(int teamCount)
         {
-            // Start with the final (seed 1 vs seed 2), then split every slot into a match of the round before:
-            // each seed gets the opponent that completes "seed i vs seed N+1-i" for that round's size
-            var order = new List<int> { 0, 1 };
+            var rounds = (int)Math.Log2(teamCount);
+            var order = new int[teamCount];
 
-            while (order.Count < teamCount)
+            order[0] = 0;  // Best team
+            order[1] = teamCount - 1;  // Worst team
+
+            int filled = 2;
+            for (int round = 1; round < rounds; round++)
             {
-                int size = order.Count * 2;
-                order = order.SelectMany(seed => new[] { seed, size - 1 - seed }).ToList();
+                int step = teamCount / (int)Math.Pow(2, round + 1);
+                int currentFilled = filled; // Capture value before loop
+                for (int i = 0; i < currentFilled; i += 2)
+                {
+                    order[filled++] = order[i] + step;
+                    order[filled++] = order[i + 1] - step;
+                }
             }
 
-            return order.ToArray();
+            return order;
         }
 
         /// <summary>
         /// Creates single elimination pairs from a ranked list of teams (list index = seed, with BYE support).
-        /// Pairs teams in GenerateSeedingOrder order (8 slots: 1 vs 8, 4 vs 5, 2 vs 7, 3 vs 6).
+        /// Pairs teams in GenerateSeedingOrder order (8 slots: 1 vs 8, 3 vs 6, 2 vs 7, 4 vs 5).
         /// Null entries represent BYE slots; teamA is always the higher seed.
         /// </summary>
         public static List<(Team? teamA, Team? teamB)> CreateSingleEliminationPairs(

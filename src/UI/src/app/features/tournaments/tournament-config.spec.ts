@@ -51,16 +51,16 @@ describe('tournament config', () => {
     expect(computeByeCount(8, 6)).toBe(2);
   });
 
-  it('pairs seed i with seed N+1-i and keeps top seeds apart', () => {
+  it('pairs seed i with seed N+1-i, seed s and s + N/2 in opposite halves', () => {
     expect(generateMatchups(4)).toEqual([
       [1, 4],
       [2, 3],
     ]);
     expect(generateMatchups(8)).toEqual([
       [1, 8],
-      [4, 5],
-      [2, 7],
       [3, 6],
+      [2, 7],
+      [4, 5],
     ]);
     expect(generateMatchups(6)).toEqual([]);
   });
@@ -80,9 +80,9 @@ describe('tournament config', () => {
     const first = tree[0].flat();
     expect(first.map((m) => [m.top.label, m.bottom.label])).toEqual([
       ['#1', 'BYE'],
-      ['#4', '#5'],
-      ['#2', 'BYE'],
       ['#3', '#6'],
+      ['#2', 'BYE'],
+      ['#4', '#5'],
     ]);
     expect(first[0].top).toMatchObject({ byeOpponent: true, bye: false });
     expect(first[0].bottom).toMatchObject({ byeOpponent: false, bye: true });

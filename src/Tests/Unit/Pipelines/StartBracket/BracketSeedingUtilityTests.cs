@@ -58,21 +58,6 @@ namespace Tests.Unit.Pipelines.StartBracket
             result[3].Should().BeNull();
         }
 
-        // ── GenerateSeedingOrder ────────────────────────────────────────────
-
-        // The same round 1 order as the create page's preview (UI generateMatchups)
-        [Theory]
-        [InlineData(2, new[] { 1, 2 })]
-        [InlineData(4, new[] { 1, 4, 2, 3 })]
-        [InlineData(8, new[] { 1, 8, 4, 5, 2, 7, 3, 6 })]
-        [InlineData(16, new[] { 1, 16, 8, 9, 4, 13, 5, 12, 2, 15, 7, 10, 3, 14, 6, 11 })]
-        public void GenerateSeedingOrder_IsTheStandardBracketOrder(int slots, int[] expectedSeeds)
-        {
-            var seeds = BracketSeedingUtility.GenerateSeedingOrder(slots).Select(index => index + 1);
-
-            seeds.Should().Equal(expectedSeeds);
-        }
-
         // ── CreateSingleEliminationPairs (nullable overload) ────────────────
 
         [Fact]

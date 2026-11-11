@@ -55,16 +55,17 @@ export function computeByeCount(bracketSize: number, teamCount: number): number 
 }
 
 /**
- * First-round pairs as [seed, seed] (1-based) in bracket order: seed i meets seed N+1-i,
- * and the top seeds are spread so they can only meet late. Seeds above the team count are BYEs.
+ * First-round pairs as [seed, seed] (1-based) in the server's bracket order (BracketSeedingUtility.GenerateSeedingOrder):
+ * seed i meets seed N+1-i, and seed s and seed s + N/2 land in opposite halves, so a group's winner and runner-up
+ * can only meet in the final. Seeds above the team count are BYEs.
  */
 export function generateMatchups(bracketSize: number): [number, number][] {
   if (bracketSize < 2 || (bracketSize & (bracketSize - 1)) !== 0) return [];
 
-  let order = [1, 2];
-  while (order.length < bracketSize) {
-    const size = order.length * 2;
-    order = order.flatMap((seed) => [seed, size + 1 - seed]);
+  const order = [1, bracketSize];
+  for (let step = bracketSize / 4; step >= 1; step /= 2) {
+    const filled = order.length;
+    for (let i = 0; i < filled; i += 2) order.push(order[i] + step, order[i + 1] - step);
   }
 
   const matchups: [number, number][] = [];
