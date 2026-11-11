@@ -54,7 +54,6 @@ namespace Application.Pipelines.StartGroups.Steps
 
             // Store in context
             context.Tournament = tournament;
-            context.NewStatus = TournamentStatus.SeedingGroups;
 
             _logger.LogInformation("Tournament {TournamentId} transitioned to SeedingGroups",
                 context.TournamentId);

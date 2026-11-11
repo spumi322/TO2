@@ -13,14 +13,14 @@ namespace Application.Services
     public class PlacementService : IPlacementService
     {
         private readonly IStandingRepository _standingRepository;
-        private readonly IMatchRepository _matchRepository;
+        private readonly IRepository<Match> _matchRepository;
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly IGroupRepository _groupRepository;
         private readonly IRepository<Team> _teamRepository;
         private readonly ILogger<PlacementService> _logger;
 
         public PlacementService(IStandingRepository standingRepository,
-                                IMatchRepository matchRepository,
+                                IRepository<Match> matchRepository,
                                 IRepository<Tournament> tournamentRepository,
                                 IGroupRepository groupRepository,
                                 IRepository<Team> teamRepository,

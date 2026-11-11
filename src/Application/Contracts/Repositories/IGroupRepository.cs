@@ -6,5 +6,5 @@ namespace Application.Contracts.Repositories
     {
         Task<IReadOnlyList<GroupEntry>> GetByStandingIdAsync(long standingId);
         Task<IReadOnlyList<GroupEntry>> GetByTournamentIdAsync(long tournamentId);
-        Task<GroupEntry?> GetByTeamAndTournamentAsync(long teamId, long tournamentId);    }
+    }
 }

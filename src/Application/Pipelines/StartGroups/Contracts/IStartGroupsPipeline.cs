@@ -1,5 +1,3 @@
-using Application.DTOs.Tournament;
-
 namespace Application.Pipelines.StartGroups.Contracts
 {
     /// <summary>
@@ -13,7 +11,6 @@ namespace Application.Pipelines.StartGroups.Contracts
         /// Executes the complete group starting workflow.
         /// </summary>
         /// <param name="tournamentId">The tournament to start groups for</param>
-        /// <returns>Result indicating success/failure and new tournament status</returns>
-        Task<StartGroupsResponseDTO> ExecuteAsync(long tournamentId);
+        Task ExecuteAsync(long tournamentId);
     }
 }

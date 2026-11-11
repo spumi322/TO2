@@ -17,7 +17,7 @@ namespace Application.Services
     public class StandingService : IStandingService
     {
         private readonly IStandingRepository _standingRepository;
-        private readonly IMatchRepository _matchRepository;
+        private readonly IRepository<Match> _matchRepository;
         private readonly IRepository<Tournament> _tournamentRepository;
         private readonly IGroupRepository _groupRepository;
         private readonly IRepository<Team> _teamRepository;
@@ -25,7 +25,7 @@ namespace Application.Services
         private readonly ILogger<StandingService> _logger;
 
         public StandingService(IStandingRepository standingRepository,
-                               IMatchRepository matchRepository,
+                               IRepository<Match> matchRepository,
                                IRepository<Tournament> tournamentRepository,
                                IGroupRepository groupRepository,
                                IRepository<Team> teamRepository,

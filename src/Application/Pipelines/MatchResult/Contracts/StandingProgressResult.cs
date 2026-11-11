@@ -1,5 +1,3 @@
-using Domain.Enums;
-
 namespace Application.Pipelines.MatchResult.Contracts
 {
     /// <summary>
@@ -14,27 +12,17 @@ namespace Application.Pipelines.MatchResult.Contracts
         public bool RoundFinished { get; set; }
         public bool AllGroupsFinished { get; set; }
         public bool TournamentFinished { get; set; }
-        public TournamentStatus? NewTournamentStatus { get; set; }
-        public string Message { get; set; } = string.Empty;
-
-        public StandingProgressResult()
-        {
-        }
 
         public StandingProgressResult(
             bool shouldContinuePipeline,
-            string message,
             bool standingFinished = false,
             bool allGroupsFinished = false,
-            bool tournamentFinished = false,
-            TournamentStatus? newTournamentStatus = null)
+            bool tournamentFinished = false)
         {
             ShouldContinuePipeline = shouldContinuePipeline;
-            Message = message;
             StandingFinished = standingFinished;
             AllGroupsFinished = allGroupsFinished;
             TournamentFinished = tournamentFinished;
-            NewTournamentStatus = newTournamentStatus;
         }
     }
 }

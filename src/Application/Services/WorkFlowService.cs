@@ -1,5 +1,4 @@
 ﻿using Application.Contracts;
-using Application.DTOs.Tournament;
 using Application.Pipelines.StartBracket.Contracts;
 using Application.Pipelines.StartGroups.Contracts;
 
@@ -18,14 +17,8 @@ namespace Application.Services
             _startBracketPipeline = startBracketPipeline;
         }
 
-        public async Task<StartGroupsResponseDTO> StartGroups(long tournamentId)
-        {
-            return await _startGroupsPipeline.ExecuteAsync(tournamentId);
-        }
+        public Task StartGroups(long tournamentId) => _startGroupsPipeline.ExecuteAsync(tournamentId);
 
-        public async Task<StartBracketResponseDTO> StartBracket(long tournamentId)
-        {
-            return await _startBracketPipeline.ExecuteAsync(tournamentId);
-        }
+        public Task StartBracket(long tournamentId) => _startBracketPipeline.ExecuteAsync(tournamentId);
     }
 }

@@ -44,10 +44,8 @@ namespace Application.Pipelines.MatchResult.Strategies
 
                 return new StandingProgressResult(
                     shouldContinuePipeline: true,
-                    message: "Tournament finished!",
                     standingFinished: true,
-                    tournamentFinished: true,
-                    newTournamentStatus: TournamentStatus.Finished
+                    tournamentFinished: true
                 );
             }
             else
@@ -57,8 +55,7 @@ namespace Application.Pipelines.MatchResult.Strategies
 
                 // Stop pipeline (match processed successfully, no more work needed)
                 return new StandingProgressResult(
-                    shouldContinuePipeline: false,
-                    message: "Match completed. Winner advanced to next round."
+                    shouldContinuePipeline: false
                 )
                 {
                     RoundFinished = await IsRoundFinished(matchId, standingId)

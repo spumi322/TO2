@@ -19,6 +19,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Tests.Base;
 using Tests.Helpers;
+using Match = Domain.AggregateRoots.Match;
 
 namespace Tests.Integration.Persistence
 {
@@ -38,7 +39,7 @@ namespace Tests.Integration.Persistence
 
             var standingService = new StandingService(
                 new StandingRepository(DbContext),
-                new MatchRepository(DbContext),
+                new Repository<Match>(DbContext),
                 new Repository<Tournament>(DbContext),
                 new GroupRepository(DbContext),
                 new Repository<Team>(DbContext),

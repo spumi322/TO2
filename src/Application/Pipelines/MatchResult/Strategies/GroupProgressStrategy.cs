@@ -38,14 +38,13 @@ namespace Application.Pipelines.MatchResult.Strategies
             _tournamentRepository.BumpVersion(tournament);
 
             // Check if this match finishing caused the standing to finish
-            var IsGroupJustFinished = await _standingService.IsGroupFinished(standingId);
+            var groupFinished = await _standingService.IsGroupFinished(standingId);
 
-            if (!IsGroupJustFinished)
+            if (!groupFinished)
             {
                 // Standing not finished yet - stop pipeline (success, but standing still in progress)
                 return new StandingProgressResult(
                     shouldContinuePipeline: false,
-                    message: "Match completed.",
                     standingFinished: false
                 );
             }
@@ -63,7 +62,6 @@ namespace Application.Pipelines.MatchResult.Strategies
                 // Stop pipeline (success, but other groups ongoing)
                 return new StandingProgressResult(
                     shouldContinuePipeline: false,
-                    message: "Match completed and standing finished. Other groups still in progress.",
                     standingFinished: true,
                     allGroupsFinished: false
                 );
@@ -77,18 +75,15 @@ namespace Application.Pipelines.MatchResult.Strategies
                 _logger.LogInformation("GroupsOnly format detected - tournament {TournamentId} will finish", tournamentId);
                 return new StandingProgressResult(
                     shouldContinuePipeline: true,
-                    message: "All groups finished! Tournament completed.",
                     standingFinished: true,
                     allGroupsFinished: true,
-                    tournamentFinished: true,
-                    newTournamentStatus: TournamentStatus.Finished
+                    tournamentFinished: true
                 );
             }
 
-            // GroupsAndBracket: Continue to GroupsCompleted (existing behavior)
+            // GroupsAndBracket: the next step moves the tournament to GroupsCompleted
             return new StandingProgressResult(
                 shouldContinuePipeline: true,
-                message: "All groups finished! Tournament transitioned to GroupsCompleted status. Admin can now seed bracket.",
                 standingFinished: true,
                 allGroupsFinished: true
             );

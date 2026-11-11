@@ -1,6 +1,5 @@
 using Domain.AggregateRoots;
 using Domain.Entities;
-using Domain.Enums;
 
 namespace Application.Pipelines.StartGroups.Contracts
 {
@@ -20,9 +19,5 @@ namespace Application.Pipelines.StartGroups.Contracts
 
         // Computed data
         public Dictionary<Standing, List<Team>> GroupAssignments { get; set; } = new();
-
-        // Output
-        public TournamentStatus NewStatus { get; set; }
-        public string Message { get; set; } = string.Empty;
     }
 }

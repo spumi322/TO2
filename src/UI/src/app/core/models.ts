@@ -173,8 +173,3 @@ export interface MatchResultResponse {
   finalStandings: TeamPlacement[] | null;
 }
 
-export interface StartStageResponse {
-  message: string;
-  tournamentStatus: TournamentStatus;
-  version: number;
-}

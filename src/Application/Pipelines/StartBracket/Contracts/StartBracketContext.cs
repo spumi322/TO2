@@ -1,7 +1,6 @@
 using Application.DTOs.Standing;
 using Domain.AggregateRoots;
 using Domain.Entities;
-using Domain.Enums;
 
 namespace Application.Pipelines.StartBracket.Contracts
 {
@@ -22,9 +21,5 @@ namespace Application.Pipelines.StartBracket.Contracts
         // Computed data
         public List<(Team? teamA, Team? teamB)> SeededPairs { get; set; } = new();
         public int TotalRounds { get; set; }
-
-        // Output
-        public TournamentStatus NewStatus { get; set; }
-        public string Message { get; set; } = string.Empty;
     }
 }

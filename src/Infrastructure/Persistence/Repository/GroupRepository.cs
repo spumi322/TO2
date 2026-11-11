@@ -13,8 +13,5 @@ namespace Infrastructure.Persistence.Repository
 
         public async Task<IReadOnlyList<GroupEntry>> GetByTournamentIdAsync(long tournamentId)
             => await _dbSet.Where(g => g.TournamentId == tournamentId).ToListAsync();
-
-        public async Task<GroupEntry?> GetByTeamAndTournamentAsync(long teamId, long tournamentId)
-            => await _dbSet.FirstOrDefaultAsync(g => g.TeamId == teamId && g.TournamentId == tournamentId);
     }
 }

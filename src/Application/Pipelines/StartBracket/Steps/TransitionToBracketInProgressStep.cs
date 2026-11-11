@@ -32,9 +32,6 @@ namespace Application.Pipelines.StartBracket.Steps
             _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.BracketInProgress, context.Tournament.Format);
             context.Tournament.Status = TournamentStatus.BracketInProgress;
 
-            // Store in context
-            context.NewStatus = TournamentStatus.BracketInProgress;
-
             _logger.LogInformation("Tournament {TournamentId} transitioned to BracketInProgress successfully",
                 context.TournamentId);
 

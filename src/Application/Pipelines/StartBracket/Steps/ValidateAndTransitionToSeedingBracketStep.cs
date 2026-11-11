@@ -53,7 +53,6 @@ namespace Application.Pipelines.StartBracket.Steps
 
             // Store in context
             context.Tournament = tournament;
-            context.NewStatus = TournamentStatus.SeedingBracket;
 
             _logger.LogInformation("Tournament {TournamentId} transitioned to SeedingBracket",
                 context.TournamentId);

@@ -1,5 +1,3 @@
-using Application.DTOs.Tournament;
-
 namespace Application.Pipelines.StartBracket.Contracts
 {
     /// <summary>
@@ -13,7 +11,6 @@ namespace Application.Pipelines.StartBracket.Contracts
         /// Executes the complete bracket starting workflow.
         /// </summary>
         /// <param name="tournamentId">The tournament to start bracket for</param>
-        /// <returns>Result indicating success/failure and new tournament status</returns>
-        Task<StartBracketResponseDTO> ExecuteAsync(long tournamentId);
+        Task ExecuteAsync(long tournamentId);
     }
 }

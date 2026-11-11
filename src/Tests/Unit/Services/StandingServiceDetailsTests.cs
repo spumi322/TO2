@@ -24,7 +24,7 @@ namespace Tests.Unit.Services
         {
             _service = new StandingService(
                 new StandingRepository(DbContext),
-                new MatchRepository(DbContext),
+                new Repository<Match>(DbContext),
                 new Repository<Tournament>(DbContext),
                 new GroupRepository(DbContext),
                 new Repository<Team>(DbContext),

@@ -1,5 +1,4 @@
 using Application.Contracts;
-using Application.DTOs.Tournament;
 using Application.Pipelines.StartGroups.Contracts;
 using Application.Pipelines.StartGroups.Steps;
 using Microsoft.Extensions.Logging;
@@ -24,7 +23,6 @@ namespace Application.Pipelines.StartGroups
             typeof(GenerateRoundRobinMatchesStep),
             typeof(MarkStandingsAsSeededStep),
             typeof(TransitionToGroupsInProgressStep),
-            typeof(BuildResponseStep),
         };
 
         private readonly ILogger<StartGroupsPipeline> _logger;
@@ -52,8 +50,7 @@ namespace Application.Pipelines.StartGroups
         /// All changes are committed as a single atomic transaction.
         /// </summary>
         /// <param name="tournamentId">The tournament to start groups for</param>
-        /// <returns>Result indicating success/failure and new tournament status</returns>
-        public async Task<StartGroupsResponseDTO> ExecuteAsync(long tournamentId)
+        public async Task ExecuteAsync(long tournamentId)
         {
             _logger.LogInformation("Starting groups pipeline for tournament {TournamentId}", tournamentId);
 
@@ -86,15 +83,7 @@ namespace Application.Pipelines.StartGroups
                 // Broadcast SignalR events AFTER transaction commit
                 await BroadcastUpdatesAsync(context.TournamentId);
 
-                // Return the result
-                var result = new StartGroupsResponseDTO(
-                    context.Message,
-                    context.NewStatus,
-                    context.Tournament.Version
-                );
-
                 _logger.LogInformation("Pipeline completed successfully for tournament {TournamentId}", tournamentId);
-                return result;
             }
             catch (Exception ex)
             {

@@ -1,5 +1,4 @@
 ﻿using Application.Contracts;
-using Application.Contracts.Repositories;
 using Domain.AggregateRoots;
 using Microsoft.Extensions.Logging;
 
@@ -7,10 +6,10 @@ namespace Application.Services
 {
     public class MatchService : IMatchService
     {
-        private readonly IMatchRepository _matchRepository;
+        private readonly IRepository<Match> _matchRepository;
         private readonly IFormatService _formatService;
 
-        public MatchService(IMatchRepository matchRepository,
+        public MatchService(IRepository<Match> matchRepository,
                             IFormatService formatService)
         {
             _matchRepository = matchRepository;

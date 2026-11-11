@@ -5,7 +5,6 @@ import { apiUrl } from '../api';
 import {
   CreateTournamentRequest,
   CreateTournamentResponse,
-  StartStageResponse,
   Team,
   TeamPlacement,
   Tournament,
@@ -50,12 +49,12 @@ export class TournamentsApi {
     return this.http.post<Team[]>(apiUrl(`tournaments/${id}/teams`), { names });
   }
 
-  startGroups(id: number): Observable<StartStageResponse> {
-    return this.http.post<StartStageResponse>(apiUrl(`tournaments/${id}/start-groups`), {});
+  startGroups(id: number): Observable<void> {
+    return this.http.post<void>(apiUrl(`tournaments/${id}/start-groups`), {});
   }
 
-  startBracket(id: number): Observable<StartStageResponse> {
-    return this.http.post<StartStageResponse>(apiUrl(`tournaments/${id}/start-bracket`), {});
+  startBracket(id: number): Observable<void> {
+    return this.http.post<void>(apiUrl(`tournaments/${id}/start-bracket`), {});
   }
 
   cancel(id: number, reason: string | null): Observable<void> {

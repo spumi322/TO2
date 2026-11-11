@@ -91,14 +91,16 @@ namespace TO2.Controllers
         [HttpPost("{id}/start-groups")]
         public async Task<IActionResult> StartGroups(long id)
         {
-            return Ok(await _workFlowService.StartGroups(id));
+            await _workFlowService.StartGroups(id);
+            return NoContent();
         }
 
         // POST: api/tournaments/5/start-bracket
         [HttpPost("{id}/start-bracket")]
         public async Task<IActionResult> StartBracket(long id)
         {
-            return Ok(await _workFlowService.StartBracket(id));
+            await _workFlowService.StartBracket(id);
+            return NoContent();
         }
 
         // POST: api/tournaments/5/cancel

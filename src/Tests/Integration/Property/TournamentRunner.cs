@@ -155,7 +155,6 @@ namespace Tests.Integration.Property
             services.AddScoped<ITournamentRepository, TournamentRepository>();
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IStandingRepository, StandingRepository>();
-            services.AddScoped<IMatchRepository, MatchRepository>();
 
             services.AddScoped<ITournamentStateMachine, TournamentStateMachine>();
             services.AddScoped<IFormatService, FormatService>();

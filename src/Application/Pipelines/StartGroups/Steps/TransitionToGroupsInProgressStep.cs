@@ -32,9 +32,6 @@ namespace Application.Pipelines.StartGroups.Steps
             _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.GroupsInProgress, context.Tournament.Format);
             context.Tournament.Status = TournamentStatus.GroupsInProgress;
 
-            // Store in context
-            context.NewStatus = TournamentStatus.GroupsInProgress;
-
             _logger.LogInformation("Tournament {TournamentId} transitioned to GroupsInProgress successfully",
                 context.TournamentId);
 

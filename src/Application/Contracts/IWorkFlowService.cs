@@ -1,10 +1,8 @@
-﻿using Application.DTOs.Tournament;
-
-namespace Application.Contracts
+﻿namespace Application.Contracts
 {
     public interface IWorkFlowService
     {
-        Task<StartGroupsResponseDTO> StartGroups(long tournamentId);
-        Task<StartBracketResponseDTO> StartBracket(long tournamentId);
+        Task StartGroups(long tournamentId);
+        Task StartBracket(long tournamentId);
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Tests.Base;
 using Tests.Helpers;
+using Match = Domain.AggregateRoots.Match;
 
 namespace Tests.Unit.Services
 {
@@ -19,7 +20,7 @@ namespace Tests.Unit.Services
         {
             _service = new PlacementService(
                 new StandingRepository(DbContext),
-                new MatchRepository(DbContext),
+                new Repository<Match>(DbContext),
                 new Repository<Tournament>(DbContext),
                 new GroupRepository(DbContext),
                 new Repository<Team>(DbContext),

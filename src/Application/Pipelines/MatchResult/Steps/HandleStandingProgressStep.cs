@@ -46,15 +46,14 @@ namespace Application.Pipelines.MatchResult.Steps
             // Execute strategy to progress the standing
             var result = await strategy.ProgressStandingAsync(tournamentId, standingId, matchId, winnerId);
 
-            Logger.LogInformation("Processed {StandingType} progress for standing {StandingId}: {Message}",
-                standing.StandingType, standingId, result.Message);
+            Logger.LogInformation("Processed {StandingType} progress for standing {StandingId}",
+                standing.StandingType, standingId);
 
             // Map result to context
             context.StandingFinished = result.StandingFinished;
             context.RoundFinished = result.RoundFinished;
             context.AllGroupsFinished = result.AllGroupsFinished;
             context.TournamentFinished = result.TournamentFinished;
-            context.NewTournamentStatus = result.NewTournamentStatus;
 
             // Return strategy's decision on whether to continue pipeline
             return result.ShouldContinuePipeline;
