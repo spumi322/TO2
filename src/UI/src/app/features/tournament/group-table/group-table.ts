@@ -19,9 +19,16 @@ export class GroupTable {
 
   readonly rows = computed(() => {
     const group = this.group();
-    return group.teams.map((team) => {
+    // GroupsOnly (no advancing): the first team of a finished group is its winner, shown like an advanced team
+    const showWinner = group.isFinished && this.advancing() === null;
+    return group.teams.map((team, index) => {
       const difference = team.gameWins - team.gameLosses;
-      return { team, form: teamForm(group, team.id), difference: difference > 0 ? `+${difference}` : `${difference}` };
+      return {
+        team,
+        form: teamForm(group, team.id),
+        difference: difference > 0 ? `+${difference}` : `${difference}`,
+        groupWinner: showWinner && index === 0,
+      };
     });
   });
 
