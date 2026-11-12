@@ -13,16 +13,13 @@ namespace Application.Pipelines.StartBracket.Steps
     public class TransitionToBracketInProgressStep : IStartBracketPipelineStep
     {
         private readonly ILogger<TransitionToBracketInProgressStep> _logger;
-        private readonly IRepository<Tournament> _tournamentRepository;
         private readonly ITournamentStateMachine _stateMachine;
 
         public TransitionToBracketInProgressStep(
             ILogger<TransitionToBracketInProgressStep> logger,
-            IRepository<Tournament> tournamentRepository,
             ITournamentStateMachine stateMachine)
         {
             _logger = logger;
-            _tournamentRepository = tournamentRepository;
             _stateMachine = stateMachine;
         }
 
@@ -31,28 +28,14 @@ namespace Application.Pipelines.StartBracket.Steps
             _logger.LogInformation("Step 8: Transitioning tournament {TournamentId} to BracketInProgress",
                 context.TournamentId);
 
-            try
-            {
-                // Validate and transition to BracketInProgress
-                _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.BracketInProgress);
-                context.Tournament.Status = TournamentStatus.BracketInProgress;
+            // Step 1 already moved to SeedingBracket, so an invalid transition here is a bug (500)
+            _stateMachine.ValidateTransition(context.Tournament.Status, TournamentStatus.BracketInProgress, context.Tournament.Format);
+            context.Tournament.Status = TournamentStatus.BracketInProgress;
 
-                // Store in context
-                context.NewStatus = TournamentStatus.BracketInProgress;
+            _logger.LogInformation("Tournament {TournamentId} transitioned to BracketInProgress successfully",
+                context.TournamentId);
 
-                _logger.LogInformation("Tournament {TournamentId} transitioned to BracketInProgress successfully",
-                    context.TournamentId);
-
-                return true; // Continue to next step
-            }
-            catch (InvalidOperationException ex)
-            {
-                context.Success = false;
-                context.Message = $"Invalid state transition: {ex.Message}";
-                _logger.LogWarning("Invalid state transition for tournament {TournamentId}: {Message}",
-                    context.TournamentId, ex.Message);
-                return false; // Stop pipeline
-            }
+            return true; // Continue to next step
         }
     }
 }

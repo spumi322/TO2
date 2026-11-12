@@ -2,7 +2,6 @@ using Application.Contracts;
 using Domain.AggregateRoots;
 using Domain.Common;
 using Domain.Entities;
-using Domain.ValueObjects;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +9,7 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Persistence
 {
-    public class TO2DbContext : IdentityDbContext<User, IdentityRole<long>, long>, ITO2DbContext
+    public class TO2DbContext : IdentityDbContext<User, IdentityRole<long>, long>
     {
         private readonly IConfiguration _configuration;
         private readonly ITenantService? _tenantService;
@@ -32,11 +31,9 @@ namespace Infrastructure.Persistence
         public DbSet<Tournament> Tournaments { get; set; }
         public DbSet<Team> Teams { get; set; }
         public DbSet<Match> Matches { get; set; }
-        public DbSet<Player> Players { get; set; }
         public DbSet<Standing> Standings { get; set; }
         public DbSet<Game> Games { get; set; }
         public DbSet<GroupEntry> GroupEntries { get; set; }
-        public DbSet<TournamentTeam> TournamentTeams { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
 
@@ -58,23 +55,27 @@ namespace Infrastructure.Persistence
         {
             modelBuilder.Ignore<AggregateRootBase>();
             modelBuilder.Ignore<EntityBase>(); 
-            modelBuilder.Ignore<ValueObjectBase>();
-            modelBuilder.Ignore<Prize>();
 
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Tournament>().Property(e => e.RowVersion).IsRowVersion();
-            modelBuilder.Entity<Match>().Property(e => e.RowVersion).IsRowVersion();
-            modelBuilder.Entity<Game>().Property(e => e.RowVersion).IsRowVersion();
-            modelBuilder.Entity<Standing>().Property(e => e.RowVersion).IsRowVersion();
+            // App-managed optimistic concurrency (incremented by ConcurrencyVersionInterceptor)
+            foreach (var entityType in modelBuilder.Model.GetEntityTypes()
+                         .Where(t => typeof(EntityBase).IsAssignableFrom(t.ClrType)))
+            {
+                modelBuilder.Entity(entityType.ClrType)
+                    .Property(nameof(EntityBase.Version))
+                    .IsConcurrencyToken();
+            }
 
             modelBuilder.Entity<Tenant>(entity =>
             {
                 entity.HasKey(t => t.Id);
                 entity.Property(t => t.Name).IsRequired().HasMaxLength(100);
+                entity.Property(t => t.NormalizedName).IsRequired().HasMaxLength(100);
+                entity.Property(t => t.InviteCodeHash).HasMaxLength(64);
 
-                // Unique index on Name
-                entity.HasIndex(t => t.Name).IsUnique();
+                // Names are unique case-insensitively; the index also stops two simultaneous registrations creating the same name
+                entity.HasIndex(t => t.NormalizedName).IsUnique();
 
                 entity.HasMany(t => t.Users)
                       .WithOne(u => u.Tenant)
@@ -90,32 +91,30 @@ namespace Infrastructure.Persistence
             modelBuilder.Entity<RefreshToken>(entity =>
             {
                 entity.HasKey(rt => rt.Id);
-                entity.Property(rt => rt.Token).IsRequired();
+                entity.Property(rt => rt.TokenHash).IsRequired().HasMaxLength(64);
+                entity.HasIndex(rt => rt.TokenHash).IsUnique();
                 entity.HasOne(rt => rt.User)
                       .WithMany(u => u.RefreshTokens)
                       .HasForeignKey(rt => rt.UserId)
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            modelBuilder.Entity<TournamentTeam>(entity =>
-            {
-                entity.HasKey(tt => new { tt.TournamentId, tt.TeamId });
-
-                entity.HasOne(tt => tt.Tournament)
-                    .WithMany(t => t.TournamentTeams)
-                    .HasForeignKey(tt => tt.TournamentId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.HasOne(tt => tt.Team)
-                    .WithMany(t => t.TournamentParticipations)
-                    .HasForeignKey(tt => tt.TeamId)
-                    .OnDelete(DeleteBehavior.Cascade);
-
-                entity.Ignore(tt => tt.Id);
-            });
+            // A team belongs to one tournament and is deleted with it
+            modelBuilder.Entity<Team>()
+                .HasOne(t => t.Tournament)
+                .WithMany(t => t.Teams)
+                .HasForeignKey(t => t.TournamentId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Team>().Property(t => t.Name).HasMaxLength(24);
-            modelBuilder.Entity<Tournament>().Property(t => t.Name).HasMaxLength(60);
+            // Column sizes only; the input limits are in the validators
+            modelBuilder.Entity<Tournament>(entity =>
+            {
+                entity.Property(t => t.Name).HasMaxLength(60);
+                entity.Property(t => t.Description).HasMaxLength(250);
+                entity.Property(t => t.CancelledBy).HasMaxLength(100);
+                entity.Property(t => t.CancellationReason).HasMaxLength(250);
+            });
 
             modelBuilder.Entity<Tournament>().HasQueryFilter(t => t.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<Team>().HasQueryFilter(t => t.TenantId == GetCurrentTenantId());
@@ -123,21 +122,14 @@ namespace Infrastructure.Persistence
             modelBuilder.Entity<Standing>().HasQueryFilter(s => s.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<GroupEntry>().HasQueryFilter(g => g.TenantId == GetCurrentTenantId());
             modelBuilder.Entity<Game>().HasQueryFilter(g => g.TenantId == GetCurrentTenantId());
-            modelBuilder.Entity<TournamentTeam>().HasQueryFilter(tt => tt.TenantId == GetCurrentTenantId());
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(Tournament).Assembly);
-
-            modelBuilder.Entity<Tournament>()
-                .HasIndex(e => e.Name)
-                .IsUnique();
-
 
         }
 
         /// <summary>
         /// Gets the current tenant ID for query filters.
-        /// Note: TenantId is now auto-set on new entities by TenantSaveChangesInterceptor,
-        /// and audit fields are set by AuditInterceptor.
+        /// New entities get TenantId from TenantSaveChangesInterceptor (not from here).
         /// </summary>
         private long GetCurrentTenantId()
         {

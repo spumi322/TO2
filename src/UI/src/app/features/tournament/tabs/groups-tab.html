@@ -1,0 +1,62 @@
+@if (!seeded()) {
+  <app-empty-state
+    title="Groups are not drawn yet"
+    message="The groups are drawn when the tournament starts."
+    icon="pi-th-large"
+  />
+} @else {
+  <div class="board" #board>
+    <p class="muted small summary">{{ summary() }}</p>
+
+    <div class="cards">
+      @for (group of store.groups(); track group.id) {
+        <section class="card group-card" [attr.aria-label]="group.name">
+          <div class="row">
+            <h3>{{ group.name }}</h3>
+            <span class="spacer"></span>
+            @if (group.isFinished) {
+              <span class="done small"><i class="pi pi-check"></i> Finished</span>
+            } @else {
+              <span class="muted small num">{{ played(group.matches) }} / {{ group.matches.length }} played</span>
+            }
+          </div>
+
+          <app-group-table [group]="group" [advancing]="advancing()" />
+
+          <div class="lines">
+            @for (line of lines().get(group.id); track line.id) {
+              <button
+                type="button"
+                class="line"
+                [class.done]="line.state === 'done'"
+                [class.draft]="line.state === 'draft'"
+                [class.selected]="line.id === selectedMatchId()"
+                [attr.aria-label]="line.teamA + ' ' + line.score + ' ' + line.teamB + ', round ' + line.round"
+                (click)="open(line.id, $event)"
+              >
+                <span class="round">R{{ line.round }}</span>
+                <span class="team" [class.won]="line.winner === 'A'" [class.lost]="line.winner === 'B'" [title]="line.teamA">
+                  {{ line.teamA }}
+                </span>
+                <span class="score num">{{ line.score }}</span>
+                <span class="team b" [class.won]="line.winner === 'B'" [class.lost]="line.winner === 'A'" [title]="line.teamB">
+                  {{ line.teamB }}
+                </span>
+              </button>
+            }
+          </div>
+        </section>
+      }
+    </div>
+
+    @if (selected(); as sel) {
+      <app-match-popup
+        [match]="sel.match"
+        [title]="sel.title"
+        [anchor]="anchor()!"
+        [canScore]="canScore()"
+        (closed)="close($event)"
+      />
+    }
+  </div>
+}

@@ -1,0 +1,50 @@
+<article class="match" [class.ready]="ready()" [class.busy]="busy()" [attr.aria-busy]="busy()">
+  <span class="name a" [class.won]="teamA().won" [class.lost]="teamA().lost" [class.tbd]="!teamA().known" [title]="teamA().name">
+    {{ teamA().name }}
+  </span>
+
+  <span class="score a">
+    @if (editable()) {
+      <button type="button" class="step" [disabled]="busy() || score().a === 0" [attr.aria-label]="'Take a game from ' + teamA().name" (click)="change('a', -1)">
+        −
+      </button>
+    }
+    <span class="num">{{ score().a }}</span>
+    @if (editable()) {
+      <button type="button" class="step" [disabled]="busy() || decided()" [attr.aria-label]="'Give ' + teamA().name + ' a game'" (click)="change('a', 1)">
+        +
+      </button>
+    }
+  </span>
+
+  <span class="score b">
+    @if (editable()) {
+      <button type="button" class="step" [disabled]="busy() || score().b === 0" [attr.aria-label]="'Take a game from ' + teamB().name" (click)="change('b', -1)">
+        −
+      </button>
+    }
+    <span class="num">{{ score().b }}</span>
+    @if (editable()) {
+      <button type="button" class="step" [disabled]="busy() || decided()" [attr.aria-label]="'Give ' + teamB().name + ' a game'" (click)="change('b', 1)">
+        +
+      </button>
+    }
+  </span>
+
+  <span class="name b" [class.won]="teamB().won" [class.lost]="teamB().lost" [class.tbd]="!teamB().known" [title]="teamB().name">
+    {{ teamB().name }}
+  </span>
+
+  <span class="actions">
+    @if (confirmed()) {
+      <span class="done"><i class="pi pi-check" aria-hidden="true"></i> Confirmed</span>
+    } @else {
+      @if (draftLabel(); as label) {
+        <span class="muted small">{{ label }}</span>
+      }
+      @if (ready()) {
+        <button type="button" class="confirm" [disabled]="busy()" (click)="confirm.emit(match())">Confirm</button>
+      }
+    }
+  </span>
+</article>

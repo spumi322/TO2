@@ -1,0 +1,111 @@
+/* Group cards; the clicked match's popup is placed inside the board */
+.board {
+  position: relative;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary {
+  margin: 0;
+}
+
+/* As many cards per row as fit, stretched when there are few; more or bigger groups scroll the page */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  align-items: start;
+  gap: 14px;
+}
+
+.group-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.group-card h3 {
+  margin: 0;
+}
+
+.done {
+  color: var(--status-groups);
+}
+
+/* Matches as lines (round, team, score, team), two or more per row on wide cards */
+.lines {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 6px;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.line:hover {
+  border-color: var(--border);
+}
+
+.line.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.round {
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.team {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.team.b {
+  text-align: right;
+}
+
+.team.won {
+  font-weight: 700;
+}
+
+.team.lost {
+  color: var(--text-muted);
+}
+
+.score {
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Confirmed: green line and score; a draft in progress: its score in white until it is confirmed */
+.line.done {
+  background: color-mix(in srgb, var(--success) 12%, var(--surface-2));
+}
+
+.line.done .score {
+  color: var(--status-groups);
+  font-weight: 700;
+}
+
+.line.draft .score {
+  color: var(--text);
+  font-weight: 700;
+}

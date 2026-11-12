@@ -1,7 +1,6 @@
 ﻿using Domain.Common;
 using Domain.Entities;
 using Domain.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace Domain.AggregateRoots
 {
@@ -19,7 +18,7 @@ namespace Domain.AggregateRoots
         }
 
         public long StandingId { get; set; }
-        public long TenantId { get; set; }
+        public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;
 
         public int? Round { get; set; }
@@ -35,9 +34,6 @@ namespace Domain.AggregateRoots
         public long? LoserId { get; set; }
 
         public BestOf BestOf { get; set; }
-
-        [Timestamp]
-        public byte[]? RowVersion { get; set; }
 
         public IReadOnlyList<Game> Games => _games;
     }

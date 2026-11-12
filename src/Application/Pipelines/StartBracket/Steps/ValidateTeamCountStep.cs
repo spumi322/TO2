@@ -1,12 +1,13 @@
 using Application.Pipelines.StartBracket.Contracts;
 using Application.Pipelines.StartBracket.Utilities;
 using Microsoft.Extensions.Logging;
+using Domain.Exceptions;
 
 namespace Application.Pipelines.StartBracket.Steps
 {
     /// <summary>
-    /// Step 4: Validates that team count is a power of 2.
-    /// Required for single elimination bracket structure.
+    /// Step 4: Validates that at least 2 teams advance.
+    /// Non-power-of-2 counts are fine: the bracket is padded with BYEs.
     /// </summary>
     public class ValidateTeamCountStep : IStartBracketPipelineStep
     {
@@ -25,13 +26,7 @@ namespace Application.Pipelines.StartBracket.Steps
             int teamCount = context.AdvancedTeams.Count;
 
             if (teamCount < 2)
-            {
-                context.Success = false;
-                context.Message = $"At least 2 teams are required to start a bracket. Got {teamCount}";
-                _logger.LogWarning("Insufficient team count {TeamCount} for tournament {TournamentId}.",
-                    teamCount, context.TournamentId);
-                return Task.FromResult(false);
-            }
+                throw new ConflictException($"At least 2 teams are needed for the bracket; {teamCount} available.");
 
             _logger.LogInformation("Team count {TeamCount} validated for tournament {TournamentId} (bracket size will be {BracketSize})",
                 teamCount, context.TournamentId, BracketSeedingUtility.NextPowerOfTwo(teamCount));

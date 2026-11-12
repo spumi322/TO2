@@ -13,6 +13,9 @@ namespace Domain.Common
         public string CreatedBy { get; set; } = string.Empty;
         public string LastModifiedBy { get; set; } = string.Empty;
 
+        // Optimistic concurrency token, incremented by ConcurrencyVersionInterceptor on every update
+        public long Version { get; set; }
+
         protected EntityBase()
         {
 

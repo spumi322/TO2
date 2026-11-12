@@ -11,14 +11,11 @@ namespace Application.Pipelines.StartGroups.Steps
     public class MarkStandingsAsSeededStep : IStartGroupsPipelineStep
     {
         private readonly ILogger<MarkStandingsAsSeededStep> _logger;
-        private readonly IRepository<Standing> _standingRepository;
 
         public MarkStandingsAsSeededStep(
-            ILogger<MarkStandingsAsSeededStep> logger,
-            IRepository<Standing> standingRepository)
+            ILogger<MarkStandingsAsSeededStep> logger)
         {
             _logger = logger;
-            _standingRepository = standingRepository;
         }
 
         public async Task<bool> ExecuteAsync(StartGroupsContext context)

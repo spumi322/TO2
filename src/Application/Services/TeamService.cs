@@ -1,7 +1,7 @@
 ﻿using Application.Contracts;
 using Application.Contracts.Repositories;
 using Application.DTOs.Team;
-using AutoMapper;
+using Application.Mappings;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Domain.Exceptions;
@@ -14,9 +14,6 @@ namespace Application.Services
     {
         private readonly IRepository<Team> _teamRepository;
         private readonly IRepository<Tournament> _tournamentRepository;
-        private readonly ITournamentTeamRepository _tournamentTeamRepository;
-        private readonly IMapper _mapper;
-        private readonly ILogger<TeamService> _logger;
         private readonly IUnitOfWork _unitOfWork;
         private readonly ISignalRService _signalRService;
         private readonly ITenantService _tenantService;
@@ -24,9 +21,6 @@ namespace Application.Services
 
         public TeamService(IRepository<Team> teamRepository,
                            IRepository<Tournament> tournamentRepository,
-                           ITournamentTeamRepository tournamentTeamRepository,
-                           IMapper mapper,
-                           ILogger<TeamService> logger,
                            IUnitOfWork unitOfWork,
                            ISignalRService signalRService,
                            ITenantService tenantService,
@@ -34,89 +28,48 @@ namespace Application.Services
         {
             _teamRepository = teamRepository;
             _tournamentRepository = tournamentRepository;
-            _tournamentTeamRepository = tournamentTeamRepository;
-            _mapper = mapper;
-            _logger = logger;
             _unitOfWork = unitOfWork;
             _signalRService = signalRService;
             _tenantService = tenantService;
             _stateMachine = stateMachine;
         }
 
-        public async Task<CreateTeamResponseDTO> CreateTeamAsync(CreateTeamRequestDTO request)
+        // All or nothing: every name becomes a new team of this tournament, one save
+        public async Task<List<GetTeamResponseDTO>> AddTeamsToTournamentAsync(long tournamentId, AddTeamsRequestDTO request)
         {
-            var team = _mapper.Map<Team>(request);
-
-            await _teamRepository.AddAsync(team);
-            await _unitOfWork.SaveChangesAsync();
-
-            return new CreateTeamResponseDTO(team.Id);
-        }
-
-        public async Task<List<GetAllTeamsResponseDTO>> GetAllTeamsAsync()
-        {
-            var teams = await _teamRepository.GetAllAsync();
-
-            return _mapper.Map<List<GetAllTeamsResponseDTO>>(teams);
-        }
-
-        public async Task<GetTeamResponseDTO> GetTeamAsync(long teamId)
-        {
-            var existingTeam = await _teamRepository.GetByIdAsync(teamId)
-                ?? throw new NotFoundException("Team", teamId);
-
-            return _mapper.Map<GetTeamResponseDTO>(existingTeam);
-        }
-
-        public async Task<UpdateTeamResponseDTO> UpdateTeamAsync(long id, UpdateTeamRequestDTO request)
-        {
-            var existingTeam = await _teamRepository.GetByIdAsync(id)
-                ?? throw new NotFoundException("Team", id);
-
-            _mapper.Map(request, existingTeam);
-
-            await _unitOfWork.SaveChangesAsync();
-
-            return _mapper.Map<UpdateTeamResponseDTO>(existingTeam);
-        }
-
-        public async Task DeleteTeamAsync(long teamId)
-        {
-            await _teamRepository.DeleteAsync(teamId);
-            await _unitOfWork.SaveChangesAsync();
-        }
-
-        public async Task<AddTeamToTournamentResponseDTO> AddTeamToTournamentAsync(AddTeamToTournamentRequestDTO request)
-        {
-            // Validate that both team and tournament exist
-            var team = await _teamRepository.GetByIdAsync(request.TeamId)
-                ?? throw new NotFoundException("Team", request.TeamId);
-            var tournament = await _tournamentRepository.GetByIdAsync(request.TournamentId)
-                ?? throw new NotFoundException("Tournament", request.TournamentId);
+            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+                ?? throw new NotFoundException("Tournament", tournamentId);
 
             if (!_stateMachine.CanModifyTeams(tournament.Status))
-                throw new ForbiddenException("Tournament registration is closed");
+                throw new ConflictException("Tournament registration is closed.");
 
-            if (await _tournamentTeamRepository.ExistsInTournamentAsync(request.TeamId, request.TournamentId))
-                throw new ConflictException("Team is already in the tournament!");
+            var names = request.Names.Select(n => n.Trim()).ToList();
+            var registeredNames = (await _teamRepository.FindAllAsync(t => t.TournamentId == tournamentId))
+                .Select(t => t.Name)
+                .ToList();
 
-            if (await _tournamentTeamRepository.HasTeamWithNameAsync(request.TournamentId, team.Name))
-                throw new ConflictException($"A team with the name '{team.Name}' is already registered in this tournament");
+            var freeSlots = tournament.MaxTeams - registeredNames.Count;
+            if (freeSlots <= 0)
+                throw new ConflictException("Tournament is full.");
+            if (names.Count > freeSlots)
+                throw new ConflictException($"Only {freeSlots} {(freeSlots == 1 ? "place" : "places")} left.");
 
-            var currentParticipantsCount = await _tournamentTeamRepository.GetCountByTournamentAsync(request.TournamentId);
+            var alreadyRegistered = names
+                .Where(n => registeredNames.Contains(n, StringComparer.OrdinalIgnoreCase))
+                .ToList();
+            if (alreadyRegistered.Count > 0)
+                throw new ConflictException($"Already registered: {string.Join(", ", alreadyRegistered)}.");
 
-            if (currentParticipantsCount >= tournament.MaxTeams)
-                throw new ValidationException("Tournament is at maximum capacity");
+            var teams = names.Select(n => new Team(n, tournamentId)).ToList();
+            await _teamRepository.AddRangeAsync(teams);
 
-            // Create and save
-            var tournamentTeam = new TournamentTeam(request.TournamentId, request.TeamId);
-
-            await _tournamentTeamRepository.AddAsync(tournamentTeam);
+            // Two batches at once: the second save fails on the version (409) instead of exceeding MaxTeams
+            _tournamentRepository.BumpVersion(tournament);
             await _unitOfWork.SaveChangesAsync();
 
-            await _signalRService.BroadcastTeamAdded(request.TournamentId, request.TeamId, _tenantService.GetCurrentUserName());
+            await _signalRService.BroadcastTeamAdded(tournamentId, teams.Select(t => t.Id).ToList(), _tenantService.GetCurrentUserName());
 
-            return new AddTeamToTournamentResponseDTO(request.TournamentId, request.TeamId);
+            return teams.Select(t => t.ToGetTeamResponseDTO()).ToList();
         }
 
         public async Task RemoveTeamFromTournamentAsync(long teamId, long tournamentId)
@@ -125,12 +78,14 @@ namespace Application.Services
                 ?? throw new NotFoundException("Tournament", tournamentId);
 
             if (!_stateMachine.CanModifyTeams(existingTournament.Status))
-                throw new ForbiddenException("Cannot remove teams after tournament has started");
+                throw new ConflictException("Teams cannot be removed once the tournament has started.");
 
-            var tournamentTeam = await _tournamentTeamRepository.GetByTeamAndTournamentAsync(teamId, tournamentId)
+            var team = await _teamRepository.FindAsync(t => t.Id == teamId && t.TournamentId == tournamentId)
                 ?? throw new NotFoundException("Team is not registered in this tournament");
 
-            await _tournamentTeamRepository.DeleteAsync(tournamentTeam);
+            await _teamRepository.DeleteAsync(team);
+
+            _tournamentRepository.BumpVersion(existingTournament);
             await _unitOfWork.SaveChangesAsync();
 
             await _signalRService.BroadcastTeamRemoved(tournamentId, teamId, _tenantService.GetCurrentUserName());

@@ -2,6 +2,9 @@
 using Application.DTOs.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using System.ComponentModel.DataAnnotations;
+using TO2.RateLimiting;
 
 namespace TO2.Controllers
 {
@@ -10,12 +13,10 @@ namespace TO2.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger)
+        public AuthController(IAuthService authService)
         {
             _authService = authService;
-            _logger = logger;
         }
 
         /// <summary>
@@ -23,6 +24,7 @@ namespace TO2.Controllers
         /// </summary>
         [HttpPost("register")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         public async Task<ActionResult<AuthResponse>> Register([FromBody] RegisterRequest request)
         {
             var response = await _authService.RegisterAsync(request);
@@ -30,10 +32,22 @@ namespace TO2.Controllers
         }
 
         /// <summary>
+        /// Whether an organization name is taken (joining it needs an invite code)
+        /// </summary>
+        [HttpGet("organizations/exists")]
+        [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
+        public async Task<ActionResult<OrganizationExistsResponse>> OrganizationExists([FromQuery][Required][MaxLength(100)] string name)
+        {
+            return Ok(await _authService.OrganizationExistsAsync(name));
+        }
+
+        /// <summary>
         /// Login with email and password
         /// </summary>
         [HttpPost("login")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
         {
             var response = await _authService.LoginAsync(request);
@@ -45,6 +59,7 @@ namespace TO2.Controllers
         /// </summary>
         [HttpPost("refresh")]
         [AllowAnonymous]
+        [EnableRateLimiting(RateLimitPolicies.Auth)]
         public async Task<ActionResult<AuthResponse>> RefreshToken([FromBody] RefreshTokenRequest request)
         {
             var response = await _authService.RefreshTokenAsync(request);
@@ -60,30 +75,6 @@ namespace TO2.Controllers
         {
             await _authService.RevokeTokenAsync(request.RefreshToken);
             return Ok(new { message = "Token revoked successfully" });
-        }
-
-        /// <summary>
-        /// Test endpoint to verify authentication
-        /// </summary>
-        [HttpGet("me")]
-        [Authorize]
-        public ActionResult<object> GetCurrentUser()
-        {
-            var userId = User.FindFirst("sub")?.Value;
-            var email = User.FindFirst("email")?.Value;
-            var userName = User.FindFirst("name")?.Value;
-            var tenantId = User.FindFirst("tenantId")?.Value;
-            var tenantName = User.FindFirst("tenantName")?.Value;
-
-            return Ok(new
-            {
-                userId,
-                email,
-                userName,
-                tenantId,
-                tenantName,
-                message = "You are authenticated!"
-            });
         }
     }
 }

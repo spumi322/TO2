@@ -11,14 +11,11 @@ namespace Application.Pipelines.StartBracket.Steps
     public class MarkBracketAsSeededStep : IStartBracketPipelineStep
     {
         private readonly ILogger<MarkBracketAsSeededStep> _logger;
-        private readonly IRepository<Standing> _standingRepository;
 
         public MarkBracketAsSeededStep(
-            ILogger<MarkBracketAsSeededStep> logger,
-            IRepository<Standing> standingRepository)
+            ILogger<MarkBracketAsSeededStep> logger)
         {
             _logger = logger;
-            _standingRepository = standingRepository;
         }
 
         public async Task<bool> ExecuteAsync(StartBracketContext context)

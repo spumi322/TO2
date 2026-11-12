@@ -33,17 +33,18 @@ namespace Domain.Entities
         public long StandingId { get; set; }
         public Standing Standing { get; set; }
 
-        public long TenantId { get; set; }
+        public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;
 
         public long TeamId { get; set; }
         public string TeamName { get; set; }
         public TeamStatus Status { get; set; } = TeamStatus.Competing;
-        public bool Eliminated { get; set; } = false;
         public Team Team { get; set; }
 
         public int Wins { get; set; } = 0;
         public int Losses { get; set; } = 0;
-        public int Points { get; set; } = 0;
+        // Games won/lost in finished group matches (tie-break when wins are equal, see GroupRanking)
+        public int GameWins { get; set; } = 0;
+        public int GameLosses { get; set; } = 0;
     }
 }

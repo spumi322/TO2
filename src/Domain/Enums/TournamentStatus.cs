@@ -26,7 +26,7 @@
         /// <summary> Terminal state - Final results declared, tournament complete</summary>
         Finished = 7,
 
-        /// <summary>  Terminal state - Tournament cancelled/archived</summary>
+        /// <summary>  Terminal state - Tournament cancelled after it started; data kept read-only</summary>
         Cancelled = 8,
     }
 }

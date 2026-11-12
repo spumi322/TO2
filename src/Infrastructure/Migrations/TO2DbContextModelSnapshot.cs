@@ -17,7 +17,7 @@ namespace Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "8.0.32")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -53,11 +53,6 @@ namespace Infrastructure.Migrations
                     b.Property<int?>("Round")
                         .HasColumnType("integer");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
-
                     b.Property<int?>("Seed")
                         .HasColumnType("integer");
 
@@ -71,6 +66,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
                         .HasColumnType("bigint");
 
                     b.Property<long?>("WinnerId")
@@ -100,6 +99,12 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int?>("EliminatedInRound")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("FinalPlacement")
+                        .HasColumnType("integer");
+
                     b.Property<string>("LastModifiedBy")
                         .IsRequired()
                         .HasColumnType("text");
@@ -115,9 +120,18 @@ namespace Infrastructure.Migrations
                     b.Property<long>("TenantId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("TournamentId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId");
+
+                    b.HasIndex("TournamentId");
 
                     b.ToTable("Teams");
                 });
@@ -137,6 +151,13 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("InviteCodeExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("InviteCodeHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
@@ -152,9 +173,18 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<string>("NormalizedName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("NormalizedName")
                         .IsUnique();
 
                     b.ToTable("Tenants");
@@ -171,6 +201,17 @@ namespace Infrastructure.Migrations
                     b.Property<int?>("AdvancingPerGroup")
                         .HasColumnType("integer");
 
+                    b.Property<string>("CancellationReason")
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<DateTime?>("CancelledAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CancelledBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text");
@@ -184,9 +225,6 @@ namespace Infrastructure.Migrations
 
                     b.Property<int>("Format")
                         .HasColumnType("integer");
-
-                    b.Property<bool>("IsRegistrationOpen")
-                        .HasColumnType("boolean");
 
                     b.Property<string>("LastModifiedBy")
                         .IsRequired()
@@ -203,21 +241,17 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("character varying(60)");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.Property<long>("TenantId")
                         .HasColumnType("bigint");
 
-                    b.HasKey("Id");
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
+                    b.HasKey("Id");
 
                     b.HasIndex("TenantId");
 
@@ -239,9 +273,6 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<TimeSpan?>("Duration")
-                        .HasColumnType("interval");
-
                     b.Property<string>("LastModifiedBy")
                         .IsRequired()
                         .HasColumnType("text");
@@ -252,24 +283,17 @@ namespace Infrastructure.Migrations
                     b.Property<long>("MatchId")
                         .HasColumnType("bigint");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
-
                     b.Property<long?>("TeamAId")
                         .HasColumnType("bigint");
-
-                    b.Property<int?>("TeamAScore")
-                        .HasColumnType("integer");
 
                     b.Property<long?>("TeamBId")
                         .HasColumnType("bigint");
 
-                    b.Property<int?>("TeamBScore")
-                        .HasColumnType("integer");
-
                     b.Property<long>("TenantId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
                         .HasColumnType("bigint");
 
                     b.Property<long?>("WinnerId")
@@ -299,8 +323,11 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime>("CreatedDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("Eliminated")
-                        .HasColumnType("boolean");
+                    b.Property<int>("GameLosses")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("GameWins")
+                        .HasColumnType("integer");
 
                     b.Property<string>("LastModifiedBy")
                         .IsRequired()
@@ -310,9 +337,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("Losses")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Points")
                         .HasColumnType("integer");
 
                     b.Property<long>("StandingId")
@@ -334,6 +358,10 @@ namespace Infrastructure.Migrations
                     b.Property<long>("TournamentId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
                     b.Property<int>("Wins")
                         .HasColumnType("integer");
 
@@ -348,42 +376,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("TournamentId");
 
                     b.ToTable("GroupEntries");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Player", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("LastModifiedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("LastModifiedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long?>("TeamId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TeamId");
-
-                    b.ToTable("Players");
                 });
 
             modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
@@ -414,14 +406,22 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("Revoked")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Token")
+                    b.Property<string>("TokenHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -463,11 +463,6 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("bytea");
-
                     b.Property<int>("StandingType")
                         .HasColumnType("integer");
 
@@ -477,6 +472,10 @@ namespace Infrastructure.Migrations
                     b.Property<long>("TournamentId")
                         .HasColumnType("bigint");
 
+                    b.Property<long>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("bigint");
+
                     b.HasKey("Id");
 
                     b.HasIndex("TenantId");
@@ -484,49 +483,6 @@ namespace Infrastructure.Migrations
                     b.HasIndex("TournamentId");
 
                     b.ToTable("Standings");
-                });
-
-            modelBuilder.Entity("Domain.Entities.TournamentTeam", b =>
-                {
-                    b.Property<long>("TournamentId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("TeamId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int?>("EliminatedInRound")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("FinalPlacement")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("LastModifiedBy")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("LastModifiedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("ResultFinalizedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("TenantId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("TournamentId", "TeamId");
-
-                    b.HasIndex("TeamId");
-
-                    b.HasIndex("TenantId");
-
-                    b.ToTable("TournamentTeams");
                 });
 
             modelBuilder.Entity("Domain.Entities.User", b =>
@@ -759,7 +715,15 @@ namespace Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Domain.AggregateRoots.Tournament", "Tournament")
+                        .WithMany("Teams")
+                        .HasForeignKey("TournamentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("Tenant");
+
+                    b.Navigation("Tournament");
                 });
 
             modelBuilder.Entity("Domain.AggregateRoots.Tournament", b =>
@@ -801,7 +765,7 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Domain.AggregateRoots.Team", "Team")
-                        .WithMany("TournamentParticipants")
+                        .WithMany()
                         .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -813,7 +777,7 @@ namespace Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Domain.AggregateRoots.Tournament", "Tournament")
-                        .WithMany("TournamentParticipants")
+                        .WithMany()
                         .HasForeignKey("TournamentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -825,15 +789,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Tenant");
 
                     b.Navigation("Tournament");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Player", b =>
-                {
-                    b.HasOne("Domain.AggregateRoots.Team", "Team")
-                        .WithMany("Players")
-                        .HasForeignKey("TeamId");
-
-                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("Domain.Entities.RefreshToken", b =>
@@ -860,33 +815,6 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("TournamentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Tenant");
-
-                    b.Navigation("Tournament");
-                });
-
-            modelBuilder.Entity("Domain.Entities.TournamentTeam", b =>
-                {
-                    b.HasOne("Domain.AggregateRoots.Team", "Team")
-                        .WithMany("TournamentParticipations")
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.AggregateRoots.Tenant", "Tenant")
-                        .WithMany()
-                        .HasForeignKey("TenantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Domain.AggregateRoots.Tournament", "Tournament")
-                        .WithMany("TournamentTeams")
-                        .HasForeignKey("TournamentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Team");
 
                     b.Navigation("Tenant");
 
@@ -960,15 +888,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Games");
                 });
 
-            modelBuilder.Entity("Domain.AggregateRoots.Team", b =>
-                {
-                    b.Navigation("Players");
-
-                    b.Navigation("TournamentParticipants");
-
-                    b.Navigation("TournamentParticipations");
-                });
-
             modelBuilder.Entity("Domain.AggregateRoots.Tenant", b =>
                 {
                     b.Navigation("Users");
@@ -978,9 +897,7 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("Standings");
 
-                    b.Navigation("TournamentParticipants");
-
-                    b.Navigation("TournamentTeams");
+                    b.Navigation("Teams");
                 });
 
             modelBuilder.Entity("Domain.Entities.Standing", b =>

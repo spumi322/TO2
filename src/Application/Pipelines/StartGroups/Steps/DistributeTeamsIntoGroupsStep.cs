@@ -1,8 +1,10 @@
 using Application.Contracts;
 using Application.Pipelines.StartGroups.Contracts;
+using Application.Utilities;
 using Domain.AggregateRoots;
 using Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Domain.Exceptions;
 
 namespace Application.Pipelines.StartGroups.Steps
 {
@@ -13,17 +15,17 @@ namespace Application.Pipelines.StartGroups.Steps
     public class DistributeTeamsIntoGroupsStep : IStartGroupsPipelineStep
     {
         private readonly ILogger<DistributeTeamsIntoGroupsStep> _logger;
-        private readonly IRepository<TournamentTeam> _tournamentTeamRepository;
         private readonly IRepository<Team> _teamRepository;
+        private readonly Random _random;
 
         public DistributeTeamsIntoGroupsStep(
             ILogger<DistributeTeamsIntoGroupsStep> logger,
-            IRepository<TournamentTeam> tournamentTeamRepository,
-            IRepository<Team> teamRepository)
+            IRepository<Team> teamRepository,
+            Random random)
         {
             _logger = logger;
-            _tournamentTeamRepository = tournamentTeamRepository;
             _teamRepository = teamRepository;
+            _random = random;
         }
 
         public async Task<bool> ExecuteAsync(StartGroupsContext context)
@@ -31,28 +33,11 @@ namespace Application.Pipelines.StartGroups.Steps
             _logger.LogInformation("Step 3: Distributing teams into groups for tournament {TournamentId}",
                 context.TournamentId);
 
-            // Get all TournamentTeam records
-            var tournamentTeams = await _tournamentTeamRepository.FindAllAsync(tt => tt.TournamentId == context.TournamentId);
+            var teams = (await _teamRepository.FindAllAsync(t => t.TournamentId == context.TournamentId)).ToList();
 
-            // Get Team entities for each TournamentTeam
-            var teams = new List<Team>();
-            foreach (var tt in tournamentTeams)
-            {
-                var team = await _teamRepository.GetByIdAsync(tt.TeamId);
-                if (team != null)
-                {
-                    teams.Add(team);
-                }
-            }
-
-            if (teams.Count < context.GroupStandings.Count)
-            {
-                context.Success = false;
-                context.Message = $"Not enough teams ({teams.Count}) for {context.GroupStandings.Count} groups";
-                _logger.LogWarning("Not enough teams for tournament {TournamentId}: {TeamCount} teams for {GroupCount} groups",
-                    context.TournamentId, teams.Count, context.GroupStandings.Count);
-                return false;
-            }
+            // Every group needs a match, else it can never finish
+            if (teams.Count < StartRules.MinTeamsToStart(context.GroupStandings.Count))
+                throw new ConflictException(StartRules.NotEnoughTeamsMessage(context.GroupStandings.Count, teams.Count));
 
             // Shuffle teams into equal groups
             var groupAssignments = ShuffleTeamsIntoEqualGroups(teams, context.GroupStandings);
@@ -70,7 +55,9 @@ namespace Application.Pipelines.StartGroups.Steps
         private Dictionary<Standing, List<Team>> ShuffleTeamsIntoEqualGroups(List<Team> teams, List<Standing> groupStandings)
         {
             // Shuffle teams randomly
-            var shuffledTeams = teams.OrderBy(t => Guid.NewGuid()).ToList();
+            var shuffled = teams.ToArray();
+            _random.Shuffle(shuffled);
+            var shuffledTeams = shuffled.ToList();
 
             int teamsPerGroup = shuffledTeams.Count / groupStandings.Count;
             int remainingTeams = shuffledTeams.Count % groupStandings.Count;

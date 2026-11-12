@@ -1,0 +1,38 @@
+<table class="num">
+  @if (!compact()) {
+    <thead>
+      <tr>
+        <th class="rank" scope="col">#</th>
+        <th class="team" scope="col">Team</th>
+        <th scope="col" title="Last 5 results">Form</th>
+        <th scope="col" title="Matches won - lost">W-L</th>
+        <th scope="col" title="Game difference">+/-</th>
+      </tr>
+    </thead>
+  }
+  <tbody>
+    @for (row of rows(); track row.team.id; let i = $index) {
+      <tr
+        [class.advanced]="row.team.status === advanced || row.groupWinner"
+        [class.eliminated]="row.team.status === eliminated"
+        [class.cut]="advancing() !== null && i + 1 === advancing() && i < rows().length - 1"
+      >
+        <td class="rank">{{ i + 1 }}</td>
+        <td class="team">
+          <span class="name">{{ row.team.name }}</span>
+        </td>
+        @if (!compact()) {
+          <td class="form">
+            @for (result of row.form; track $index) {
+              <span class="pill" [class.win]="result === 'W'">{{ result }}</span>
+            }
+          </td>
+        }
+        <td><strong>{{ row.team.wins }}-{{ row.team.losses }}</strong></td>
+        @if (!compact()) {
+          <td>{{ row.difference }}</td>
+        }
+      </tr>
+    }
+  </tbody>
+</table>

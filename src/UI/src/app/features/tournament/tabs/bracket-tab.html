@@ -1,0 +1,36 @@
+@if (!seeded()) {
+  <app-empty-state
+    title="The bracket is not seeded yet"
+    message="The bracket is drawn when its stage starts."
+    icon="pi-sitemap"
+  />
+} @else {
+  <div class="bracket-wrap" #board>
+    <!-- Big brackets scroll in two halves: one screen per half (outside the card, which scrolls sideways) -->
+    @if (halves()) {
+      <span class="snap top" aria-hidden="true"></span>
+      <span class="snap middle" aria-hidden="true"></span>
+    }
+    <div class="card bracket">
+      <p class="muted small hint">Click a match to {{ canScore() ? 'score it' : 'see it' }}.</p>
+      <app-bracket-view
+        [bracket]="store.bracket()!"
+        [teamNames]="store.teamNames()"
+        [tournamentId]="store.id()"
+        [drafts]="store.drafts()"
+        [matchGap]="matchGap()"
+        (matchClick)="open($event)"
+      />
+    </div>
+
+    @if (selectedMatch(); as match) {
+      <app-match-popup
+        [match]="match"
+        [title]="selectedRound()"
+        [anchor]="anchor()!"
+        [canScore]="canScore()"
+        (closed)="close($event)"
+      />
+    }
+  </div>
+}

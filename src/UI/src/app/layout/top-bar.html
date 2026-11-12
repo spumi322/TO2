@@ -1,0 +1,38 @@
+<header class="top-bar">
+  <div class="inner">
+    <a class="logo" routerLink="/">
+      <img src="cup_logo.png" alt="" width="28" height="28" />
+      <span>TO2</span>
+    </a>
+    @if (session.isLoggedIn()) {
+      <nav>
+        <a routerLink="/tournaments" routerLinkActive="active">Tournaments</a>
+      </nav>
+    }
+    <span class="spacer"></span>
+    <p-button
+      [icon]="themeIcon()"
+      [text]="true"
+      severity="secondary"
+      [ariaLabel]="themeLabel()"
+      [title]="themeLabel()"
+      (onClick)="theme.toggle()"
+    />
+    @if (session.session(); as s) {
+      <span class="live-dot" [class]="realtime.state()" [title]="liveLabel()" role="status" [attr.aria-label]="liveLabel()"></span>
+      <p-button
+        [label]="s.userName"
+        styleClass="user-button"
+        icon="pi pi-user"
+        [text]="true"
+        severity="secondary"
+        ariaLabel="User menu"
+        (onClick)="menu.toggle($event)"
+      />
+      <p-menu #menu [model]="userMenu()" [popup]="true" appendTo="body" />
+      <app-invite-code-dialog [(visible)]="inviteOpen" />
+    } @else {
+      <a routerLink="/login">Sign in</a>
+    }
+  </div>
+</header>

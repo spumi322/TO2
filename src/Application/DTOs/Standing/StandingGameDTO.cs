@@ -6,10 +6,8 @@
         public long Id { get; init; }
         public long MatchId { get; init; }
         public long? TeamAId { get; init; }
-        public int? TeamAScore { get; init; }
         public long? TeamBId { get; init; }
-        public int? TeamBScore { get; init; }
         public long? WinnerId { get; init; }
-        public byte[]? RowVersion { get; init; }
+        public long Version { get; init; }
     }
 }

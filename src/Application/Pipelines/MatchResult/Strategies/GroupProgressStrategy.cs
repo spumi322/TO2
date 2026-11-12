@@ -1,0 +1,92 @@
+﻿using Application.Contracts;
+using Application.Pipelines.MatchResult.Contracts;
+using Domain.Enums;
+using Microsoft.Extensions.Logging;
+
+namespace Application.Pipelines.MatchResult.Strategies
+{
+    /// <summary>
+    /// Strategy for progressing group standings.
+    /// Checks if group finished and if all groups are finished.
+    /// </summary>
+    public class GroupProgressStrategy : IStandingProgressStrategy
+    {
+        private readonly IStandingService _standingService;
+        private readonly IRepository<Domain.AggregateRoots.Tournament> _tournamentRepository;
+        private readonly ILogger<GroupProgressStrategy> _logger;
+
+        public StandingType StandingType => StandingType.Group;
+
+        public GroupProgressStrategy(
+            IStandingService standingService,
+            IRepository<Domain.AggregateRoots.Tournament> tournamentRepository,
+            ILogger<GroupProgressStrategy> logger)
+        {
+            _standingService = standingService;
+            _tournamentRepository = tournamentRepository;
+            _logger = logger;
+        }
+
+        public async Task<StandingProgressResult> ProgressStandingAsync(long tournamentId, long standingId, long matchId, long winnerId)
+        {
+            var tournament = await _tournamentRepository.GetByIdAsync(tournamentId)
+                ?? throw new InvalidOperationException($"Tournament {tournamentId} not found");
+
+            // Aggregate lock: two results saved at the same moment each see the other's match as still open,
+            // so neither would finish the group (or the group stage). With the tournament's Version bumped by
+            // every group result, the later save is a conflict (409) and that match is confirmed again.
+            _tournamentRepository.BumpVersion(tournament);
+
+            // Check if this match finishing caused the standing to finish
+            var groupFinished = await _standingService.IsGroupFinished(standingId);
+
+            if (!groupFinished)
+            {
+                // Standing not finished yet - stop pipeline (success, but standing still in progress)
+                return new StandingProgressResult(
+                    shouldContinuePipeline: false,
+                    standingFinished: false
+                );
+            }
+
+            _logger.LogInformation("Standing {StandingId} finished", standingId);
+
+            // Mark the group as finished
+            await _standingService.MarkStandingAsFinished(standingId);
+
+            // Check if ALL groups are finished
+            var allGroupsFinished = await _standingService.CheckAllGroupsAreFinished(tournamentId);
+
+            if (!allGroupsFinished)
+            {
+                // Stop pipeline (success, but other groups ongoing)
+                return new StandingProgressResult(
+                    shouldContinuePipeline: false,
+                    standingFinished: true,
+                    allGroupsFinished: false
+                );
+            }
+
+            _logger.LogInformation("All groups finished for tournament {TournamentId}", tournamentId);
+
+            if (tournament.Format == Format.GroupsOnly)
+            {
+                // GroupsOnly: Tournament finishes when all groups are complete
+                _logger.LogInformation("GroupsOnly format detected - tournament {TournamentId} will finish", tournamentId);
+                return new StandingProgressResult(
+                    shouldContinuePipeline: true,
+                    standingFinished: true,
+                    allGroupsFinished: true,
+                    tournamentFinished: true
+                );
+            }
+
+            // GroupsAndBracket: the next step moves the tournament to GroupsCompleted
+            return new StandingProgressResult(
+                shouldContinuePipeline: true,
+                standingFinished: true,
+                allGroupsFinished: true
+            );
+        }
+    }
+}

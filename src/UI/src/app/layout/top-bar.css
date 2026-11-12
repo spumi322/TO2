@@ -1,0 +1,81 @@
+.top-bar {
+  height: var(--top-bar-height);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Full width: logo at the left edge, user area at the right edge, whatever the page width below */
+.inner {
+  padding: 0 24px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+nav {
+  display: flex;
+  gap: 16px;
+}
+
+nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 0;
+  border-bottom: 2px solid transparent;
+}
+
+nav a.active,
+nav a:hover {
+  color: var(--text);
+  border-bottom-color: var(--primary);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.live-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.live-dot.connected {
+  background: var(--success);
+}
+
+.live-dot.reconnecting {
+  background: var(--warning);
+}
+
+/* Phone: less spacing, user menu as an icon only (::ng-deep: the label is inside p-button) */
+@media (max-width: 600px) {
+  .inner {
+    gap: 12px;
+  }
+
+  .logo span {
+    display: none;
+  }
+
+  :host ::ng-deep .user-button .p-button-label {
+    display: none;
+  }
+}

@@ -1,0 +1,65 @@
+using Application.Contracts;
+using Application.Pipelines.Common;
+using Application.Pipelines.MatchResult.Contracts;
+using Domain.AggregateRoots;
+using Domain.Enums;
+using Domain.StateMachine;
+using Microsoft.Extensions.Logging;
+
+namespace Application.Pipelines.MatchResult.Steps
+{
+    /// <summary>
+    /// Step 3: Transitions tournament state when all groups finish or tournament finishes.
+    /// Only executes if a state transition is needed (indicated by context flags).
+    /// </summary>
+    public class TransitionTournamentStateStep : PipeLineBase<TransitionTournamentStateStep>
+    {
+        private readonly ITournamentStateMachine _stateMachine;
+
+        public TransitionTournamentStateStep(
+            ILogger<TransitionTournamentStateStep> logger,
+            ITournamentStateMachine stateMachine) : base(logger)
+        {
+            _stateMachine = stateMachine;
+        }
+
+        protected override async Task<bool> ExecuteStepAsync(MatchResultContext context)
+        {
+            // Only execute if a state transition is needed
+            if (!context.AllGroupsFinished && !context.TournamentFinished)
+            {
+                return true; // Skip this step
+            }
+
+            var tournament = context.Tournament;
+
+            if (context.AllGroupsFinished)
+            {
+                // Determine target status based on format
+                TournamentStatus targetStatus = tournament.Format == Format.GroupsOnly
+                    ? TournamentStatus.Finished
+                    : TournamentStatus.GroupsCompleted;
+
+                // Use format-aware validation
+                _stateMachine.ValidateTransition(tournament.Status, targetStatus, tournament.Format);
+                tournament.Status = targetStatus;
+                context.NewTournamentStatus = targetStatus;
+
+                Logger.LogInformation("Tournament {TournamentId} transitioned to {Status}",
+                    tournament.Id, targetStatus);
+            }
+            else if (context.TournamentFinished)
+            {
+                // Transition to Finished (bracket completed)
+                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.Finished, tournament.Format);
+                tournament.Status = TournamentStatus.Finished;
+                context.NewTournamentStatus = TournamentStatus.Finished;
+
+                Logger.LogInformation("Tournament {TournamentName} FINISHED", tournament.Name);
+            }
+
+            // Continue to next step
+            return true;
+        }
+    }
+}

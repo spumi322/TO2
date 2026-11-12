@@ -1,0 +1,146 @@
+using Application.Services;
+using Domain.AggregateRoots;
+using Domain.Entities;
+using Domain.Enums;
+using FluentAssertions;
+using Infrastructure.Persistence;
+using Infrastructure.Persistence.Repository;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Tests.Base;
+using Tests.Helpers;
+using Match = Domain.AggregateRoots.Match;
+
+namespace Tests.Unit.Services
+{
+    /// <summary>
+    /// StandingService.GetTeamsForBracketByFormat: which teams enter the bracket, with their group placement.
+    /// </summary>
+    public class StandingServiceBracketEntrantsTests : IntegrationTestBase
+    {
+        private readonly StandingService _service;
+
+        public StandingServiceBracketEntrantsTests()
+        {
+            _service = new StandingService(
+                new StandingRepository(DbContext),
+                new Repository<Match>(DbContext),
+                new Repository<Tournament>(DbContext),
+                new GroupRepository(DbContext),
+                new Repository<Team>(DbContext),
+                new FormatService(),
+                new Mock<ILogger<StandingService>>().Object);
+
+            DbContext.Tenants.Add(new Tenant { Id = 1, Name = "Org1" });
+            DbContext.SaveChanges();
+        }
+
+        [Fact]
+        public async Task GroupsAndBracket_ReturnsAdvancingTeamsWithGroupPlacement()
+        {
+            var tournamentId = await SeedFinishedGroupsAsync(groupCount: 3, advancingPerGroup: 2);
+
+            var entrants = await _service.GetTeamsForBracketByFormat(tournamentId);
+
+            // Team names are group letter + placement (A1 = winner of group A)
+            entrants.Select(e => e.Team.Name)
+                .Should().BeEquivalentTo("A1", "A2", "B1", "B2", "C1", "C2");
+            entrants.Should().AllSatisfy(e =>
+            {
+                e.GroupPlacement.Should().Be(int.Parse(e.Team.Name[1..]));
+                e.GroupId.Should().NotBeNull();
+            });
+            entrants.Select(e => e.GroupId).Distinct().Should().HaveCount(3);
+        }
+
+        [Fact]
+        public async Task GroupsAndBracket_MarksGroupEntriesAdvancedOrEliminated()
+        {
+            var tournamentId = await SeedFinishedGroupsAsync(groupCount: 2, advancingPerGroup: 2);
+
+            await _service.GetTeamsForBracketByFormat(tournamentId);
+            await SaveAndDetachAsync();
+
+            var entries = await DbContext.GroupEntries.ToListAsync();
+            entries.Where(e => e.TeamName.EndsWith("3")).Should().AllSatisfy(e => e.Status.Should().Be(TeamStatus.Eliminated));
+            entries.Where(e => !e.TeamName.EndsWith("3")).Should().AllSatisfy(e => e.Status.Should().Be(TeamStatus.Advanced));
+        }
+
+        [Fact]
+        public async Task GroupsAndBracket_GroupSmallerThanAdvancing_SendsAllItsTeams()
+        {
+            // 10 of 16 teams showed up: groups of 3, 3, 2, 2 with the top 2 advancing
+            var tournamentId = await SeedFinishedGroupsAsync(new[] { 3, 3, 2, 2 }, advancingPerGroup: 2);
+
+            var entrants = await _service.GetTeamsForBracketByFormat(tournamentId);
+            await SaveAndDetachAsync();
+
+            entrants.Select(e => e.Team.Name)
+                .Should().BeEquivalentTo("A1", "A2", "B1", "B2", "C1", "C2", "D1", "D2");
+            var entries = await DbContext.GroupEntries.ToListAsync();
+            entries.Where(e => e.Status == TeamStatus.Eliminated).Select(e => e.TeamName)
+                .Should().BeEquivalentTo("A3", "B3");
+        }
+
+        [Fact]
+        public async Task BracketOnly_ReturnsAllRegisteredTeamsWithoutGroup()
+        {
+            var tournament = TestDataBuilder.Tournaments.CreateDefault(format: Format.BracketOnly);
+            DbContext.Tournaments.Add(tournament);
+            await DbContext.SaveChangesAsync();
+            var teams = TestDataBuilder.Teams.CreateMultiple(3, tournament.Id);
+            DbContext.Teams.AddRange(teams);
+            await SaveAndDetachAsync();
+
+            var entrants = await _service.GetTeamsForBracketByFormat(tournament.Id);
+
+            entrants.Select(e => e.Team.Id).Should().BeEquivalentTo(teams.Select(t => t.Id));
+            entrants.Should().AllSatisfy(e =>
+            {
+                e.GroupId.Should().BeNull();
+                e.GroupPlacement.Should().BeNull();
+            });
+        }
+
+        /// <summary>
+        /// Creates finished groups with one more team than advance (so 1 is eliminated per group).
+        /// Team names are group letter + placement; teams are inserted worst-first.
+        /// </summary>
+        private Task<long> SeedFinishedGroupsAsync(int groupCount, int advancingPerGroup) =>
+            SeedFinishedGroupsAsync(Enumerable.Repeat(advancingPerGroup + 1, groupCount).ToArray(), advancingPerGroup);
+
+        /// <summary>Same with the given group sizes (groups A, B, ...).</summary>
+        private async Task<long> SeedFinishedGroupsAsync(int[] groupSizes, int advancingPerGroup)
+        {
+            var tournament = TestDataBuilder.Tournaments.CreateGroupsAndBracket(maxTeams: groupSizes.Sum());
+            tournament.AdvancingPerGroup = advancingPerGroup;
+            DbContext.Tournaments.Add(tournament);
+            await DbContext.SaveChangesAsync();
+
+            for (int g = 0; g < groupSizes.Length; g++)
+            {
+                int groupSize = groupSizes[g];
+                var groupName = ((char)('A' + g)).ToString();
+                var group = TestDataBuilder.Standings.CreateGroup(tournament.Id, $"Group {groupName}", groupSize);
+                DbContext.Standings.Add(group);
+                await DbContext.SaveChangesAsync();
+
+                for (int place = groupSize; place >= 1; place--)
+                {
+                    var team = new Team($"{groupName}{place}", tournament.Id);
+                    DbContext.Teams.Add(team);
+                    await DbContext.SaveChangesAsync();
+
+                    var entry = TestDataBuilder.Groups.CreateWithIds(tournament.Id, group.Id, team.Id, team.Name);
+                    entry.Wins = groupSize - place;
+                    entry.Losses = place - 1;
+                    DbContext.GroupEntries.Add(entry);
+                }
+            }
+
+            await SaveAndDetachAsync();
+            return tournament.Id;
+        }
+    }
+}

@@ -16,7 +16,7 @@
         <mxCell id="RMQ9aZpRHts_rYk6yI1K-35" parent="1" style="rounded=1;arcSize=20;fillColor=#EEEDFE;strokeColor=#534AB7;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#26215C;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="Domain&#xa;Entities, Aggregate roots, State machine" vertex="1">
           <mxGeometry height="60" width="300" x="1090" y="1100" as="geometry" />
         </mxCell>
-        <mxCell id="RMQ9aZpRHts_rYk6yI1K-36" parent="1" style="rounded=1;arcSize=20;fillColor=#FAEEDA;strokeColor=#854F0B;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#412402;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="UI&#xa;Angular 17, PrimeNG, SignalR &#xa;" vertex="1">
+        <mxCell id="RMQ9aZpRHts_rYk6yI1K-36" parent="1" style="rounded=1;arcSize=20;fillColor=#FAEEDA;strokeColor=#854F0B;strokeWidth=1.5;fontFamily=sans-serif;fontSize=14;fontColor=#412402;whiteSpace=wrap;spacingTop=4;spacingBottom=4;fontStyle=1;" value="UI&#xa;Angular 22, PrimeNG, SignalR &#xa;" vertex="1">
           <mxGeometry height="60" width="241" x="1119.5" y="680" as="geometry" />
         </mxCell>
         <mxCell id="RMQ9aZpRHts_rYk6yI1K-37" edge="1" parent="1" source="RMQ9aZpRHts_rYk6yI1K-32" style="endArrow=open;endSize=8;strokeColor=#888888;strokeWidth=2;" target="RMQ9aZpRHts_rYk6yI1K-33">

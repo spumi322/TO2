@@ -1,5 +1,4 @@
 ﻿using Application.Contracts;
-using Application.Contracts.Repositories;
 using Domain.AggregateRoots;
 using Microsoft.Extensions.Logging;
 
@@ -7,24 +6,14 @@ namespace Application.Services
 {
     public class MatchService : IMatchService
     {
-        private readonly IMatchRepository _matchRepository;
+        private readonly IRepository<Match> _matchRepository;
         private readonly IFormatService _formatService;
-        private readonly ILogger<MatchService> _logger;
 
-        public MatchService(IMatchRepository matchRepository,
-                            IFormatService formatService,
-                            ILogger<MatchService> logger)
+        public MatchService(IRepository<Match> matchRepository,
+                            IFormatService formatService)
         {
             _matchRepository = matchRepository;
             _formatService = formatService;
-            _logger = logger;
-        }
-
-        public async Task<List<Match>> GetMatchesAsync(long standingId)
-        {
-            var matches = await _matchRepository.FindAllAsync(m => m.StandingId == standingId);
-
-            return matches.ToList();
         }
 
         public async Task<Match> GenerateMatch(Team? teamA, Team? teamB, int round, int seed, long standingId)

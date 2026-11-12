@@ -1,0 +1,118 @@
+@if (store.tournament(); as t) {
+  <div class="overview">
+    @if (status(); as card) {
+      <section class="card status">
+        <div class="status-head">
+          <div class="status-text">
+            <span class="status-label" [style.color]="statusColor()">{{ card.label }}</span>
+            <h2>{{ card.headline }}</h2>
+            <p class="muted pre-line">{{ card.text }}</p>
+          </div>
+          @if (card.action; as action) {
+            <p-button
+              [label]="actionLabels[action]"
+              icon="pi pi-play"
+              [disabled]="!!store.state()?.isTransitionState"
+              (onClick)="run(action)"
+            />
+          }
+        </div>
+        @if (counts(); as counts) {
+          <app-stage-track [format]="t.format" [status]="t.status" [counts]="counts" [showCounts]="true" />
+        }
+      </section>
+    }
+
+    <div class="columns">
+      <div class="side stack">
+        <aside class="card facts">
+          <p class="meta muted">Created by {{ t.createdBy }} · {{ t.createdDate | date: 'd MMM y' }}</p>
+          <h3>Format</h3>
+          <p class="summary">{{ formatSummary() }}</p>
+          @if (t.description) {
+            <p class="about muted pre-line clamp" [title]="t.description">{{ t.description }}</p>
+          }
+        </aside>
+
+        @if (topSlots().length) {
+          <section class="card top" aria-label="Top 4">
+            <div class="row">
+              <h3>Top 4</h3>
+              <span class="spacer"></span>
+              @if (isFinished()) {
+                <a routerLink="../results" class="small">Full results</a>
+              }
+            </div>
+            <ol class="top-list">
+              @for (slot of topSlots(); track $index) {
+                <li [class.champion]="slot.winner">
+                  <span class="rank num">{{ slot.rankLabel }}</span>
+                  @if (slot.teamName) {
+                    <span class="team">{{ slot.teamName }}</span>
+                  } @else {
+                    <span class="team muted tbd">TBD</span>
+                  }
+                  @if (slot.groupName) {
+                    <span class="muted small">{{ slot.groupName }}</span>
+                  }
+                </li>
+              }
+            </ol>
+          </section>
+        }
+      </div>
+
+      <div class="main stack">
+        @if (store.state()?.canModifyTeams) {
+          <app-team-manager />
+        } @else {
+          @if (groupCards().length) {
+            <section class="card stack">
+              <h3>Groups</h3>
+              <ul class="stage-cards group-cards">
+                @for (stage of groupCards(); track stage.group.id) {
+                  <li>
+                    <div class="stage-head">
+                      <span class="stage-name">{{ stage.name }}</span>
+                      <span class="stage-progress" [class.finished]="stage.finished">
+                        {{ stage.finished ? 'Finished' : stage.progress }}
+                      </span>
+                    </div>
+                    <app-group-table [group]="stage.group" [advancing]="advancing()" [compact]="true" />
+                  </li>
+                }
+              </ul>
+            </section>
+          }
+          @if (roundCards().length) {
+            <section class="card stack">
+              <h3>Bracket</h3>
+              <ul class="stage-cards">
+                @for (stage of roundCards(); track stage.name) {
+                  <li [class.current]="stage.name === currentRound()?.name">
+                    <span class="stage-name">{{ stage.name }}</span>
+                    <span class="stage-progress" [class.finished]="stage.finished">
+                      {{ stage.finished ? 'Finished' : stage.progress }}
+                    </span>
+                  </li>
+                }
+              </ul>
+              @if (currentRound(); as round) {
+                <h3>Current matches</h3>
+                <ul class="match-lines" [attr.aria-label]="round.name + ' matches'">
+                  @for (line of round.matches; track line.id) {
+                    <li [class.decided]="line.winner">
+                      <span class="side" [class.won]="line.winner === 'A'" [title]="line.teamA ?? ''">{{ line.teamA ?? 'TBD' }}</span>
+                      <span class="score num">{{ line.winner ? line.teamAWins + '-' + line.teamBWins : 'vs' }}</span>
+                      <span class="side b" [class.won]="line.winner === 'B'" [title]="line.teamB ?? ''">{{ line.teamB ?? 'TBD' }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </section>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}

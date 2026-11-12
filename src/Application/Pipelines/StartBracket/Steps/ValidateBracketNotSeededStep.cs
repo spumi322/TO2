@@ -3,6 +3,7 @@ using Application.Pipelines.StartBracket.Contracts;
 using Domain.Entities;
 using Domain.Enums;
 using Microsoft.Extensions.Logging;
+using Domain.Exceptions;
 
 namespace Application.Pipelines.StartBracket.Steps
 {
@@ -32,29 +33,17 @@ namespace Application.Pipelines.StartBracket.Steps
             var standings = await _standingRepository.FindAllAsync(s => s.TournamentId == context.TournamentId);
             var bracketStandings = standings.Where(s => s.StandingType == StandingType.Bracket).ToList();
 
+            // The bracket standing is created with the tournament, so none means broken data (500)
             if (bracketStandings.Count == 0)
-            {
-                context.Success = false;
-                context.Message = "No bracket standing found for this tournament";
-                _logger.LogWarning("No bracket standing found for tournament {TournamentId}",
-                    context.TournamentId);
-                return false;
-            }
+                throw new InvalidOperationException($"No bracket standing found for tournament {context.TournamentId}");
 
             var bracket = bracketStandings.First();
 
             // Check if bracket is already seeded
             if (bracket.IsSeeded)
-            {
-                context.Success = false;
-                context.Message = "Bracket is already seeded!";
-                _logger.LogWarning("Bracket for tournament {TournamentId} is already seeded",
-                    context.TournamentId);
-                return false;
-            }
+                throw new ConflictException("The bracket has already started.");
 
             // Store in context
-            context.Standings = standings.ToList();
             context.BracketStanding = bracket;
 
             _logger.LogInformation("Found bracket standing '{BracketName}' for tournament {TournamentId}",

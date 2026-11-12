@@ -1,9 +1,8 @@
 ﻿using Application.Contracts;
+using Application.DTOs.Team;
 using Application.DTOs.Tournament;
-using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
 
 namespace TO2.Controllers
 {
@@ -13,21 +12,24 @@ namespace TO2.Controllers
     public class TournamentsController : ControllerBase
     {
         private readonly ITournamentService _tournamentService;
-        private readonly IStandingService _standingService;
+        private readonly ITeamService _teamService;
+        private readonly IPlacementService _placementService;
         private readonly IWorkFlowService _workFlowService;
 
         public TournamentsController(
             ITournamentService tournamentService,
-            IStandingService standingService,
+            ITeamService teamService,
+            IPlacementService placementService,
             IWorkFlowService workFlowService)
         {
             _tournamentService = tournamentService;
-            _standingService = standingService;
+            _teamService = teamService;
+            _placementService = placementService;
             _workFlowService = workFlowService;
         }
 
 
-        // GET: api/Tournament/5
+        // GET: api/tournaments/5
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(long id)
         {
@@ -41,14 +43,21 @@ namespace TO2.Controllers
             return Ok(await _tournamentService.GetTournamentListAsync());
         }
 
-        // GET: api/Tournament/5/teams
+        // GET: api/tournaments/5/teams
         [HttpGet("{id}/teams")]
         public async Task<IActionResult> GetTeamsByTournament(long id)
         {
             return Ok(await _tournamentService.GetTeamsByTournamentAsync(id));
         }
 
-        // GET: api/Tournament/5/state
+        // POST: api/tournaments/5/teams
+        [HttpPost("{id}/teams")]
+        public async Task<IActionResult> AddTeams(long id, [FromBody] AddTeamsRequestDTO request)
+        {
+            return Ok(await _teamService.AddTeamsToTournamentAsync(id, request));
+        }
+
+        // GET: api/tournaments/5/state
         [HttpGet("{id}/state")]
         public async Task<IActionResult> GetTournamentState(long id)
         {
@@ -59,10 +68,10 @@ namespace TO2.Controllers
         [HttpGet("{id}/final-standings")]
         public async Task<IActionResult> GetFinalStandings(long id)
         {
-            return Ok(await _standingService.GetFinalResultsAsync(id));
+            return Ok(await _placementService.GetFinalResultsAsync(id));
         }
 
-        // POST: api/Tournament
+        // POST: api/tournaments
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateTournamentRequestDTO request)
         {
@@ -71,45 +80,35 @@ namespace TO2.Controllers
             return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
         }
 
-        // PUT: api/Tournament/5
+        // PUT: api/tournaments/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(long id, [FromBody] UpdateTournamentRequestDTO request)
         {
             return Ok(await _tournamentService.UpdateTournamentAsync(id, request));
         }
 
-        // POST: api/Tournament/5/start-groups
+        // POST: api/tournaments/5/start-groups
         [HttpPost("{id}/start-groups")]
         public async Task<IActionResult> StartGroups(long id)
         {
-            var result = await _workFlowService.StartGroups(id);
-            return result.Success ? Ok(result) : BadRequest(result);
+            await _workFlowService.StartGroups(id);
+            return NoContent();
         }
 
-        // POST: api/Tournament/5/start-bracket
+        // POST: api/tournaments/5/start-bracket
         [HttpPost("{id}/start-bracket")]
         public async Task<IActionResult> StartBracket(long id)
         {
-            var result = await _workFlowService.StartBracket(id);
-            return result.Success ? Ok(result) : BadRequest(result);
+            await _workFlowService.StartBracket(id);
+            return NoContent();
         }
 
-        // PUT: api/tournaments/5/status
-        [HttpPut("{id}/status")]
-        public async Task<IActionResult> Put(long id, [FromBody][Required] TournamentStatus status)
+        // POST: api/tournaments/5/cancel
+        [HttpPost("{id}/cancel")]
+        public async Task<IActionResult> Cancel(long id, [FromBody] CancelTournamentRequestDTO request)
         {
-            await _tournamentService.SetTournamentStatusAsync(id, status);
-
-            return Ok();
-        }
-
-        // PUT: api/Tournament/5/start
-        [HttpPut("{id}/start")]
-        public async Task<IActionResult> StartTournament(long id)
-        {
-            var result = await _tournamentService.StartTournament(id);
-
-            return result.Success ? Ok() : BadRequest();
+            await _tournamentService.CancelTournamentAsync(id, request);
+            return NoContent();
         }
 
         // DELETE: api/tournaments/5

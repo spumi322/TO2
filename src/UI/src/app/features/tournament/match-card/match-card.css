@@ -1,0 +1,126 @@
+:host {
+  display: block;
+}
+
+/* One line per team (name, [− 2 +]), the actions below */
+.match {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'nameA scoreA'
+    'nameB scoreB'
+    'actions actions';
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+}
+
+/* A team has the wins needed: waiting for Confirm */
+.match.ready {
+  background: color-mix(in srgb, var(--status-bracket) 12%, transparent);
+  box-shadow: inset 0 0 0 1px var(--status-bracket);
+}
+
+.match.busy {
+  opacity: 0.6;
+}
+
+.name {
+  min-width: 0;
+  padding: 0 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.name.a {
+  grid-area: nameA;
+}
+
+.name.b {
+  grid-area: nameB;
+}
+
+.name.won {
+  font-weight: 700;
+}
+
+.name.lost,
+.name.tbd {
+  color: var(--text-muted);
+}
+
+.score {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.score.a {
+  grid-area: scoreA;
+}
+
+.score.b {
+  grid-area: scoreB;
+}
+
+.num {
+  min-width: 22px;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.step {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.step:hover:not(:disabled) {
+  border-color: var(--text-muted);
+}
+
+.step:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.actions {
+  grid-area: actions;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.confirm {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--primary);
+  color: var(--primary-contrast);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.done {
+  font-size: 12px;
+  color: var(--status-groups);
+}

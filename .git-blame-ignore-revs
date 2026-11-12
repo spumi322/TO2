@@ -1,0 +1,3 @@
+# Commits git blame skips (git config blame.ignoreRevsFile .git-blame-ignore-revs; GitHub reads it itself)
+# normalize line endings to lf
+bab261cc570480c4926f581edeec364a474d923d

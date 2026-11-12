@@ -1,0 +1,67 @@
+<div class="page page-wide shell">
+  @if (store.notFound()) {
+    <app-empty-state
+      title="Tournament not found"
+      message="It does not exist, was deleted, or belongs to another organization."
+      icon="pi-search"
+    >
+      <a routerLink="/tournaments">Back to tournaments</a>
+    </app-empty-state>
+  } @else if (store.loadError(); as message) {
+    <div class="form-error" role="alert">
+      {{ message }} <a href="" (click)="$event.preventDefault(); store.reload()">Retry</a>
+    </div>
+  } @else if (store.tournament(); as t) {
+    <!-- Stays under the top bar, so every tab gets the same visible height (--fit-height) -->
+    <div class="shell-head">
+      <header class="header">
+        <h1 class="name" [title]="t.name">{{ t.name }}</h1>
+        <app-status-chip [status]="t.status" />
+        <app-format-badge [format]="t.format" />
+        <span class="spacer"></span>
+        @if (menuItems().length) {
+          <p-button
+            icon="pi pi-ellipsis-v"
+            [text]="true"
+            severity="secondary"
+            ariaLabel="More actions"
+            (onClick)="menu.toggle($event)"
+          />
+          <p-menu #menu [model]="menuItems()" [popup]="true" appendTo="body" />
+        }
+      </header>
+
+      <nav class="tabs" aria-label="Tournament sections">
+        @for (tab of tabs(); track tab.path) {
+          <a [routerLink]="tab.path" routerLinkActive="active">{{ tab.label }}</a>
+        }
+      </nav>
+    </div>
+
+    <div class="shell-body">
+      <router-outlet />
+    </div>
+  } @else {
+    <p-skeleton height="48px" />
+    <p-skeleton height="240px" />
+  }
+</div>
+
+<!-- Gone as soon as the tournament starts, also when someone else starts it -->
+@if (editing() && store.state()?.canEditDetails) {
+  <app-edit-details-dialog [visible]="true" (visibleChange)="editing.set($event)" />
+}
+
+@if (actions.request(); as request) {
+  <app-confirm-dialog
+    [visible]="true"
+    (visibleChange)="setDialogVisible($event)"
+    [header]="request.header"
+    [message]="request.message"
+    [confirmLabel]="request.confirmLabel"
+    [danger]="!!request.danger"
+    [withReason]="!!request.withReason"
+    [busy]="actions.busy()"
+    (confirmed)="actions.confirm($event)"
+  />
+}

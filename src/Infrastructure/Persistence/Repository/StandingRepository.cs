@@ -26,5 +26,14 @@ namespace Infrastructure.Persistence.Repository
                 .ThenInclude(m => m.Games)  // Nested eager loading for match scoring
                 .ToListAsync();
         }
+
+        public async Task<Standing?> GetGroupWithMatchesByStandingIdAsync(long standingId)
+        {
+            return await _dbSet
+                .Where(s => s.Id == standingId && s.StandingType == StandingType.Group)
+                .Include(s => s.Matches)
+                .ThenInclude(m => m.Games)
+                .FirstOrDefaultAsync();
+        }
     }
 }

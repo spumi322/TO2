@@ -8,6 +8,6 @@ namespace Application.Contracts
         Task<AuthResponse> LoginAsync(LoginRequest request);
         Task<AuthResponse> RefreshTokenAsync(RefreshTokenRequest request);
         Task RevokeTokenAsync(string refreshToken);
-        Task<bool> ValidateRefreshTokenAsync(string refreshToken);
+        Task<OrganizationExistsResponse> OrganizationExistsAsync(string name);
     }
 }

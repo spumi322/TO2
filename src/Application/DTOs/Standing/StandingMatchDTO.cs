@@ -1,6 +1,6 @@
 ﻿namespace Application.DTOs.Standing
 {
-    // Consolidated match DTO for both groups and bracket
+    // Single match DTO for both groups and bracket
     public record StandingMatchDTO
     {
         public long Id { get; init; }
@@ -12,7 +12,7 @@
         public long? WinnerId { get; init; }
         public long? LoserId { get; init; }
         public int BestOf { get; init; }
-        public byte[]? RowVersion { get; init; }
+        public long Version { get; init; }
 
         // Backend-calculated results
         public int TeamAWins { get; init; }

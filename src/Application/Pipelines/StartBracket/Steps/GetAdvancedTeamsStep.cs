@@ -1,13 +1,14 @@
 using Application.Contracts;
 using Application.Pipelines.StartBracket.Contracts;
 using Microsoft.Extensions.Logging;
+using Domain.Exceptions;
 
 namespace Application.Pipelines.StartBracket.Steps
 {
     /// <summary>
-    /// Step 3: Gets teams for bracket based on format.
+    /// Step 3: Gets the teams entering the bracket (unordered; seeding happens in step 5).
     /// - BracketOnly: All registered teams
-    /// - BracketAndGroup: Teams advancing from groups (also updates GroupEntry statuses)
+    /// - GroupsAndBracket: Teams advancing from groups, with group placement (also updates GroupEntry statuses)
     /// </summary>
     public class GetAdvancedTeamsStep : IStartBracketPipelineStep
     {
@@ -27,36 +28,19 @@ namespace Application.Pipelines.StartBracket.Steps
             _logger.LogInformation("Step 3: Getting teams for bracket in tournament {TournamentId}",
                 context.TournamentId);
 
-            try
-            {
-                // Format-aware team selection (all teams for BracketOnly, advanced teams for BracketAndGroup)
-                var teams = await _standingService.GetTeamsForBracketByFormat(context.TournamentId);
+            // Format-aware team selection (all teams for BracketOnly, advanced teams for GroupsAndBracket)
+            var teams = await _standingService.GetTeamsForBracketByFormat(context.TournamentId);
 
-                if (teams == null || teams.Count == 0)
-                {
-                    context.Success = false;
-                    context.Message = "No teams available to advance to bracket";
-                    _logger.LogWarning("No teams available for bracket in tournament {TournamentId}",
-                        context.TournamentId);
-                    return false;
-                }
+            if (teams == null || teams.Count == 0)
+                throw new ConflictException("No teams advanced to the bracket.");
 
-                // Store in context
-                context.AdvancedTeams = teams;
+            // Store in context
+            context.AdvancedTeams = teams;
 
-                _logger.LogInformation("{TeamCount} teams advanced to bracket for tournament {TournamentId}",
-                    teams.Count, context.TournamentId);
+            _logger.LogInformation("{TeamCount} teams advanced to bracket for tournament {TournamentId}",
+                teams.Count, context.TournamentId);
 
-                return true; // Continue to next step
-            }
-            catch (Exception ex)
-            {
-                context.Success = false;
-                context.Message = $"Failed to get advancing teams: {ex.Message}";
-                _logger.LogError(ex, "Error getting advancing teams for tournament {TournamentId}: {Message}",
-                    context.TournamentId, ex.Message);
-                return false;
-            }
+            return true; // Continue to next step
         }
     }
 }

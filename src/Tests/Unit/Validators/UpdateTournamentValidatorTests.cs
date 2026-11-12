@@ -1,6 +1,5 @@
 using Application.DTOs.Tournament;
 using Application.Validations.Tournament;
-using Domain.Enums;
 using FluentValidation.TestHelper;
 
 namespace Tests.Unit.Validators
@@ -16,14 +15,12 @@ namespace Tests.Unit.Validators
 
         private UpdateTournamentRequestDTO CreateValidDTO(
             string? name = null,
-            string? description = null,
-            TournamentStatus? status = null)
+            string? description = null)
         {
             return new UpdateTournamentRequestDTO(
                 Name: name ?? "Test Tournament",
                 Description: description ?? "Test Description",
-                status: status ?? TournamentStatus.Setup,
-                RowVersion: null
+                Version: 0
             );
         }
 
@@ -72,7 +69,7 @@ namespace Tests.Unit.Validators
         [Fact]
         public void Should_HaveError_When_Description_ExceedsMaxLength()
         {
-            var request = CreateValidDTO(description: new string('A', 251));
+            var request = CreateValidDTO(description: new string('A', 121));
             var result = _validator.TestValidate(request);
             result.ShouldHaveValidationErrorFor(x => x.Description);
         }
@@ -80,7 +77,7 @@ namespace Tests.Unit.Validators
         [Fact]
         public void Should_NotHaveError_When_Description_IsAtMaxLength()
         {
-            var request = CreateValidDTO(description: new string('A', 250));
+            var request = CreateValidDTO(description: new string('A', 120));
             var result = _validator.TestValidate(request);
             result.ShouldNotHaveValidationErrorFor(x => x.Description);
         }

@@ -1,7 +1,8 @@
 using Application.Contracts;
-using Application.DTOs.Game;
+using Application.DTOs.Standing;
 using Application.Pipelines.StartBracket.Contracts;
 using Application.Pipelines.StartBracket.Steps;
+using Application.Pipelines.StartBracket.Strategies;
 using Application.Pipelines.StartBracket.Utilities;
 using Domain.AggregateRoots;
 using Domain.Entities;
@@ -11,6 +12,7 @@ using FluentAssertions;
 using Moq;
 using Tests.Base;
 using Tests.Helpers;
+using Domain.Exceptions;
 
 namespace Tests.Unit.Pipelines.StartBracket
 {
@@ -27,14 +29,11 @@ namespace Tests.Unit.Pipelines.StartBracket
         }
 
         [Fact]
-        public async Task ExecuteAsync_1Team_ReturnsFalse()
+        public async Task ExecuteAsync_1Team_ThrowsConflict()
         {
-            var context = MakeContext(1);
-            var result = await _step.ExecuteAsync(context);
+            var act = () => _step.ExecuteAsync(MakeContext(1));
 
-            result.Should().BeFalse();
-            context.Success.Should().BeFalse();
-            context.Message.Should().Contain("2");
+            await act.Should().ThrowAsync<ConflictException>().WithMessage("*At least 2 teams*");
         }
 
         [Fact]
@@ -69,7 +68,7 @@ namespace Tests.Unit.Pipelines.StartBracket
         {
             TournamentId = 1,
             AdvancedTeams = Enumerable.Range(1, teamCount)
-                .Select(i => new Team($"Team {i}") { Id = i })
+                .Select(i => new BracketEntrant(new Team($"Team {i}", 1) { Id = i }, null, null))
                 .ToList()
         };
     }
@@ -83,7 +82,33 @@ namespace Tests.Unit.Pipelines.StartBracket
         public CalculateBracketStructureStepTests()
         {
             var (_, logger) = CreateLogger<CalculateBracketStructureStep>();
-            _step = new CalculateBracketStructureStep(logger);
+            var strategies = new IBracketSeedingStrategy[]
+            {
+                new RandomSeedingStrategy(CreateLogger<RandomSeedingStrategy>().Logger, new Random(1)),
+                new GroupResultSeedingStrategy(CreateLogger<GroupResultSeedingStrategy>().Logger)
+            };
+            _step = new CalculateBracketStructureStep(logger, strategies);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_GroupsAndBracket_PairsTeamsInSeedOrder()
+        {
+            var context = MakeContext(4, Format.GroupsAndBracket);
+            await _step.ExecuteAsync(context);
+
+            // Seed 1 vs 4, seed 2 vs 3
+            context.SeededPairs.Select(p => (p.teamA!.Id, p.teamB!.Id))
+                .Should().Equal((1L, 4L), (2L, 3L));
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_FormatWithoutBracket_Throws()
+        {
+            var context = MakeContext(4, Format.GroupsOnly);
+
+            var act = () => _step.ExecuteAsync(context);
+
+            await act.Should().ThrowAsync<InvalidOperationException>();
         }
 
         [Fact]
@@ -141,12 +166,18 @@ namespace Tests.Unit.Pipelines.StartBracket
             context.SeededPairs.Should().HaveCount(1);
         }
 
-        private static StartBracketContext MakeContext(int teamCount) => new()
+        /// <summary>
+        /// GroupsAndBracket: every team is the winner of its own group (group id = team id).
+        /// </summary>
+        private static StartBracketContext MakeContext(int teamCount, Format format = Format.BracketOnly) => new()
         {
             TournamentId = 1,
+            Tournament = TestDataBuilder.Tournaments.CreateDefault(format: format),
             BracketStanding = TestDataBuilder.Standings.CreateBracket(1),
             AdvancedTeams = Enumerable.Range(1, teamCount)
-                .Select(i => new Team($"Team {i}") { Id = i })
+                .Select(i => format == Format.GroupsAndBracket
+                    ? new BracketEntrant(new Team($"Team {i}", 1) { Id = i }, i, 1)
+                    : new BracketEntrant(new Team($"Team {i}", 1) { Id = i }, null, null))
                 .ToList()
         };
     }
@@ -168,13 +199,13 @@ namespace Tests.Unit.Pipelines.StartBracket
 
             _gameService
                 .Setup(x => x.GenerateGames(It.IsAny<DomainMatch>()))
-                .ReturnsAsync(new GenerateGamesDTO(true, null));
+                .Returns(Task.CompletedTask);
         }
 
         [Fact]
         public async Task ExecuteAsync_ByePair_SetsWinnerIdOnMatch()
         {
-            var realTeam = new Team("Team 1") { Id = 1 };
+            var realTeam = new Team("Team 1", 1) { Id = 1 };
             var byeMatch = new DomainMatch { StandingId = 1, BestOf = BestOf.Bo3 };
 
             _matchService
@@ -190,7 +221,7 @@ namespace Tests.Unit.Pipelines.StartBracket
         [Fact]
         public async Task ExecuteAsync_ByePair_DoesNotGenerateGames()
         {
-            var realTeam = new Team("Team 1") { Id = 1 };
+            var realTeam = new Team("Team 1", 1) { Id = 1 };
             var byeMatch = new DomainMatch { StandingId = 1, BestOf = BestOf.Bo3 };
 
             _matchService
@@ -206,8 +237,8 @@ namespace Tests.Unit.Pipelines.StartBracket
         [Fact]
         public async Task ExecuteAsync_NormalPair_GeneratesGames()
         {
-            var teamA = new Team("Team A") { Id = 1 };
-            var teamB = new Team("Team B") { Id = 2 };
+            var teamA = new Team("Team A", 1) { Id = 1 };
+            var teamB = new Team("Team B", 1) { Id = 2 };
             var match = new DomainMatch(teamA, teamB, BestOf.Bo3) { StandingId = 1 };
 
             _matchService
@@ -223,9 +254,9 @@ namespace Tests.Unit.Pipelines.StartBracket
         [Fact]
         public async Task ExecuteAsync_MixedPairs_OnlyNormalPairGetsGames()
         {
-            var realTeam = new Team("Team 1") { Id = 1 };
-            var teamA = new Team("Team A") { Id = 2 };
-            var teamB = new Team("Team B") { Id = 3 };
+            var realTeam = new Team("Team 1", 1) { Id = 1 };
+            var teamA = new Team("Team A", 1) { Id = 2 };
+            var teamB = new Team("Team B", 1) { Id = 3 };
 
             var byeMatch = new DomainMatch { StandingId = 1, BestOf = BestOf.Bo3 };
             var normalMatch = new DomainMatch(teamA, teamB, BestOf.Bo3) { StandingId = 1 };
@@ -248,7 +279,7 @@ namespace Tests.Unit.Pipelines.StartBracket
         [Fact]
         public async Task ExecuteAsync_ByePair_ReturnsTrue()
         {
-            var realTeam = new Team("Team 1") { Id = 1 };
+            var realTeam = new Team("Team 1", 1) { Id = 1 };
             _matchService
                 .Setup(x => x.GenerateMatch(realTeam, null, 1, 1, It.IsAny<long>()))
                 .ReturnsAsync(new DomainMatch { StandingId = 1, BestOf = BestOf.Bo3 });
@@ -257,7 +288,6 @@ namespace Tests.Unit.Pipelines.StartBracket
             var result = await _step.ExecuteAsync(context);
 
             result.Should().BeTrue();
-            context.Success.Should().BeTrue();
         }
 
         private static StartBracketContext MakeContext(

@@ -1,0 +1,59 @@
+﻿using Application.Contracts;
+using Application.Pipelines.Common;
+using Application.Pipelines.MatchResult.Contracts;
+using Domain.Entities;
+using Microsoft.Extensions.Logging;
+
+namespace Application.Pipelines.MatchResult.Steps
+{
+    /// <summary>
+    /// Step 1: Adds the match to both teams' group stats (match win/loss, games won/lost). Bracket matches have no group entries.
+    /// </summary>
+    public class UpdateGroupStatsStep : PipeLineBase<UpdateGroupStatsStep>
+    {
+        private readonly IRepository<GroupEntry> _groupRepository;
+        private readonly IRepository<Game> _gameRepository;
+
+        public UpdateGroupStatsStep(
+            ILogger<UpdateGroupStatsStep> logger,
+            IRepository<GroupEntry> groupRepository,
+            IRepository<Game> gameRepository) : base(logger)
+        {
+            _groupRepository = groupRepository;
+            _gameRepository = gameRepository;
+        }
+
+        protected override async Task<bool> ExecuteStepAsync(MatchResultContext context)
+        {
+            // Entries of this match's standing only: a bracket standing has none, so bracket matches don't change group stats
+            var groupEntries = await _groupRepository.FindAllAsync(ge => ge.StandingId == context.StandingId);
+
+            if (groupEntries.Any())
+            {
+                var winner = groupEntries.First(ge => ge.TeamId == context.WinnerId);
+                var loser = groupEntries.First(ge => ge.TeamId == context.LoserId);
+
+                // Game score of the finished match, e.g. 2-1
+                var games = await _gameRepository.FindAllAsync(g => g.MatchId == context.MatchId);
+                int winnerGames = games.Count(g => g.WinnerId == winner.TeamId);
+                int loserGames = games.Count(g => g.WinnerId == loser.TeamId);
+
+                winner.Wins++;
+                winner.GameWins += winnerGames;
+                winner.GameLosses += loserGames;
+                loser.Losses++;
+                loser.GameWins += loserGames;
+                loser.GameLosses += winnerGames;
+
+                Logger.LogInformation("Win recorded for {winnerId}, loss for {loserId}. Group stats updated.", winner.Id, loser.Id);
+
+                return true;
+            }
+
+            Logger.LogInformation("Match is not a Group match.");
+
+            // Continues pipeline, because match is not a group match.
+            return true;
+        }
+    }
+}

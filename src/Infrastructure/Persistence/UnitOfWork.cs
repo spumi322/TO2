@@ -1,5 +1,8 @@
 using Application.Contracts;
+using Domain.Exceptions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using System.Data.Common;
 
 namespace Infrastructure.Persistence
 {
@@ -25,11 +28,26 @@ namespace Infrastructure.Persistence
         /// <summary>
         /// Saves all pending changes to the database.
         /// This is the SINGLE point where SaveChanges should be called.
+        /// A row changed since it was loaded (Version mismatch) or a unique index violation surfaces as ConflictException (409).
         /// </summary>
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            return await _dbContext.SaveChangesAsync(cancellationToken);
+            try
+            {
+                return await _dbContext.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ConflictException("Data has been modified by another user. Reload and try again.", ex);
+            }
+            catch (DbUpdateException ex) when (ex.InnerException is DbException { SqlState: UniqueViolationSqlState })
+            {
+                throw new ConflictException("A record with the same unique value already exists.", ex);
+            }
         }
+
+        // SQL standard state for a unique constraint violation (Postgres reports it; SQLite does not set SqlState)
+        private const string UniqueViolationSqlState = "23505";
 
         /// <summary>
         /// Begins an explicit database transaction.
@@ -59,7 +77,7 @@ namespace Infrastructure.Persistence
             try
             {
                 // Save changes before committing the transaction
-                await _dbContext.SaveChangesAsync();
+                await SaveChangesAsync();
                 await _currentTransaction.CommitAsync();
             }
             catch
@@ -80,13 +98,13 @@ namespace Infrastructure.Persistence
 
         /// <summary>
         /// Rolls back the current transaction, discarding all changes.
+        /// No-op without an active transaction (e.g. a failed commit already rolled back),
+        /// so a caller's catch block doesn't hide the original exception.
         /// </summary>
         public async Task RollbackTransactionAsync()
         {
             if (_currentTransaction == null)
-            {
-                throw new InvalidOperationException("No active transaction to rollback.");
-            }
+                return;
 
             try
             {

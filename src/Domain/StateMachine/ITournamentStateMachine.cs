@@ -9,22 +9,6 @@ namespace Domain.StateMachine
     public interface ITournamentStateMachine
     {
         /// <summary>
-        /// Checks if a state transition is valid according to the state machine rules.
-        /// </summary>
-        bool IsTransitionValid(TournamentStatus currentState, TournamentStatus nextState);
-
-        /// <summary>
-        /// Validates a state transition and throws InvalidOperationException if invalid.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">Thrown when transition is not allowed</exception>
-        void ValidateTransition(TournamentStatus currentState, TournamentStatus nextState);
-
-        /// <summary>
-        /// Gets all valid transition states from the current state.
-        /// </summary>
-        IEnumerable<TournamentStatus> GetAllowedTransitions(TournamentStatus currentState);
-
-        /// <summary>
         /// Checks if a state transition is valid according to format-specific rules.
         /// </summary>
         bool IsTransitionValid(TournamentStatus currentState, TournamentStatus nextState, Format format);
@@ -64,5 +48,20 @@ namespace Domain.StateMachine
         /// Checks if teams can be added/removed in the given state.
         /// </summary>
         bool CanModifyTeams(TournamentStatus status);
+
+        /// <summary>
+        /// Checks if the tournament can be cancelled (started, not yet Finished/Cancelled).
+        /// </summary>
+        bool CanCancel(TournamentStatus status);
+
+        /// <summary>
+        /// Checks if the tournament can be deleted (Setup only).
+        /// </summary>
+        bool CanDelete(TournamentStatus status);
+
+        /// <summary>
+        /// Checks if name and description can be edited (Setup only: fixed once the tournament starts).
+        /// </summary>
+        bool CanEditDetails(TournamentStatus status);
     }
 }

@@ -8,24 +8,23 @@ using Moq;
 using System.Linq.Expressions;
 using Tests.Base;
 using Tests.Helpers;
+using Domain.Exceptions;
 
 namespace Tests.Unit.Pipelines.StartGroups
 {
     public class DistributeTeamsIntoGroupsStepTests : UnitTestBase
     {
-        private readonly Mock<IRepository<TournamentTeam>> _mockTournamentTeamRepo;
         private readonly Mock<IRepository<Team>> _mockTeamRepo;
         private readonly DistributeTeamsIntoGroupsStep _step;
 
         public DistributeTeamsIntoGroupsStepTests()
         {
             var (_, logger) = CreateLogger<DistributeTeamsIntoGroupsStep>();
-            _mockTournamentTeamRepo = new Mock<IRepository<TournamentTeam>>();
             _mockTeamRepo = new Mock<IRepository<Team>>();
             _step = new DistributeTeamsIntoGroupsStep(
                 logger,
-                _mockTournamentTeamRepo.Object,
-                _mockTeamRepo.Object);
+                _mockTeamRepo.Object,
+                new Random(1));
         }
 
         [Fact]
@@ -45,27 +44,15 @@ namespace Tests.Unit.Pipelines.StartGroups
                 GroupStandings = groupStandings
             };
 
-            var tournamentTeams = teams.Select((t, i) =>
-                TestDataBuilder.TournamentTeams.Create(1, i + 1)).ToList();
-
-            _mockTournamentTeamRepo
-                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<TournamentTeam, bool>>>()))
-                .ReturnsAsync(tournamentTeams);
-
-            for (int i = 0; i < teams.Count; i++)
-            {
-                var team = teams[i];
-                _mockTeamRepo
-                    .Setup(x => x.GetByIdAsync(i + 1))
-                    .ReturnsAsync(team);
-            }
+            _mockTeamRepo
+                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<Team, bool>>>()))
+                .ReturnsAsync(teams);
 
             // Act
             var result = await _step.ExecuteAsync(context);
 
             // Assert
             result.Should().BeTrue();
-            context.Success.Should().BeTrue();
             context.Teams.Should().HaveCount(8);
             context.GroupAssignments.Should().HaveCount(2);
             context.GroupAssignments.Values.Should().AllSatisfy(teams =>
@@ -89,20 +76,9 @@ namespace Tests.Unit.Pipelines.StartGroups
                 GroupStandings = groupStandings
             };
 
-            var tournamentTeams = teams.Select((t, i) =>
-                TestDataBuilder.TournamentTeams.Create(1, i + 1)).ToList();
-
-            _mockTournamentTeamRepo
-                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<TournamentTeam, bool>>>()))
-                .ReturnsAsync(tournamentTeams);
-
-            for (int i = 0; i < teams.Count; i++)
-            {
-                var team = teams[i];
-                _mockTeamRepo
-                    .Setup(x => x.GetByIdAsync(i + 1))
-                    .ReturnsAsync(team);
-            }
+            _mockTeamRepo
+                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<Team, bool>>>()))
+                .ReturnsAsync(teams);
 
             // Act
             var result = await _step.ExecuteAsync(context);
@@ -115,7 +91,7 @@ namespace Tests.Unit.Pipelines.StartGroups
         }
 
         [Fact]
-        public async Task ExecuteAsync_Should_ReturnFalse_WhenNotEnoughTeams()
+        public async Task ExecuteAsync_Should_ThrowConflict_WhenNotEnoughTeams()
         {
             // Arrange
             var teams = TestDataBuilder.Teams.CreateMultiple(3);
@@ -133,28 +109,46 @@ namespace Tests.Unit.Pipelines.StartGroups
                 GroupStandings = groupStandings
             };
 
-            var tournamentTeams = teams.Select((t, i) =>
-                TestDataBuilder.TournamentTeams.Create(1, i + 1)).ToList();
-
-            _mockTournamentTeamRepo
-                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<TournamentTeam, bool>>>()))
-                .ReturnsAsync(tournamentTeams);
-
-            for (int i = 0; i < teams.Count; i++)
-            {
-                var team = teams[i];
-                _mockTeamRepo
-                    .Setup(x => x.GetByIdAsync(i + 1))
-                    .ReturnsAsync(team);
-            }
+            _mockTeamRepo
+                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<Team, bool>>>()))
+                .ReturnsAsync(teams);
 
             // Act
-            var result = await _step.ExecuteAsync(context);
+            var act = () => _step.ExecuteAsync(context);
 
             // Assert
-            result.Should().BeFalse("not enough teams for all groups");
-            context.Success.Should().BeFalse();
-            context.Message.Should().Contain("Not enough teams");
+            await act.Should().ThrowAsync<ConflictException>().WithMessage("4 groups need at least 8 teams (2 per group); 3 registered.");
+        }
+
+        [Theory]
+        [InlineData(3, 3, false)]  // groups of 1 have no match and never finish
+        [InlineData(5, 3, false)]
+        [InlineData(6, 3, true)]   // 2, 2, 2
+        [InlineData(10, 4, true)]  // 3, 3, 2, 2
+        public async Task ExecuteAsync_Should_RequireTwoTeamsPerGroup(int teamCount, int groupCount, bool starts)
+        {
+            var context = new StartGroupsContext
+            {
+                TournamentId = 1,
+                GroupStandings = Enumerable.Range(1, groupCount)
+                    .Select(i => TestDataBuilder.Standings.CreateGroup(1, $"Group {i}", 4))
+                    .ToList()
+            };
+            _mockTeamRepo
+                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<Team, bool>>>()))
+                .ReturnsAsync(TestDataBuilder.Teams.CreateMultiple(teamCount));
+
+            var act = () => _step.ExecuteAsync(context);
+
+            if (starts)
+            {
+                await act.Should().NotThrowAsync();
+                context.GroupAssignments.Values.Should().AllSatisfy(teams => teams.Count.Should().BeGreaterThanOrEqualTo(2));
+            }
+            else
+            {
+                await act.Should().ThrowAsync<ConflictException>();
+            }
         }
     }
 }

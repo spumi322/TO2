@@ -6,7 +6,7 @@ namespace Domain.Entities
     {
         public RefreshToken() { }
 
-        public required string Token { get; set; }
+        public required string TokenHash { get; set; }
         public DateTime Expires { get; set; }
         public DateTime? Revoked { get; set; }
         public bool IsExpired => DateTime.UtcNow >= Expires;

@@ -1,5 +1,6 @@
 using Application.Contracts;
 using Infrastructure.Persistence;
+using Infrastructure.Persistence.Interceptors;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +18,9 @@ namespace Tests.Helpers
         private readonly DbContextOptions<TO2DbContext> _options;
         private readonly IConfiguration _configuration;
         private readonly ITenantService _tenantService;
+        private long _currentTenantId = 1;
+        public void LogInAs(long tenantId) => _currentTenantId = tenantId;
+        public ITenantService TenantService => _tenantService;
 
         public TestDbContextFactory()
         {
@@ -26,7 +30,7 @@ namespace Tests.Helpers
 
             // Create a mock tenant service for tests
             var mockTenantService = new Mock<ITenantService>();
-            mockTenantService.Setup(x => x.GetCurrentTenantId()).Returns(1L);
+            mockTenantService.Setup(x => x.GetCurrentTenantId()).Returns(() => _currentTenantId);
             mockTenantService.Setup(x => x.GetCurrentUserName()).Returns("TestUser");
             _tenantService = mockTenantService.Object;
 
@@ -34,9 +38,12 @@ namespace Tests.Helpers
             _connection = new SqliteConnection("DataSource=:memory:");
             _connection.Open();
 
-            // Configure DbContext to use in-memory SQLite
+            // Configure DbContext to use in-memory SQLite (tenant + version interceptors mirror Program.cs)
             _options = new DbContextOptionsBuilder<TO2DbContext>()
                 .UseSqlite(_connection)
+                .AddInterceptors(
+                    new TenantSaveChangesInterceptor(_tenantService),
+                    new ConcurrencyVersionInterceptor())
                 .Options;
 
             // Create database schema
@@ -56,5 +63,7 @@ namespace Tests.Helpers
         {
             _connection?.Dispose();
         }
+
+        
     }
 }

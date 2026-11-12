@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TO2 Tournaments</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="theme.css">
+<script src="demo.js"></script>
+<style>
+  .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+  .filters button {
+    height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-muted); font: 600 13px var(--font-ui); cursor: pointer; white-space: nowrap;
+  }
+  .filters button.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .filters .count { opacity: .7; margin-left: 4px; font-weight: 500; }
+  .search { max-width: 260px; }
+  .section-title { display: flex; align-items: baseline; gap: 8px; margin: 28px 0 12px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+  .t-card { display: grid; gap: 14px; padding: 18px; color: var(--text); transition: border-color .15s, transform .15s; }
+  .t-card:hover { border-color: var(--primary); text-decoration: none; transform: translateY(-1px); }
+  .t-card .top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .t-card h3 { font-size: 17px; }
+  .t-card .desc { color: var(--text-muted); font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 39px; }
+  .t-card .foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 12px; color: var(--text-muted); }
+  .t-card .teams { display: grid; gap: 6px; }
+  .t-card.cancelled { opacity: .75; }
+  .t-card.cancelled h3 { text-decoration: line-through; text-decoration-color: var(--st-cancelled); }
+  .next { font-size: 12px; font-weight: 600; color: var(--primary); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 8px; }
+  .stat { padding: 14px 16px; }
+  .stat b { display: block; font: 700 24px var(--font-display); }
+  @media (max-width: 767px) { .stats { grid-template-columns: repeat(2, 1fr); } .search { max-width: none; width: 100%; } }
+</style>
+</head>
+<body>
+<header id="topbar"></header>
+<main class="page">
+  <div class="page-head">
+    <div>
+      <h1>Tournaments</h1>
+      <p class="muted" style="margin-top:4px">Northside Esports · 7 tournaments</p>
+    </div>
+    <a class="btn btn-primary" href="create.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>New tournament
+    </a>
+  </div>
+
+  <div class="stats">
+    <div class="card stat"><span class="muted small">Live now</span><b>3</b></div>
+    <div class="card stat"><span class="muted small">Open registration</span><b>2</b></div>
+    <div class="card stat"><span class="muted small">Finished</span><b>1</b></div>
+    <div class="card stat"><span class="muted small">Teams in library</span><b>38</b></div>
+  </div>
+
+  <div class="toolbar" style="margin-top:20px">
+    <div class="filters" id="filters"></div>
+    <input class="input search" placeholder="Search tournaments" oninput="render(this.value)" aria-label="Search tournaments">
+  </div>
+
+  <div id="list"></div>
+</main>
+
+<script>
+  renderTopbar('tournaments');
+
+  var STATUS = {
+    1: { label: 'Registration', cls: 's-setup', section: 'registration' },
+    2: { label: 'Drawing groups', cls: 's-seeding', section: 'live' },
+    3: { label: 'Groups live', cls: 's-groups live', section: 'live' },
+    4: { label: 'Groups done', cls: 's-groups-done', section: 'live' },
+    5: { label: 'Seeding bracket', cls: 's-seeding', section: 'live' },
+    6: { label: 'Playoffs live', cls: 's-bracket live', section: 'live' },
+    7: { label: 'Finished', cls: 's-finished', section: 'finished' },
+    8: { label: 'Cancelled', cls: 's-cancelled', section: 'cancelled' }
+  };
+  var FORMAT = { 1: 'Bracket', 2: 'Groups + Bracket', 3: 'Groups' };
+  var NEXT = { 1: 'Add teams, then start', 4: 'Ready to start bracket', 3: '9 of 24 group matches played', 6: 'Quarterfinals in progress' };
+
+  // Shape mirrors GetTournamentListResponseDTO (enums as numbers)
+  var tournaments = [
+    { id: 41, name: 'Autumn Cup 2026', description: 'Open cup for the Nordic amateur scene. Groups of four, top two advance.', currentTeams: 16, maxTeams: 16, format: 2, status: 6 },
+    { id: 44, name: 'Thursday Night Scrims', description: 'Weekly round robin for the academy rosters.', currentTeams: 6, maxTeams: 6, format: 3, status: 3 },
+    { id: 39, name: 'University Clash S2', description: 'Campus league qualifier.', currentTeams: 12, maxTeams: 12, format: 2, status: 4 },
+    { id: 46, name: 'Winter Invitational', description: 'Invite-only single elimination with the top teams of the season.', currentTeams: 5, maxTeams: 8, format: 1, status: 1 },
+    { id: 47, name: 'Rookie Ladder #3', description: '', currentTeams: 2, maxTeams: 12, format: 2, status: 1 },
+    { id: 33, name: 'Summer Showdown', description: 'Season finale, best of three throughout.', currentTeams: 8, maxTeams: 8, format: 1, status: 7 },
+    { id: 35, name: 'Charity Bash', description: 'Venue unavailable.', currentTeams: 10, maxTeams: 12, format: 2, status: 8 }
+  ];
+
+  var SECTIONS = [
+    { key: 'live', title: 'Live' },
+    { key: 'registration', title: 'Registration open' },
+    { key: 'finished', title: 'Finished' },
+    { key: 'cancelled', title: 'Cancelled' }
+  ];
+  var filter = 'all';
+
+  function renderFilters() {
+    var html = [{ key: 'all', title: 'All' }].concat(SECTIONS).map(function (s) {
+      var n = s.key === 'all' ? tournaments.length : tournaments.filter(function (t) { return STATUS[t.status].section === s.key; }).length;
+      return '<button class="' + (filter === s.key ? 'on' : '') + '" onclick="filter=\'' + s.key + '\';renderFilters();render()">' + s.title + '<span class="count">' + n + '</span></button>';
+    }).join('');
+    document.getElementById('filters').innerHTML = html;
+  }
+
+  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+  function card(t) {
+    var st = STATUS[t.status];
+    var pct = Math.round(t.currentTeams / t.maxTeams * 100);
+    var next = NEXT[t.status] ? '<span class="next">' + NEXT[t.status] + '</span>' : '<span></span>';
+    return '<a class="card t-card ' + (t.status === 8 ? 'cancelled' : '') + '" href="' + (t.status === 7 ? 'results.html' : 'tournament.html#overview') + '">' +
+      '<div class="top"><h3>' + esc(t.name) + '</h3><span class="chip ' + st.cls + '">' + st.label + '</span></div>' +
+      '<p class="desc">' + (t.description ? esc(t.description) : '<i>No description</i>') + '</p>' +
+      '<div class="teams"><div class="foot"><span>' + t.currentTeams + ' / ' + t.maxTeams + ' teams</span><span class="badge">' + FORMAT[t.format] + '</span></div>' +
+      '<div class="progress"><span style="width:' + pct + '%"></span></div></div>' +
+      '<div class="foot">' + next + '<span>#' + t.id + '</span></div>' +
+    '</a>';
+  }
+
+  function render(q) {
+    q = (q || document.querySelector('.search').value || '').toLowerCase();
+    var html = SECTIONS.filter(function (s) { return filter === 'all' || filter === s.key; }).map(function (s) {
+      var items = tournaments.filter(function (t) { return STATUS[t.status].section === s.key && t.name.toLowerCase().indexOf(q) >= 0; });
+      if (!items.length) return '';
+      return '<div class="section-title"><h2>' + s.title + '</h2><span class="muted">' + items.length + '</span></div>' +
+        '<div class="cards">' + items.map(card).join('') + '</div>';
+    }).join('');
+    document.getElementById('list').innerHTML = html ||
+      '<div class="card card-pad" style="text-align:center;margin-top:24px"><h3>No tournaments match</h3><p class="muted" style="margin-top:6px">Try another name or filter.</p></div>';
+  }
+
+  renderFilters();
+  render('');
+  setTimeout(function () { toast('', 'Tournament created', 'jonas created "Rookie Ladder #3"'); }, 2500);
+</script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+.podium {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.tier {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  padding: 16px;
+}
+
+.place {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.team {
+  font-size: 17px;
+  overflow-wrap: anywhere;
+}
+
+.place-1 {
+  border-color: var(--status-finished);
+}
+
+.place-1 .place,
+.place-1 .team {
+  color: var(--status-finished);
+}
+
+/* Up to three tables side by side (split in the component) */
+.tables {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.placements {
+  width: 100%;
+  border-collapse: collapse;
+  padding: 0;
+  overflow: hidden;
+}
+
+th {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 8px 16px;
+  background: var(--surface-2);
+}
+
+td {
+  padding: 9px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.team-col {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+tr.champion td {
+  font-weight: 700;
+  color: var(--status-finished);
+}

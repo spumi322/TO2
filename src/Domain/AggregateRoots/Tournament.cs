@@ -1,20 +1,16 @@
 ﻿using Domain.Common;
 using Domain.Entities;
 using Domain.Enums;
-using Domain.ValueObjects;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
 
 namespace Domain.AggregateRoots
 {
     public class Tournament : AggregateRootBase
     {
         private readonly List<Standing> _standings = new();
-        private readonly List<GroupEntry> _tournamentParticipants = new();
 
         private Tournament() { }
 
-        public Tournament(string name, string description, int maxTeams, Format format)
+        public Tournament(string name, string? description, int maxTeams, Format format)
         {
             Name = name;
             Description = description;
@@ -22,43 +18,44 @@ namespace Domain.AggregateRoots
             Format = format;
         }
 
-        [Required]
-        [MaxLength(60)]
         public string Name { get; private set; }
 
-        [MaxLength(250)]
         public string? Description { get; set; }
 
-        [Range(2, 32)]
         public int MaxTeams { get; set; }
 
-        [Required]
-        [EnumDataType(typeof(Format))]
-        [Range(0, 2)]
-        [DefaultValue(Format.BracketOnly)]
         public Format Format { get; set; }
 
-        [Required]
-        [EnumDataType(typeof(TournamentStatus))]
-        [DefaultValue(TournamentStatus.Setup)]
         public TournamentStatus Status { get; set; } = TournamentStatus.Setup;
-
-        public bool IsRegistrationOpen { get; set; } = true;
 
         public int? AdvancingPerGroup { get; set; }
 
-        public List<Prize> PrizePool { get; set; }
+        public DateTime? CancelledAt { get; private set; }
 
-        public long TenantId { get; set; }
+        public string? CancelledBy { get; private set; }
+
+        public string? CancellationReason { get; private set; }
+
+        public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;
 
-        [Timestamp]
-        public byte[]? RowVersion { get; set; }
-
-        public ICollection<TournamentTeam> TournamentTeams { get; private set; } = new List<TournamentTeam>();
+        public ICollection<Team> Teams { get; private set; } = new List<Team>();
 
         public IReadOnlyList<Standing> Standings => _standings;
 
-        public IReadOnlyList<GroupEntry> TournamentParticipants => _tournamentParticipants;
+        public void UpdateDetails(string name, string? description)
+        {
+            Name = name;
+            Description = description;
+        }
+
+        // Caller must check ITournamentStateMachine.CanCancel first
+        public void Cancel(string cancelledBy, DateTime cancelledAt, string? reason)
+        {
+            Status = TournamentStatus.Cancelled;
+            CancelledBy = cancelledBy;
+            CancelledAt = cancelledAt;
+            CancellationReason = reason;
+        }
     }
 }

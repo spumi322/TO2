@@ -10,13 +10,14 @@ namespace Domain.Exceptions
         {
         }
 
+        // Users read the message, so no ids or property names in it (the request path in the warning log has them)
         public NotFoundException(string entityName, long id)
-            : base($"{entityName} with Id: {id} was not found")
+            : base($"{entityName} not found.")
         {
         }
 
         public NotFoundException(string entityName, string propertyName, object propertyValue)
-            : base($"{entityName} with {propertyName}: '{propertyValue}' was not found")
+            : base($"{entityName} not found.")
         {
         }
     }

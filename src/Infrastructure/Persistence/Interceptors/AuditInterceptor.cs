@@ -8,7 +8,6 @@ namespace Infrastructure.Persistence.Interceptors;
 /// <summary>
 /// EF Core interceptor that automatically sets audit fields (CreatedBy, CreatedDate, LastModifiedBy, LastModifiedDate)
 /// on entities inheriting from EntityBase.
-/// Replaces the previous "PlaceHolder" approach with real user data from ITenantService.
 /// </summary>
 public class AuditInterceptor : SaveChangesInterceptor
 {

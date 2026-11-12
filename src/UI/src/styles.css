@@ -1,365 +1,212 @@
-/* Global Reset */
-* {
-  margin: 0;
-  padding: 0;
+/* Theme tokens: light on :root, dark under [data-theme='dark'] (set on <html> by ThemeService) */
+:root {
+  --bg: #f3f5f4;
+  --surface: #ffffff;
+  --surface-2: #eaeeec;
+  --border: #d5dcd8;
+  --text: #15201a;
+  --text-muted: #5b6670;
+  --primary: #2e7d32;
+  --primary-contrast: #ffffff;
+  --success: #2e7d32;
+  --warning: #c25e00;
+  --danger: #c62828;
+  --card-shadow: 0 1px 2px rgb(16 24 40 / 0.06);
+
+  /* Tournament status colors: one green, darker stage by stage (registration, groups, playoffs); gold only for winners */
+  --status-setup: #4f7f53;
+  --status-seeding: #64748b;
+  --status-groups: #388e3c;
+  --status-groups-done: #1b5e20;
+  --status-bracket: #1b5e20;
+  --status-finished: #9a6b00;
+  --status-cancelled: #c62828;
+
+  --top-bar-height: 57px;
+  --font-ui: 'Inter', system-ui, sans-serif;
+  --font-display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+
+  color-scheme: light;
+}
+
+/* Dark: the original TO2 scheme (navy background, slate cards, green accent) */
+[data-theme='dark'] {
+  --bg: #0b1120;
+  --surface: #1a1f2e;
+  --surface-2: #242938;
+  --border: #374151;
+  --text: #dce8dd;
+  --text-muted: #9ca3af;
+  --primary: #43a047;
+  --primary-contrast: #ffffff;
+  --success: #4caf50;
+  --warning: #ff9800;
+  --danger: #f44336;
+  --card-shadow: 0 4px 12px rgb(0 0 0 / 0.3);
+
+  --status-setup: #c8e6c9;
+  --status-seeding: #9ca3af;
+  --status-groups: #81c784;
+  --status-groups-done: #43a047;
+  --status-bracket: #43a047;
+  --status-finished: #ffca28;
+  --status-cancelled: #f44336;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-/* Body Styles */
+html,
 body {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
   font-size: 14px;
   line-height: 1.5;
-  background: var(--bg-dark);
-  color: var(--text-primary);
-  min-height: 100vh;
 }
 
-/* Container */
-.container {
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: 1.2;
+  margin: 0;
+}
+
+h1 {
+  font-size: 24px;
+}
+
+h2 {
+  font-size: 20px;
+}
+
+h3 {
+  font-size: 16px;
+}
+
+a {
+  color: var(--primary);
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* Layout helpers */
+.page {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem;
+  padding: 24px 16px 48px;
 }
 
-/* Utility Classes */
-.text-center { text-align: center; }
-.mb-2 { margin-bottom: 0.5rem; }
-.mb-4 { margin-bottom: 1rem; }
-.mt-2 { margin-top: 0.5rem; }
-.mt-4 { margin-top: 1rem; }
-.w-full { width: 100%; }
-
-/* Success/Error Alert Helpers */
-.alert-success {
-  background: rgba(76, 175, 80, 0.2);
-  color: var(--success-color);
-  border: 1px solid var(--success-color);
-  padding: 12px;
-  border-radius: var(--border-radius);
-  margin-bottom: 16px;
+/* Tournament pages use the width of large screens (groups side by side, wide brackets) */
+.page.page-wide {
+  max-width: 1600px;
 }
 
-.alert-error {
-  background: rgba(244, 67, 54, 0.2);
-  color: var(--error-color);
-  border: 1px solid var(--error-color);
-  padding: 12px;
-  border-radius: var(--border-radius);
-  margin-bottom: 16px;
+/* Pages whose content comes in screen-sized blocks (e.g. two groups per screen) snap a block per scroll */
+html.snap-blocks {
+  scroll-snap-type: y mandatory;
 }
 
-
-
-/* PrimeNG Dark Mode Component Overrides - Minimal Global Theming */
-/* Using cleaner approach without excessive !important flags */
-
-/* Core PrimeNG theme adjustments - only essentials */
-.p-component {
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+.page-narrow {
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 48px 16px;
 }
 
-/* Menubar (Navbar) */
-.p-menubar {
-  background: var(--bg-card);
-  border: none;
-  border-radius: 0;
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.p-menubar .p-menubar-root-list {
-  background: transparent;
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-/* Menu (Dropdown) */
-.p-menu {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+.spacer {
+  flex: 1;
 }
 
-.p-menu .p-menuitem-link {
-  color: var(--text-primary);
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--card-shadow);
+  padding: 16px;
 }
 
-.p-menu .p-menuitem-link:hover {
-  background: var(--bg-elevated);
-}
-
-.p-menu .p-menuitem-icon {
+.muted {
   color: var(--text-muted);
 }
 
-.p-menu .p-submenu-header {
-  background: transparent;
-  color: var(--text-muted);
-  font-weight: 600;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  padding: 8px 12px 4px;
+.small {
+  font-size: 12px;
 }
 
-.p-menu-separator {
-  border-color: var(--border-color);
+.num {
+  font-variant-numeric: tabular-nums;
 }
 
-/* Dropdown panel */
-.p-dropdown-panel {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
+/* User-written text (descriptions, cancel reasons): keeps line breaks, a long word without spaces wraps instead of overflowing */
+.pre-line {
+  white-space: pre-line;
+  overflow-wrap: anywhere;
 }
 
-.p-dropdown-panel .p-dropdown-item {
-  color: var(--text-primary);
+/* Forms */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.p-dropdown-panel .p-dropdown-item:hover {
-  background: var(--bg-elevated);
-}
-
-.p-dropdown-panel .p-dropdown-item.p-highlight {
-  background: var(--primary-color);
-  color: white;
-}
-
-/* Toast notifications */
-.p-toast .p-toast-message {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  padding: 1.25rem 1.5rem;
-}
-
-.p-toast .p-toast-message-content {
-  gap: 1rem;
-}
-
-.p-toast .p-toast-message-summary {
-  color: var(--text-primary);
-  margin-bottom: 0.25rem;
-}
-
-.p-toast .p-toast-message-detail {
-  color: var(--text-muted);
-}
-
-.p-toast .p-toast-message.p-toast-message-success {
-  border-left: 4px solid var(--success-color);
-}
-.p-toast .p-toast-message.p-toast-message-success .p-toast-message-icon {
-  color: var(--success-color);
-}
-
-.p-toast .p-toast-message.p-toast-message-error {
-  border-left: 4px solid var(--error-color);
-}
-.p-toast .p-toast-message.p-toast-message-error .p-toast-message-icon {
-  color: var(--error-color);
-}
-
-.p-toast .p-toast-message.p-toast-message-warn {
-  border-left: 4px solid var(--warning-color);
-}
-.p-toast .p-toast-message.p-toast-message-warn .p-toast-message-icon {
-  color: var(--warning-color);
-}
-
-.p-toast .p-toast-message.p-toast-message-info {
-  border-left: 4px solid var(--info-color);
-}
-.p-toast .p-toast-message.p-toast-message-info .p-toast-message-icon {
-  color: var(--info-color);
-}
-
-/* Dialog */
-.p-dialog {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-}
-
-.p-dialog .p-dialog-header {
-  background: var(--bg-card);
-  color: var(--text-primary);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.p-dialog .p-dialog-content {
-  background: var(--bg-card);
-  color: var(--text-primary);
-}
-
-/* PrimeNG TabView Dark Mode Overrides */
-.p-tabview .p-tabview-nav {
-  background: var(--bg-card);
-  border-bottom: 2px solid var(--border-color);
-}
-
-.p-tabview .p-tabview-nav li .p-tabview-nav-link {
-  background: transparent;
-  border: none;
-  color: var(--text-muted);
-  padding: 1rem 1.5rem;
+.field label {
   font-weight: 500;
-  transition: all 0.2s;
 }
 
-.p-tabview .p-tabview-nav li .p-tabview-nav-link:hover {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
+.hint {
+  color: var(--text-muted);
+  font-size: 12px;
 }
 
-.p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
-  background: transparent;
-  color: var(--primary-color);
-  border-bottom: 2px solid var(--primary-color);
-  font-weight: 600;
+/* After .hint: a hint can turn into an error */
+.field-error {
+  color: var(--danger);
+  font-size: 12px;
 }
 
-.p-tabview .p-tabview-panels {
-  background: var(--bg-card);
-  padding: 0;
-  border: none;
+.p-inputtext.ng-invalid.ng-touched {
+  border-color: var(--danger);
 }
 
-/* Table */
-.p-datatable .p-datatable-thead > tr > th {
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  border-color: var(--border-color);
+.form-error {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
 }
 
-.p-datatable .p-datatable-tbody > tr {
-  background: var(--bg-card);
-  color: var(--text-primary);
-}
-
-.p-datatable .p-datatable-tbody > tr:hover {
-  background: var(--bg-elevated);
-}
-
-.p-datatable .p-datatable-tbody > tr > td {
-  border-color: var(--border-color);
-}
-
-/* Progress Spinner */
-.p-progress-spinner-circle {
-  stroke: var(--primary-color);
-}
-
-/* Button icon spacing */
-.p-button .p-button-icon {
-  margin-right: 0.5rem;
-}
-
-/* Brackets Viewer Dark Mode - Override library CSS variables */
-.brackets-viewer {
-  /* Background colors */
-  --primary-background: #1a1f2e;
-  --secondary-background: #242938;
-  --match-background: #1a1f2e;
-
-  /* Text colors */
-  --font-color: #f5fcf6;
-  --label-color: #9ca3af;
-  --hint-color: #9ca3af;
-
-  /* Status colors */
-  --win-color: #43a047;
-  --loss-color: #f44336;
-
-  /* Border colors - use explicit values to avoid circular reference */
-  --border-color: #374151;
-  --border-hover-color: #4caf50;
-  --border-selected-color: #43a047;
-  --connector-color: #374151;
-
-  /* Sizing - scale up for better visibility (32 teams = 5 rounds max) */
-  --text-size: 15px;
-  --match-width: 220px;
-  --match-horizontal-padding: 12px;
-  --match-vertical-padding: 8px;
-  --round-margin: 60px;
-  --match-border-radius: 6px;
-
-  /* Override library background */
-  background: #0b1120 !important;
-}
-
-/* Additional dark mode overrides */
-.brackets-viewer .participant {
-  background: var(--bg-elevated);
-}
-
-.brackets-viewer .participant:hover {
-  background: var(--bg-elevated) !important;
-}
-
-.brackets-viewer .participant.win {
-  background-color: rgba(67, 160, 71, 0.2);
-  border-left: 3px solid var(--primary-color);
-}
-
-/* Round headers */
-.brackets-viewer h3 {
-  background: var(--bg-elevated) !important;
-  color: var(--text-primary) !important;
-}
-
-/* Clickable participant styling (custom) */
-.brackets-viewer .clickable-participant {
-  cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
-}
-
-.brackets-viewer .clickable-participant:hover {
-  background-color: rgba(67, 160, 71, 0.15) !important;
-  transform: scale(1.02);
-  box-shadow: 0 0 12px rgba(67, 160, 71, 0.3);
-}
-
-.brackets-viewer .clickable-participant:active {
-  transform: scale(0.98);
-}
-
-/* Match updating state (custom) */
-.brackets-viewer .match.updating {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-/* SVG connectors */
-.brackets-viewer .connector {
-  stroke: var(--border-color) !important;
-}
-
-/* FIXED — Full override for PrimeNG tooltip */
-.p-tooltip.error-tooltip {
-  background: var(--error-color) !important;
-  border-radius: var(--border-radius) !important;
-  padding: 0 !important; /* container shouldn't add padding */
-}
-
-.p-tooltip.error-tooltip .p-tooltip-text {
-  background: var(--error-color) !important;
-  color: #fff !important;
-  font-size: 0.85rem !important;
-  padding: 0.5rem 0.75rem !important;
-  border-radius: var(--border-radius) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-}
-
-/* Fix arrow color */
-.p-tooltip.error-tooltip.p-tooltip-right .p-tooltip-arrow {
-  border-right-color: var(--error-color) !important;
-}
-
-.p-tooltip.error-tooltip.p-tooltip-left .p-tooltip-arrow {
-  border-left-color: var(--error-color) !important;
-}
-
-.p-tooltip.error-tooltip.p-tooltip-top .p-tooltip-arrow {
-  border-top-color: var(--error-color) !important;
-}
-
-.p-tooltip.error-tooltip.p-tooltip-bottom .p-tooltip-arrow {
-  border-bottom-color: var(--error-color) !important;
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

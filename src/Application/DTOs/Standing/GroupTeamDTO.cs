@@ -6,7 +6,8 @@
         public string Name { get; init; } = string.Empty;
         public int Wins { get; init; }
         public int Losses { get; init; }
-        public int Points { get; init; }
+        public int GameWins { get; init; }
+        public int GameLosses { get; init; }
         public int Status { get; init; }
     }
 }

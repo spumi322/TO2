@@ -1,0 +1,262 @@
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Status card: text and the one action on top, the stage track below */
+.status {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 24px;
+}
+
+.status-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.status-text {
+  flex: 999 1 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.status-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.status app-stage-track {
+  --seg-height: 10px;
+}
+
+.status h2 {
+  margin: 0;
+  font-size: 26px;
+}
+
+.status p {
+  margin: 0;
+  /* Keeps its line when a status has no text, so the card has the same height in every status */
+  min-height: 1.5em;
+}
+
+/* Format and top placements on the left, teams or stage cards on the right; stacked on phones */
+.columns {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/*
+ * Wide screens: the Overview takes at most the visible height (fit-height minus the 40px of page padding below it);
+ * cards keep their own height, longer content scrolls inside its column
+ */
+@media (min-width: 761px) {
+  .overview {
+    max-height: calc(var(--fit-height) - 40px);
+  }
+
+  .columns {
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+  }
+
+  .side,
+  .main {
+    max-height: 100%;
+    overflow-y: auto;
+  }
+}
+
+.stage-cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.stage-cards li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+/* Group cards: name and progress, the group's table below */
+.group-cards {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.group-cards li {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 12px 14px 8px;
+}
+
+.stage-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* The round being played: outlined card, its matches below */
+.stage-cards li.current {
+  box-shadow: inset 0 0 0 1px var(--status-bracket);
+}
+
+.match-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.match-lines li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 13px;
+}
+
+.match-lines .side {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match-lines .side.b {
+  text-align: right;
+}
+
+.match-lines li.decided .side {
+  color: var(--text-muted);
+}
+
+.match-lines li.decided .side.won {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.match-lines .score {
+  color: var(--text-muted);
+}
+
+.stage-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.stage-progress {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.stage-progress.finished {
+  color: var(--status-groups);
+}
+
+/* Top 4: place and team per row (TBD right-aligned), the winner in gold */
+.top {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.top-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.top-list li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 5px 0;
+  border-top: 1px solid var(--border);
+}
+
+.top-list .rank {
+  width: 56px;
+  flex: none;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.top-list .team {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.top-list .tbd {
+  font-weight: 400;
+  text-align: right;
+}
+
+.top-list li.champion .rank,
+.top-list li.champion .team {
+  color: var(--status-finished);
+}
+
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.summary {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.meta {
+  margin: 0;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+/* The tournament's own description closes the card, no heading */
+.about {
+  margin: 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  line-height: 1.6;
+}
+
+/* Long descriptions: 3 lines, the full text on hover */
+.clamp {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
+}

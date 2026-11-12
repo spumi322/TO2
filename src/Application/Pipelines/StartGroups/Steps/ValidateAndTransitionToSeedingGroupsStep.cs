@@ -1,9 +1,11 @@
+using Application.Utilities;
 using Application.Contracts;
 using Application.Pipelines.StartGroups.Contracts;
 using Domain.AggregateRoots;
 using Domain.Enums;
 using Domain.StateMachine;
 using Microsoft.Extensions.Logging;
+using Domain.Exceptions;
 
 namespace Application.Pipelines.StartGroups.Steps
 {
@@ -36,50 +38,27 @@ namespace Application.Pipelines.StartGroups.Steps
                 context.TournamentId);
 
             // Load tournament
-            var tournament = await _tournamentRepository.GetByIdAsync(context.TournamentId);
-            if (tournament == null)
-            {
-                context.Success = false;
-                context.Message = "Tournament not found";
-                _logger.LogWarning("Tournament {TournamentId} not found", context.TournamentId);
-                return false;
-            }
+            var tournament = await _tournamentRepository.GetByIdAsync(context.TournamentId)
+                ?? throw new NotFoundException("Tournament", context.TournamentId);
 
             // Validate format supports groups
             var metadata = _formatService.GetFormatMetadata(tournament.Format);
             if (!metadata.RequiresGroups)
-            {
-                context.Success = false;
-                context.Message = $"Cannot start groups for {metadata.DisplayName} format";
-                _logger.LogWarning("Tournament {TournamentId} has format {Format} which does not use groups",
-                    context.TournamentId, tournament.Format);
-                return false;
-            }
+                throw new ConflictException("This format has no group stage.");
 
-            try
-            {
-                // Validate and transition to SeedingGroups using format-aware validation
-                _stateMachine.ValidateTransition(tournament.Status, TournamentStatus.SeedingGroups, tournament.Format);
-                tournament.Status = TournamentStatus.SeedingGroups;
-                tournament.IsRegistrationOpen = false; // Close registration when starting groups
+            if (!_stateMachine.IsTransitionValid(tournament.Status, TournamentStatus.SeedingGroups, tournament.Format))
+                throw new ConflictException($"The groups cannot be started while the tournament is {TournamentStatusText.Describe(tournament.Status)}.");
 
-                // Store in context
-                context.Tournament = tournament;
-                context.NewStatus = TournamentStatus.SeedingGroups;
+            // Leaving Setup closes registration (CanModifyTeams)
+            tournament.Status = TournamentStatus.SeedingGroups;
 
-                _logger.LogInformation("Tournament {TournamentId} transitioned to SeedingGroups. Registration closed.",
-                    context.TournamentId);
+            // Store in context
+            context.Tournament = tournament;
 
-                return true; // Continue to next step
-            }
-            catch (InvalidOperationException ex)
-            {
-                context.Success = false;
-                context.Message = $"Invalid state transition: {ex.Message}";
-                _logger.LogWarning("Invalid state transition for tournament {TournamentId}: {Message}",
-                    context.TournamentId, ex.Message);
-                return false; // Stop pipeline
-            }
+            _logger.LogInformation("Tournament {TournamentId} transitioned to SeedingGroups",
+                context.TournamentId);
+
+            return true; // Continue to next step
         }
     }
 }

@@ -1,0 +1,32 @@
+/* The bracket card; the clicked match's popup is placed inside this wrapper (the card itself scrolls sideways) */
+.bracket-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+.bracket {
+  padding: 12px 16px;
+  overflow-x: auto;
+}
+
+.hint {
+  margin: 0 0 4px;
+}
+
+/* Snap points at the top and the middle of a big bracket (page scroll snaps one half per step) */
+.snap {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  scroll-snap-align: start;
+  scroll-margin-top: calc(var(--fit-offset) - 8px);
+}
+
+.snap.top {
+  top: 0;
+}
+
+.snap.middle {
+  top: 50%;
+}

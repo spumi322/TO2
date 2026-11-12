@@ -3,27 +3,33 @@ using Domain.Entities;
 
 namespace Domain.AggregateRoots
 {
+    // A name registered for one tournament: created with it, deleted with it, never reused
     public class Team : AggregateRootBase
     {
-        private readonly List<Player> _players = new();
-        private readonly List<GroupEntry> _tournamentParticipants = new();
-
         private Team() { }
 
-        public Team(string name)
+        public Team(string name, long tournamentId)
         {
-            Name = name;
+            Name = name.Trim();
+            TournamentId = tournamentId;
         }
 
         public string Name { get; private set; }
 
-        public long TenantId { get; set; }
+        public long TournamentId { get; private set; }
+        public Tournament Tournament { get; private set; } = null!;
+
+        public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;
 
-        public ICollection<TournamentTeam> TournamentParticipations { get; private set; } = new List<TournamentTeam>();
+        // Final result, set when the tournament finishes
+        public int? FinalPlacement { get; private set; }
+        public int? EliminatedInRound { get; private set; }
 
-        public IReadOnlyList<Player> Players => _players;
-
-        public IReadOnlyList<GroupEntry> TournamentParticipants => _tournamentParticipants;
+        public void SetFinalResult(int placement, int? eliminatedInRound)
+        {
+            FinalPlacement = placement;
+            EliminatedInRound = eliminatedInRound;
+        }
     }
 }

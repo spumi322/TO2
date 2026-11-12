@@ -1,30 +1,36 @@
-using Application.Configurations;
 using Application.Contracts;
 using Application.Contracts.Repositories;
-using Application.Pipelines.GameResult;
-using Application.Pipelines.GameResult.Contracts;
-using Application.Pipelines.GameResult.Steps;
-using Application.Pipelines.GameResult.Strategies;
+using Application.Pipelines.MatchResult;
+using Application.Pipelines.MatchResult.Contracts;
+using Application.Pipelines.MatchResult.Strategies;
 using Application.Pipelines.StartBracket;
 using Application.Pipelines.StartBracket.Contracts;
+using Application.Pipelines.StartBracket.Strategies;
 using Application.Pipelines.StartGroups;
 using Application.Pipelines.StartGroups.Contracts;
 using Application.Services;
+using Application.Validations.Tournament;
 using Domain.Entities;
 using Domain.StateMachine;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+using Infrastructure.Identity;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Interceptors;
 using Infrastructure.Persistence.Repository;
-using Infrastructure.Profiles;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.Threading.RateLimiting;
 using TO2.Hubs;
+using TO2.RateLimiting;
 using TO2.SignalR;
 using webAPI.Middleware;
 
@@ -42,19 +48,17 @@ namespace TO2
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
                        .AddInterceptors(
                            serviceProvider.GetRequiredService<TenantSaveChangesInterceptor>(),
-                           serviceProvider.GetRequiredService<AuditInterceptor>()
+                           serviceProvider.GetRequiredService<AuditInterceptor>(),
+                           serviceProvider.GetRequiredService<ConcurrencyVersionInterceptor>()
                        );
             });
 
             // UoW, Repos
-            builder.Services.AddScoped<ITO2DbContext, TO2DbContext>();
             builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
             builder.Services.AddScoped<ITournamentRepository, TournamentRepository>();
             builder.Services.AddScoped<IGroupRepository, GroupRepository>();
             builder.Services.AddScoped<IStandingRepository, StandingRepository>();
-            builder.Services.AddScoped<IMatchRepository, MatchRepository>();
-            builder.Services.AddScoped<ITournamentTeamRepository, TournamentTeamRepository>();
 
             // Domain Services
             builder.Services.AddScoped<ITournamentStateMachine, TournamentStateMachine>();
@@ -65,63 +69,54 @@ namespace TO2
             builder.Services.AddSignalR();
             builder.Services.AddScoped<ISignalRService, SignalRService>();
 
-            // EF Core Interceptors (Modern approach for tenant isolation and auditing)
+            // EF Core interceptors: tenant isolation, auditing, concurrency versions
             builder.Services.AddScoped<TenantSaveChangesInterceptor>();
             builder.Services.AddScoped<AuditInterceptor>();
+            builder.Services.AddScoped<ConcurrencyVersionInterceptor>();
 
             // Application Services
             builder.Services.AddScoped<ITournamentService, TournamentService>();
             builder.Services.AddScoped<IStandingService, StandingService>();
+            builder.Services.AddScoped<IPlacementService, PlacementService>();
             builder.Services.AddScoped<ITeamService, TeamService>();
             builder.Services.AddScoped<IMatchService, MatchService>();
             builder.Services.AddScoped<IGameService, GameService>();
             builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IIdentityService, IdentityService>();
+            builder.Services.AddScoped<ITokenService, JwtTokenService>();
+            builder.Services.AddScoped<ITenantInviteService, TenantInviteService>();
+            // Match drafts live in server memory, shared by all requests and hub calls
+            builder.Services.AddSingleton(TimeProvider.System);
+            builder.Services.AddSingleton(Random.Shared);
+            builder.Services.AddSingleton<IMatchDraftStore, MatchDraftStore>();
 
-            // STEP 2: Lifecycle Service - Replaces domain event handlers
+            // Workflow orchestration (delegates to the pipelines below)
             builder.Services.AddScoped<IWorkFlowService, WorkFlowService>();
-            // Game Result Pipeline - SOLID refactoring of ProcessGameResult
-            builder.Services.AddScoped<IGameResultPipeline, GameResultPipeline>();
-            // Pipeline Steps (registered in execution order)
-            builder.Services.AddScoped<IGameResultPipelineStep, ScoreGameStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, CheckMatchCompletionStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, UpdateGroupStatsStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, HandleStandingProgressStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, TransitionTournamentStateStep>();
-            builder.Services.AddScoped<IGameResultPipelineStep, CalculateFinalPlacementsStep>();
-            // BroadcastUpdatesStep removed - broadcasting now happens after transaction commit in pipeline executor
-            builder.Services.AddScoped<IGameResultPipelineStep, BuildResponseStep>();
+            // Match Result Pipeline - confirmed match result
+            builder.Services.AddScoped<IMatchResultPipeline, MatchResultPipeline>();
+            // Pipeline Steps (order defined in MatchResultPipeline.StepOrder)
+            foreach (var step in MatchResultPipeline.StepOrder)
+                builder.Services.AddScoped(typeof(IMatchResultPipelineStep), step);
             // Standing Progress Strategies
             builder.Services.AddScoped<IStandingProgressStrategy, GroupProgressStrategy>();
             builder.Services.AddScoped<IStandingProgressStrategy, BracketProgressStrategy>();
 
             // Start Groups Pipeline - Tournament group stage initialization
             builder.Services.AddScoped<IStartGroupsPipeline, StartGroupsPipeline>();
-            // Pipeline Steps (registered in execution order)
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.ValidateAndTransitionToSeedingGroupsStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.ValidateStandingsNotSeededStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.DistributeTeamsIntoGroupsStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.CreateGroupEntriesStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.GenerateRoundRobinMatchesStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.MarkStandingsAsSeededStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.TransitionToGroupsInProgressStep>();
-            builder.Services.AddScoped<IStartGroupsPipelineStep, Application.Pipelines.StartGroups.Steps.BuildResponseStep>();
+            // Pipeline Steps (order defined in StartGroupsPipeline.StepOrder)
+            foreach (var step in StartGroupsPipeline.StepOrder)
+                builder.Services.AddScoped(typeof(IStartGroupsPipelineStep), step);
 
             // Start Bracket Pipeline - Tournament bracket stage initialization
             builder.Services.AddScoped<IStartBracketPipeline, StartBracketPipeline>();
-            // Pipeline Steps (registered in execution order)
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateAndTransitionToSeedingBracketStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateBracketNotSeededStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.GetAdvancedTeamsStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.RandomSeedTeamsStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.ValidateTeamCountStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.CalculateBracketStructureStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.GenerateBracketMatchesStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.MarkBracketAsSeededStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.TransitionToBracketInProgressStep>();
-            builder.Services.AddScoped<IStartBracketPipelineStep, Application.Pipelines.StartBracket.Steps.BuildResponseStep>();
+            // Pipeline Steps (order defined in StartBracketPipeline.StepOrder)
+            foreach (var step in StartBracketPipeline.StepOrder)
+                builder.Services.AddScoped(typeof(IStartBracketPipelineStep), step);
+            // Bracket Seeding Strategies (one per format with a bracket)
+            builder.Services.AddScoped<IBracketSeedingStrategy, RandomSeedingStrategy>();
+            builder.Services.AddScoped<IBracketSeedingStrategy, GroupResultSeedingStrategy>();
 
             // Deps
-            builder.Services.AddAutoMapper(typeof(MappingProfile));
             builder.Services.AddValidatorsFromAssemblyContaining<CreateTournamentValidator>();
             builder.Services.AddFluentValidationAutoValidation();
 
@@ -178,7 +173,9 @@ namespace TO2
                     ValidIssuer = jwtSettings?.Issuer,
                     ValidAudience = jwtSettings?.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtSettings?.SecretKey ?? throw new InvalidOperationException("JWT SecretKey not configured")))
+                        Encoding.UTF8.GetBytes(jwtSettings?.SecretKey ?? throw new InvalidOperationException("JWT SecretKey not configured"))),
+                    // AuthService puts the username in the "name" claim; without this User.Identity.Name is null
+                    NameClaimType = JwtRegisteredClaimNames.Name
                 };
 
                 // Configure SignalR authentication from query string
@@ -202,6 +199,44 @@ namespace TO2
             builder.Services.AddAuthorization();
             builder.Services.AddHttpContextAccessor();
 
+            // Client IP behind Render's proxy: the last X-Forwarded-For entry (the one the proxy appended)
+            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor;
+                options.ForwardLimit = 1;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+
+            // Rate limiting: 10 requests per minute per client IP on the anonymous auth endpoints
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+                options.AddPolicy(RateLimitPolicies.Auth, httpContext =>
+                    RateLimitPartition.GetFixedWindowLimiter(
+                        httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                        _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 10,
+                            Window = TimeSpan.FromMinutes(1)
+                        }));
+                options.OnRejected = (context, cancellationToken) =>
+                {
+                    var httpContext = context.HttpContext;
+                    httpContext.RequestServices.GetRequiredService<ILoggerFactory>()
+                        .CreateLogger(nameof(RateLimitPolicies))
+                        .LogWarning("Rate limit hit on {Method} {Path} from {ClientIp}",
+                            httpContext.Request.Method, httpContext.Request.Path, httpContext.Connection.RemoteIpAddress);
+
+                    return new ValueTask(httpContext.Response.WriteAsJsonAsync(new ProblemDetails
+                    {
+                        Status = StatusCodes.Status429TooManyRequests,
+                        Title = "Too Many Requests",
+                        Detail = "Too many attempts. Try again in a minute."
+                    }, cancellationToken));
+                };
+            });
+
             var app = builder.Build();
 
             using (var scope = app.Services.CreateScope())
@@ -210,8 +245,10 @@ namespace TO2
                 db.Database.Migrate();
             }
 
+            app.UseForwardedHeaders();
             app.UseExceptionHandler();
             app.UseCors("AllowFrontend");
+            app.UseRateLimiter();
 
             // Enable WebSockets for SignalR
             app.UseWebSockets();

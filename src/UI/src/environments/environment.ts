@@ -1,4 +1,4 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:5161/api'
+  apiUrl: 'https://to2-spsd.onrender.com/api',
+  hubUrl: 'https://to2-spsd.onrender.com/hubs/tournament',
 };

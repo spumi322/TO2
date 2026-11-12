@@ -1,34 +1,21 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 8080
-
+# Build context: src/ (docker build -f webAPI/Dockerfile.production src)
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy all project files
+# Project files first: the restore layer stays cached until a .csproj changes
 COPY ["webAPI/TO2.csproj", "webAPI/"]
 COPY ["Application/Application.csproj", "Application/"]
 COPY ["Domain/Domain.csproj", "Domain/"]
 COPY ["Infrastructure/Infrastructure.csproj", "Infrastructure/"]
-
-# Restore dependencies
 RUN dotnet restore "webAPI/TO2.csproj"
 
-# Copy source code
 COPY . .
+RUN dotnet publish "webAPI/TO2.csproj" -c Release -o /app/publish --no-restore /p:UseAppHost=false
 
-WORKDIR "/src/webAPI"
-RUN dotnet build "TO2.csproj" -c Release -o /app/build
-
-FROM build AS publish
-RUN dotnet publish "TO2.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-FROM base AS final
+# Runtime image only: no SDK, no source
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=publish /app/publish .
-
-# Health check endpoint
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD curl --fail http://localhost:8080/health || exit 1
-
+COPY --from=build /app/publish .
+USER $APP_UID
+EXPOSE 8080
 ENTRYPOINT ["dotnet", "TO2.dll"]

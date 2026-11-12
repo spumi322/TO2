@@ -1,7 +1,6 @@
 ﻿using Domain.AggregateRoots;
 using Domain.Common;
 using Domain.Enums;
-using System.ComponentModel.DataAnnotations;
 
 namespace Domain.Entities
 {
@@ -21,7 +20,7 @@ namespace Domain.Entities
         public long TournamentId { get; set; }
         public Tournament Tournament { get; set; }
 
-        public long TenantId { get; set; }
+        public long TenantId { get; private set; }
         public Tenant Tenant { get; set; } = null!;
 
         public string Name { get; set; }
@@ -33,9 +32,6 @@ namespace Domain.Entities
         public bool IsFinished { get; set; } = false;
 
         public bool IsSeeded { get; set; } = false;
-
-        [Timestamp]
-        public byte[]? RowVersion { get; set; }
 
         public IReadOnlyList<Match> Matches => _matches;
     }

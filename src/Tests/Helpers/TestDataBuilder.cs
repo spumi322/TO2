@@ -42,18 +42,19 @@ namespace Tests.Helpers
         {
             private static int _counter = 0;
 
-            public static Team CreateDefault(string? name = null)
+            // tournamentId: needed when the team is saved (foreign key); in-memory tests can leave it out
+            public static Team CreateDefault(string? name = null, long tournamentId = 0)
             {
                 _counter++;
-                return new Team(name ?? $"Test Team {_counter}");
+                return new Team(name ?? $"Test Team {_counter}", tournamentId);
             }
 
-            public static List<Team> CreateMultiple(int count)
+            public static List<Team> CreateMultiple(int count, long tournamentId = 0)
             {
                 var teams = new List<Team>();
                 for (int i = 0; i < count; i++)
                 {
-                    teams.Add(CreateDefault($"Team {i + 1}"));
+                    teams.Add(CreateDefault($"Team {i + 1}", tournamentId));
                 }
                 return teams;
             }
@@ -61,14 +62,6 @@ namespace Tests.Helpers
             public static void ResetCounter()
             {
                 _counter = 0;
-            }
-        }
-
-        public static class TournamentTeams
-        {
-            public static TournamentTeam Create(long tournamentId, long teamId)
-            {
-                return new TournamentTeam(tournamentId, teamId);
             }
         }
 
@@ -144,14 +137,10 @@ namespace Tests.Helpers
                 Match match,
                 long? teamAId,
                 long? teamBId,
-                long winnerId,
-                int teamAScore = 10,
-                int teamBScore = 5)
+                long winnerId)
             {
                 var game = new Game(match, teamAId, teamBId);
                 game.WinnerId = winnerId;
-                game.TeamAScore = teamAScore;
-                game.TeamBScore = teamBScore;
                 return game;
             }
         }
